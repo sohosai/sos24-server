@@ -23,6 +23,10 @@ mod test {
             .await?;
 
         assert_eq!(resp.status(), StatusCode::OK);
+        assert_eq!(
+            axum::body::to_bytes(resp.into_body(), usize::MAX).await?,
+            b"OK".as_ref()
+        );
 
         Ok(())
     }
