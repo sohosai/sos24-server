@@ -1,0 +1,3 @@
+CREATE TABLE "user" (
+  id BIGSERIAL PRIMARY KEY
+);
