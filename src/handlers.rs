@@ -1,7 +1,10 @@
-use axum::Router;
+use axum::{routing::get, Router};
+use sqlx::PgPool;
 
 mod health;
 
-pub fn create_app() -> Router {
-    Router::new().route("/health", health::handle_get())
+pub fn create_app(pool: PgPool) -> Router {
+    Router::new()
+        .route("/health", get(health::handle_get))
+        .with_state(pool)
 }

@@ -1,7 +1,9 @@
-use axum::routing::{get, MethodRouter};
+use axum::{debug_handler, response::IntoResponse};
+use hyper::StatusCode;
 
-pub fn handle_get() -> MethodRouter {
-    get(|| async { "OK" })
+#[debug_handler]
+pub async fn handle_get() -> Result<impl IntoResponse, StatusCode> {
+    Ok("OK")
 }
 
 #[cfg(test)]
@@ -13,11 +15,12 @@ mod test {
         body::Body,
         http::{Request, StatusCode},
     };
+    use sqlx::PgPool;
     use tower::ServiceExt;
 
-    #[tokio::test]
-    async fn test_get_health() -> Result<()> {
-        let app = create_app();
+    #[sqlx::test]
+    async fn test_get_health(pool: PgPool) -> Result<()> {
+        let app = create_app(pool);
         let resp = app
             .oneshot(Request::builder().uri("/health").body(Body::empty())?)
             .await?;
