@@ -1,5 +1,5 @@
-ARCH:="amd64"
-SQLDEF_VERSION:="v0.16.15"
+ARCH := amd64
+SQLDEF_VERSION := v0.16.15
 
 install:
 	make clean
