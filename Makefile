@@ -1,11 +1,11 @@
-ARCH := "amd64"
-SQLDEF_VERSION := "v0.16.15"
+ARCH:="amd64"
+SQLDEF_VERSION:="v0.16.15"
 
 install:
 	just clean
-	curl -OL "https://github.com/sqldef/sqldef/releases/download/{{SQLDEF_VERSION}}/psqldef_linux_{{ARCH}}.tar.gz"
-	tar -xf "./psqldef_linux_{{ARCH}}.tar.gz"
-	rm "./psqldef_linux_{{ARCH}}.tar.gz"
+	curl -OL "https://github.com/sqldef/sqldef/releases/download/${SQLDEF_VERSION}/psqldef_linux_${ARCH}.tar.gz"
+	tar -xf "./psqldef_linux_${ARCH}.tar.gz"
+	rm "./psqldef_linux_${ARCH}.tar.gz"
 
 clean:
 	rm -f psqldef

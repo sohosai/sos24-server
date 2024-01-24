@@ -13,7 +13,7 @@
 	"forwardPorts": [3000],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "just install"
+	"postCreateCommand": "make install"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
