@@ -13,3 +13,6 @@ install:
 
 apply:
 	./psqldef -U ${POSTGRES_USER} -W ${POSTGRES_PASSWORD} -h ${POSTGRES_HOSTNAME} -p ${POSTGRES_PORT} ${POSTGRES_DB} < schema.sql
+
+apply-destroy:
+	./psqldef -U ${POSTGRES_USER} -W ${POSTGRES_PASSWORD} -h ${POSTGRES_HOSTNAME} -p ${POSTGRES_PORT} ${POSTGRES_DB} --enable-drop-table < schema.sql
