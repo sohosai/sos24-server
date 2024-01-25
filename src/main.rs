@@ -1,6 +1,7 @@
 use std::env;
 
 use anyhow::Result;
+use mongodb::{options::ClientOptions, Client};
 use sqlx::postgres::PgPoolOptions;
 
 mod handlers;
@@ -17,14 +18,21 @@ async fn main() -> Result<()> {
     }
 
     // DB
-    let database_url = env::var("DATABASE_URL").expect("env `DATABASE_URL` must be set");
-    println!("{database_url}");
+    let pg_db_url = env::var("POSTGRES_DB_URL").expect("env `POSTGRES_DB_URL` must be set");
 
-    let pool = PgPoolOptions::new()
+    let pg_pool = PgPoolOptions::new()
         .max_connections(8)
-        .connect(&database_url)
+        .connect(&pg_db_url)
         .await
         .expect("Couldn't connect to the DB");
+
+    // MongoDB
+    let mongo_database_url = env::var("MONGO_DB_URL").expect("env `MONGO_DB_URL` doesn't set");
+    let client_options = ClientOptions::parse(mongo_database_url).await?;
+    let client = Client::with_options(client_options)?;
+
+    let mongo_db_name = env::var("MONGO_DB").expect("env `MONGO_DB` must be set");
+    let mongo_db = client.database(&mongo_db_name);
 
     // API
     let host = env::var("HOST").unwrap_or({
@@ -41,7 +49,7 @@ async fn main() -> Result<()> {
     });
 
     let addr = format!("{host}:{port}");
-    let app = handlers::create_app(pool);
+    let app = handlers::create_app(pg_pool, mongo_db);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
 
     tracing::info!("Listening on http://{addr}/health");
