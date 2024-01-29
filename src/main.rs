@@ -13,8 +13,8 @@ const DEFAULT_PORT: usize = 3000;
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
-    if let Err(_) = dotenvy::dotenv() {
-        tracing::info!(".env file doesn't exist. skipped.");
+    if let Err(e) = dotenvy::dotenv() {
+        tracing::info!(".env file doesn't exist. skipped: {e}");
     }
 
     // DB
