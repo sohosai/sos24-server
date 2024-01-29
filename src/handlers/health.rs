@@ -6,31 +6,33 @@ pub async fn handle_get() -> Result<impl IntoResponse, StatusCode> {
     Ok("OK")
 }
 
-// #[cfg(test)]
-// mod test {
-//     use crate::handlers::create_app;
+#[cfg(test)]
+mod test {
+    use crate::{create_app, repository::get_mongo_db};
 
-//     use anyhow::Result;
-//     use axum::{
-//         body::Body,
-//         http::{Request, StatusCode},
-//     };
-//     use sqlx::PgPool;
-//     use tower::ServiceExt;
+    use anyhow::Result;
+    use axum::{
+        body::Body,
+        http::{Request, StatusCode},
+    };
+    use sqlx::PgPool;
+    use tower::ServiceExt;
 
-//     #[sqlx::test]
-//     async fn test_get_health(pool: PgPool) -> Result<()> {
-//         let app = create_app(pool);
-//         let resp = app
-//             .oneshot(Request::builder().uri("/health").body(Body::empty())?)
-//             .await?;
+    #[sqlx::test]
+    async fn test_get_health(pool: PgPool) -> Result<()> {
+        let mongo_db = get_mongo_db().await?;
 
-//         assert_eq!(resp.status(), StatusCode::OK);
-//         assert_eq!(
-//             axum::body::to_bytes(resp.into_body(), usize::MAX).await?,
-//             b"OK".as_ref()
-//         );
+        let app = create_app(pool, mongo_db);
+        let resp = app
+            .oneshot(Request::builder().uri("/health").body(Body::empty())?)
+            .await?;
 
-//         Ok(())
-//     }
-// }
+        assert_eq!(resp.status(), StatusCode::OK);
+        assert_eq!(
+            axum::body::to_bytes(resp.into_body(), usize::MAX).await?,
+            b"OK".as_ref()
+        );
+
+        Ok(())
+    }
+}
