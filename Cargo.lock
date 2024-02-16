@@ -1815,7 +1815,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sos24-server-playground"
+name = "sos24-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",

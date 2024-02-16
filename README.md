@@ -1,5 +1,5 @@
 
-# sos24-server-playground
+# sos24-server
 
 - `make install`
 - `make apply`
