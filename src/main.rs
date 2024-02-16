@@ -1,10 +1,11 @@
 use std::env;
 
 use anyhow::Result;
-use axum::{routing::get, Router};
+use axum::{middleware, routing::get, Router};
 use mongodb::Database;
 use sqlx::PgPool;
 
+mod auth;
 mod handlers;
 mod repository;
 
@@ -14,6 +15,11 @@ const DEFAULT_PORT: usize = 3000;
 pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
     Router::new()
         .route("/health", get(handlers::health::handle_get))
+        .merge(
+            Router::new()
+                .route("/private", get(|| async { "YOU'RE AUTHORIZED!" }))
+                .route_layer(middleware::from_fn(auth::jwt_auth)),
+        )
         .with_state(pool)
         .with_state(mongo_db)
 }
