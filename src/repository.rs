@@ -4,6 +4,8 @@ use anyhow::{Context, Result};
 use mongodb::{options::ClientOptions, Client, Database};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
+pub(crate) mod users;
+
 pub async fn get_pg_pool() -> Result<PgPool> {
     let pg_db_url = env::var("POSTGRES_DB_URL").expect("env `POSTGRES_DB_URL` must be set");
 
