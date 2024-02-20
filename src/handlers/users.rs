@@ -84,10 +84,10 @@ pub(crate) async fn handle_post_users(
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
-    let created_user = repository::users::create_user(
+    let resp = repository::users::create_user(
         &app_state.pool,
         CreateUserInput {
-            id: new_firebase_user.uid,
+            id: new_firebase_user.uid.clone(),
             name: input.name,
             kana_name: input.kana_name,
             email: input.email,
@@ -95,11 +95,22 @@ pub(crate) async fn handle_post_users(
             category: input.category,
         },
     )
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to create user: {e}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    .await;
 
-    Ok(Json(created_user))
+    match resp {
+        Ok(user) => Ok(Json(user)),
+        Err(e) => {
+            tracing::error!("Failed to create user: {e}");
+
+            live_auth_admin
+                .delete_user(new_firebase_user.uid.clone())
+                .await
+                .map_err(|e| {
+                    tracing::error!("Failed to delete firebase user: {e}");
+                    StatusCode::INTERNAL_SERVER_ERROR
+                })?;
+
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
