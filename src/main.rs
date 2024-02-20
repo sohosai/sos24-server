@@ -20,31 +20,44 @@ const DEFAULT_PORT: usize = 3000;
 struct AppState {
     config: Config,
     pool: PgPool,
+    mongo_db: Database,
 }
 
 #[derive(Debug, Clone)]
 struct Config {
     firebase_service_account_key: String,
+    firebase_project_id: String,
 }
 
-pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
+fn get_config() -> Config {
+    let firebase_project_id = std::env::var("FIREBASE_PROJECT_ID")
+        .expect("The FIREBASE_PROJECT_ID environment variable is not set.");
+    if firebase_project_id.is_empty() {
+        panic!("The FIREBASE_PROJECT_ID environment variable must not be empty.");
+    }
+
     let firebase_service_account_key = env::var("FIREBASE_SERVICE_ACCOUNT_KEY")
         .expect("env `FIREBASE_SERVICE_ACCOUNT_KEY` must be set");
     if firebase_service_account_key.is_empty() {
         panic!("env `FIREBASE_SERVICE_ACCOUNT_KEY` must not be empty");
     }
 
+    Config {
+        firebase_project_id,
+        firebase_service_account_key,
+    }
+}
+
+pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
     Router::new()
         .route("/health", get(handlers::health::handle_get))
         .merge(Router::new().route("/users", post(handlers::users::handle_post_users)))
         // .route_layer(middleware::from_fn(auth::jwt_auth))
         .with_state(AppState {
+            config: get_config(),
             pool,
-            config: Config {
-                firebase_service_account_key,
-            },
+            mongo_db,
         })
-        .with_state(mongo_db)
 }
 
 #[tokio::main]

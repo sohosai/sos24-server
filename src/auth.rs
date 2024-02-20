@@ -1,6 +1,7 @@
 use anyhow::Context;
 use axum::{
     body::Body,
+    extract::State,
     http::{Request, StatusCode},
     middleware::Next,
     response::IntoResponse,
@@ -9,6 +10,8 @@ use jsonwebtoken::{
     decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
+
+use crate::Config;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {
@@ -25,6 +28,7 @@ const JWK_URL: &str =
 pub(crate) async fn jwt_auth(
     mut request: Request<Body>,
     next: Next,
+    State(config): State<Config>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let authorization_header = request
         .headers()
@@ -40,7 +44,7 @@ pub(crate) async fn jwt_auth(
 
     let jwt_token = authorization.trim_start_matches("Bearer ");
 
-    match verify_id_token(jwt_token).await {
+    match verify_id_token(jwt_token, &config.firebase_project_id).await {
         Ok(v) => {
             request.extensions_mut().insert(v);
 
@@ -53,7 +57,10 @@ pub(crate) async fn jwt_auth(
     }
 }
 
-pub(crate) async fn verify_id_token(token: &str) -> anyhow::Result<TokenData<Claims>> {
+pub(crate) async fn verify_id_token(
+    token: &str,
+    firebase_project_id: &str,
+) -> anyhow::Result<TokenData<Claims>> {
     let header = decode_header(token)?;
     let kid = header.kid.context("No key ID found in JWT header")?;
     let jwks: JwkSet = reqwest::get(JWK_URL).await?.json().await?;
@@ -62,13 +69,14 @@ pub(crate) async fn verify_id_token(token: &str) -> anyhow::Result<TokenData<Cla
     let key = DecodingKey::from_jwk(jwk)?;
 
     let mut validation = Validation::new(Algorithm::RS256);
-    let project_id = std::env::var("FIREBASE_PROJECT_ID")
-        .context("The FIREBASE_PROJECT_ID environment variable is not set.")?;
 
     validation.validate_exp = true;
     validation.validate_nbf = false;
-    validation.set_audience(&[&project_id]);
-    validation.set_issuer(&[format!("https://securetoken.google.com/{}", &project_id)]);
+    validation.set_audience(&[&firebase_project_id]);
+    validation.set_issuer(&[format!(
+        "https://securetoken.google.com/{}",
+        &firebase_project_id
+    )]);
     validation.sub = None;
 
     let data = decode(token, &key, &validation).context("Failed to validate JWT")?;
