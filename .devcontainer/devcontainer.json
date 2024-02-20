@@ -10,10 +10,9 @@
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [3000, 8081],
+	"forwardPorts": [3000, 8081]
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "make install"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
