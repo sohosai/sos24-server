@@ -68,6 +68,16 @@ pub(crate) async fn handle_post_users(
     State(app_state): State<AppState>,
     Json(input): Json<PostUsersInput>,
 ) -> Result<impl IntoResponse, StatusCode> {
+    if !is_valid_email_format(&input.email) {
+        tracing::error!("Invalid email format: {}", input.email);
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    if !&input.email.ends_with("tsukuba.ac.jp") {
+        tracing::error!("Invalid email domain: {}", input.email);
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
     let gcp_service_account =
         CustomServiceAccount::from_json(&app_state.config.firebase_service_account_key).unwrap();
     let live_app = App::live(gcp_service_account.into()).await.unwrap();
@@ -112,5 +122,27 @@ pub(crate) async fn handle_post_users(
 
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
+    }
+}
+
+fn is_valid_email_format(email: &str) -> bool {
+    // https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
+    let email_re = regex::Regex::new(r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$").unwrap();
+    email_re.is_match(email)
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn valid_email_format() {
+        assert!(super::is_valid_email_format("s0000000@u.tsukuba.ac.jp"));
+        assert!(super::is_valid_email_format("john.doe@example.jp"));
+    }
+
+    #[test]
+    fn invalid_email_format() {
+        assert!(!super::is_valid_email_format("s@@example.com"));
+        assert!(!super::is_valid_email_format("s@u."));
+        assert!(!super::is_valid_email_format("example.com"));
     }
 }
