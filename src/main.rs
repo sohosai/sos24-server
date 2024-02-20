@@ -24,24 +24,24 @@ struct AppState {
 
 #[derive(Debug, Clone)]
 struct Config {
-    firebase_admin_api_key: String,
+    firebase_service_account_key: String,
 }
 
 pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
-    let firebase_admin_api_key =
-        env::var("FIREBASE_ADMIN_API_KEY").expect("env `FIREBASE_ADMIN_API_KEY` must be set");
-    if firebase_admin_api_key.is_empty() {
-        panic!("env `FIREBASE_ADMIN_API_KEY` must not be empty");
+    let firebase_service_account_key = env::var("FIREBASE_SERVICE_ACCOUNT_KEY")
+        .expect("env `FIREBASE_SERVICE_ACCOUNT_KEY` must be set");
+    if firebase_service_account_key.is_empty() {
+        panic!("env `FIREBASE_SERVICE_ACCOUNT_KEY` must not be empty");
     }
 
     Router::new()
         .route("/health", get(handlers::health::handle_get))
         .merge(Router::new().route("/users", post(handlers::users::handle_post_users)))
-        .route_layer(middleware::from_fn(auth::jwt_auth))
+        // .route_layer(middleware::from_fn(auth::jwt_auth))
         .with_state(AppState {
             pool,
             config: Config {
-                firebase_admin_api_key,
+                firebase_service_account_key,
             },
         })
         .with_state(mongo_db)
