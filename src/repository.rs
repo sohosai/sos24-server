@@ -15,6 +15,8 @@ pub async fn get_pg_pool() -> Result<PgPool> {
         .await
         .context("Couldn't connect to the DB")?;
 
+    sqlx::migrate!().run(&pg_pool).await?;
+
     Ok(pg_pool)
 }
 

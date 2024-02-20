@@ -54,7 +54,7 @@ pub(crate) async fn jwt_auth(
 }
 
 pub(crate) async fn verify_id_token(token: &str) -> anyhow::Result<TokenData<Claims>> {
-    let header = decode_header(&token)?;
+    let header = decode_header(token)?;
     let kid = header.kid.context("No key ID found in JWT header")?;
     let jwks: JwkSet = reqwest::get(JWK_URL).await?.json().await?;
 
@@ -71,7 +71,7 @@ pub(crate) async fn verify_id_token(token: &str) -> anyhow::Result<TokenData<Cla
     validation.set_issuer(&[format!("https://securetoken.google.com/{}", &project_id)]);
     validation.sub = None;
 
-    let data = decode(&token, &key, &validation).context("Failed to validate JWT")?;
+    let data = decode(token, &key, &validation).context("Failed to validate JWT")?;
 
     Ok(data)
 }

@@ -17,12 +17,11 @@ CREATE TABLE users (
   deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
-CREATE TYPE project_status AS ENUM ('not_verified', 'verified');
+CREATE TYPE project_category AS ENUM ('general', 'foods_with_kitchen', 'foods_without_kitchen', 'foods_without_cooking', 'stage_1a', 'stage_university_hall', 'stage_united');
 
 CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  index INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY UNIQUE,
-  status project_status NOT NULL,
+  index INTEGER GENERATED ALWAYS AS IDENTITY UNIQUE,
 
   title TEXT NOT NULL,
   kana_title TEXT NOT NULL,
@@ -31,6 +30,7 @@ CREATE TABLE projects (
   group_name TEXT NOT NULL,
   kana_group_name TEXT NOT NULL,
 
+  category project_category NOT NULL,
   attributes INTEGER NOT NULL DEFAULT 0,
 
   owner_id TEXT NOT NULL REFERENCES users(id),
