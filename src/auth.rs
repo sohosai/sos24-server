@@ -10,7 +10,7 @@ use jsonwebtoken::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{AppState, Config};
+use crate::{repository, AppState};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {
@@ -43,16 +43,21 @@ pub(crate) async fn jwt_auth(
 
     let jwt_token = authorization.trim_start_matches("Bearer ");
 
-    match verify_id_token(jwt_token, &app_state.config.firebase_project_id).await {
-        Ok(v) => {
-            request.extensions_mut().insert(v);
-            Ok(next.run(request).await)
-        }
+    let token = match verify_id_token(jwt_token, &app_state.config.firebase_project_id).await {
+        Ok(v) => v,
         Err(e) => {
             tracing::error!("Failed to verify: {e}");
-            Err(StatusCode::UNAUTHORIZED)
+            return Err(StatusCode::UNAUTHORIZED);
         }
-    }
+    };
+
+    // もし user_id 以上のものを Extension に入れるなら、ここで渡す
+    let _ = repository::users::get_user_by_id(&app_state.pool, &token.claims.sub)
+        .await
+        .map_err(|_| StatusCode::UNAUTHORIZED)?;
+    request.extensions_mut().insert(token);
+
+    Ok(next.run(request).await)
 }
 
 pub(crate) async fn verify_id_token(

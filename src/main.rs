@@ -56,15 +56,21 @@ pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
     };
 
     Router::new()
+        // private
         .merge(
             Router::new()
-                .route("/health", get(handlers::health::handle_get))
+                .route("/private", get(handlers::private::handle_get))
                 .route_layer(middleware::from_fn_with_state(
                     app_state.clone(),
                     auth::jwt_auth,
                 )),
         )
-        .merge(Router::new().route("/users", post(handlers::users::handle_post_users)))
+        // public
+        .merge(
+            Router::new()
+                .route("/health", get(handlers::health::handle_get))
+                .route("/users", post(handlers::users::handle_post_users)),
+        )
         .with_state(app_state.clone())
 }
 
