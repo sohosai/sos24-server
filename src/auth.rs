@@ -1,8 +1,7 @@
 use anyhow::Context;
 use axum::{
-    body::Body,
-    extract::State,
-    http::{Request, StatusCode},
+    extract::{Request, State},
+    http::StatusCode,
     middleware::Next,
     response::IntoResponse,
 };
@@ -11,7 +10,7 @@ use jsonwebtoken::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::Config;
+use crate::{AppState, Config};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {
@@ -26,9 +25,9 @@ const JWK_URL: &str =
     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 
 pub(crate) async fn jwt_auth(
-    mut request: Request<Body>,
+    State(app_state): State<AppState>,
+    mut request: Request,
     next: Next,
-    State(config): State<Config>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let authorization_header = request
         .headers()
@@ -44,10 +43,9 @@ pub(crate) async fn jwt_auth(
 
     let jwt_token = authorization.trim_start_matches("Bearer ");
 
-    match verify_id_token(jwt_token, &config.firebase_project_id).await {
+    match verify_id_token(jwt_token, &app_state.config.firebase_project_id).await {
         Ok(v) => {
             request.extensions_mut().insert(v);
-
             Ok(next.run(request).await)
         }
         Err(e) => {

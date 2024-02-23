@@ -49,15 +49,23 @@ fn get_config() -> Config {
 }
 
 pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
+    let app_state = AppState {
+        config: get_config(),
+        pool,
+        mongo_db,
+    };
+
     Router::new()
-        .route("/health", get(handlers::health::handle_get))
+        .merge(
+            Router::new()
+                .route("/health", get(handlers::health::handle_get))
+                .route_layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    auth::jwt_auth,
+                )),
+        )
         .merge(Router::new().route("/users", post(handlers::users::handle_post_users)))
-        // .route_layer(middleware::from_fn(auth::jwt_auth))
-        .with_state(AppState {
-            config: get_config(),
-            pool,
-            mongo_db,
-        })
+        .with_state(app_state.clone())
 }
 
 #[tokio::main]

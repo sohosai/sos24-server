@@ -1,4 +1,4 @@
-use axum::{debug_handler, response::IntoResponse};
+use axum::{debug_handler, response::IntoResponse, Extension};
 use hyper::StatusCode;
 
 #[debug_handler]
