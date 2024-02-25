@@ -5,8 +5,167 @@ info:
 servers:
   - url: http://localhost:3000
 paths:
-  /test:
-    get:
+  /projects:
+    post:
+      summary: 新規プロジェクトの作成
+      operationId: createProject
+      tags:
+        - projects
       responses:
         '200':
-          description: OK
+          description: 成功時のレスポンス
+  /projects/me:
+    get:
+      summary: プロジェクトの取得 (user)
+      operationId: getMyProject
+      tags:
+        - projects
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    put:
+      summary: プロジェクトの更新
+      operationId: updateProject
+      tags:
+        - projects
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    delete:
+      summary: プロジェクトの削除
+      operationId: deleteProject
+      tags:
+        - projects
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /projects/{project_id}:
+    get:
+      summary: プロジェクトの基本情報の取得 (committee)
+      operationId: getProjectById
+      tags:
+        - projects
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    put:
+      summary: プロジェクトの基本情報の更新 (committee)
+      operationId: updateProjectById
+      tags:
+        - projects
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    delete:
+      summary: プロジェクトの削除 (ソフトデリート) (committee)
+      operationId: softDeleteProjectById
+      tags:
+        - projects
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /users:
+    get:
+      summary: ユーザー一覧の取得
+      operationId: getUsers
+      tags:
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /users/{user_id}:
+    get:
+      summary: ユーザーの取得 (committee)
+      operationId: getUserById
+      tags:
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    put:
+      summary: ユーザーの更新 (committee)
+      operationId: updateUserById
+      tags:
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    delete:
+      summary: ユーザーの削除 (committee)
+      operationId: deleteUserById
+      tags:
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /users/me:
+    get:
+      summary: 自分のユーザー情報の取得 (user)
+      operationId: getMyUser
+      tags:
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    put:
+      summary: 自分のユーザー情報の更新 (user)
+      operationId: updateMyUser
+      tags:
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    delete:
+      summary: 自分のユーザーの削除 (user)
+      operationId: deleteMyUser
+      tags:
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /news:
+    get:
+      summary: ニュース一覧の取得 (user)
+      operationId: getNews
+      tags:
+        - news
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /news/{news_id}:
+    get:
+      summary: 特定のニュースの取得 (user)
+      operationId: getNewsById
+      tags:
+        - news
+        - users
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    put:
+      summary: 特定のニュースの更新 (committee)
+      operationId: updateNewsById
+      tags:
+        - news
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    delete:
+      summary: 特定のニュースの削除 (committee)
+      operationId: deleteNewsById
+      tags:
+        - news
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /news_attachments:
+    post:
+      summary: ニュースの添付ファイルの作成 (committee)
+      operationId: createNewsAttachment
+      tags:
+        - news
+      responses:
+        '200':
+          description: 成功時のレスポンス
