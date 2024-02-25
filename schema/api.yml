@@ -4,6 +4,20 @@ info:
   version: '1.0'
 servers:
   - url: http://localhost:3000
+tags:
+  - name: projects
+    description: 企画関連の操作
+  - name: users
+    description: ユーザ関連の操作
+  - name: news
+    description: ニュース関連の操作
+  - name: forms
+    description: 申請関連の操作
+  - name: answers
+    description: 申請結果関連の操作
+  - name: committee
+    description: 実委人のみが利用可能
+
 paths:
   /projects:
     post:
@@ -20,7 +34,6 @@ paths:
       operationId: getMyProject
       tags:
         - projects
-        - users
       responses:
         '200':
           description: 成功時のレスポンス
@@ -42,27 +55,44 @@ paths:
           description: 成功時のレスポンス
   /projects/{project_id}:
     get:
-      summary: プロジェクトの基本情報の取得 (committee)
+      summary: プロジェクトの基本情報の取得 
       operationId: getProjectById
       tags:
         - projects
-        - users
+        - committee
+      parameters:
+        - name: project_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
     put:
-      summary: プロジェクトの基本情報の更新 (committee)
+      summary: プロジェクトの基本情報の更新
       operationId: updateProjectById
       tags:
         - projects
+        - committee
+      parameters:
+        - name: project_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
     delete:
-      summary: プロジェクトの削除 (ソフトデリート) (committee)
+      summary: プロジェクトの削除 (ソフトデリート) 
       operationId: softDeleteProjectById
       tags:
         - projects
+        - committee
+      parameters:
+        - name: project_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
@@ -72,31 +102,51 @@ paths:
       operationId: getUsers
       tags:
         - users
+        - committee
       responses:
         '200':
           description: 成功時のレスポンス
+    post:
+      summary: ユーザ作成
+      tags:
+        - users
+      responses:
+        '200':
+          description: "成功時のレスポンス"
   /users/{user_id}:
     get:
-      summary: ユーザーの取得 (committee)
+      summary: ユーザーの取得 
       operationId: getUserById
       tags:
         - users
+        - committee
+      parameters:
+        - name: user_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
     put:
-      summary: ユーザーの更新 (committee)
+      summary: ユーザーの更新 
       operationId: updateUserById
       tags:
         - users
+        - committee
       responses:
         '200':
           description: 成功時のレスポンス
     delete:
-      summary: ユーザーの削除 (committee)
+      summary: ユーザーの削除 
       operationId: deleteUserById
       tags:
         - users
+      parameters:
+        - name: user_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
@@ -140,15 +190,25 @@ paths:
       operationId: getNewsById
       tags:
         - news
-        - users
+      parameters:
+        - name: news_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
     put:
-      summary: 特定のニュースの更新 (committee)
+      summary: 特定のニュースの更新 
       operationId: updateNewsById
       tags:
         - news
+        - committee
+      parameters:
+        - name: news_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
@@ -157,15 +217,174 @@ paths:
       operationId: deleteNewsById
       tags:
         - news
+        - committee
+      parameters:
+        - name: news_id
+          in: path
+          schema: {type: string}
+          required: true
       responses:
         '200':
           description: 成功時のレスポンス
-  /news_attachments:
+  /news/news_attachments:
     post:
       summary: ニュースの添付ファイルの作成 (committee)
       operationId: createNewsAttachment
       tags:
         - news
+        - committee
       responses:
         '200':
           description: 成功時のレスポンス
+    delete:
+      summary: ニュース添付ファイルの削除
+      tags:
+        - news
+        - committee
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /forms:
+    post:
+      summary: フォームの作成 (committee)
+      operationId: createForm
+      tags:
+        - forms
+        - committee
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    get:
+      summary: フォーム一覧の取得 (user)
+      operationId: getForms
+      tags:
+        - forms
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /forms/{form_id}:
+    get:
+      summary: 特定のフォームの情報を取得 (user)
+      operationId: getFormById
+      tags:
+        - forms
+      parameters:
+        - name: form_id
+          in: path
+          schema: {type: string}
+          required: true
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    put:
+      summary: 特定のフォームの情報を更新 (committee)
+      operationId: updateFormById
+      tags:
+        - forms
+      parameters:
+        - name: form_id
+          in: path
+          schema: {type: string}
+          required: true
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    delete:
+      summary: 特定のフォームを削除 (committee)
+      operationId: deleteFormById
+      parameters:
+        - name: form_id
+          in: path
+          schema: {type: string}
+          required: true
+
+      tags:
+        - forms
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /forms/{form_id}/answers:
+    post:
+      summary: 特定のフォームに回答 (user)
+      operationId: submitAnswer
+      tags:
+        - forms
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /forms/{form_id}/answers/me:
+    put:
+      operationId: updateMe
+      tags:
+        - forms
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    delete:
+      operationId: deleteMe
+      tags:
+        - forms
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /form_answers:
+    get:
+      summary: 特定のフォームに対する全ての団体の回答を一括で取得 (committee)
+      operationId: getAllAnswersForForm
+      tags:
+        - answers
+        - committee
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /form_answers/{answer_id}:
+    get:
+      summary: 特定のフォームに対する特定の回答を取得 (committee)
+      operationId: getAnswerForFormById
+      tags:
+        - answers
+        - committee
+      responses:
+        '200':
+          description: 成功時のレスポンス
+    put:
+      summary: 特定のフォームに対する特定の回答を更新 (committee)
+      operationId: updateAnswerForFormById
+      tags:
+        - answers
+        - committee
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /form_answers/me:
+    get:
+      tags:
+        - forms
+      responses:
+        '200':
+          description: 成功時のレスポンス
+  /form_answers/?project_id={project_id}:
+    get:
+      summary: 特定のフォームに対する特定の団体の回答を取得 (committee)
+      operationId: getAnswersForFormByProjectId
+      tags:
+        - answers
+        - committee
+      parameters:
+        - name: project_id
+          in: query
+          description: プロジェクトID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功時のレスポンス
+
+components:
+  securitySchemes:
+    Bearer:
+     type: apiKey
+     name: Firebase Token
+     in: header
+     description: Firebaseのトークン
