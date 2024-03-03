@@ -63,6 +63,16 @@ pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
                 .route_layer(middleware::from_fn_with_state(
                     app_state.clone(),
                     auth::jwt_auth,
+                ))
+                .route("/news", get(handlers::news::handle_get_news))
+                .route_layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    auth::jwt_auth,
+                ))
+                .route("/news/:news_id", get(handlers::news::handle_get_news_by_id))
+                .route_layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    auth::jwt_auth,
                 )),
         )
         // public
