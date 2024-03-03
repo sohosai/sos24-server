@@ -4,6 +4,7 @@ use anyhow::{Context, Result};
 use mongodb::{options::ClientOptions, Client, Database};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 
+pub(crate) mod news;
 pub(crate) mod users;
 
 pub async fn get_pg_pool() -> Result<PgPool> {

@@ -1,5 +1,5 @@
-use axum::{debug_handler, Json, response::IntoResponse};
 use axum::extract::{Path, State};
+use axum::{debug_handler, response::IntoResponse, Json};
 use chrono::{DateTime, Utc};
 use hyper::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -22,8 +22,13 @@ struct News {
 }
 
 #[debug_handler]
-pub async fn handle_get_news(State(app_state): State<AppState>) -> Result<impl IntoResponse, StatusCode> {
-    match sqlx::query_as::<_, News>(r#"select * from news"#).fetch_all(&app_state.pool).await {
+pub async fn handle_get_news(
+    State(app_state): State<AppState>,
+) -> Result<impl IntoResponse, StatusCode> {
+    match sqlx::query_as::<_, News>(r#"select * from news"#)
+        .fetch_all(&app_state.pool)
+        .await
+    {
         Ok(news) => Ok(Json(news)),
         Err(e) => {
             tracing::error!("Failed to fetch news: {e}");
@@ -33,7 +38,19 @@ pub async fn handle_get_news(State(app_state): State<AppState>) -> Result<impl I
 }
 
 #[debug_handler]
-pub async fn handle_get_news_by_id(Path(id): Path<usize>) -> Result<impl IntoResponse, StatusCode> {
-    tracing::info!("new_id: {}", id);
-    Ok(format!("news_id {} was requested", id))
+pub async fn handle_get_news_by_id(
+    Path(uuid): Path<Uuid>,
+    State(app_state): State<AppState>,
+) -> Result<impl IntoResponse, StatusCode> {
+    match sqlx::query_as::<_, News>(r#"select * from news where id = $1"#)
+        .bind(uuid)
+        .fetch_one(&app_state.pool)
+        .await
+    {
+        Ok(news) => Ok(Json(news)),
+        Err(e) => match e {
+            sqlx::Error::RowNotFound => Err(StatusCode::NOT_FOUND),
+            _ => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        },
+    }
 }
