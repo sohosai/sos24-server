@@ -1,7 +1,7 @@
 use std::env;
 
 use anyhow::Result;
-use axum::routing::delete;
+use axum::routing::{delete, put};
 use axum::{
     middleware,
     routing::{get, post},
@@ -70,6 +70,11 @@ pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
                     app_state.clone(),
                     auth::jwt_auth,
                 ))
+                .route("/news", post(handlers::news::handle_post_news))
+                .route_layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    auth::jwt_auth,
+                ))
                 .route("/news/:news_id", get(handlers::news::handle_get_news_by_id))
                 .route_layer(middleware::from_fn_with_state(
                     app_state.clone(),
@@ -79,6 +84,11 @@ pub fn create_app(pool: PgPool, mongo_db: Database) -> Router {
                     "/news/:news_id",
                     delete(handlers::news::handle_delete_news_by_id),
                 )
+                .route_layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    auth::jwt_auth,
+                ))
+                .route("/news/:news_id", put(handlers::news::handle_put_news_by_id))
                 .route_layer(middleware::from_fn_with_state(
                     app_state.clone(),
                     auth::jwt_auth,
