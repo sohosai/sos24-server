@@ -1,7 +1,6 @@
-use axum::Router;
 use tokio::net::TcpListener;
 
-use sos24_presentation::env;
+use sos24_presentation::{env, route::create_app};
 
 #[tokio::main]
 async fn main() {
@@ -11,7 +10,7 @@ async fn main() {
 
     tracing_subscriber::fmt::init();
 
-    let app = Router::new();
+    let app = create_app();
 
     let addr = format!("{}:{}", env::host(), env::port());
     let listener = TcpListener::bind(&addr).await.unwrap();
