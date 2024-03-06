@@ -17,3 +17,7 @@ pub fn port() -> String {
         "3000".to_string()
     })
 }
+
+pub fn postgres_db_url() -> String {
+    env::var("POSTGRES_DB_URL").expect("Env `POSTGRES_DB_URL` must be set")
+}

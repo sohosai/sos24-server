@@ -1428,8 +1428,11 @@ dependencies = [
 name = "sos24-presentation"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "axum",
  "dotenvy",
+ "sos24-infrastructure",
+ "sos24-use-case",
  "tokio",
  "tracing",
  "tracing-subscriber",

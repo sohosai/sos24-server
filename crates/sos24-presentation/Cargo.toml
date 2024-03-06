@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+sos24-infrastructure = { path = "../sos24-infrastructure" }
+sos24-use-case = { path = "../sos24-use-case" }
+anyhow.workspace = true
 axum.workspace = true
 dotenvy.workspace = true
 tokio.workspace = true
