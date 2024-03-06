@@ -1,0 +1,4 @@
+[package]
+name = "sos24-domain"
+version.workspace = true
+edition.workspace = true

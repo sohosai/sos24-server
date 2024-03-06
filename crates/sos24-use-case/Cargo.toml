@@ -1,0 +1,4 @@
+[package]
+name = "sos24-use-case"
+version.workspace = true
+edition.workspace = true

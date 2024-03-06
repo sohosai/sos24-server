@@ -1,0 +1,4 @@
+[package]
+name = "sos24-infrastructure"
+version.workspace = true
+edition.workspace = true
