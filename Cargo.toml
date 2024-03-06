@@ -34,10 +34,8 @@ sqlx = { version = "0.7.3", features = [
 ] }
 thiserror = "1.0.56"
 tokio = { version = "1.35.1", features = ["full"] }
-tower-http = { version = "0.5.1", features = ["cors"] }
+tower = { version = "0.4.13", features = ["util"] }
+tower-http = { version = "0.5.1", features = ["cors", "trace"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 uuid = { version = "1.7.0", features = ["v4", "serde"] }
-
-[workspace.dev-dependencies]
-tower = { version = "0.4.13", features = ["util"] }
