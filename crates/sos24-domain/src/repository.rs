@@ -1,7 +1,7 @@
 pub mod news;
 
 pub trait Repositories {
-    type NewsRepositoryImpl: NewsRepository;
+    type NewsRepositoryImpl: news::NewsRepository;
 
     fn news_repository(&self) -> &Self::NewsRepositoryImpl;
 }
