@@ -2,3 +2,7 @@
 name = "sos24-domain"
 version.workspace = true
 edition.workspace = true
+
+[dependencies]
+chrono.workspace = true
+uuid.workspace = true
