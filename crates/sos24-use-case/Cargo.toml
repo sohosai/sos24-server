@@ -2,3 +2,8 @@
 name = "sos24-use-case"
 version.workspace = true
 edition.workspace = true
+
+[dependencies]
+sos24-domain = { path = "../sos24-domain" }
+chrono.workspace = true
+uuid.workspace = true

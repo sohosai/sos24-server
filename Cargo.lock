@@ -1438,6 +1438,11 @@ dependencies = [
 [[package]]
 name = "sos24-use-case"
 version = "0.1.0"
+dependencies = [
+ "chrono",
+ "sos24-domain",
+ "uuid",
+]
 
 [[package]]
 name = "spin"
