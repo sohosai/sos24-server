@@ -177,55 +177,102 @@ paths:
           description: 成功時のレスポンス
   /news:
     get:
-      summary: ニュース一覧の取得 (user)
-      operationId: getNews
+      summary: ニュース一覧の取得
       tags:
         - news
       responses:
-        '200':
-          description: 成功時のレスポンス
-  /news/{news_id}:
+        200:
+          description: ニュース一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/News'
+        500:
+          description: Internal server error
+    post:
+      summary: 新規ニュース作成
+      tags:
+        - news
+        - committee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNews'
+      responses:
+        201:
+          description: News article created
+        500:
+          description: Internal server error
+
+  /news/{id}:
     get:
-      summary: 特定のニュースの取得 (user)
-      operationId: getNewsById
+      summary: 特定のIDのニュースの取得
       tags:
         - news
       parameters:
-        - name: news_id
+        - name: id
           in: path
-          schema: {type: string}
           required: true
+          schema:
+            type: string
       responses:
-        '200':
-          description: 成功時のレスポンス
+        200:
+          description: News article found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/News'
+        404:
+          description: News article not found
+        500:
+          description: Internal server error
     put:
-      summary: 特定のニュースの更新 
-      operationId: updateNewsById
+      summary: 特定のIDのニュースの更新
       tags:
         - news
         - committee
       parameters:
-        - name: news_id
+        - name: id
           in: path
-          schema: {type: string}
           required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNews'
       responses:
-        '200':
-          description: 成功時のレスポンス
+        200:
+          description: News article updated
+        404:
+          description: News article not found
+        500:
+          description: Internal server error
     delete:
-      summary: 特定のニュースの削除 (committee)
-      operationId: deleteNewsById
+      summary: 特定のIDのニュースの削除
       tags:
         - news
         - committee
       parameters:
-        - name: news_id
+        - name: id
           in: path
-          schema: {type: string}
           required: true
+          schema:
+            type: string
       responses:
-        '200':
-          description: 成功時のレスポンス
+        200:
+          description: News article deleted
+        404:
+          description: News article not found
+        500:
+          description: Internal server error
+
   /news/news_attachments:
     post:
       summary: ニュースの添付ファイルの作成 (committee)
@@ -388,3 +435,44 @@ components:
      name: Firebase Token
      in: header
      description: Firebaseのトークン
+  schemas:
+    News:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        categories:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+    CreateNews:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        categories:
+          type: integer
+    UpdateNews:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        categories:
+          type: integer
+
