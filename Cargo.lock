@@ -1431,6 +1431,8 @@ dependencies = [
  "anyhow",
  "axum",
  "dotenvy",
+ "serde",
+ "serde_json",
  "sos24-infrastructure",
  "sos24-use-case",
  "tokio",
