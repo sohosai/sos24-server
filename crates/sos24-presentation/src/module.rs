@@ -2,6 +2,7 @@
 
 use std::sync::Arc;
 
+use crate::config::Config;
 use sos24_use_case::interactor::{news::NewsUseCase, user::UserUseCase};
 
 #[cfg(not(test))]
@@ -15,11 +16,16 @@ use sos24_domain::test::MockRepositories;
 pub type Repositories = MockRepositories;
 
 pub struct Modules {
+    config: Config,
     news_use_case: NewsUseCase<Repositories>,
     user_use_case: UserUseCase<Repositories>,
 }
 
 impl Modules {
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
+
     pub fn news_use_case(&self) -> &NewsUseCase<Repositories> {
         &self.news_use_case
     }
@@ -30,7 +36,7 @@ impl Modules {
 }
 
 #[cfg(not(test))]
-pub async fn new() -> anyhow::Result<Modules> {
+pub async fn new(config: Config) -> anyhow::Result<Modules> {
     use crate::env;
     use sos24_infrastructure::{firebase::FirebaseAuth, postgresql::Postgresql};
 
@@ -38,6 +44,7 @@ pub async fn new() -> anyhow::Result<Modules> {
     let auth = FirebaseAuth::new(&env::firebase_service_account_key()).await?;
     let repository = Arc::new(DefaultRepositories::new(db, auth));
     Ok(Modules {
+        config,
         news_use_case: NewsUseCase::new(Arc::clone(&repository)),
         user_use_case: UserUseCase::new(Arc::clone(&repository)),
     })
@@ -47,6 +54,7 @@ pub async fn new() -> anyhow::Result<Modules> {
 pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules> {
     let repositories = Arc::new(repositories);
     Ok(Modules {
+        config: Config::default(),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories)),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })

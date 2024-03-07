@@ -26,3 +26,7 @@ pub fn firebase_service_account_key() -> String {
     env::var("FIREBASE_SERVICE_ACCOUNT_KEY")
         .expect("Env `FIREBASE_SERVICE_ACCOUNT_KEY` must be set")
 }
+
+pub fn firebase_project_id() -> String {
+    env::var("FIREBASE_PROJECT_ID").expect("Env `FIREBASE_PROJECT_ID` must be set")
+}
