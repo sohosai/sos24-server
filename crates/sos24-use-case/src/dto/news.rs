@@ -1,4 +1,7 @@
-use sos24_domain::entity::news::{News, NewsBody, NewsCategories, NewsId, NewsTitle};
+use sos24_domain::entity::{
+    common::date::WithDate,
+    news::{News, NewsBody, NewsCategories, NewsId, NewsTitle},
+};
 
 #[derive(Debug)]
 pub struct CreateNewsDto {
@@ -24,9 +27,6 @@ impl From<CreateNewsDto> for News {
             NewsTitle::new(news.title),
             NewsBody::new(news.body),
             NewsCategories::new(news.categories),
-            chrono::Utc::now(),
-            chrono::Utc::now(),
-            None,
         )
     }
 }
@@ -61,16 +61,16 @@ pub struct NewsDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl From<News> for NewsDto {
-    fn from(value: News) -> Self {
+impl From<WithDate<News>> for NewsDto {
+    fn from(news: WithDate<News>) -> Self {
         Self {
-            id: value.id.value().to_string(),
-            title: value.title.value(),
-            body: value.body.value(),
-            categories: value.categories.value(),
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-            deleted_at: value.deleted_at,
+            id: news.value.id.value().to_string(),
+            title: news.value.title.value(),
+            body: news.value.body.value(),
+            categories: news.value.categories.value(),
+            created_at: news.created_at,
+            updated_at: news.updated_at,
+            deleted_at: news.deleted_at,
         }
     }
 }

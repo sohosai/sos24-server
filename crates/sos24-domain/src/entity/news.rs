@@ -4,29 +4,15 @@ pub struct News {
     pub title: NewsTitle,
     pub body: NewsBody,
     pub categories: NewsCategories,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl News {
-    pub fn new(
-        id: NewsId,
-        title: NewsTitle,
-        body: NewsBody,
-        categories: NewsCategories,
-        created_at: chrono::DateTime<chrono::Utc>,
-        updated_at: chrono::DateTime<chrono::Utc>,
-        deleted_at: Option<chrono::DateTime<chrono::Utc>>,
-    ) -> Self {
+    pub fn new(id: NewsId, title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
         Self {
             id,
             title,
             body,
             categories,
-            created_at,
-            updated_at,
-            deleted_at,
         }
     }
 }

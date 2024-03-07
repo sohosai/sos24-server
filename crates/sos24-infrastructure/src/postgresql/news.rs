@@ -1,5 +1,6 @@
 use anyhow::Context;
 use futures_util::{StreamExt, TryStreamExt};
+use sos24_domain::entity::common::date::WithDate;
 use sqlx::prelude::*;
 
 use sos24_domain::entity::news::{News, NewsBody, NewsCategories, NewsId, NewsTitle};
@@ -18,13 +19,15 @@ pub struct NewsRow {
     deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl From<NewsRow> for News {
+impl From<NewsRow> for WithDate<News> {
     fn from(value: NewsRow) -> Self {
-        News::new(
-            NewsId::new(value.id),
-            NewsTitle::new(value.title),
-            NewsBody::new(value.body),
-            NewsCategories::new(value.categories),
+        WithDate::new(
+            News::new(
+                NewsId::new(value.id),
+                NewsTitle::new(value.title),
+                NewsBody::new(value.body),
+                NewsCategories::new(value.categories),
+            ),
             value.created_at,
             value.updated_at,
             value.deleted_at,
@@ -43,10 +46,10 @@ impl PgNewsRepository {
 }
 
 impl NewsRepository for PgNewsRepository {
-    async fn list(&self) -> anyhow::Result<Vec<News>> {
+    async fn list(&self) -> anyhow::Result<Vec<WithDate<News>>> {
         let news_list = sqlx::query_as!(NewsRow, r#"SELECT * FROM news WHERE deleted_at IS NULL"#)
             .fetch(&*self.db)
-            .map(|row| Ok::<_, anyhow::Error>(News::from(row?)))
+            .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
             .try_collect()
             .await
             .context("Failed to fetch news list")?;
@@ -55,13 +58,11 @@ impl NewsRepository for PgNewsRepository {
 
     async fn create(&self, news: News) -> anyhow::Result<()> {
         sqlx::query!(
-            r#"INSERT INTO news (id, title, body, categories, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)"#,
+            r#"INSERT INTO news (id, title, body, categories) VALUES ($1, $2, $3, $4)"#,
             news.id.value(),
             news.title.value(),
             news.body.value(),
             news.categories.value(),
-            news.created_at,
-            news.updated_at,
         )
         .execute(&*self.db)
         .await
@@ -69,7 +70,7 @@ impl NewsRepository for PgNewsRepository {
         Ok(())
     }
 
-    async fn find_by_id(&self, id: NewsId) -> anyhow::Result<Option<News>> {
+    async fn find_by_id(&self, id: NewsId) -> anyhow::Result<Option<WithDate<News>>> {
         let news_row = sqlx::query_as!(
             NewsRow,
             r#"SELECT * FROM news WHERE id = $1 AND deleted_at IS NULL"#,
@@ -80,13 +81,13 @@ impl NewsRepository for PgNewsRepository {
         .context("Failed to fetch news")?;
 
         news_row
-            .map(|row| Ok::<_, anyhow::Error>(News::from(row)))
+            .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row)))
             .transpose()
     }
 
     async fn update(&self, news: News) -> anyhow::Result<()> {
         sqlx::query!(
-            r#"UPDATE news SET title = $2, body = $3, categories = $4, updated_at = NOW() WHERE id = $1 and deleted_at IS NULL"#,
+            r#"UPDATE news SET title = $2, body = $3, categories = $4 WHERE id = $1 and deleted_at IS NULL"#,
             news.id.value(),
             news.title.value(),
             news.body.value(),

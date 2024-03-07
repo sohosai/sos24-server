@@ -79,11 +79,10 @@ impl<R: Repositories> NewsUseCase<R> {
             .context("Failed to find news")?
             .ok_or(UseCaseError::UseCase(NewsError::NotFound(id)))?;
 
-        let mut new_news = news;
+        let mut new_news = news.value;
         new_news.title = NewsTitle::new(news_data.title);
         new_news.body = NewsBody::new(news_data.body);
         new_news.categories = NewsCategories::new(news_data.categories);
-        new_news.updated_at = chrono::Utc::now();
 
         self.repositories
             .news_repository()
