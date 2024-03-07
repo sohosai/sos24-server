@@ -1,16 +1,25 @@
+use getset::{Getters, Setters};
+
 use crate::impl_value_object;
 
 use super::common::email::{Email, EmailError};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct User {
-    pub id: UserId,
-    pub name: UserName,
-    pub kana_name: UserKanaName,
-    pub email: UserEmail,
-    pub phone_number: UserPhoneNumber,
-    pub role: UserRole,
-    pub category: UserCategory,
+    #[getset(get = "pub")]
+    id: UserId,
+    #[getset(get = "pub", set = "pub")]
+    name: UserName,
+    #[getset(get = "pub", set = "pub")]
+    kana_name: UserKanaName,
+    #[getset(get = "pub", set = "pub")]
+    email: UserEmail,
+    #[getset(get = "pub", set = "pub")]
+    phone_number: UserPhoneNumber,
+    #[getset(get = "pub", set = "pub")]
+    role: UserRole,
+    #[getset(get = "pub", set = "pub")]
+    category: UserCategory,
 }
 
 impl User {
