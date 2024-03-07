@@ -14,6 +14,19 @@ impl NewFirebaseUser {
     pub fn new(email: FirebaseUserEmail, password: FirebaseUserPassword) -> Self {
         Self { email, password }
     }
+
+    pub fn destruct(self) -> DestructedNewFirebaseUser {
+        DestructedNewFirebaseUser {
+            email: self.email,
+            password: self.password,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DestructedNewFirebaseUser {
+    pub email: FirebaseUserEmail,
+    pub password: FirebaseUserPassword,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

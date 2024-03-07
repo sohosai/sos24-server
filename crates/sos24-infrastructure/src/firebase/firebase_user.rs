@@ -18,6 +18,7 @@ impl FirebaseUserRepositoryImpl {
 
 impl FirebaseUserRepository for FirebaseUserRepositoryImpl {
     async fn create(&self, new_firebase_user: NewFirebaseUser) -> anyhow::Result<FirebaseUserId> {
+        let new_firebase_user = new_firebase_user.destruct();
         let created_user = self
             .auth
             .create_user(NewUser::email_and_password(
