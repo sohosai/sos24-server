@@ -1,13 +1,8 @@
 use thiserror::Error;
 
-#[derive(Debug)]
-pub struct Email(String);
+use crate::impl_value_object_without_new;
 
-impl Email {
-    pub fn value(self) -> String {
-        self.0
-    }
-}
+impl_value_object_without_new!(Email(String));
 
 #[derive(Debug, Error)]
 pub enum EmailError {

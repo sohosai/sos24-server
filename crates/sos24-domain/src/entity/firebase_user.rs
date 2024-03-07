@@ -1,19 +1,10 @@
+use crate::impl_value_object;
+
 use super::common::email::{Email, EmailError};
 
-#[derive(Debug, Clone)]
-pub struct FirebaseUserId(String);
+impl_value_object!(FirebaseUserId(String));
 
-impl FirebaseUserId {
-    pub fn new(uid: String) -> Self {
-        Self(uid)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NewFirebaseUser {
     pub email: FirebaseUserEmail,
     pub password: FirebaseUserPassword,
@@ -25,7 +16,7 @@ impl NewFirebaseUser {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FirebaseUserEmail(Email);
 
 impl FirebaseUserEmail {
@@ -42,15 +33,4 @@ impl TryFrom<String> for FirebaseUserEmail {
     }
 }
 
-#[derive(Debug)]
-pub struct FirebaseUserPassword(String);
-
-impl FirebaseUserPassword {
-    pub fn new(password: String) -> Self {
-        Self(password)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
+impl_value_object!(FirebaseUserPassword(String));

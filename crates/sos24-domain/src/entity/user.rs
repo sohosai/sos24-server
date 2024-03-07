@@ -1,6 +1,8 @@
+use crate::impl_value_object;
+
 use super::common::email::{Email, EmailError};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct User {
     pub id: UserId,
 
@@ -34,60 +36,12 @@ impl User {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct UserId(String);
+impl_value_object!(UserId(String));
+impl_value_object!(UserName(String));
+impl_value_object!(UserKanaName(String));
+impl_value_object!(UserPhoneNumber(String)); // ガバガバだが、電話番号が弾かれる事によってjsysの作業が増えることを鑑みて許容する
 
-impl UserId {
-    pub fn new(id: String) -> Self {
-        Self(id)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
-pub struct UserName(String);
-
-impl UserName {
-    pub fn new(name: String) -> Self {
-        Self(name)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
-pub struct UserKanaName(String);
-
-impl UserKanaName {
-    pub fn new(kana_name: String) -> Self {
-        Self(kana_name)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
-pub struct UserPhoneNumber(String);
-
-impl UserPhoneNumber {
-    // ガバガバだが、電話番号が弾かれる事によってjsysの作業が増えることを鑑みて許容する
-    pub fn new(phone_number: String) -> Self {
-        Self(phone_number)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UserRole {
     Administrator,
     CommitteeOperator,
@@ -95,14 +49,14 @@ pub enum UserRole {
     General,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UserCategory {
     UndergraduateStudent,
     GraduateStudent,
     AcademicStaff,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UserEmail(Email);
 
 impl UserEmail {
