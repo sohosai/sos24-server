@@ -91,6 +91,9 @@ impl FromEntity for UserDto {
 
 #[derive(Debug)]
 pub enum UserRoleDto {
+    Administrator,
+    CommitteeOperator,
+    Committee,
     General,
 }
 
@@ -99,6 +102,9 @@ impl ToEntity for UserRoleDto {
     type Error = Infallible;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(match self {
+            UserRoleDto::Administrator => UserRole::Administrator,
+            UserRoleDto::CommitteeOperator => UserRole::CommitteeOperator,
+            UserRoleDto::Committee => UserRole::Committee,
             UserRoleDto::General => UserRole::General,
         })
     }
@@ -108,6 +114,9 @@ impl FromEntity for UserRoleDto {
     type Entity = UserRole;
     fn from_entity(entity: Self::Entity) -> Self {
         match entity {
+            UserRole::Administrator => UserRoleDto::Administrator,
+            UserRole::CommitteeOperator => UserRoleDto::CommitteeOperator,
+            UserRole::Committee => UserRoleDto::Committee,
             UserRole::General => UserRoleDto::General,
         }
     }

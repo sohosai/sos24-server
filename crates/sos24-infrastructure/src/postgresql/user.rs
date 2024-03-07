@@ -53,12 +53,18 @@ impl TryFrom<UserRow> for WithDate<User> {
 #[derive(Type)]
 #[sqlx(type_name = "user_role", rename_all = "snake_case")]
 pub enum UserRoleRow {
+    Administrator,
+    CommitteeOperator,
+    Committee,
     General,
 }
 
 impl From<UserRoleRow> for UserRole {
     fn from(value: UserRoleRow) -> Self {
         match value {
+            UserRoleRow::Administrator => UserRole::Administrator,
+            UserRoleRow::CommitteeOperator => UserRole::CommitteeOperator,
+            UserRoleRow::Committee => UserRole::Committee,
             UserRoleRow::General => UserRole::General,
         }
     }
@@ -67,6 +73,9 @@ impl From<UserRoleRow> for UserRole {
 impl From<UserRole> for UserRoleRow {
     fn from(value: UserRole) -> Self {
         match value {
+            UserRole::Administrator => UserRoleRow::Administrator,
+            UserRole::CommitteeOperator => UserRoleRow::CommitteeOperator,
+            UserRole::Committee => UserRoleRow::Committee,
             UserRole::General => UserRoleRow::General,
         }
     }
