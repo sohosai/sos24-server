@@ -2,7 +2,7 @@ pub mod firebase_user;
 pub mod news;
 pub mod user;
 
-pub trait Repositories {
+pub trait Repositories: Send + Sync + 'static {
     type FirebaseUserRepositoryImpl: firebase_user::FirebaseUserRepository;
     type NewsRepositoryImpl: news::NewsRepository;
     type UserRepositoryImpl: user::UserRepository;
