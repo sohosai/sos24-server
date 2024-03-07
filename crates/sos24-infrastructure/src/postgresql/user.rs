@@ -1,4 +1,5 @@
 use anyhow::Context;
+use futures_util::{StreamExt, TryStreamExt};
 use sos24_domain::{
     entity::{
         common::date::WithDate,
@@ -53,12 +54,18 @@ impl TryFrom<UserRow> for WithDate<User> {
 #[derive(Type)]
 #[sqlx(type_name = "user_role", rename_all = "snake_case")]
 pub enum UserRoleRow {
+    Administrator,
+    CommitteeOperator,
+    Committee,
     General,
 }
 
 impl From<UserRoleRow> for UserRole {
     fn from(value: UserRoleRow) -> Self {
         match value {
+            UserRoleRow::Administrator => UserRole::Administrator,
+            UserRoleRow::CommitteeOperator => UserRole::CommitteeOperator,
+            UserRoleRow::Committee => UserRole::Committee,
             UserRoleRow::General => UserRole::General,
         }
     }
@@ -67,6 +74,9 @@ impl From<UserRoleRow> for UserRole {
 impl From<UserRole> for UserRoleRow {
     fn from(value: UserRole) -> Self {
         match value {
+            UserRole::Administrator => UserRoleRow::Administrator,
+            UserRole::CommitteeOperator => UserRoleRow::CommitteeOperator,
+            UserRole::Committee => UserRoleRow::Committee,
             UserRole::General => UserRoleRow::General,
         }
     }
@@ -112,6 +122,16 @@ impl PgUserRepository {
 }
 
 impl UserRepository for PgUserRepository {
+    async fn list(&self) -> anyhow::Result<Vec<WithDate<User>>> {
+        let user_list = sqlx::query_as!(UserRow, r#"SELECT id, name, kana_name, email, phone_number, category AS "category: UserCategoryRow", role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE deleted_at IS NULL"#)
+            .fetch(&*self.db)
+            .map(|row| WithDate::try_from(row?))
+            .try_collect()
+            .await
+            .context("Failed to fetch user list")?;
+        Ok(user_list)
+    }
+
     async fn create(&self, user: User) -> anyhow::Result<()> {
         sqlx::query!(
           r#"INSERT INTO users (id, name, kana_name, email, phone_number, category) VALUES ($1, $2, $3, $4, $5, $6)"#,
@@ -140,5 +160,33 @@ impl UserRepository for PgUserRepository {
         .context("Failed to fetch user by id")?;
 
         user_row.map(WithDate::try_from).transpose()
+    }
+
+    async fn update(&self, user: User) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"UPDATE users SET name = $2, kana_name = $3, email = $4, phone_number = $5, category = $6, role = $7 WHERE id = $1 AND deleted_at IS NULL"#,
+            user.id.value(),
+            user.name.value(),
+            user.kana_name.value(),
+            user.email.value(),
+            user.phone_number.value(),
+            UserCategoryRow::from(user.category) as UserCategoryRow,
+            UserRoleRow::from(user.role) as UserRoleRow,
+        )
+        .execute(&*self.db)
+        .await
+        .context("Failed to update user")?;
+        Ok(())
+    }
+
+    async fn delete_by_id(&self, id: UserId) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"UPDATE users SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
+            id.value(),
+        )
+        .execute(&*self.db)
+        .await
+        .context("Failed to delete user")?;
+        Ok(())
     }
 }

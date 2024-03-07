@@ -89,6 +89,9 @@ impl UserPhoneNumber {
 
 #[derive(Debug)]
 pub enum UserRole {
+    Administrator,
+    CommitteeOperator,
+    Committee,
     General,
 }
 

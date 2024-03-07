@@ -58,6 +58,39 @@ impl ToEntity for (String, CreateUserDto) {
 }
 
 #[derive(Debug)]
+pub struct UpdateUserDto {
+    pub id: String,
+    pub name: String,
+    pub kana_name: String,
+    pub email: String,
+    pub phone_number: String,
+    pub role: UserRoleDto,
+    pub category: UserCategoryDto,
+}
+
+impl UpdateUserDto {
+    pub fn new(
+        id: String,
+        name: String,
+        kana_name: String,
+        email: String,
+        phone_number: String,
+        role: UserRoleDto,
+        category: UserCategoryDto,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            kana_name,
+            email,
+            phone_number,
+            role,
+            category,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct UserDto {
     pub id: String,
     pub name: String,
@@ -91,6 +124,9 @@ impl FromEntity for UserDto {
 
 #[derive(Debug)]
 pub enum UserRoleDto {
+    Administrator,
+    CommitteeOperator,
+    Committee,
     General,
 }
 
@@ -99,6 +135,9 @@ impl ToEntity for UserRoleDto {
     type Error = Infallible;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(match self {
+            UserRoleDto::Administrator => UserRole::Administrator,
+            UserRoleDto::CommitteeOperator => UserRole::CommitteeOperator,
+            UserRoleDto::Committee => UserRole::Committee,
             UserRoleDto::General => UserRole::General,
         })
     }
@@ -108,6 +147,9 @@ impl FromEntity for UserRoleDto {
     type Entity = UserRole;
     fn from_entity(entity: Self::Entity) -> Self {
         match entity {
+            UserRole::Administrator => UserRoleDto::Administrator,
+            UserRole::CommitteeOperator => UserRoleDto::CommitteeOperator,
+            UserRole::Committee => UserRoleDto::Committee,
             UserRole::General => UserRoleDto::General,
         }
     }
