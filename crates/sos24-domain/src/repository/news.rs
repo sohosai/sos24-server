@@ -1,8 +1,11 @@
+use mockall::automock;
+
 use crate::entity::{
     common::date::WithDate,
     news::{News, NewsId},
 };
 
+#[automock]
 pub trait NewsRepository: Send + Sync + 'static {
     async fn list(&self) -> anyhow::Result<Vec<WithDate<News>>>;
 
