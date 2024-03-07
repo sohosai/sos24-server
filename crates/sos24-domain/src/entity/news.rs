@@ -11,7 +11,16 @@ pub struct News {
 }
 
 impl News {
-    pub fn new(title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
+    pub fn new(id: NewsId, title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
+        Self {
+            id,
+            title,
+            body,
+            categories,
+        }
+    }
+
+    pub fn create(title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
         Self {
             id: NewsId::new(uuid::Uuid::new_v4()),
             title,
@@ -19,6 +28,23 @@ impl News {
             categories,
         }
     }
+
+    pub fn destruct(self) -> DestructedNews {
+        DestructedNews {
+            id: self.id,
+            title: self.title,
+            body: self.body,
+            categories: self.categories,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DestructedNews {
+    pub id: NewsId,
+    pub title: NewsTitle,
+    pub body: NewsBody,
+    pub categories: NewsCategories,
 }
 
 impl_value_object!(NewsId(uuid::Uuid));
