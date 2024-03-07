@@ -2089,6 +2089,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "sos24-domain",
  "sos24-infrastructure",
  "sos24-use-case",
  "tokio",
