@@ -56,7 +56,7 @@ pub(crate) async fn jwt_auth(
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
     let _ = modules
         .user_use_case()
-        .find_by_id(&token.claims.sub)
+        .find_by_id(token.claims.sub.clone())
         .await
         .map_err(|_| StatusCode::UNAUTHORIZED)?;
     request.extensions_mut().insert(token);

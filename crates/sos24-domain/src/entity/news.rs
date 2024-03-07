@@ -38,14 +38,6 @@ pub enum NewsIdError {
     InvalidUuid,
 }
 
-impl TryFrom<&str> for NewsId {
-    type Error = NewsIdError;
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let uuid = uuid::Uuid::parse_str(value).map_err(|_| NewsIdError::InvalidUuid)?;
-        Ok(Self(uuid))
-    }
-}
-
 impl TryFrom<String> for NewsId {
     type Error = NewsIdError;
     fn try_from(value: String) -> Result<Self, Self::Error> {

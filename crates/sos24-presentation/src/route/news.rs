@@ -54,7 +54,7 @@ pub async fn handle_get_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_news = modules.news_use_case().find_by_id(&id).await;
+    let raw_news = modules.news_use_case().find_by_id(id).await;
     match raw_news {
         Ok(raw_news) => Ok((StatusCode::OK, Json(News::from(raw_news)))),
         Err(err) => {
@@ -68,7 +68,7 @@ pub async fn handle_delete_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
 ) -> impl IntoResponse {
-    let res = modules.news_use_case().delete_by_id(&id).await;
+    let res = modules.news_use_case().delete_by_id(id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete news: {:?}", err);
         err.status_code()
