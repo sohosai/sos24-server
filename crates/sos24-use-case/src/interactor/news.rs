@@ -82,9 +82,9 @@ impl<R: Repositories> NewsUseCase<R> {
             .ok_or(UseCaseError::UseCase(NewsError::NotFound(id)))?;
 
         let mut new_news = news.value;
-        new_news.title = NewsTitle::new(news_data.title);
-        new_news.body = NewsBody::new(news_data.body);
-        new_news.categories = NewsCategories::new(news_data.categories);
+        new_news.set_title(NewsTitle::new(news_data.title));
+        new_news.set_body(NewsBody::new(news_data.body));
+        new_news.set_categories(NewsCategories::new(news_data.categories));
 
         self.repositories
             .news_repository()

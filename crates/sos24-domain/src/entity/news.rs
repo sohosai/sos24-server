@@ -1,13 +1,18 @@
+use getset::{Getters, Setters};
 use thiserror::Error;
 
 use crate::impl_value_object;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct News {
-    pub id: NewsId,
-    pub title: NewsTitle,
-    pub body: NewsBody,
-    pub categories: NewsCategories,
+    #[getset(get = "pub")]
+    id: NewsId,
+    #[getset(get = "pub", set = "pub")]
+    title: NewsTitle,
+    #[getset(get = "pub", set = "pub")]
+    body: NewsBody,
+    #[getset(get = "pub", set = "pub")]
+    categories: NewsCategories,
 }
 
 impl News {
