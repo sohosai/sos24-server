@@ -29,7 +29,12 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:news_id", delete(news::handle_delete_id))
         .route("/:news_id", put(news::handle_put_id));
 
-    let user = Router::new().route("/", post(user::handle_post));
+    let user = Router::new()
+        .route("/", get(user::handle_get))
+        .route("/", get(user::handle_post))
+        .route("/:user_id", get(user::handle_get_id))
+        .route("/:user_id", delete(user::handle_delete_id))
+        .route("/:user_id", put(user::handle_put_id));
 
     let public_routes = Router::new().route("/health", get(health::handle_get));
 
