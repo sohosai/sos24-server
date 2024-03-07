@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use mockall::automock;
 
 use crate::entity::{
@@ -7,7 +9,10 @@ use crate::entity::{
 
 #[automock]
 pub trait UserRepository: Send + Sync + 'static {
-    async fn create(&self, user: User) -> anyhow::Result<()>;
+    fn create(&self, user: User) -> impl Future<Output = anyhow::Result<()>> + Send;
 
-    async fn find_by_id(&self, id: UserId) -> anyhow::Result<Option<WithDate<User>>>;
+    fn find_by_id(
+        &self,
+        id: UserId,
+    ) -> impl Future<Output = anyhow::Result<Option<WithDate<User>>>> + Send;
 }

@@ -27,7 +27,7 @@ pub async fn handle_post(
     let user = CreateUserDto::from(raw_user);
     let res = modules.user_use_case().create(user).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create user: {:?}", err);
+        tracing::error!("Failed to create user: {err}");
         err.status_code()
     })
 }

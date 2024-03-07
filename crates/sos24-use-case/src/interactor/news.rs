@@ -54,7 +54,7 @@ impl<R: Repositories> NewsUseCase<R> {
         Ok(())
     }
 
-    pub async fn find_by_id(&self, id: &str) -> Result<NewsDto, NewsError> {
+    pub async fn find_by_id(&self, id: String) -> Result<NewsDto, NewsError> {
         // TODO: 権限チェック
         let id: NewsId = id.try_into()?;
         let raw_news = self
@@ -95,7 +95,7 @@ impl<R: Repositories> NewsUseCase<R> {
         Ok(())
     }
 
-    pub async fn delete_by_id(&self, id: &str) -> Result<(), NewsError> {
+    pub async fn delete_by_id(&self, id: String) -> Result<(), NewsError> {
         // TODO: 権限チェック
         let id: NewsId = id.try_into().context("Failed to parse news id")?;
 

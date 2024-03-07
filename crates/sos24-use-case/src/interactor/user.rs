@@ -51,9 +51,9 @@ impl<R: Repositories> UserUseCase<R> {
         Ok(())
     }
 
-    pub async fn find_by_id(&self, id: &str) -> Result<UserDto, UserError> {
+    pub async fn find_by_id(&self, id: String) -> Result<UserDto, UserError> {
         // TODO: 権限チェック
-        let id = UserId::new(id.to_string());
+        let id = UserId::new(id);
         let raw_user = self
             .repositories
             .user_repository()

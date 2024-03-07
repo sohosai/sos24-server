@@ -5,7 +5,7 @@ use super::UseCaseError;
 
 #[derive(Debug, Error)]
 pub enum NewsError {
-    #[error("News(id = {0:?}) not found")]
+    #[error("News not found: {0:?}")]
     NotFound(NewsId),
     #[error(transparent)]
     InvalidNewsId(NewsIdError),

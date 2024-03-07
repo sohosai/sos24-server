@@ -1,7 +1,7 @@
-use axum::response::IntoResponse;
+use axum::{http::StatusCode, response::IntoResponse};
 
-pub async fn handle_get() -> impl IntoResponse {
-    "OK"
+pub async fn handle_get() -> Result<impl IntoResponse, StatusCode> {
+    Ok("OK")
 }
 
 #[cfg(test)]
