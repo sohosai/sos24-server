@@ -10,7 +10,6 @@ use super::ToEntity;
 
 #[derive(Debug)]
 pub struct CreateUserDto {
-    pub id: String,
     pub name: String,
     pub kana_name: String,
     pub email: String,
@@ -21,7 +20,6 @@ pub struct CreateUserDto {
 
 impl CreateUserDto {
     pub fn new(
-        id: String,
         name: String,
         kana_name: String,
         email: String,
@@ -30,7 +28,6 @@ impl CreateUserDto {
         category: UserCategoryDto,
     ) -> Self {
         Self {
-            id,
             name,
             kana_name,
             email,
@@ -41,17 +38,18 @@ impl CreateUserDto {
     }
 }
 
-impl ToEntity for CreateUserDto {
+impl ToEntity for (String, CreateUserDto) {
     type Entity = User;
     type Error = UserError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        let (id, user) = self;
         Ok(User::new_general(
-            UserId::new(self.id),
-            UserName::new(self.name),
-            UserKanaName::new(self.kana_name),
-            UserEmail::try_from(self.email)?,
-            UserPhoneNumber::new(self.phone_number),
-            self.category.into_entity()?,
+            UserId::new(id),
+            UserName::new(user.name),
+            UserKanaName::new(user.kana_name),
+            UserEmail::try_from(user.email)?,
+            UserPhoneNumber::new(user.phone_number),
+            user.category.into_entity()?,
         ))
     }
 }
