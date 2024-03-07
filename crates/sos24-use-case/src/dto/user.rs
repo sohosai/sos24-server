@@ -1,12 +1,15 @@
 use std::convert::Infallible;
 
-use sos24_domain::entity::user::{
-    User, UserCategory, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
+use sos24_domain::entity::{
+    common::date::WithDate,
+    user::{
+        User, UserCategory, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
+    },
 };
 
 use crate::error::{user::UserError, Result};
 
-use super::ToEntity;
+use super::{FromEntity, ToEntity};
 
 #[derive(Debug)]
 pub struct CreateUserDto {
@@ -55,6 +58,38 @@ impl ToEntity for (String, CreateUserDto) {
 }
 
 #[derive(Debug)]
+pub struct UserDto {
+    pub id: String,
+    pub name: String,
+    pub kana_name: String,
+    pub email: String,
+    pub phone_number: String,
+    pub role: UserRoleDto,
+    pub category: UserCategoryDto,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl FromEntity for UserDto {
+    type Entity = WithDate<User>;
+    fn from_entity(entity: Self::Entity) -> Self {
+        Self {
+            id: entity.value.id.value(),
+            name: entity.value.name.value(),
+            kana_name: entity.value.kana_name.value(),
+            email: entity.value.email.value(),
+            phone_number: entity.value.phone_number.value(),
+            role: UserRoleDto::from_entity(entity.value.role),
+            category: UserCategoryDto::from_entity(entity.value.category),
+            created_at: entity.created_at,
+            updated_at: entity.updated_at,
+            deleted_at: entity.deleted_at,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum UserRoleDto {
     General,
 }
@@ -66,6 +101,15 @@ impl ToEntity for UserRoleDto {
         Ok(match self {
             UserRoleDto::General => UserRole::General,
         })
+    }
+}
+
+impl FromEntity for UserRoleDto {
+    type Entity = UserRole;
+    fn from_entity(entity: Self::Entity) -> Self {
+        match entity {
+            UserRole::General => UserRoleDto::General,
+        }
     }
 }
 
@@ -85,5 +129,16 @@ impl ToEntity for UserCategoryDto {
             UserCategoryDto::GraduateStudent => UserCategory::GraduateStudent,
             UserCategoryDto::AcademicStaff => UserCategory::AcademicStaff,
         })
+    }
+}
+
+impl FromEntity for UserCategoryDto {
+    type Entity = UserCategory;
+    fn from_entity(entity: Self::Entity) -> Self {
+        match entity {
+            UserCategory::UndergraduateStudent => UserCategoryDto::UndergraduateStudent,
+            UserCategory::GraduateStudent => UserCategoryDto::GraduateStudent,
+            UserCategory::AcademicStaff => UserCategoryDto::AcademicStaff,
+        }
     }
 }

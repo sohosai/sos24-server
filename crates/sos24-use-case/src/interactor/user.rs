@@ -1,12 +1,16 @@
 use std::sync::Arc;
 
+use anyhow::Context;
 use sos24_domain::entity::firebase_user::{
     FirebaseUserEmail, FirebaseUserPassword, NewFirebaseUser,
 };
+use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
-use crate::error::Result;
+use crate::dto::user::UserDto;
+use crate::dto::FromEntity;
+use crate::error::{Result, UseCaseError};
 use crate::{
     dto::{user::CreateUserDto, ToEntity},
     error::user::UserError,
@@ -45,5 +49,21 @@ impl<R: Repositories> UserUseCase<R> {
         };
 
         Ok(())
+    }
+
+    pub async fn find_by_id(&self, id: &str) -> Result<UserDto, UserError> {
+        // TODO: 権限チェック
+        let id = UserId::new(id.to_string());
+        let raw_user = self
+            .repositories
+            .user_repository()
+            .find_by_id(id.clone())
+            .await
+            .context("Failed to find user")?;
+
+        match raw_user {
+            Some(raw_user) => Ok(UserDto::from_entity(raw_user)),
+            None => Err(UseCaseError::UseCase(UserError::NotFound(id))),
+        }
     }
 }

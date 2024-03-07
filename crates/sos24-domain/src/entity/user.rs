@@ -34,7 +34,7 @@ impl User {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UserId(String);
 
 impl UserId {
@@ -89,9 +89,6 @@ impl UserPhoneNumber {
 
 #[derive(Debug)]
 pub enum UserRole {
-    Administrator,
-    ComitteeOperator,
-    Committee,
     General,
 }
 

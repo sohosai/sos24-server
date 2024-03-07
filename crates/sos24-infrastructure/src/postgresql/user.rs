@@ -1,7 +1,11 @@
 use anyhow::Context;
 use sos24_domain::{
-    entity::user::{
-        User, UserCategory, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
+    entity::{
+        common::date::WithDate,
+        user::{
+            User, UserCategory, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber,
+            UserRole,
+        },
     },
     repository::user::UserRepository,
 };
@@ -20,38 +24,41 @@ pub struct UserRow {
     phone_number: String,
     role: UserRoleRow,
     category: UserCategoryRow,
+
+    created_at: chrono::DateTime<chrono::Utc>,
+    updated_at: chrono::DateTime<chrono::Utc>,
+    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl TryFrom<UserRow> for User {
+impl TryFrom<UserRow> for WithDate<User> {
     type Error = anyhow::Error;
     fn try_from(value: UserRow) -> Result<Self, Self::Error> {
-        Ok(User {
-            id: UserId::new(value.id),
-            name: UserName::new(value.name),
-            kana_name: UserKanaName::new(value.kana_name),
-            email: UserEmail::try_from(value.email)?,
-            phone_number: UserPhoneNumber::new(value.phone_number),
-            role: UserRole::from(value.role),
-            category: UserCategory::from(value.category),
-        })
+        Ok(WithDate::new(
+            User {
+                id: UserId::new(value.id),
+                name: UserName::new(value.name),
+                kana_name: UserKanaName::new(value.kana_name),
+                email: UserEmail::try_from(value.email)?,
+                phone_number: UserPhoneNumber::new(value.phone_number),
+                role: UserRole::from(value.role),
+                category: UserCategory::from(value.category),
+            },
+            value.created_at,
+            value.updated_at,
+            value.deleted_at,
+        ))
     }
 }
 
 #[derive(Type)]
 #[sqlx(type_name = "user_role", rename_all = "snake_case")]
 pub enum UserRoleRow {
-    Administrator,
-    ComitteeOperator,
-    Committee,
     General,
 }
 
 impl From<UserRoleRow> for UserRole {
     fn from(value: UserRoleRow) -> Self {
         match value {
-            UserRoleRow::Administrator => UserRole::Administrator,
-            UserRoleRow::ComitteeOperator => UserRole::ComitteeOperator,
-            UserRoleRow::Committee => UserRole::Committee,
             UserRoleRow::General => UserRole::General,
         }
     }
@@ -60,9 +67,6 @@ impl From<UserRoleRow> for UserRole {
 impl From<UserRole> for UserRoleRow {
     fn from(value: UserRole) -> Self {
         match value {
-            UserRole::Administrator => UserRoleRow::Administrator,
-            UserRole::ComitteeOperator => UserRoleRow::ComitteeOperator,
-            UserRole::Committee => UserRoleRow::Committee,
             UserRole::General => UserRoleRow::General,
         }
     }
@@ -96,6 +100,7 @@ impl From<UserCategory> for UserCategoryRow {
     }
 }
 
+#[derive(Clone)]
 pub struct PgUserRepository {
     db: Postgresql,
 }
@@ -122,5 +127,18 @@ impl UserRepository for PgUserRepository {
         .context("Failed to create user")?;
 
         Ok(())
+    }
+
+    async fn find_by_id(&self, id: UserId) -> anyhow::Result<Option<WithDate<User>>> {
+        let user_row = sqlx::query_as!(
+            UserRow,
+            r#"SELECT id, name, kana_name, email, phone_number, category AS "category: UserCategoryRow", role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE id = $1 AND deleted_at IS NULL"#,
+            id.value(),
+        )
+        .fetch_optional(&*self.db)
+        .await
+        .context("Failed to fetch user by id")?;
+
+        user_row.map(WithDate::try_from).transpose()
     }
 }

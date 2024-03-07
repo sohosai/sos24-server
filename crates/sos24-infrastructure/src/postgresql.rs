@@ -6,6 +6,7 @@ use sqlx::PgPool;
 pub mod news;
 pub mod user;
 
+#[derive(Clone)]
 pub struct Postgresql(pub(crate) PgPool);
 
 impl Postgresql {
@@ -26,11 +27,5 @@ impl Deref for Postgresql {
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-impl Clone for Postgresql {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
     }
 }
