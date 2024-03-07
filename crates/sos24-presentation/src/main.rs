@@ -1,6 +1,6 @@
 use tokio::net::TcpListener;
 
-use sos24_presentation::{env, module::Modules, route::create_app};
+use sos24_presentation::{env, module, route::create_app};
 
 #[tokio::main]
 async fn main() {
@@ -10,7 +10,7 @@ async fn main() {
 
     tracing_subscriber::fmt::init();
 
-    let modules = Modules::new().await.unwrap();
+    let modules = module::new().await.unwrap();
     let app = create_app(modules);
 
     let addr = format!("{}:{}", env::host(), env::port());
