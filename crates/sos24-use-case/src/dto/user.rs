@@ -107,14 +107,15 @@ pub struct UserDto {
 impl FromEntity for UserDto {
     type Entity = WithDate<User>;
     fn from_entity(entity: Self::Entity) -> Self {
+        let user = entity.value.destruct();
         Self {
-            id: entity.value.id.value(),
-            name: entity.value.name.value(),
-            kana_name: entity.value.kana_name.value(),
-            email: entity.value.email.value(),
-            phone_number: entity.value.phone_number.value(),
-            role: UserRoleDto::from_entity(entity.value.role),
-            category: UserCategoryDto::from_entity(entity.value.category),
+            id: user.id.value(),
+            name: user.name.value(),
+            kana_name: user.kana_name.value(),
+            email: user.email.value(),
+            phone_number: user.phone_number.value(),
+            role: UserRoleDto::from_entity(user.role),
+            category: UserCategoryDto::from_entity(user.category),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,
