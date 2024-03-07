@@ -31,12 +31,9 @@ pub fn create_app(modules: Modules) -> Router {
 
     let user = Router::new()
         .route("/", get(user::handle_get))
-        .route("/", post(user::handle_post))
         .route("/:user_id", get(user::handle_get_id))
         .route("/:user_id", delete(user::handle_delete_id))
         .route("/:user_id", put(user::handle_put_id));
-
-    let public_routes = Router::new().route("/health", get(health::handle_get));
 
     let private_routes = Router::new()
         .nest("/news", news)
@@ -45,6 +42,10 @@ pub fn create_app(modules: Modules) -> Router {
             Arc::clone(&modules),
             auth::jwt_auth,
         ));
+
+    let public_routes = Router::new()
+        .route("/health", get(health::handle_get))
+        .route("/users", post(user::handle_post));
 
     Router::new()
         .nest("/", public_routes)
