@@ -21,3 +21,8 @@ pub fn port() -> String {
 pub fn postgres_db_url() -> String {
     env::var("POSTGRES_DB_URL").expect("Env `POSTGRES_DB_URL` must be set")
 }
+
+pub fn firebase_service_account_key() -> String {
+    env::var("FIREBASE_SERVICE_ACCOUNT_KEY")
+        .expect("Env `FIREBASE_SERVICE_ACCOUNT_KEY` must be set")
+}

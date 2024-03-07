@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
-use sos24_use_case::error::{user::UserError, UseCaseError};
-
-use crate::{
-    model::user::{ConvertToCreateUserDto, CreateUser},
-    module::Modules,
+use sos24_use_case::{
+    dto::user::CreateUserDto,
+    error::{user::UserError, UseCaseError},
 };
+
+use crate::{model::user::CreateUser, module::Modules};
 
 use super::ToStatusCode;
 
@@ -24,9 +24,7 @@ pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Json(raw_user): Json<CreateUser>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let id = "test_id".to_string(); // TODO
-
-    let user = (id, raw_user).to_create_user_dto();
+    let user = CreateUserDto::from(raw_user);
     let res = modules.user_use_case().create(user).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create user: {:?}", err);

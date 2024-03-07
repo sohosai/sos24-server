@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use sos24_infrastructure::{postgresql::Postgresql, DefaultRepositories};
+use sos24_infrastructure::{firebase::FirebaseAuth, postgresql::Postgresql, DefaultRepositories};
 use sos24_use_case::interactor::{news::NewsUseCase, user::UserUseCase};
 
 use crate::env;
@@ -23,7 +23,8 @@ impl Modules {
 impl Modules {
     pub async fn new() -> anyhow::Result<Self> {
         let db = Postgresql::new(&env::postgres_db_url()).await?;
-        let repository = Arc::new(DefaultRepositories::new(db));
+        let auth = FirebaseAuth::new(&env::firebase_service_account_key()).await?;
+        let repository = Arc::new(DefaultRepositories::new(db, auth));
         Ok(Self {
             news_use_case: NewsUseCase::new(Arc::clone(&repository)),
             user_use_case: UserUseCase::new(Arc::clone(&repository)),

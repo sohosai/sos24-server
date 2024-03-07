@@ -11,21 +11,15 @@ pub struct CreateUser {
     pub category: UserCategory,
 }
 
-pub trait ConvertToCreateUserDto {
-    fn to_create_user_dto(self) -> CreateUserDto;
-}
-
-impl ConvertToCreateUserDto for (String, CreateUser) {
-    fn to_create_user_dto(self) -> CreateUserDto {
-        let (id, user) = self;
+impl From<CreateUser> for CreateUserDto {
+    fn from(value: CreateUser) -> Self {
         CreateUserDto::new(
-            id,
-            user.name,
-            user.kana_name,
-            user.email,
-            user.password,
-            user.phone_number,
-            UserCategoryDto::from(user.category),
+            value.name,
+            value.kana_name,
+            value.email,
+            value.password,
+            value.phone_number,
+            UserCategoryDto::from(value.category),
         )
     }
 }
