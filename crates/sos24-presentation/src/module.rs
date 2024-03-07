@@ -1,17 +1,22 @@
 use std::sync::Arc;
 
 use sos24_infrastructure::{postgresql::Postgresql, DefaultRepositories};
-use sos24_use_case::interactor::news::NewsUseCase;
+use sos24_use_case::interactor::{news::NewsUseCase, user::UserUseCase};
 
 use crate::env;
 
 pub struct Modules {
     news_use_case: NewsUseCase<DefaultRepositories>,
+    user_use_case: UserUseCase<DefaultRepositories>,
 }
 
 impl Modules {
     pub fn news_use_case(&self) -> &NewsUseCase<DefaultRepositories> {
         &self.news_use_case
+    }
+
+    pub fn user_use_case(&self) -> &UserUseCase<DefaultRepositories> {
+        &self.user_use_case
     }
 }
 
@@ -21,6 +26,7 @@ impl Modules {
         let repository = Arc::new(DefaultRepositories::new(db));
         Ok(Self {
             news_use_case: NewsUseCase::new(Arc::clone(&repository)),
+            user_use_case: UserUseCase::new(Arc::clone(&repository)),
         })
     }
 }

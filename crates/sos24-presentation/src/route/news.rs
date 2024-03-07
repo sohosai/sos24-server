@@ -11,9 +11,7 @@ use sos24_use_case::error::UseCaseError;
 use crate::model::news::{ConvertToUpdateNewsDto, CreateNews, News, UpdateNews};
 use crate::module::Modules;
 
-trait ToStatusCode {
-    fn status_code(&self) -> StatusCode;
-}
+use super::ToStatusCode;
 
 impl ToStatusCode for UseCaseError<NewsError> {
     fn status_code(&self) -> StatusCode {

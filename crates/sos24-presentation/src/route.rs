@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
+    http::StatusCode,
     routing::{delete, get, post, put},
     Router,
 };
@@ -12,6 +13,11 @@ use crate::module::Modules;
 
 pub mod health;
 pub mod news;
+pub mod user;
+
+pub trait ToStatusCode {
+    fn status_code(&self) -> StatusCode;
+}
 
 pub fn create_app(modules: Modules) -> Router {
     let news = Router::new()
@@ -21,9 +27,12 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:news_id", delete(news::handle_delete_id))
         .route("/:news_id", put(news::handle_put_id));
 
+    let user = Router::new().route("", post(user::handle_post));
+
     Router::new()
         .route("/health", get(health::handle_get))
         .nest("/news", news)
+        .nest("/users", user)
         .with_state(Arc::new(modules))
         .layer(
             ServiceBuilder::new().layer(
