@@ -30,7 +30,7 @@ impl ToEntity for CreateNewsDto {
     type Entity = News;
     type Error = Infallible;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(News::new(
+        Ok(News::create(
             NewsTitle::new(self.title),
             NewsBody::new(self.body),
             NewsCategories::new(self.categories),
@@ -61,12 +61,12 @@ impl ToEntity for UpdateNewsDto {
     type Entity = News;
     type Error = NewsError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(News {
-            id: NewsId::try_from(self.id)?,
-            title: NewsTitle::new(self.title),
-            body: NewsBody::new(self.body),
-            categories: NewsCategories::new(self.categories),
-        })
+        Ok(News::new(
+            NewsId::try_from(self.id)?,
+            NewsTitle::new(self.title),
+            NewsBody::new(self.body),
+            NewsCategories::new(self.categories),
+        ))
     }
 }
 
@@ -84,11 +84,12 @@ pub struct NewsDto {
 impl FromEntity for NewsDto {
     type Entity = WithDate<News>;
     fn from_entity(entity: Self::Entity) -> Self {
+        let news = entity.value.destruct();
         Self {
-            id: entity.value.id.value().to_string(),
-            title: entity.value.title.value(),
-            body: entity.value.body.value(),
-            categories: entity.value.categories.value(),
+            id: news.id.value().to_string(),
+            title: news.title.value(),
+            body: news.body.value(),
+            categories: news.categories.value(),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,

@@ -1,19 +1,48 @@
+use getset::{Getters, Setters};
+
+use crate::impl_value_object;
+
 use super::common::email::{Email, EmailError};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct User {
-    pub id: UserId,
-
-    pub name: UserName,
-    pub kana_name: UserKanaName,
-
-    pub email: UserEmail,
-    pub phone_number: UserPhoneNumber,
-    pub role: UserRole,
-    pub category: UserCategory,
+    #[getset(get = "pub")]
+    id: UserId,
+    #[getset(get = "pub", set = "pub")]
+    name: UserName,
+    #[getset(get = "pub", set = "pub")]
+    kana_name: UserKanaName,
+    #[getset(get = "pub", set = "pub")]
+    email: UserEmail,
+    #[getset(get = "pub", set = "pub")]
+    phone_number: UserPhoneNumber,
+    #[getset(get = "pub", set = "pub")]
+    role: UserRole,
+    #[getset(get = "pub", set = "pub")]
+    category: UserCategory,
 }
 
 impl User {
+    pub fn new(
+        id: UserId,
+        name: UserName,
+        kana_name: UserKanaName,
+        email: UserEmail,
+        phone_number: UserPhoneNumber,
+        role: UserRole,
+        category: UserCategory,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            kana_name,
+            email,
+            phone_number,
+            role,
+            category,
+        }
+    }
+
     pub fn new_general(
         id: UserId,
         name: UserName,
@@ -32,62 +61,37 @@ impl User {
             category,
         }
     }
-}
 
-#[derive(Debug, Clone)]
-pub struct UserId(String);
-
-impl UserId {
-    pub fn new(id: String) -> Self {
-        Self(id)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
-pub struct UserName(String);
-
-impl UserName {
-    pub fn new(name: String) -> Self {
-        Self(name)
-    }
-
-    pub fn value(self) -> String {
-        self.0
+    pub fn destruct(self) -> DestructuredUser {
+        DestructuredUser {
+            id: self.id,
+            name: self.name,
+            kana_name: self.kana_name,
+            email: self.email,
+            phone_number: self.phone_number,
+            role: self.role,
+            category: self.category,
+        }
     }
 }
 
-#[derive(Debug)]
-pub struct UserKanaName(String);
-
-impl UserKanaName {
-    pub fn new(kana_name: String) -> Self {
-        Self(kana_name)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DestructuredUser {
+    pub id: UserId,
+    pub name: UserName,
+    pub kana_name: UserKanaName,
+    pub email: UserEmail,
+    pub phone_number: UserPhoneNumber,
+    pub role: UserRole,
+    pub category: UserCategory,
 }
 
-#[derive(Debug)]
-pub struct UserPhoneNumber(String);
+impl_value_object!(UserId(String));
+impl_value_object!(UserName(String));
+impl_value_object!(UserKanaName(String));
+impl_value_object!(UserPhoneNumber(String)); // ガバガバだが、電話番号が弾かれる事によってjsysの作業が増えることを鑑みて許容する
 
-impl UserPhoneNumber {
-    // ガバガバだが、電話番号が弾かれる事によってjsysの作業が増えることを鑑みて許容する
-    pub fn new(phone_number: String) -> Self {
-        Self(phone_number)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UserRole {
     Administrator,
     CommitteeOperator,
@@ -95,14 +99,14 @@ pub enum UserRole {
     General,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UserCategory {
     UndergraduateStudent,
     GraduateStudent,
     AcademicStaff,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UserEmail(Email);
 
 impl UserEmail {

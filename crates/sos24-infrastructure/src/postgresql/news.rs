@@ -22,12 +22,12 @@ pub struct NewsRow {
 impl From<NewsRow> for WithDate<News> {
     fn from(value: NewsRow) -> Self {
         WithDate::new(
-            News {
-                id: NewsId::new(value.id),
-                title: NewsTitle::new(value.title),
-                body: NewsBody::new(value.body),
-                categories: NewsCategories::new(value.categories),
-            },
+            News::new(
+                NewsId::new(value.id),
+                NewsTitle::new(value.title),
+                NewsBody::new(value.body),
+                NewsCategories::new(value.categories),
+            ),
             value.created_at,
             value.updated_at,
             value.deleted_at,
@@ -57,6 +57,7 @@ impl NewsRepository for PgNewsRepository {
     }
 
     async fn create(&self, news: News) -> anyhow::Result<()> {
+        let news = news.destruct();
         sqlx::query!(
             r#"INSERT INTO news (id, title, body, categories) VALUES ($1, $2, $3, $4)"#,
             news.id.value(),
@@ -86,6 +87,7 @@ impl NewsRepository for PgNewsRepository {
     }
 
     async fn update(&self, news: News) -> anyhow::Result<()> {
+        let news = news.destruct();
         sqlx::query!(
             r#"UPDATE news SET title = $2, body = $3, categories = $4 WHERE id = $1 and deleted_at IS NULL"#,
             news.id.value(),

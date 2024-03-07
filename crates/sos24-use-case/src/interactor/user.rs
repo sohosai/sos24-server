@@ -95,12 +95,12 @@ impl<R: Repositories> UserUseCase<R> {
             .ok_or(UseCaseError::UseCase(UserError::NotFound(id)))?;
 
         let mut new_user = user.value;
-        new_user.name = UserName::new(user_data.name);
-        new_user.kana_name = UserKanaName::new(user_data.kana_name);
-        new_user.email = UserEmail::try_from(user_data.email)?;
-        new_user.phone_number = UserPhoneNumber::new(user_data.phone_number);
-        new_user.role = user_data.role.into_entity()?;
-        new_user.category = user_data.category.into_entity()?;
+        new_user.set_name(UserName::new(user_data.name));
+        new_user.set_kana_name(UserKanaName::new(user_data.kana_name));
+        new_user.set_email(UserEmail::try_from(user_data.email)?);
+        new_user.set_phone_number(UserPhoneNumber::new(user_data.phone_number));
+        new_user.set_role(user_data.role.into_entity()?);
+        new_user.set_category(user_data.category.into_entity()?);
 
         self.repositories
             .user_repository()

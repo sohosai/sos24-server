@@ -35,15 +35,15 @@ impl TryFrom<UserRow> for WithDate<User> {
     type Error = anyhow::Error;
     fn try_from(value: UserRow) -> Result<Self, Self::Error> {
         Ok(WithDate::new(
-            User {
-                id: UserId::new(value.id),
-                name: UserName::new(value.name),
-                kana_name: UserKanaName::new(value.kana_name),
-                email: UserEmail::try_from(value.email)?,
-                phone_number: UserPhoneNumber::new(value.phone_number),
-                role: UserRole::from(value.role),
-                category: UserCategory::from(value.category),
-            },
+            User::new(
+                UserId::new(value.id),
+                UserName::new(value.name),
+                UserKanaName::new(value.kana_name),
+                UserEmail::try_from(value.email)?,
+                UserPhoneNumber::new(value.phone_number),
+                UserRole::from(value.role),
+                UserCategory::from(value.category),
+            ),
             value.created_at,
             value.updated_at,
             value.deleted_at,
@@ -133,6 +133,7 @@ impl UserRepository for PgUserRepository {
     }
 
     async fn create(&self, user: User) -> anyhow::Result<()> {
+        let user = user.destruct();
         sqlx::query!(
           r#"INSERT INTO users (id, name, kana_name, email, phone_number, category) VALUES ($1, $2, $3, $4, $5, $6)"#,
           user.id.value(),
@@ -163,6 +164,7 @@ impl UserRepository for PgUserRepository {
     }
 
     async fn update(&self, user: User) -> anyhow::Result<()> {
+        let user = user.destruct();
         sqlx::query!(
             r#"UPDATE users SET name = $2, kana_name = $3, email = $4, phone_number = $5, category = $6, role = $7 WHERE id = $1 AND deleted_at IS NULL"#,
             user.id.value(),

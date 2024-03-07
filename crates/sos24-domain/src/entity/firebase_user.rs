@@ -1,31 +1,39 @@
+use getset::{Getters, Setters};
+
+use crate::impl_value_object;
+
 use super::common::email::{Email, EmailError};
 
-#[derive(Debug, Clone)]
-pub struct FirebaseUserId(String);
+impl_value_object!(FirebaseUserId(String));
 
-impl FirebaseUserId {
-    pub fn new(uid: String) -> Self {
-        Self(uid)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct NewFirebaseUser {
-    pub email: FirebaseUserEmail,
-    pub password: FirebaseUserPassword,
+    #[getset(get = "pub")]
+    email: FirebaseUserEmail,
+    #[getset(get = "pub")]
+    password: FirebaseUserPassword,
 }
 
 impl NewFirebaseUser {
     pub fn new(email: FirebaseUserEmail, password: FirebaseUserPassword) -> Self {
         Self { email, password }
     }
+
+    pub fn destruct(self) -> DestructedNewFirebaseUser {
+        DestructedNewFirebaseUser {
+            email: self.email,
+            password: self.password,
+        }
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DestructedNewFirebaseUser {
+    pub email: FirebaseUserEmail,
+    pub password: FirebaseUserPassword,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FirebaseUserEmail(Email);
 
 impl FirebaseUserEmail {
@@ -42,15 +50,4 @@ impl TryFrom<String> for FirebaseUserEmail {
     }
 }
 
-#[derive(Debug)]
-pub struct FirebaseUserPassword(String);
-
-impl FirebaseUserPassword {
-    pub fn new(password: String) -> Self {
-        Self(password)
-    }
-
-    pub fn value(self) -> String {
-        self.0
-    }
-}
+impl_value_object!(FirebaseUserPassword(String));
