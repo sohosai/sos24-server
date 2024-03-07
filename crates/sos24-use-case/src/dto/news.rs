@@ -1,6 +1,6 @@
 use sos24_domain::entity::{
     common::date::WithDate,
-    news::{News, NewsBody, NewsCategories, NewsId, NewsTitle},
+    news::{News, NewsBody, NewsCategories, NewsTitle},
 };
 
 #[derive(Debug)]
@@ -23,7 +23,6 @@ impl CreateNewsDto {
 impl From<CreateNewsDto> for News {
     fn from(news: CreateNewsDto) -> Self {
         News::new(
-            NewsId::new(uuid::Uuid::new_v4()),
             NewsTitle::new(news.title),
             NewsBody::new(news.body),
             NewsCategories::new(news.categories),

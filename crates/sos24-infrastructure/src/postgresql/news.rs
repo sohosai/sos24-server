@@ -22,12 +22,12 @@ pub struct NewsRow {
 impl From<NewsRow> for WithDate<News> {
     fn from(value: NewsRow) -> Self {
         WithDate::new(
-            News::new(
-                NewsId::new(value.id),
-                NewsTitle::new(value.title),
-                NewsBody::new(value.body),
-                NewsCategories::new(value.categories),
-            ),
+            News {
+                id: NewsId::new(value.id),
+                title: NewsTitle::new(value.title),
+                body: NewsBody::new(value.body),
+                categories: NewsCategories::new(value.categories),
+            },
             value.created_at,
             value.updated_at,
             value.deleted_at,

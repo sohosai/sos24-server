@@ -7,9 +7,9 @@ pub struct News {
 }
 
 impl News {
-    pub fn new(id: NewsId, title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
+    pub fn new(title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
         Self {
-            id,
+            id: NewsId::new(uuid::Uuid::new_v4()),
             title,
             body,
             categories,
