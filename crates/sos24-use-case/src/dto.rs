@@ -1,6 +1,7 @@
 use crate::error::Result;
 
 pub mod news;
+pub mod user;
 
 pub trait ToEntity {
     type Entity;
