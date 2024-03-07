@@ -41,7 +41,7 @@ pub async fn handle_get(
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Json(raw_news): Json<CreateNews>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, StatusCode> {
     let news = CreateNewsDto::from(raw_news);
     let res = modules.news_use_case().create(news).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
@@ -67,7 +67,7 @@ pub async fn handle_get_id(
 pub async fn handle_delete_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, StatusCode> {
     let res = modules.news_use_case().delete_by_id(id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete news: {:?}", err);
@@ -79,7 +79,7 @@ pub async fn handle_put_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
     Json(raw_news): Json<UpdateNews>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, StatusCode> {
     let news = (id, raw_news).to_update_news_dto();
     let res = modules.news_use_case().update(news).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
