@@ -1449,6 +1449,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "sos24-domain",
+ "thiserror",
  "uuid",
 ]
 

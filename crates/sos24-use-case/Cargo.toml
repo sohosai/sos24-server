@@ -7,4 +7,5 @@ edition.workspace = true
 sos24-domain = { path = "../sos24-domain" }
 anyhow.workspace = true
 chrono.workspace = true
+thiserror.workspace = true
 uuid.workspace = true

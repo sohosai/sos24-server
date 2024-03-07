@@ -1,13 +1,11 @@
+use thiserror::Error;
+
 pub type Result<T, E> = std::result::Result<T, UseCaseError<E>>;
 
-#[derive(Debug)]
-pub enum UseCaseError<E> {
+#[derive(Debug, Error)]
+pub enum UseCaseError<E: std::error::Error> {
+    #[error(transparent)]
     UseCase(E),
-    Internal(anyhow::Error),
-}
-
-impl<E> From<anyhow::Error> for UseCaseError<E> {
-    fn from(error: anyhow::Error) -> Self {
-        UseCaseError::Internal(error)
-    }
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
 }

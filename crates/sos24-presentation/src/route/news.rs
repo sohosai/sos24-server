@@ -11,14 +11,14 @@ use sos24_use_case::interactor::news::NewsError;
 use crate::model::news::{ConvertToUpdateNewsDto, CreateNews, News, UpdateNews};
 use crate::module::Modules;
 
-trait UseCaseErrorToStatusCode {
+trait ToStatusCode {
     fn status_code(&self) -> StatusCode;
 }
 
-impl UseCaseErrorToStatusCode for UseCaseError<NewsError> {
+impl ToStatusCode for UseCaseError<NewsError> {
     fn status_code(&self) -> StatusCode {
         match self {
-            UseCaseError::UseCase(NewsError::NotFound) => StatusCode::NOT_FOUND,
+            UseCaseError::UseCase(NewsError::NotFound(_)) => StatusCode::NOT_FOUND,
             UseCaseError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

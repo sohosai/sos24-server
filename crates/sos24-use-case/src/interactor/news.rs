@@ -5,6 +5,7 @@ use sos24_domain::{
     entity::news::{News, NewsBody, NewsCategories, NewsId, NewsTitle},
     repository::{news::NewsRepository, Repositories},
 };
+use thiserror::Error;
 
 use crate::error::UseCaseError;
 use crate::{
@@ -16,9 +17,10 @@ pub struct NewsUseCase<R: Repositories> {
     repositories: Arc<R>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum NewsError {
-    NotFound,
+    #[error("News(id = {0:?}) not found")]
+    NotFound(NewsId),
 }
 
 impl<R: Repositories> NewsUseCase<R> {
@@ -56,13 +58,13 @@ impl<R: Repositories> NewsUseCase<R> {
         let raw_news = self
             .repositories
             .news_repository()
-            .find_by_id(id)
+            .find_by_id(id.clone())
             .await
             .context("Failed to find news")?;
 
         match raw_news {
             Some(raw_news) => Ok(NewsDto::from(raw_news)),
-            None => Err(UseCaseError::UseCase(NewsError::NotFound)),
+            None => Err(UseCaseError::UseCase(NewsError::NotFound(id))),
         }
     }
 
@@ -75,7 +77,7 @@ impl<R: Repositories> NewsUseCase<R> {
             .find_by_id(id.clone())
             .await
             .context("Failed to find news")?
-            .ok_or(UseCaseError::UseCase(NewsError::NotFound))?;
+            .ok_or(UseCaseError::UseCase(NewsError::NotFound(id)))?;
 
         let mut new_news = news;
         new_news.title = NewsTitle::new(news_data.title);
@@ -101,7 +103,7 @@ impl<R: Repositories> NewsUseCase<R> {
             .find_by_id(id.clone())
             .await
             .context("Failed to find news")?
-            .ok_or(UseCaseError::UseCase(NewsError::NotFound))?;
+            .ok_or(UseCaseError::UseCase(NewsError::NotFound(id.clone())))?;
 
         self.repositories
             .news_repository()
