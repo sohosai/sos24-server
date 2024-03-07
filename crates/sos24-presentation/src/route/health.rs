@@ -1,28 +1,26 @@
-use axum::{debug_handler, response::IntoResponse};
-use hyper::StatusCode;
+use axum::response::IntoResponse;
 
-#[debug_handler]
-pub async fn handle_get() -> Result<impl IntoResponse, StatusCode> {
-    Ok("OK")
+pub async fn handle_get() -> impl IntoResponse {
+    "OK"
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{create_app, repository::get_mongo_db};
-
-    use anyhow::Result;
     use axum::{
         body::Body,
         http::{Request, StatusCode},
     };
-    use sqlx::PgPool;
+    use sos24_domain::test::MockRepositories;
     use tower::ServiceExt;
 
-    #[sqlx::test]
-    async fn test_get_health(pool: PgPool) -> Result<()> {
-        let mongo_db = get_mongo_db().await?;
+    use crate::{module, route::create_app};
 
-        let app = create_app(pool, mongo_db);
+    #[tokio::test]
+    async fn test_get_health() -> anyhow::Result<()> {
+        let repositories = MockRepositories::default();
+        let modules = module::new_test(repositories).await.unwrap();
+        let app = create_app(modules);
+
         let resp = app
             .oneshot(Request::builder().uri("/health").body(Body::empty())?)
             .await?;

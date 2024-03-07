@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::Context;
 use axum::{
     extract::{Request, State},
@@ -10,7 +12,7 @@ use jsonwebtoken::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{repository, AppState};
+use crate::module::Modules;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {
@@ -25,7 +27,7 @@ const JWK_URL: &str =
     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 
 pub(crate) async fn jwt_auth(
-    State(app_state): State<AppState>,
+    State(modules): State<Arc<Modules>>,
     mut request: Request,
     next: Next,
 ) -> Result<impl IntoResponse, StatusCode> {
@@ -43,7 +45,7 @@ pub(crate) async fn jwt_auth(
 
     let jwt_token = authorization.trim_start_matches("Bearer ");
 
-    let token = match verify_id_token(jwt_token, &app_state.config.firebase_project_id).await {
+    let token = match verify_id_token(jwt_token, &modules.config().firebase_project_id).await {
         Ok(v) => v,
         Err(e) => {
             tracing::error!("Failed to verify: {e}");
@@ -52,7 +54,9 @@ pub(crate) async fn jwt_auth(
     };
 
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
-    let _ = repository::users::get_user_by_id(&app_state.pool, &token.claims.sub)
+    let _ = modules
+        .user_use_case()
+        .find_by_id(&token.claims.sub)
         .await
         .map_err(|_| StatusCode::UNAUTHORIZED)?;
     request.extensions_mut().insert(token);

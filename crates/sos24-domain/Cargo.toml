@@ -1,0 +1,12 @@
+[package]
+name = "sos24-domain"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+mockall.workspace = true
+regex.workspace = true
+thiserror.workspace = true
+uuid.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "sos24-infrastructure"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sos24-domain = { path = "../sos24-domain" }
+anyhow.workspace = true
+chrono.workspace = true
+futures-util.workspace = true
+rs-firebase-admin-sdk.workspace = true
+sqlx.workspace = true
+uuid.workspace = true
