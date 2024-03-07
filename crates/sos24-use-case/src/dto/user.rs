@@ -58,6 +58,39 @@ impl ToEntity for (String, CreateUserDto) {
 }
 
 #[derive(Debug)]
+pub struct UpdateUserDto {
+    pub id: String,
+    pub name: String,
+    pub kana_name: String,
+    pub email: String,
+    pub phone_number: String,
+    pub role: UserRoleDto,
+    pub category: UserCategoryDto,
+}
+
+impl UpdateUserDto {
+    pub fn new(
+        id: String,
+        name: String,
+        kana_name: String,
+        email: String,
+        phone_number: String,
+        role: UserRoleDto,
+        category: UserCategoryDto,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            kana_name,
+            email,
+            phone_number,
+            role,
+            category,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct UserDto {
     pub id: String,
     pub name: String,
