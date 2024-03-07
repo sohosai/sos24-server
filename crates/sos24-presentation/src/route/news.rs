@@ -5,8 +5,8 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use sos24_use_case::dto::news::CreateNewsDto;
+use sos24_use_case::error::news::NewsError;
 use sos24_use_case::error::UseCaseError;
-use sos24_use_case::interactor::news::NewsError;
 
 use crate::model::news::{ConvertToUpdateNewsDto, CreateNews, News, UpdateNews};
 use crate::module::Modules;
@@ -19,6 +19,7 @@ impl ToStatusCode for UseCaseError<NewsError> {
     fn status_code(&self) -> StatusCode {
         match self {
             UseCaseError::UseCase(NewsError::NotFound(_)) => StatusCode::NOT_FOUND,
+            UseCaseError::UseCase(NewsError::InvalidNewsId(_)) => StatusCode::BAD_REQUEST,
             UseCaseError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

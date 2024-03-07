@@ -2,25 +2,24 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use sos24_domain::{
-    entity::news::{News, NewsBody, NewsCategories, NewsId, NewsTitle},
+    entity::news::{NewsBody, NewsCategories, NewsId, NewsTitle},
     repository::{news::NewsRepository, Repositories},
 };
-use thiserror::Error;
 
-use crate::error::UseCaseError;
 use crate::{
-    dto::news::{CreateNewsDto, NewsDto, UpdateNewsDto},
+    dto::FromEntity,
+    error::{news::NewsError, UseCaseError},
+};
+use crate::{
+    dto::{
+        news::{CreateNewsDto, NewsDto, UpdateNewsDto},
+        ToEntity,
+    },
     error::Result,
 };
 
 pub struct NewsUseCase<R: Repositories> {
     repositories: Arc<R>,
-}
-
-#[derive(Debug, Error)]
-pub enum NewsError {
-    #[error("News(id = {0:?}) not found")]
-    NotFound(NewsId),
 }
 
 impl<R: Repositories> NewsUseCase<R> {
@@ -37,13 +36,16 @@ impl<R: Repositories> NewsUseCase<R> {
             .await
             .context("Failed to list news")?;
 
-        let news_list = raw_news_list.into_iter().map(NewsDto::from).collect();
+        let news_list = raw_news_list
+            .into_iter()
+            .map(NewsDto::from_entity)
+            .collect();
         Ok(news_list)
     }
 
     pub async fn create(&self, raw_news: CreateNewsDto) -> Result<(), NewsError> {
         // TODO: 権限チェック
-        let news = News::from(raw_news);
+        let news = raw_news.into_entity()?;
         self.repositories
             .news_repository()
             .create(news)
@@ -54,7 +56,7 @@ impl<R: Repositories> NewsUseCase<R> {
 
     pub async fn find_by_id(&self, id: &str) -> Result<NewsDto, NewsError> {
         // TODO: 権限チェック
-        let id: NewsId = id.try_into().context("Failed to parse news id")?;
+        let id: NewsId = id.try_into()?;
         let raw_news = self
             .repositories
             .news_repository()
@@ -63,7 +65,7 @@ impl<R: Repositories> NewsUseCase<R> {
             .context("Failed to find news")?;
 
         match raw_news {
-            Some(raw_news) => Ok(NewsDto::from(raw_news)),
+            Some(raw_news) => Ok(NewsDto::from_entity(raw_news)),
             None => Err(UseCaseError::UseCase(NewsError::NotFound(id))),
         }
     }

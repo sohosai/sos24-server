@@ -1,7 +1,13 @@
+use std::convert::Infallible;
+
 use sos24_domain::entity::{
     common::date::WithDate,
-    news::{News, NewsBody, NewsCategories, NewsTitle},
+    news::{News, NewsBody, NewsCategories, NewsId, NewsTitle},
 };
+
+use crate::error::{news::NewsError, Result};
+
+use super::{FromEntity, ToEntity};
 
 #[derive(Debug)]
 pub struct CreateNewsDto {
@@ -20,13 +26,15 @@ impl CreateNewsDto {
     }
 }
 
-impl From<CreateNewsDto> for News {
-    fn from(news: CreateNewsDto) -> Self {
-        News::new(
-            NewsTitle::new(news.title),
-            NewsBody::new(news.body),
-            NewsCategories::new(news.categories),
-        )
+impl ToEntity for CreateNewsDto {
+    type Entity = News;
+    type Error = Infallible;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(News::new(
+            NewsTitle::new(self.title),
+            NewsBody::new(self.body),
+            NewsCategories::new(self.categories),
+        ))
     }
 }
 
@@ -49,6 +57,19 @@ impl UpdateNewsDto {
     }
 }
 
+impl ToEntity for UpdateNewsDto {
+    type Entity = News;
+    type Error = NewsError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(News {
+            id: NewsId::try_from(self.id)?,
+            title: NewsTitle::new(self.title),
+            body: NewsBody::new(self.body),
+            categories: NewsCategories::new(self.categories),
+        })
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct NewsDto {
     pub id: String,
@@ -60,16 +81,17 @@ pub struct NewsDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl From<WithDate<News>> for NewsDto {
-    fn from(news: WithDate<News>) -> Self {
+impl FromEntity for NewsDto {
+    type Entity = WithDate<News>;
+    fn from_entity(entity: Self::Entity) -> Self {
         Self {
-            id: news.value.id.value().to_string(),
-            title: news.value.title.value(),
-            body: news.value.body.value(),
-            categories: news.value.categories.value(),
-            created_at: news.created_at,
-            updated_at: news.updated_at,
-            deleted_at: news.deleted_at,
+            id: entity.value.id.value().to_string(),
+            title: entity.value.title.value(),
+            body: entity.value.body.value(),
+            categories: entity.value.categories.value(),
+            created_at: entity.created_at,
+            updated_at: entity.updated_at,
+            deleted_at: entity.deleted_at,
         }
     }
 }

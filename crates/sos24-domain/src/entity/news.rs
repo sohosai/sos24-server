@@ -1,3 +1,5 @@
+use thiserror::Error;
+
 #[derive(Debug, Clone)]
 pub struct News {
     pub id: NewsId,
@@ -30,19 +32,25 @@ impl NewsId {
     }
 }
 
-impl TryFrom<&str> for NewsId {
-    type Error = uuid::Error;
+#[derive(Debug, Error)]
+pub enum NewsIdError {
+    #[error("Invalid UUID")]
+    InvalidUuid,
+}
 
+impl TryFrom<&str> for NewsId {
+    type Error = NewsIdError;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Ok(Self(uuid::Uuid::parse_str(value)?))
+        let uuid = uuid::Uuid::parse_str(value).map_err(|_| NewsIdError::InvalidUuid)?;
+        Ok(Self(uuid))
     }
 }
 
 impl TryFrom<String> for NewsId {
-    type Error = uuid::Error;
-
+    type Error = NewsIdError;
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(Self(uuid::Uuid::parse_str(value.as_ref())?))
+        let uuid = uuid::Uuid::parse_str(&value).map_err(|_| NewsIdError::InvalidUuid)?;
+        Ok(Self(uuid))
     }
 }
 
