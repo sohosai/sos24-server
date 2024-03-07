@@ -1,13 +1,17 @@
+use getset::{Getters, Setters};
+
 use crate::impl_value_object;
 
 use super::common::email::{Email, EmailError};
 
 impl_value_object!(FirebaseUserId(String));
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct NewFirebaseUser {
-    pub email: FirebaseUserEmail,
-    pub password: FirebaseUserPassword,
+    #[getset(get = "pub")]
+    email: FirebaseUserEmail,
+    #[getset(get = "pub")]
+    password: FirebaseUserPassword,
 }
 
 impl NewFirebaseUser {
