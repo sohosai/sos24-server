@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use mockall::automock;
 
 use crate::entity::{
@@ -7,13 +9,16 @@ use crate::entity::{
 
 #[automock]
 pub trait NewsRepository: Send + Sync + 'static {
-    async fn list(&self) -> anyhow::Result<Vec<WithDate<News>>>;
+    fn list(&self) -> impl Future<Output = anyhow::Result<Vec<WithDate<News>>>> + Send;
 
-    async fn create(&self, news: News) -> anyhow::Result<()>;
+    fn create(&self, news: News) -> impl Future<Output = anyhow::Result<()>> + Send;
 
-    async fn find_by_id(&self, id: NewsId) -> anyhow::Result<Option<WithDate<News>>>;
+    fn find_by_id(
+        &self,
+        id: NewsId,
+    ) -> impl Future<Output = anyhow::Result<Option<WithDate<News>>>> + Send;
 
-    async fn update(&self, news: News) -> anyhow::Result<()>;
+    fn update(&self, news: News) -> impl Future<Output = anyhow::Result<()>> + Send;
 
-    async fn delete_by_id(&self, id: NewsId) -> anyhow::Result<()>;
+    fn delete_by_id(&self, id: NewsId) -> impl Future<Output = anyhow::Result<()>> + Send;
 }
