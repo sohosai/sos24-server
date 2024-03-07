@@ -5,7 +5,7 @@ use super::UseCaseError;
 
 #[derive(Debug, Error)]
 pub enum UserError {
-    #[error("User(id = {0:?}) not found")]
+    #[error("User not found: {0:?}")]
     NotFound(UserId),
     #[error(transparent)]
     InvalidEmail(EmailError),
