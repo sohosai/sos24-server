@@ -92,8 +92,7 @@ pub struct DestructuredUser {
 
 impl User {
     pub fn is_visible_to(&self, actor: &Actor) -> bool {
-        let a = actor.user_id() == self.id();
-        a || actor.has_permission(Permissions::READ_USER_ALL)
+        actor.user_id() == self.id() || actor.has_permission(Permissions::READ_USER_ALL)
     }
 
     fn is_updatable_by(&self, actor: &Actor) -> bool {
