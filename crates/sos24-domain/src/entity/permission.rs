@@ -1,4 +1,5 @@
 use bitflags::bitflags;
+use thiserror::Error;
 
 use super::user::UserRole;
 
@@ -36,7 +37,8 @@ impl UserRole {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
+#[error("Permission denied")]
 pub struct PermissionDeniedError;
 
 #[macro_export]
