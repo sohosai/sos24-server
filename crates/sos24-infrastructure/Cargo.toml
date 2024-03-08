@@ -11,3 +11,4 @@ futures-util.workspace = true
 rs-firebase-admin-sdk.workspace = true
 sqlx.workspace = true
 uuid.workspace = true
+url.workspace = true

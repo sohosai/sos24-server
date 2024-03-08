@@ -2,6 +2,7 @@ pub mod actor;
 pub mod common;
 pub mod firebase_user;
 pub mod news;
+pub mod news_attachment;
 pub mod permission;
 pub mod user;
 
