@@ -1,17 +1,22 @@
-use getset::{Getters, Setters};
+use getset::Getters;
 use thiserror::Error;
 
-use crate::impl_value_object;
+use crate::{ensure, impl_value_object};
 
-#[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
+use super::{
+    actor::Actor,
+    permission::{PermissionDeniedError, Permissions},
+};
+
+#[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct News {
     #[getset(get = "pub")]
     id: NewsId,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     title: NewsTitle,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     body: NewsBody,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     categories: NewsCategories,
 }
 
@@ -50,6 +55,38 @@ pub struct DestructedNews {
     pub title: NewsTitle,
     pub body: NewsBody,
     pub categories: NewsCategories,
+}
+
+impl News {
+    fn is_updatable_by(&self, actor: &Actor) -> bool {
+        actor.has_permission(Permissions::UPDATE_NEWS_ALL)
+    }
+
+    pub fn set_title(
+        &mut self,
+        actor: &Actor,
+        title: NewsTitle,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.title = title;
+        Ok(())
+    }
+
+    pub fn set_body(&mut self, actor: &Actor, body: NewsBody) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.body = body;
+        Ok(())
+    }
+
+    pub fn set_categories(
+        &mut self,
+        actor: &Actor,
+        categories: NewsCategories,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.categories = categories;
+        Ok(())
+    }
 }
 
 impl_value_object!(NewsId(uuid::Uuid));

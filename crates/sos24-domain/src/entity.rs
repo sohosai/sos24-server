@@ -1,6 +1,8 @@
+pub mod actor;
 pub mod common;
 pub mod firebase_user;
 pub mod news;
+pub mod permission;
 pub mod user;
 
 #[macro_export]

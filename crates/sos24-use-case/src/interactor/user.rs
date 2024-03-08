@@ -1,9 +1,12 @@
 use std::sync::Arc;
 
 use anyhow::Context;
+use sos24_domain::ensure;
+use sos24_domain::entity::actor::Actor;
 use sos24_domain::entity::firebase_user::{
     FirebaseUserEmail, FirebaseUserPassword, NewFirebaseUser,
 };
+use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
 use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
@@ -25,8 +28,9 @@ impl<R: Repositories> UserUseCase<R> {
         Self { repositories }
     }
 
-    pub async fn list(&self) -> Result<Vec<UserDto>, UserError> {
-        // TODO: 権限チェック
+    pub async fn list(&self, actor: &Actor) -> Result<Vec<UserDto>, UserError> {
+        ensure!(actor.has_permission(Permissions::READ_USER_ALL));
+
         let raw_user_list = self
             .repositories
             .user_repository()
@@ -42,7 +46,6 @@ impl<R: Repositories> UserUseCase<R> {
     }
 
     pub async fn create(&self, raw_user: CreateUserDto) -> Result<(), UserError> {
-        // TODO: 権限チェック
         let firebase_user = NewFirebaseUser::new(
             FirebaseUserEmail::try_from(raw_user.email.clone())?,
             FirebaseUserPassword::new(raw_user.password.clone()),
@@ -67,8 +70,7 @@ impl<R: Repositories> UserUseCase<R> {
         Ok(())
     }
 
-    pub async fn find_by_id(&self, id: String) -> Result<UserDto, UserError> {
-        // TODO: 権限チェック
+    pub async fn find_by_id(&self, actor: &Actor, id: String) -> Result<UserDto, UserError> {
         let id = UserId::new(id);
         let raw_user = self
             .repositories
@@ -78,29 +80,34 @@ impl<R: Repositories> UserUseCase<R> {
             .context("Failed to find user")?;
 
         match raw_user {
-            Some(raw_user) => Ok(UserDto::from_entity(raw_user)),
-            None => Err(UseCaseError::UseCase(UserError::NotFound(id))),
+            Some(raw_user) if raw_user.value.is_visible_to(actor) => {
+                Ok(UserDto::from_entity(raw_user))
+            }
+            _ => Err(UseCaseError::UseCase(UserError::NotFound(id))),
         }
     }
 
-    pub async fn update(&self, user_data: UpdateUserDto) -> Result<(), UserError> {
-        // TODO: 権限チェック
+    pub async fn update(&self, actor: &Actor, user_data: UpdateUserDto) -> Result<(), UserError> {
         let id = UserId::new(user_data.id);
         let user = self
             .repositories
             .user_repository()
             .find_by_id(id.clone())
             .await
-            .context("Failed to find user")?
-            .ok_or(UseCaseError::UseCase(UserError::NotFound(id)))?;
+            .context("Failed to find user")?;
+
+        let user = match user {
+            Some(user) if user.value.is_visible_to(actor) => user,
+            _ => return Err(UseCaseError::UseCase(UserError::NotFound(id))),
+        };
 
         let mut new_user = user.value;
-        new_user.set_name(UserName::new(user_data.name));
-        new_user.set_kana_name(UserKanaName::new(user_data.kana_name));
-        new_user.set_email(UserEmail::try_from(user_data.email)?);
-        new_user.set_phone_number(UserPhoneNumber::new(user_data.phone_number));
-        new_user.set_role(user_data.role.into_entity()?);
-        new_user.set_category(user_data.category.into_entity()?);
+        new_user.set_name(actor, UserName::new(user_data.name))?;
+        new_user.set_kana_name(actor, UserKanaName::new(user_data.kana_name))?;
+        new_user.set_email(actor, UserEmail::try_from(user_data.email)?)?;
+        new_user.set_phone_number(actor, UserPhoneNumber::new(user_data.phone_number))?;
+        new_user.set_role(actor, user_data.role.into_entity()?)?;
+        new_user.set_category(actor, user_data.category.into_entity()?)?;
 
         self.repositories
             .user_repository()
@@ -111,7 +118,9 @@ impl<R: Repositories> UserUseCase<R> {
         Ok(())
     }
 
-    pub async fn delete_by_id(&self, id: String) -> Result<(), UserError> {
+    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), UserError> {
+        ensure!(actor.has_permission(Permissions::DELETE_USER_ALL));
+
         let id = UserId::new(id);
 
         self.repositories

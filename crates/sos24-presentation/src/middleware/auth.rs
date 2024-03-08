@@ -11,6 +11,8 @@ use jsonwebtoken::{
     decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
+use sos24_domain::entity::{actor::Actor, user::UserId};
+use sos24_use_case::dto::ToEntity;
 
 use crate::module::Modules;
 
@@ -54,12 +56,21 @@ pub(crate) async fn jwt_auth(
     };
 
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
-    let _ = modules
+    let user = modules
         .user_use_case()
-        .find_by_id(token.claims.sub.clone())
+        .find_by_id(&Actor::new_admin(), token.claims.sub.clone())
         .await
         .map_err(|_| StatusCode::UNAUTHORIZED)?;
-    request.extensions_mut().insert(token);
+
+    let user_role = match user.role.into_entity() {
+        Ok(user_role) => user_role,
+        Err(e) => {
+            tracing::error!("Failed to convert user role: {e}");
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+    let actor = Actor::new(UserId::new(user.id), user_role);
+    request.extensions_mut().insert(actor);
 
     Ok(next.run(request).await)
 }
