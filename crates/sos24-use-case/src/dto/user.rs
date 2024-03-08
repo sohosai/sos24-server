@@ -1,5 +1,3 @@
-use std::convert::Infallible;
-
 use sos24_domain::entity::{
     common::date::WithDate,
     user::{
@@ -7,7 +5,7 @@ use sos24_domain::entity::{
     },
 };
 
-use crate::error::{user::UserError, Result};
+use crate::interactor::user::UserUseCaseError;
 
 use super::{FromEntity, ToEntity};
 
@@ -43,7 +41,7 @@ impl CreateUserDto {
 
 impl ToEntity for (String, CreateUserDto) {
     type Entity = User;
-    type Error = UserError;
+    type Error = UserUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         let (id, user) = self;
         Ok(User::new_general(
@@ -133,7 +131,7 @@ pub enum UserRoleDto {
 
 impl ToEntity for UserRoleDto {
     type Entity = UserRole;
-    type Error = Infallible;
+    type Error = UserUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(match self {
             UserRoleDto::Administrator => UserRole::Administrator,
@@ -165,7 +163,7 @@ pub enum UserCategoryDto {
 
 impl ToEntity for UserCategoryDto {
     type Entity = UserCategory;
-    type Error = Infallible;
+    type Error = UserUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(match self {
             UserCategoryDto::UndergraduateStudent => UserCategory::UndergraduateStudent,
