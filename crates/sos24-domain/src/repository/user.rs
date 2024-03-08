@@ -10,6 +10,10 @@ use crate::entity::{
 
 #[derive(Debug, Error)]
 pub enum UserRepositoryError {
+    #[error("Email already used")]
+    EmailAlreadyUsed,
+    #[error("Phone number already used")]
+    PhoneNumberAlreadyUsed,
     #[error(transparent)]
     InternalError(#[from] anyhow::Error),
 }

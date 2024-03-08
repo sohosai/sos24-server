@@ -48,6 +48,8 @@ impl ToStatusCode for NewsRepositoryError {
 impl ToStatusCode for UserRepositoryError {
     fn status_code(&self) -> StatusCode {
         match self {
+            UserRepositoryError::EmailAlreadyUsed => StatusCode::CONFLICT,
+            UserRepositoryError::PhoneNumberAlreadyUsed => StatusCode::CONFLICT,
             UserRepositoryError::InternalError(e) => e.status_code(),
         }
     }
