@@ -8,7 +8,9 @@ use sos24_domain::entity::firebase_user::{
 };
 use sos24_domain::entity::permission::{PermissionDeniedError, Permissions};
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
-use sos24_domain::repository::firebase_user::FirebaseUserRepository;
+use sos24_domain::repository::firebase_user::{
+    FirebaseUserRepository, FirebaseUserRepositoryError,
+};
 use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 use thiserror::Error;
@@ -24,6 +26,8 @@ pub enum UserUseCaseError {
 
     #[error(transparent)]
     UserRepositoryError(#[from] UserRepositoryError),
+    #[error(transparent)]
+    FirebaseUserRepositoryError(#[from] FirebaseUserRepositoryError),
     #[error(transparent)]
     EmailError(#[from] EmailError),
     #[error(transparent)]

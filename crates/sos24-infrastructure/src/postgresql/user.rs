@@ -133,19 +133,30 @@ impl UserRepository for PgUserRepository {
 
     async fn create(&self, user: User) -> Result<(), UserRepositoryError> {
         let user = user.destruct();
-        sqlx::query!(
+        let res = sqlx::query!(
           r#"INSERT INTO users (id, name, kana_name, email, phone_number, category) VALUES ($1, $2, $3, $4, $5, $6)"#,
           user.id.value(),
           user.name.value(),
           user.kana_name.value(),
-          user.email.value(),
-          user.phone_number.value(),
+          user.email.clone().value(),
+          user.phone_number.clone().value(),
           UserCategoryRow::from(user.category) as UserCategoryRow,
         )
         .execute(&*self.db)
-        .await
-        .context("Failed to create user")?;
-        Ok(())
+        .await;
+
+        match res {
+            Ok(_) => Ok(()),
+            Err(e) => match e.as_database_error() {
+                Some(e) if e.constraint() == Some("users_email_key") => {
+                    Err(UserRepositoryError::EmailAlreadyUsed(user.email))
+                }
+                Some(e) if e.constraint() == Some("users_phone_number_key") => Err(
+                    UserRepositoryError::PhoneNumberAlreadyUsed(user.phone_number),
+                ),
+                _ => Err(anyhow::anyhow!("Failed to create user: {e}").into()),
+            },
+        }
     }
 
     async fn find_by_id(&self, id: UserId) -> Result<Option<WithDate<User>>, UserRepositoryError> {
