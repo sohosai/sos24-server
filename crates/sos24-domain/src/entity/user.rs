@@ -91,6 +91,10 @@ pub struct DestructuredUser {
 }
 
 impl User {
+    pub fn into_actor(self) -> Actor {
+        Actor::new(self.id, self.role)
+    }
+
     pub fn is_visible_to(&self, actor: &Actor) -> bool {
         actor.user_id() == self.id() || actor.has_permission(Permissions::READ_USER_ALL)
     }
