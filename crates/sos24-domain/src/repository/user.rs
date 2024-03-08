@@ -5,15 +5,15 @@ use thiserror::Error;
 
 use crate::entity::{
     common::date::WithDate,
-    user::{User, UserId},
+    user::{User, UserEmail, UserId, UserPhoneNumber},
 };
 
 #[derive(Debug, Error)]
 pub enum UserRepositoryError {
-    #[error("Email already used")]
-    EmailAlreadyUsed,
-    #[error("Phone number already used")]
-    PhoneNumberAlreadyUsed,
+    #[error("Email already used: {0:?}")]
+    EmailAlreadyUsed(UserEmail),
+    #[error("Phone number already used: {0:?}")]
+    PhoneNumberAlreadyUsed(UserPhoneNumber),
     #[error(transparent)]
     InternalError(#[from] anyhow::Error),
 }

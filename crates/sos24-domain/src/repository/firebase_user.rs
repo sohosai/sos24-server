@@ -3,12 +3,12 @@ use std::future::Future;
 use mockall::automock;
 use thiserror::Error;
 
-use crate::entity::firebase_user::{FirebaseUserId, NewFirebaseUser};
+use crate::entity::firebase_user::{FirebaseUserEmail, FirebaseUserId, NewFirebaseUser};
 
 #[derive(Debug, Error)]
 pub enum FirebaseUserRepositoryError {
-    #[error("Email already exists")]
-    EmailExists,
+    #[error("Email already exists: {0:?}")]
+    EmailExists(FirebaseUserEmail),
     #[error(transparent)]
     InternalError(#[from] anyhow::Error),
 }

@@ -138,8 +138,8 @@ impl UserRepository for PgUserRepository {
           user.id.value(),
           user.name.value(),
           user.kana_name.value(),
-          user.email.value(),
-          user.phone_number.value(),
+          user.email.clone().value(),
+          user.phone_number.clone().value(),
           UserCategoryRow::from(user.category) as UserCategoryRow,
         )
         .execute(&*self.db)
@@ -149,11 +149,11 @@ impl UserRepository for PgUserRepository {
             Ok(_) => Ok(()),
             Err(e) => match e.as_database_error() {
                 Some(e) if e.constraint() == Some("users_email_key") => {
-                    Err(UserRepositoryError::EmailAlreadyUsed)
+                    Err(UserRepositoryError::EmailAlreadyUsed(user.email))
                 }
-                Some(e) if e.constraint() == Some("users_phone_number_key") => {
-                    Err(UserRepositoryError::EmailAlreadyUsed)
-                }
+                Some(e) if e.constraint() == Some("users_phone_number_key") => Err(
+                    UserRepositoryError::PhoneNumberAlreadyUsed(user.phone_number),
+                ),
                 _ => Err(anyhow::anyhow!("Failed to create user: {e}").into()),
             },
         }

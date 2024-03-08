@@ -28,7 +28,7 @@ impl FirebaseUserRepository for FirebaseUserRepositoryImpl {
         let created_user = self
             .auth
             .create_user(NewUser::email_and_password(
-                new_firebase_user.email.value(),
+                new_firebase_user.email.clone().value(),
                 new_firebase_user.password.value(),
             ))
             .await;
@@ -36,9 +36,9 @@ impl FirebaseUserRepository for FirebaseUserRepositoryImpl {
         match created_user {
             Ok(created_user) => Ok(FirebaseUserId::new(created_user.uid)),
             Err(err) => match err.current_context() {
-                ApiClientError::ServerError(err) if err.message.as_str() == "EMAIL_EXISTS" => {
-                    Err(FirebaseUserRepositoryError::EmailExists)
-                }
+                ApiClientError::ServerError(err) if err.message.as_str() == "EMAIL_EXISTS" => Err(
+                    FirebaseUserRepositoryError::EmailExists(new_firebase_user.email),
+                ),
                 _ => Err(anyhow::anyhow!("Failed to create firebase user: {err}").into()),
             },
         }

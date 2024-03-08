@@ -48,8 +48,8 @@ impl ToStatusCode for NewsRepositoryError {
 impl ToStatusCode for UserRepositoryError {
     fn status_code(&self) -> StatusCode {
         match self {
-            UserRepositoryError::EmailAlreadyUsed => StatusCode::CONFLICT,
-            UserRepositoryError::PhoneNumberAlreadyUsed => StatusCode::CONFLICT,
+            UserRepositoryError::EmailAlreadyUsed(_) => StatusCode::CONFLICT,
+            UserRepositoryError::PhoneNumberAlreadyUsed(_) => StatusCode::CONFLICT,
             UserRepositoryError::InternalError(e) => e.status_code(),
         }
     }
@@ -58,7 +58,7 @@ impl ToStatusCode for UserRepositoryError {
 impl ToStatusCode for FirebaseUserRepositoryError {
     fn status_code(&self) -> StatusCode {
         match self {
-            FirebaseUserRepositoryError::EmailExists => StatusCode::CONFLICT,
+            FirebaseUserRepositoryError::EmailExists(_) => StatusCode::CONFLICT,
             FirebaseUserRepositoryError::InternalError(e) => e.status_code(),
         }
     }
