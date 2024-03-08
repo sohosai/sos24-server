@@ -7,28 +7,13 @@ use axum::{
     Extension, Json,
 };
 use sos24_domain::entity::actor::Actor;
-use sos24_use_case::{
-    dto::user::CreateUserDto,
-    error::{user::UserError, UseCaseError},
-};
+use sos24_use_case::dto::user::CreateUserDto;
 
 use crate::{
     model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User},
     module::Modules,
+    status_code::ToStatusCode,
 };
-
-use super::ToStatusCode;
-
-impl ToStatusCode for UseCaseError<UserError> {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            UseCaseError::UseCase(UserError::NotFound(_)) => StatusCode::NOT_FOUND,
-            UseCaseError::UseCase(UserError::InvalidEmail(_)) => StatusCode::BAD_REQUEST,
-            UseCaseError::UseCase(UserError::PermissionDenied(_)) => StatusCode::NOT_FOUND,
-            UseCaseError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,

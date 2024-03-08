@@ -8,7 +8,7 @@ use sos24_domain::{
             UserRole,
         },
     },
-    repository::user::UserRepository,
+    repository::user::{UserRepository, UserRepositoryError},
 };
 use sqlx::prelude::*;
 
@@ -122,17 +122,16 @@ impl PgUserRepository {
 }
 
 impl UserRepository for PgUserRepository {
-    async fn list(&self) -> anyhow::Result<Vec<WithDate<User>>> {
+    async fn list(&self) -> Result<Vec<WithDate<User>>, UserRepositoryError> {
         let user_list = sqlx::query_as!(UserRow, r#"SELECT id, name, kana_name, email, phone_number, category AS "category: UserCategoryRow", role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE deleted_at IS NULL"#)
             .fetch(&*self.db)
-            .map(|row| WithDate::try_from(row?))
+            .map(|row| WithDate::try_from(row.context("Failed to fetch user list")?))
             .try_collect()
-            .await
-            .context("Failed to fetch user list")?;
+            .await?;
         Ok(user_list)
     }
 
-    async fn create(&self, user: User) -> anyhow::Result<()> {
+    async fn create(&self, user: User) -> Result<(), UserRepositoryError> {
         let user = user.destruct();
         sqlx::query!(
           r#"INSERT INTO users (id, name, kana_name, email, phone_number, category) VALUES ($1, $2, $3, $4, $5, $6)"#,
@@ -146,11 +145,10 @@ impl UserRepository for PgUserRepository {
         .execute(&*self.db)
         .await
         .context("Failed to create user")?;
-
         Ok(())
     }
 
-    async fn find_by_id(&self, id: UserId) -> anyhow::Result<Option<WithDate<User>>> {
+    async fn find_by_id(&self, id: UserId) -> Result<Option<WithDate<User>>, UserRepositoryError> {
         let user_row = sqlx::query_as!(
             UserRow,
             r#"SELECT id, name, kana_name, email, phone_number, category AS "category: UserCategoryRow", role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE id = $1 AND deleted_at IS NULL"#,
@@ -159,11 +157,10 @@ impl UserRepository for PgUserRepository {
         .fetch_optional(&*self.db)
         .await
         .context("Failed to fetch user by id")?;
-
-        user_row.map(WithDate::try_from).transpose()
+        Ok(user_row.map(WithDate::try_from).transpose()?)
     }
 
-    async fn update(&self, user: User) -> anyhow::Result<()> {
+    async fn update(&self, user: User) -> Result<(), UserRepositoryError> {
         let user = user.destruct();
         sqlx::query!(
             r#"UPDATE users SET name = $2, kana_name = $3, email = $4, phone_number = $5, category = $6, role = $7 WHERE id = $1 AND deleted_at IS NULL"#,
@@ -181,7 +178,7 @@ impl UserRepository for PgUserRepository {
         Ok(())
     }
 
-    async fn delete_by_id(&self, id: UserId) -> anyhow::Result<()> {
+    async fn delete_by_id(&self, id: UserId) -> Result<(), UserRepositoryError> {
         sqlx::query!(
             r#"UPDATE users SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
             id.value(),

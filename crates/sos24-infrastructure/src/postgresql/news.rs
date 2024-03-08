@@ -4,7 +4,7 @@ use sos24_domain::entity::common::date::WithDate;
 use sqlx::prelude::*;
 
 use sos24_domain::entity::news::{News, NewsBody, NewsCategories, NewsId, NewsTitle};
-use sos24_domain::repository::news::NewsRepository;
+use sos24_domain::repository::news::{NewsRepository, NewsRepositoryError};
 
 use crate::postgresql::Postgresql;
 
@@ -46,7 +46,7 @@ impl PgNewsRepository {
 }
 
 impl NewsRepository for PgNewsRepository {
-    async fn list(&self) -> anyhow::Result<Vec<WithDate<News>>> {
+    async fn list(&self) -> Result<Vec<WithDate<News>>, NewsRepositoryError> {
         let news_list = sqlx::query_as!(NewsRow, r#"SELECT * FROM news WHERE deleted_at IS NULL"#)
             .fetch(&*self.db)
             .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
@@ -56,7 +56,7 @@ impl NewsRepository for PgNewsRepository {
         Ok(news_list)
     }
 
-    async fn create(&self, news: News) -> anyhow::Result<()> {
+    async fn create(&self, news: News) -> Result<(), NewsRepositoryError> {
         let news = news.destruct();
         sqlx::query!(
             r#"INSERT INTO news (id, title, body, categories) VALUES ($1, $2, $3, $4)"#,
@@ -71,7 +71,7 @@ impl NewsRepository for PgNewsRepository {
         Ok(())
     }
 
-    async fn find_by_id(&self, id: NewsId) -> anyhow::Result<Option<WithDate<News>>> {
+    async fn find_by_id(&self, id: NewsId) -> Result<Option<WithDate<News>>, NewsRepositoryError> {
         let news_row = sqlx::query_as!(
             NewsRow,
             r#"SELECT * FROM news WHERE id = $1 AND deleted_at IS NULL"#,
@@ -80,13 +80,10 @@ impl NewsRepository for PgNewsRepository {
         .fetch_optional(&*self.db)
         .await
         .context("Failed to fetch news")?;
-
-        news_row
-            .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row)))
-            .transpose()
+        Ok(news_row.map(|row| WithDate::from(row)))
     }
 
-    async fn update(&self, news: News) -> anyhow::Result<()> {
+    async fn update(&self, news: News) -> Result<(), NewsRepositoryError> {
         let news = news.destruct();
         sqlx::query!(
             r#"UPDATE news SET title = $2, body = $3, categories = $4 WHERE id = $1 and deleted_at IS NULL"#,
@@ -101,7 +98,7 @@ impl NewsRepository for PgNewsRepository {
         Ok(())
     }
 
-    async fn delete_by_id(&self, id: NewsId) -> anyhow::Result<()> {
+    async fn delete_by_id(&self, id: NewsId) -> Result<(), NewsRepositoryError> {
         sqlx::query!(
             r#"UPDATE news SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()

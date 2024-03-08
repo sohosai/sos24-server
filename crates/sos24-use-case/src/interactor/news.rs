@@ -1,27 +1,39 @@
 use std::sync::Arc;
 
-use anyhow::Context;
 use sos24_domain::{
     ensure,
     entity::{
         actor::Actor,
-        news::{NewsBody, NewsCategories, NewsId, NewsTitle},
-        permission::Permissions,
+        news::{NewsBody, NewsCategories, NewsId, NewsIdError, NewsTitle},
+        permission::{PermissionDeniedError, Permissions},
     },
-    repository::{news::NewsRepository, Repositories},
+    repository::{
+        news::{NewsRepository, NewsRepositoryError},
+        Repositories,
+    },
+};
+use thiserror::Error;
+
+use crate::dto::FromEntity;
+use crate::dto::{
+    news::{CreateNewsDto, NewsDto, UpdateNewsDto},
+    ToEntity,
 };
 
-use crate::{
-    dto::FromEntity,
-    error::{news::NewsError, UseCaseError},
-};
-use crate::{
-    dto::{
-        news::{CreateNewsDto, NewsDto, UpdateNewsDto},
-        ToEntity,
-    },
-    error::Result,
-};
+#[derive(Debug, Error)]
+pub enum NewsUseCaseError {
+    #[error("News not found: {0:?}")]
+    NotFound(NewsId),
+
+    #[error(transparent)]
+    NewsRepositoryError(#[from] NewsRepositoryError),
+    #[error(transparent)]
+    NewsIdError(#[from] NewsIdError),
+    #[error(transparent)]
+    PermissionDeniedError(#[from] PermissionDeniedError),
+    #[error(transparent)]
+    InternalError(#[from] anyhow::Error),
+}
 
 pub struct NewsUseCase<R: Repositories> {
     repositories: Arc<R>,
@@ -32,96 +44,72 @@ impl<R: Repositories> NewsUseCase<R> {
         Self { repositories }
     }
 
-    pub async fn list(&self, actor: &Actor) -> Result<Vec<NewsDto>, NewsError> {
+    pub async fn list(&self, actor: &Actor) -> Result<Vec<NewsDto>, NewsUseCaseError> {
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
 
-        let raw_news_list = self
-            .repositories
-            .news_repository()
-            .list()
-            .await
-            .context("Failed to list news")?;
-
-        let news_list = raw_news_list
-            .into_iter()
-            .map(NewsDto::from_entity)
-            .collect();
-        Ok(news_list)
+        let raw_news_list = self.repositories.news_repository().list().await?;
+        let news_list = raw_news_list.into_iter().map(NewsDto::from_entity);
+        Ok(news_list.collect())
     }
 
-    pub async fn create(&self, actor: &Actor, raw_news: CreateNewsDto) -> Result<(), NewsError> {
+    pub async fn create(
+        &self,
+        actor: &Actor,
+        raw_news: CreateNewsDto,
+    ) -> Result<(), NewsUseCaseError> {
         ensure!(actor.has_permission(Permissions::CREATE_NEWS));
 
         let news = raw_news.into_entity()?;
-        self.repositories
-            .news_repository()
-            .create(news)
-            .await
-            .context("Failed to create news")?;
+        self.repositories.news_repository().create(news).await?;
         Ok(())
     }
 
-    pub async fn find_by_id(&self, actor: &Actor, id: String) -> Result<NewsDto, NewsError> {
+    pub async fn find_by_id(&self, actor: &Actor, id: String) -> Result<NewsDto, NewsUseCaseError> {
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
 
-        let id: NewsId = id.try_into()?;
+        let id = NewsId::try_from(id)?;
         let raw_news = self
             .repositories
             .news_repository()
             .find_by_id(id.clone())
-            .await
-            .context("Failed to find news")?;
-
-        match raw_news {
-            Some(raw_news) => Ok(NewsDto::from_entity(raw_news)),
-            None => Err(UseCaseError::UseCase(NewsError::NotFound(id))),
-        }
+            .await?
+            .ok_or(NewsUseCaseError::NotFound(id))?;
+        Ok(NewsDto::from_entity(raw_news))
     }
 
-    pub async fn update(&self, actor: &Actor, news_data: UpdateNewsDto) -> Result<(), NewsError> {
-        ensure!(actor.has_permission(Permissions::UPDATE_NEWS_ALL));
-
-        let id: NewsId = news_data.id.try_into().context("Failed to parse news id")?;
+    pub async fn update(
+        &self,
+        actor: &Actor,
+        news_data: UpdateNewsDto,
+    ) -> Result<(), NewsUseCaseError> {
+        let id = NewsId::try_from(news_data.id)?;
         let news = self
             .repositories
             .news_repository()
             .find_by_id(id.clone())
-            .await
-            .context("Failed to find news")?
-            .ok_or(UseCaseError::UseCase(NewsError::NotFound(id)))?;
+            .await?
+            .ok_or(NewsUseCaseError::NotFound(id))?;
 
         let mut new_news = news.value;
         new_news.set_title(actor, NewsTitle::new(news_data.title))?;
         new_news.set_body(actor, NewsBody::new(news_data.body))?;
         new_news.set_categories(actor, NewsCategories::new(news_data.categories))?;
 
-        self.repositories
-            .news_repository()
-            .update(new_news)
-            .await
-            .context("Failed to update news")?;
-
+        self.repositories.news_repository().update(new_news).await?;
         Ok(())
     }
 
-    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), NewsError> {
+    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), NewsUseCaseError> {
         ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
 
-        let id: NewsId = id.try_into().context("Failed to parse news id")?;
-
+        let id = NewsId::try_from(id)?;
         self.repositories
             .news_repository()
             .find_by_id(id.clone())
-            .await
-            .context("Failed to find news")?
-            .ok_or(UseCaseError::UseCase(NewsError::NotFound(id.clone())))?;
+            .await?
+            .ok_or(NewsUseCaseError::NotFound(id.clone()))?;
 
-        self.repositories
-            .news_repository()
-            .delete_by_id(id)
-            .await
-            .context("Failed to delete news")?;
-
+        self.repositories.news_repository().delete_by_id(id).await?;
         Ok(())
     }
 }

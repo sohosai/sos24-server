@@ -1,11 +1,9 @@
-use std::convert::Infallible;
-
 use sos24_domain::entity::{
     common::date::WithDate,
     news::{News, NewsBody, NewsCategories, NewsId, NewsTitle},
 };
 
-use crate::error::{news::NewsError, Result};
+use crate::interactor::news::NewsUseCaseError;
 
 use super::{FromEntity, ToEntity};
 
@@ -28,7 +26,7 @@ impl CreateNewsDto {
 
 impl ToEntity for CreateNewsDto {
     type Entity = News;
-    type Error = Infallible;
+    type Error = NewsUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(News::create(
             NewsTitle::new(self.title),
@@ -59,7 +57,7 @@ impl UpdateNewsDto {
 
 impl ToEntity for UpdateNewsDto {
     type Entity = News;
-    type Error = NewsError;
+    type Error = NewsUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(News::new(
             NewsId::try_from(self.id)?,
