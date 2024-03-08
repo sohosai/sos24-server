@@ -6,24 +6,10 @@ use axum::response::IntoResponse;
 use axum::{Extension, Json};
 use sos24_domain::entity::actor::Actor;
 use sos24_use_case::dto::news::CreateNewsDto;
-use sos24_use_case::error::news::NewsError;
-use sos24_use_case::error::UseCaseError;
 
 use crate::model::news::{ConvertToUpdateNewsDto, CreateNews, News, UpdateNews};
 use crate::module::Modules;
-
-use super::ToStatusCode;
-
-impl ToStatusCode for UseCaseError<NewsError> {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            UseCaseError::UseCase(NewsError::NotFound(_)) => StatusCode::NOT_FOUND,
-            UseCaseError::UseCase(NewsError::InvalidNewsId(_)) => StatusCode::BAD_REQUEST,
-            UseCaseError::UseCase(NewsError::PermissionDenied(_)) => StatusCode::NOT_FOUND,
-            UseCaseError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
+use crate::status_code::ToStatusCode;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,

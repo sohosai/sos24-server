@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use axum::{
-    http::StatusCode,
     routing::{delete, get, post, put},
     Router,
 };
@@ -14,10 +13,6 @@ use crate::{middleware::auth, module::Modules};
 pub mod health;
 pub mod news;
 pub mod user;
-
-pub trait ToStatusCode {
-    fn status_code(&self) -> StatusCode;
-}
 
 pub fn create_app(modules: Modules) -> Router {
     let modules = Arc::new(modules);
