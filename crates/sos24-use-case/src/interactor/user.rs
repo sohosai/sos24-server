@@ -87,6 +87,21 @@ impl<R: Repositories> UserUseCase<R> {
         }
     }
 
+    pub async fn find_by_id_as_actor(&self, id: String) -> Result<Actor, UserError> {
+        let id = UserId::new(id);
+        let raw_user = self
+            .repositories
+            .user_repository()
+            .find_by_id(id.clone())
+            .await
+            .context("Failed to find user")?;
+
+        match raw_user {
+            Some(raw_user) => Ok(raw_user.value.into_actor()),
+            _ => Err(UseCaseError::UseCase(UserError::NotFound(id))),
+        }
+    }
+
     pub async fn update(&self, actor: &Actor, user_data: UpdateUserDto) -> Result<(), UserError> {
         let id = UserId::new(user_data.id);
         let user = self
