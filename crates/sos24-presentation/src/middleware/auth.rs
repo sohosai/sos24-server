@@ -58,10 +58,18 @@ pub(crate) async fn jwt_auth(
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
     let user = modules
         .user_use_case()
-        .find_by_id_with_default_actor(token.claims.sub.clone())
+        .find_by_id(&Actor::new_admin(), token.claims.sub.clone())
         .await
         .map_err(|_| StatusCode::UNAUTHORIZED)?;
-    let actor = Actor::new(UserId::new(user.id), user.role.into_entity().unwrap());
+
+    let user_role = match user.role.into_entity() {
+        Ok(user_role) => user_role,
+        Err(e) => {
+            tracing::error!("Failed to convert user role: {e}");
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+    let actor = Actor::new(UserId::new(user.id), user_role);
     request.extensions_mut().insert(actor);
 
     Ok(next.run(request).await)

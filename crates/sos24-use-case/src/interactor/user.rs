@@ -87,11 +87,6 @@ impl<R: Repositories> UserUseCase<R> {
         }
     }
 
-    // TODO
-    pub async fn find_by_id_with_default_actor(&self, id: String) -> Result<UserDto, UserError> {
-        self.find_by_id(&Actor::new_admin(), id).await
-    }
-
     pub async fn update(&self, actor: &Actor, user_data: UpdateUserDto) -> Result<(), UserError> {
         let id = UserId::new(user_data.id);
         let user = self

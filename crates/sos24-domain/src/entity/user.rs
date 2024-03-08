@@ -136,7 +136,7 @@ impl User {
     }
 
     pub fn set_role(&mut self, actor: &Actor, role: UserRole) -> Result<(), PermissionDeniedError> {
-        ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL)); // TODO
+        ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL));
         self.role = role;
         Ok(())
     }

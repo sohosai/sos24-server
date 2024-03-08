@@ -20,7 +20,7 @@ impl Actor {
 
     pub fn new_admin() -> Self {
         Self {
-            user_id: UserId::new("admin".to_string()), // TODO
+            user_id: UserId::new("admin".to_string()),
             role: UserRole::Administrator,
         }
     }
