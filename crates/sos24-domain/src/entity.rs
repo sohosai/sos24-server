@@ -1,6 +1,7 @@
 pub mod common;
 pub mod firebase_user;
 pub mod news;
+pub mod news_attachment;
 pub mod user;
 
 #[macro_export]

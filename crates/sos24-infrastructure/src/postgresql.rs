@@ -4,6 +4,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 pub mod news;
+pub mod news_attachment;
 pub mod user;
 
 #[derive(Clone)]

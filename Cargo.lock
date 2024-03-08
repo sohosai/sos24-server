@@ -2099,6 +2099,7 @@ dependencies = [
  "mockall",
  "regex",
  "thiserror",
+ "url",
  "uuid",
 ]
 
@@ -2112,6 +2113,7 @@ dependencies = [
  "rs-firebase-admin-sdk",
  "sos24-domain",
  "sqlx",
+ "url",
  "uuid",
 ]
 
