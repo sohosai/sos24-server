@@ -1,3 +1,4 @@
+pub mod actor;
 pub mod common;
 pub mod firebase_user;
 pub mod news;
