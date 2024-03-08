@@ -1,24 +1,28 @@
-use getset::{Getters, Setters};
+use getset::Getters;
 
-use crate::impl_value_object;
+use crate::{ensure, impl_value_object};
 
-use super::common::email::{Email, EmailError};
+use super::{
+    actor::Actor,
+    common::email::{Email, EmailError},
+    permission::{PermissionDeniedError, Permissions},
+};
 
-#[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
+#[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct User {
     #[getset(get = "pub")]
     id: UserId,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     name: UserName,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     kana_name: UserKanaName,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     email: UserEmail,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     phone_number: UserPhoneNumber,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     role: UserRole,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub")]
     category: UserCategory,
 }
 
@@ -84,6 +88,69 @@ pub struct DestructuredUser {
     pub phone_number: UserPhoneNumber,
     pub role: UserRole,
     pub category: UserCategory,
+}
+
+impl User {
+    pub fn is_visible_to(&self, actor: &Actor) -> bool {
+        let a = actor.user_id() == self.id();
+        a || actor.has_permission(Permissions::READ_USER_ALL)
+    }
+
+    fn is_updatable_by(&self, actor: &Actor) -> bool {
+        actor.user_id() == self.id() || actor.has_permission(Permissions::UPDATE_USER_ALL)
+    }
+
+    pub fn set_name(&mut self, actor: &Actor, name: UserName) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.name = name;
+        Ok(())
+    }
+
+    pub fn set_kana_name(
+        &mut self,
+        actor: &Actor,
+        kana_name: UserKanaName,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.kana_name = kana_name;
+        Ok(())
+    }
+
+    pub fn set_email(
+        &mut self,
+        actor: &Actor,
+        email: UserEmail,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.email = email;
+        Ok(())
+    }
+
+    pub fn set_phone_number(
+        &mut self,
+        actor: &Actor,
+        phone_number: UserPhoneNumber,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.phone_number = phone_number;
+        Ok(())
+    }
+
+    pub fn set_role(&mut self, actor: &Actor, role: UserRole) -> Result<(), PermissionDeniedError> {
+        ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL)); // TODO
+        self.role = role;
+        Ok(())
+    }
+
+    pub fn set_category(
+        &mut self,
+        actor: &Actor,
+        category: UserCategory,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.category = category;
+        Ok(())
+    }
 }
 
 impl_value_object!(UserId(String));
