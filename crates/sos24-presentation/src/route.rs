@@ -25,6 +25,15 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:news_id", delete(news::handle_delete_id))
         .route("/:news_id", put(news::handle_put_id));
 
+    let news_attachment = Router::new()
+        .route("/", get(news_attachment::handle_get))
+        .route("/", post(news_attachment::handle_post))
+        .route("/:news_attachment_id", get(news_attachment::handle_get_id))
+        .route(
+            "/:news_attachment_id",
+            delete(news_attachment::handle_delete_id),
+        );
+
     let user = Router::new()
         .route("/", get(user::handle_get))
         .route("/:user_id", get(user::handle_get_id))
@@ -33,6 +42,7 @@ pub fn create_app(modules: Modules) -> Router {
 
     let private_routes = Router::new()
         .nest("/news", news)
+        .nest("/news_attachments", news_attachment)
         .nest("/users", user)
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),

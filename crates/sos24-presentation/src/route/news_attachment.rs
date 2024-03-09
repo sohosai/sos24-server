@@ -30,8 +30,8 @@ pub async fn handle_get(
 
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
-    Json(raw_news): Json<CreateNews>,
     Extension(actor): Extension<Actor>,
+    Json(raw_news): Json<CreateNews>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let news = CreateNewsDto::from(raw_news);
     let res = modules.news_use_case().create(&actor, news).await;
