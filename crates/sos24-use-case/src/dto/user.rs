@@ -7,7 +7,18 @@ use sos24_domain::entity::{
 
 use crate::interactor::user::UserUseCaseError;
 
-use super::{FromEntity, ToEntity};
+use super::{authorization::PermissionGate, FromEntity, ToEntity, ToEntityWithPermissionGate};
+
+#[derive(Debug)]
+pub struct UserIdDto(pub String);
+
+impl ToEntityWithPermissionGate for UserIdDto {
+    type Entity = UserId;
+    type Error = UserUseCaseError;
+    fn into_entity(self) -> Result<PermissionGate<Self::Entity>, Self::Error> {
+        Ok(PermissionGate::new(UserId::new(self.0)))
+    }
+}
 
 #[derive(Debug)]
 pub struct CreateUserDto {
@@ -102,11 +113,11 @@ pub struct UserDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for UserDto {
+impl FromEntity for PermissionGate<UserDto> {
     type Entity = WithDate<User>;
     fn from_entity(entity: Self::Entity) -> Self {
         let user = entity.value.destruct();
-        Self {
+        PermissionGate::new(UserDto {
             id: user.id.value(),
             name: user.name.value(),
             kana_name: user.kana_name.value(),
@@ -117,7 +128,7 @@ impl FromEntity for UserDto {
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,
-        }
+        })
     }
 }
 

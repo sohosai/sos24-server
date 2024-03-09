@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
-use sos24_domain::ensure;
 use sos24_domain::entity::actor::Actor;
 use sos24_domain::entity::common::email::EmailError;
 use sos24_domain::entity::firebase_user::{
     FirebaseUserEmail, FirebaseUserPassword, NewFirebaseUser,
 };
-use sos24_domain::entity::permission::{PermissionDeniedError, Permissions};
+use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
 use sos24_domain::repository::firebase_user::{
     FirebaseUserRepository, FirebaseUserRepositoryError,
@@ -15,9 +14,10 @@ use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 use thiserror::Error;
 
-use crate::dto::user::{UpdateUserDto, UserDto};
-use crate::dto::FromEntity;
+use crate::dto::authorization::{PermissionGate, PermissionGateExt};
+use crate::dto::user::{UpdateUserDto, UserDto, UserIdDto};
 use crate::dto::{user::CreateUserDto, ToEntity};
+use crate::dto::{FromEntity, ToEntityWithPermissionGate};
 
 #[derive(Debug, Error)]
 pub enum UserUseCaseError {
@@ -46,11 +46,12 @@ impl<R: Repositories> UserUseCase<R> {
     }
 
     pub async fn list(&self, actor: &Actor) -> Result<Vec<UserDto>, UserUseCaseError> {
-        ensure!(actor.has_permission(Permissions::READ_USER_ALL));
-
         let raw_user_list = self.repositories.user_repository().list().await?;
-        let news_list = raw_user_list.into_iter().map(UserDto::from_entity);
-        Ok(news_list.collect())
+        let news_list = raw_user_list
+            .into_iter()
+            .map(|user| PermissionGate::from_entity(user).for_read(actor))
+            .collect::<Result<_, _>>()?;
+        Ok(news_list)
     }
 
     pub async fn create(&self, raw_user: CreateUserDto) -> Result<(), UserUseCaseError> {
@@ -87,12 +88,8 @@ impl<R: Repositories> UserUseCase<R> {
             .find_by_id(id.clone())
             .await?
             .ok_or(UserUseCaseError::NotFound(id.clone()))?;
-
-        if raw_user.value.is_visible_to(actor) {
-            Ok(UserDto::from_entity(raw_user))
-        } else {
-            Err(UserUseCaseError::NotFound(id))
-        }
+        let user = PermissionGate::from_entity(raw_user).for_read(actor)?;
+        Ok(user)
     }
 
     pub async fn find_by_id_as_actor(&self, id: String) -> Result<Actor, UserUseCaseError> {
@@ -114,17 +111,13 @@ impl<R: Repositories> UserUseCase<R> {
         actor: &Actor,
         user_data: UpdateUserDto,
     ) -> Result<(), UserUseCaseError> {
-        let id = UserId::new(user_data.id);
+        let id = UserIdDto(user_data.id).into_entity()?.for_update(actor)?;
         let user = self
             .repositories
             .user_repository()
             .find_by_id(id.clone())
             .await?
             .ok_or(UserUseCaseError::NotFound(id.clone()))?;
-
-        if !user.value.is_visible_to(actor) {
-            return Err(UserUseCaseError::NotFound(id));
-        }
 
         let mut new_user = user.value;
         new_user.set_name(actor, UserName::new(user_data.name))?;
@@ -139,9 +132,7 @@ impl<R: Repositories> UserUseCase<R> {
     }
 
     pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), UserUseCaseError> {
-        ensure!(actor.has_permission(Permissions::DELETE_USER_ALL));
-
-        let id = UserId::new(id);
+        let id = UserIdDto(id).into_entity()?.for_delete(actor)?;
         self.repositories
             .user_repository()
             .find_by_id(id.clone())

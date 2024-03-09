@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
 use sos24_domain::{
-    ensure,
     entity::{
         actor::Actor,
         news::{NewsBody, NewsCategories, NewsId, NewsIdError, NewsTitle},
-        permission::{PermissionDeniedError, Permissions},
+        permission::PermissionDeniedError,
     },
     repository::{
         news::{NewsRepository, NewsRepositoryError},
@@ -14,10 +13,10 @@ use sos24_domain::{
 };
 use thiserror::Error;
 
-use crate::dto::FromEntity;
+use crate::dto::{authorization::PermissionGate, FromEntity, ToEntityWithPermissionGate};
 use crate::dto::{
-    news::{CreateNewsDto, NewsDto, UpdateNewsDto},
-    ToEntity,
+    authorization::PermissionGateExt,
+    news::{CreateNewsDto, NewsDto, NewsIdDto, UpdateNewsDto},
 };
 
 #[derive(Debug, Error)]
@@ -45,11 +44,12 @@ impl<R: Repositories> NewsUseCase<R> {
     }
 
     pub async fn list(&self, actor: &Actor) -> Result<Vec<NewsDto>, NewsUseCaseError> {
-        ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
-
         let raw_news_list = self.repositories.news_repository().list().await?;
-        let news_list = raw_news_list.into_iter().map(NewsDto::from_entity);
-        Ok(news_list.collect())
+        let news_list = raw_news_list
+            .into_iter()
+            .map(|news| PermissionGate::from_entity(news).for_read(actor))
+            .collect::<Result<_, _>>()?;
+        Ok(news_list)
     }
 
     pub async fn create(
@@ -57,24 +57,20 @@ impl<R: Repositories> NewsUseCase<R> {
         actor: &Actor,
         raw_news: CreateNewsDto,
     ) -> Result<(), NewsUseCaseError> {
-        ensure!(actor.has_permission(Permissions::CREATE_NEWS));
-
-        let news = raw_news.into_entity()?;
+        let news = raw_news.into_entity()?.for_create(actor)?;
         self.repositories.news_repository().create(news).await?;
         Ok(())
     }
 
     pub async fn find_by_id(&self, actor: &Actor, id: String) -> Result<NewsDto, NewsUseCaseError> {
-        ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
-
-        let id = NewsId::try_from(id)?;
+        let id = NewsIdDto(id).into_entity()?.for_read(actor)?;
         let raw_news = self
             .repositories
             .news_repository()
             .find_by_id(id.clone())
             .await?
             .ok_or(NewsUseCaseError::NotFound(id))?;
-        Ok(NewsDto::from_entity(raw_news))
+        Ok(PermissionGate::from_entity(raw_news).for_read(actor)?)
     }
 
     pub async fn update(
@@ -82,7 +78,7 @@ impl<R: Repositories> NewsUseCase<R> {
         actor: &Actor,
         news_data: UpdateNewsDto,
     ) -> Result<(), NewsUseCaseError> {
-        let id = NewsId::try_from(news_data.id)?;
+        let id = NewsIdDto(news_data.id).into_entity()?.for_update(actor)?;
         let news = self
             .repositories
             .news_repository()
@@ -100,9 +96,7 @@ impl<R: Repositories> NewsUseCase<R> {
     }
 
     pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), NewsUseCaseError> {
-        ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
-
-        let id = NewsId::try_from(id)?;
+        let id = NewsIdDto(id).into_entity()?.for_delete(actor)?;
         self.repositories
             .news_repository()
             .find_by_id(id.clone())

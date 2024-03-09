@@ -1,3 +1,6 @@
+use self::authorization::PermissionGate;
+
+pub mod authorization;
 pub mod news;
 pub mod user;
 
@@ -5,6 +8,12 @@ pub trait ToEntity {
     type Entity;
     type Error: std::error::Error;
     fn into_entity(self) -> Result<Self::Entity, Self::Error>;
+}
+
+pub trait ToEntityWithPermissionGate {
+    type Entity;
+    type Error: std::error::Error;
+    fn into_entity(self) -> Result<PermissionGate<Self::Entity>, Self::Error>;
 }
 
 pub trait FromEntity {

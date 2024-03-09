@@ -5,7 +5,18 @@ use sos24_domain::entity::{
 
 use crate::interactor::news::NewsUseCaseError;
 
-use super::{FromEntity, ToEntity};
+use super::{authorization::PermissionGate, FromEntity, ToEntityWithPermissionGate};
+
+#[derive(Debug)]
+pub struct NewsIdDto(pub String);
+
+impl ToEntityWithPermissionGate for NewsIdDto {
+    type Entity = NewsId;
+    type Error = NewsUseCaseError;
+    fn into_entity(self) -> Result<PermissionGate<Self::Entity>, Self::Error> {
+        Ok(PermissionGate::new(NewsId::try_from(self.0)?))
+    }
+}
 
 #[derive(Debug)]
 pub struct CreateNewsDto {
@@ -24,15 +35,15 @@ impl CreateNewsDto {
     }
 }
 
-impl ToEntity for CreateNewsDto {
+impl ToEntityWithPermissionGate for CreateNewsDto {
     type Entity = News;
     type Error = NewsUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(News::create(
+    fn into_entity(self) -> Result<PermissionGate<Self::Entity>, Self::Error> {
+        Ok(PermissionGate::new(News::create(
             NewsTitle::new(self.title),
             NewsBody::new(self.body),
             NewsCategories::new(self.categories),
-        ))
+        )))
     }
 }
 
@@ -55,16 +66,16 @@ impl UpdateNewsDto {
     }
 }
 
-impl ToEntity for UpdateNewsDto {
+impl ToEntityWithPermissionGate for UpdateNewsDto {
     type Entity = News;
     type Error = NewsUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(News::new(
+    fn into_entity(self) -> Result<PermissionGate<Self::Entity>, Self::Error> {
+        Ok(PermissionGate::new(News::new(
             NewsId::try_from(self.id)?,
             NewsTitle::new(self.title),
             NewsBody::new(self.body),
             NewsCategories::new(self.categories),
-        ))
+        )))
     }
 }
 
@@ -79,11 +90,11 @@ pub struct NewsDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for NewsDto {
+impl FromEntity for PermissionGate<NewsDto> {
     type Entity = WithDate<News>;
     fn from_entity(entity: Self::Entity) -> Self {
         let news = entity.value.destruct();
-        Self {
+        PermissionGate::new(NewsDto {
             id: news.id.value().to_string(),
             title: news.title.value(),
             body: news.body.value(),
@@ -91,6 +102,6 @@ impl FromEntity for NewsDto {
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,
-        }
+        })
     }
 }
