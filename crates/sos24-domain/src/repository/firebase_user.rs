@@ -1,5 +1,3 @@
-use std::future::Future;
-
 use mockall::automock;
 use thiserror::Error;
 
@@ -14,14 +12,11 @@ pub enum FirebaseUserRepositoryError {
 }
 
 #[automock]
+#[allow(async_fn_in_trait)]
 pub trait FirebaseUserRepository: Send + Sync + 'static {
-    fn create(
+    async fn create(
         &self,
         new_firebase_user: NewFirebaseUser,
-    ) -> impl Future<Output = Result<FirebaseUserId, FirebaseUserRepositoryError>> + Send;
-
-    fn delete_by_id(
-        &self,
-        id: FirebaseUserId,
-    ) -> impl Future<Output = Result<(), FirebaseUserRepositoryError>> + Send;
+    ) -> Result<FirebaseUserId, FirebaseUserRepositoryError>;
+    async fn delete_by_id(&self, id: FirebaseUserId) -> Result<(), FirebaseUserRepositoryError>;
 }
