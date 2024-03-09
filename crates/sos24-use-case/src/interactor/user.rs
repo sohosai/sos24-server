@@ -152,3 +152,397 @@ impl<R: Repositories> UserUseCase<R> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use anyhow::anyhow;
+    use sos24_domain::{
+        entity::{permission::PermissionDeniedError, user::UserRole},
+        repository::user::UserRepositoryError,
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{
+        dto::{
+            user::{CreateUserDto, UpdateUserDto, UserCategoryDto, UserRoleDto},
+            FromEntity,
+        },
+        interactor::user::{UserUseCase, UserUseCaseError},
+    };
+
+    #[tokio::test]
+    async fn list_general_fail() {
+        let repositories = MockRepositories::default();
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::General);
+        let res = use_case.list(&actor).await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+        ));
+    }
+
+    #[tokio::test]
+    async fn list_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case.list(&actor).await;
+        assert!(matches!(res, Ok(list) if list.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn create_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .firebase_user_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(fixture::firebase_user::id1()));
+        repositories
+            .user_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let res = use_case
+            .create(CreateUserDto::new(
+                fixture::user::name1().value(),
+                fixture::user::kana_name1().value(),
+                fixture::user::email1().value(),
+                fixture::firebase_user::password1().value(),
+                fixture::user::phone_number1().value(),
+                UserCategoryDto::from_entity(fixture::user::category1()),
+            ))
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    // UserRepositoryでのユーザー作成が失敗した場合にFirebaseRepositoryのユーザーが削除されることを検証する
+    #[tokio::test]
+    async fn create_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .firebase_user_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(fixture::firebase_user::id1()));
+        repositories
+            .user_repository_mut()
+            .expect_create()
+            .returning(|_| Err(UserRepositoryError::InternalError(anyhow!("error"))));
+        repositories
+            .firebase_user_repository_mut()
+            .expect_delete_by_id()
+            .times(1)
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let res = use_case
+            .create(CreateUserDto::new(
+                fixture::user::name1().value(),
+                fixture::user::kana_name1().value(),
+                fixture::user::email1().value(),
+                fixture::firebase_user::password1().value(),
+                fixture::user::phone_number1().value(),
+                UserCategoryDto::from_entity(fixture::user::category1()),
+            ))
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::UserRepositoryError(
+                UserRepositoryError::InternalError(_)
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_general_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::General);
+        let res = use_case
+            .find_by_id(&actor, fixture::user::id1().value())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_general_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::General);
+        let res = use_case
+            .find_by_id(&actor, fixture::user::id2().value())
+            .await;
+        assert!(matches!(res, Err(UserUseCaseError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .find_by_id(&actor, fixture::user::id2().value())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+
+    #[tokio::test]
+    async fn update_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .update(
+                &actor,
+                UpdateUserDto::new(
+                    fixture::user::id1().value(),
+                    fixture::user::name2().value(),
+                    fixture::user::kana_name2().value(),
+                    fixture::user::email2().value(),
+                    fixture::user::phone_number2().value(),
+                    UserRoleDto::from_entity(UserRole::General),
+                    UserCategoryDto::from_entity(fixture::user::category2()),
+                ),
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn update_committee_fail1() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .update(
+                &actor,
+                UpdateUserDto::new(
+                    fixture::user::id1().value(),
+                    fixture::user::name1().value(),
+                    fixture::user::kana_name1().value(),
+                    fixture::user::email1().value(),
+                    fixture::user::phone_number1().value(),
+                    UserRoleDto::from_entity(UserRole::Administrator),
+                    UserCategoryDto::from_entity(fixture::user::category1()),
+                ),
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+        ));
+    }
+
+    #[tokio::test]
+    async fn update_committee_fail2() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .update(
+                &actor,
+                UpdateUserDto::new(
+                    fixture::user::id2().value(),
+                    fixture::user::name2().value(),
+                    fixture::user::kana_name2().value(),
+                    fixture::user::email2().value(),
+                    fixture::user::phone_number2().value(),
+                    UserRoleDto::from_entity(UserRole::General),
+                    UserCategoryDto::from_entity(fixture::user::category2()),
+                ),
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+        ));
+    }
+
+    #[tokio::test]
+    async fn update_operator_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let res = use_case
+            .update(
+                &actor,
+                UpdateUserDto::new(
+                    fixture::user::id1().value(),
+                    fixture::user::name2().value(),
+                    fixture::user::kana_name2().value(),
+                    fixture::user::email2().value(),
+                    fixture::user::phone_number2().value(),
+                    UserRoleDto::from_entity(UserRole::Administrator),
+                    UserCategoryDto::from_entity(fixture::user::category2()),
+                ),
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn delete_by_id_committee_fail1() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_delete_by_id()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .delete_by_id(&actor, fixture::user::id1().value())
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+        ));
+    }
+
+    #[tokio::test]
+    async fn delete_by_id_committee_fail2() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_delete_by_id()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .delete_by_id(&actor, fixture::user::id2().value())
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+        ));
+    }
+
+    #[tokio::test]
+    async fn delete_by_id_operator_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_delete_by_id()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let res = use_case
+            .delete_by_id(&actor, fixture::user::id2().value())
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+}
