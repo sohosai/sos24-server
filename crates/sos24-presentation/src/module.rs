@@ -3,7 +3,9 @@
 use std::sync::Arc;
 
 use crate::config::Config;
-use sos24_use_case::interactor::{news::NewsUseCase, user::UserUseCase};
+use sos24_use_case::interactor::{
+    news::NewsUseCase, news_attachment::NewsAttachmentUseCase, user::UserUseCase,
+};
 
 #[cfg(not(test))]
 use sos24_infrastructure::DefaultRepositories;
@@ -18,6 +20,7 @@ pub type Repositories = MockRepositories;
 pub struct Modules {
     config: Config,
     news_use_case: NewsUseCase<Repositories>,
+    news_attachment_use_case: NewsAttachmentUseCase<Repositories>,
     user_use_case: UserUseCase<Repositories>,
 }
 
@@ -28,6 +31,10 @@ impl Modules {
 
     pub fn news_use_case(&self) -> &NewsUseCase<Repositories> {
         &self.news_use_case
+    }
+
+    pub fn news_attachment_use_case(&self) -> &NewsAttachmentUseCase<Repositories> {
+        &self.news_attachment_use_case
     }
 
     pub fn user_use_case(&self) -> &UserUseCase<Repositories> {
@@ -46,6 +53,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
     Ok(Modules {
         config,
         news_use_case: NewsUseCase::new(Arc::clone(&repository)),
+        news_attachment_use_case: NewsAttachmentUseCase::new(Arc::clone(&repository)),
         user_use_case: UserUseCase::new(Arc::clone(&repository)),
     })
 }
@@ -56,6 +64,7 @@ pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules>
     Ok(Modules {
         config: Config::default(),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories)),
+        news_attachment_use_case: NewsAttachmentUseCase::new(Arc::clone(&repositories)),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })
 }

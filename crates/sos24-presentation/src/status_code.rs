@@ -1,12 +1,17 @@
 use axum::http::StatusCode;
 use sos24_domain::{
-    entity::{common::email::EmailError, news::NewsIdError, permission::PermissionDeniedError},
+    entity::{
+        common::email::EmailError, news::NewsIdError, news_attachment::NewsAttachmentIdError,
+        permission::PermissionDeniedError,
+    },
     repository::{
         firebase_user::FirebaseUserRepositoryError, news::NewsRepositoryError,
-        user::UserRepositoryError,
+        news_attachment::NewsAttachmentRepositoryError, user::UserRepositoryError,
     },
 };
-use sos24_use_case::interactor::{news::NewsUseCaseError, user::UserUseCaseError};
+use sos24_use_case::interactor::{
+    news::NewsUseCaseError, news_attachment::NewsAttachmentUseCaseError, user::UserUseCaseError,
+};
 
 pub trait ToStatusCode {
     fn status_code(&self) -> StatusCode;
@@ -20,6 +25,20 @@ impl ToStatusCode for NewsUseCaseError {
             NewsUseCaseError::NewsIdError(e) => e.status_code(),
             NewsUseCaseError::PermissionDeniedError(e) => e.status_code(),
             NewsUseCaseError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for NewsAttachmentUseCaseError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            NewsAttachmentUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
+            NewsAttachmentUseCaseError::NewsAttachmentRepositoryError(e) => e.status_code(),
+            NewsAttachmentUseCaseError::NewsAttachmentIdError(e) => e.status_code(),
+            NewsAttachmentUseCaseError::NewsAttachmentNewsIdError(e) => e.status_code(),
+            NewsAttachmentUseCaseError::NewsAttachmentUrlError(e) => e.status_code(),
+            NewsAttachmentUseCaseError::PermissionDeniedError(e) => e.status_code(),
+            NewsAttachmentUseCaseError::InternalError(e) => e.status_code(),
         }
     }
 }
@@ -41,6 +60,14 @@ impl ToStatusCode for NewsRepositoryError {
     fn status_code(&self) -> StatusCode {
         match self {
             NewsRepositoryError::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
+
+impl ToStatusCode for NewsAttachmentRepositoryError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            NewsAttachmentRepositoryError::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -69,6 +96,20 @@ impl ToStatusCode for NewsIdError {
         match self {
             NewsIdError::InvalidUuid => StatusCode::BAD_REQUEST,
         }
+    }
+}
+
+impl ToStatusCode for NewsAttachmentIdError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            NewsAttachmentIdError::InvalidUuid => StatusCode::BAD_REQUEST,
+        }
+    }
+}
+
+impl ToStatusCode for url::ParseError {
+    fn status_code(&self) -> StatusCode {
+        StatusCode::BAD_REQUEST
     }
 }
 

@@ -5,9 +5,10 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
 use sos24_domain::entity::actor::Actor;
-use sos24_use_case::dto::news::CreateNewsDto;
+use sos24_use_case::dto::news_attachment::CreateNewsAttachmentDto;
 
-use crate::model::news::{CreateNews, News};
+use crate::model::news::News;
+use crate::model::news_attachment::CreateNewsAttachment;
 use crate::module::Modules;
 
 use crate::status_code::ToStatusCode;
@@ -31,10 +32,13 @@ pub async fn handle_get(
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
-    Json(raw_news): Json<CreateNews>,
+    Json(raw_news_attachment): Json<CreateNewsAttachment>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let news = CreateNewsDto::from(raw_news);
-    let res = modules.news_use_case().create(&actor, news).await;
+    let news_attachment = CreateNewsAttachmentDto::from(raw_news_attachment);
+    let res = modules
+        .news_attachment_use_case()
+        .create(&actor, news_attachment)
+        .await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create news attachment: {err}");
         err.status_code()
