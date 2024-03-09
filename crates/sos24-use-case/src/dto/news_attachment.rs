@@ -6,8 +6,6 @@ use sos24_domain::entity::{
     news_attachment::{NewsAttachment, NewsAttachmentUrl},
 };
 
-use crate::error::Result;
-
 use super::{FromEntity, ToEntity};
 
 #[derive(Debug)]
