@@ -58,7 +58,11 @@ pub struct DestructedNews {
 }
 
 impl News {
-    fn is_updatable_by(&self, actor: &Actor) -> bool {
+    pub fn is_visible_to(&self, actor: &Actor) -> bool {
+        actor.has_permission(Permissions::READ_NEWS_ALL)
+    }
+
+    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
         actor.has_permission(Permissions::UPDATE_NEWS_ALL)
     }
 

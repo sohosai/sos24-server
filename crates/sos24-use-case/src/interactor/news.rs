@@ -88,12 +88,31 @@ impl<R: Repositories> NewsUseCase<R> {
             .news_repository()
             .find_by_id(id.clone())
             .await?
-            .ok_or(NewsUseCaseError::NotFound(id))?;
+            .ok_or(NewsUseCaseError::NotFound(id.clone()))?;
+
+        if !news.value.is_visible_to(actor) {
+            return Err(NewsUseCaseError::NotFound(id));
+        }
+        if !news.value.is_updatable_by(actor) {
+            return Err(PermissionDeniedError.into());
+        }
 
         let mut new_news = news.value;
-        new_news.set_title(actor, NewsTitle::new(news_data.title))?;
-        new_news.set_body(actor, NewsBody::new(news_data.body))?;
-        new_news.set_categories(actor, NewsCategories::new(news_data.categories))?;
+
+        let new_title = NewsTitle::new(news_data.title);
+        if new_news.title() != &new_title {
+            new_news.set_title(actor, new_title)?;
+        }
+
+        let new_body = NewsBody::new(news_data.body);
+        if new_news.body() != &new_body {
+            new_news.set_body(actor, new_body)?;
+        }
+
+        let new_categories = NewsCategories::new(news_data.categories);
+        if new_news.categories() != &new_categories {
+            new_news.set_categories(actor, new_categories)?;
+        }
 
         self.repositories.news_repository().update(new_news).await?;
         Ok(())

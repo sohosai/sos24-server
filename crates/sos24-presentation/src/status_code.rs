@@ -40,7 +40,7 @@ impl ToStatusCode for UserUseCaseError {
 impl ToStatusCode for NewsRepositoryError {
     fn status_code(&self) -> StatusCode {
         match self {
-            NewsRepositoryError::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            NewsRepositoryError::InternalError(e) => e.status_code(),
         }
     }
 }
