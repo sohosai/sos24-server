@@ -1,10 +1,12 @@
-use std::{convert::Infallible, str::FromStr};
+use std::str::FromStr;
 
 use sos24_domain::entity::{
     common::date::WithDate,
-    news::NewsId,
+    news::{NewsId, NewsIdError},
     news_attachment::{NewsAttachment, NewsAttachmentUrl},
 };
+
+use crate::interactor::news_attachment::NewsAttachmentUseCaseError;
 
 use super::{FromEntity, ToEntity};
 
@@ -22,12 +24,14 @@ impl CreateNewsAttachmentDto {
 
 impl ToEntity for CreateNewsAttachmentDto {
     type Entity = NewsAttachment;
-    type Error = Infallible;
+    type Error = NewsAttachmentUseCaseError;
 
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        // FIXME: エラー処理
-        let news_id = uuid::Uuid::from_str(&self.news_id).unwrap();
-        let url = url::Url::parse(&self.url).unwrap();
+        let news_id = uuid::Uuid::from_str(&self.news_id).map_err(|_| {
+            NewsAttachmentUseCaseError::NewsAttachmentNewsIdError(NewsIdError::InvalidUuid)
+        })?;
+        let url = url::Url::parse(&self.url)
+            .map_err(NewsAttachmentUseCaseError::NewsAttachmentUrlError)?;
 
         Ok(NewsAttachment::create(
             NewsId::new(news_id),

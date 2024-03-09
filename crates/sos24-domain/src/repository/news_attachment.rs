@@ -1,11 +1,18 @@
 use std::future::Future;
 
 use mockall::automock;
+use thiserror::Error;
 
 use crate::entity::{
     common::date::WithDate,
     news_attachment::{NewsAttachment, NewsAttachmentId},
 };
+
+#[derive(Debug, Error)]
+pub enum NewsAttachmentRepositoryError {
+    #[error(transparent)]
+    InternalError(#[from] anyhow::Error),
+}
 
 #[automock]
 pub trait NewsAttachmentRepository: Send + Sync + 'static {
