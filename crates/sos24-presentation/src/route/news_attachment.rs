@@ -8,7 +8,7 @@ use sos24_domain::entity::actor::Actor;
 use sos24_use_case::dto::news_attachment::CreateNewsAttachmentDto;
 
 use crate::model::news::News;
-use crate::model::news_attachment::CreateNewsAttachment;
+use crate::model::news_attachment::{CreateNewsAttachment, NewsAttachment};
 use crate::module::Modules;
 
 use crate::status_code::ToStatusCode;
@@ -17,10 +17,13 @@ pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_news_list = modules.news_use_case().list(&actor).await;
+    let raw_news_list = modules.news_attachment_use_case().list(&actor).await;
     raw_news_list
         .map(|raw_news_list| {
-            let news_list: Vec<News> = raw_news_list.into_iter().map(News::from).collect();
+            let news_list: Vec<NewsAttachment> = raw_news_list
+                .into_iter()
+                .map(NewsAttachment::from)
+                .collect();
             (StatusCode::OK, Json(news_list))
         })
         .map_err(|err| {
@@ -50,9 +53,15 @@ pub async fn handle_get_id(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_news = modules.news_use_case().find_by_id(&actor, id).await;
-    match raw_news {
-        Ok(raw_news) => Ok((StatusCode::OK, Json(News::from(raw_news)))),
+    let raw_news_attachment = modules
+        .news_attachment_use_case()
+        .find_by_id(&actor, id)
+        .await;
+    match raw_news_attachment {
+        Ok(raw_news_attachment) => Ok((
+            StatusCode::OK,
+            Json(NewsAttachment::from(raw_news_attachment)),
+        )),
         Err(err) => {
             tracing::error!("Failed to find news attachment: {err}");
             Err(err.status_code())
@@ -65,9 +74,12 @@ pub async fn handle_delete_id(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let res = modules.news_use_case().delete_by_id(&actor, id).await;
+    let res = modules
+        .news_attachment_use_case()
+        .delete_by_id(&actor, id)
+        .await;
     res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to delete news: {err}");
+        tracing::error!("Failed to delete news attachment: {err}");
         err.status_code()
     })
 }
