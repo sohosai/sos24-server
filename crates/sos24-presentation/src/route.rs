@@ -13,6 +13,7 @@ use crate::{middleware::auth, module::Modules};
 
 pub mod health;
 pub mod news;
+pub mod news_attachment;
 pub mod user;
 
 pub trait ToStatusCode {

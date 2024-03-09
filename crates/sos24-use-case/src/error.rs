@@ -5,6 +5,7 @@ use thiserror::Error;
 use self::{news::NewsError, user::UserError};
 
 pub mod news;
+pub mod news_attachment;
 pub mod user;
 
 pub type Result<T, E> = std::result::Result<T, UseCaseError<E>>;
