@@ -93,9 +93,7 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
         .await
         .context("Failed to fetch news_attachment")?;
 
-        news_attachment_row
-            .map(|row| WithDate::try_from(row))
-            .transpose()
+        news_attachment_row.map(WithDate::try_from).transpose()
     }
 
     async fn delete_by_id(&self, _id: NewsAttachmentId) -> anyhow::Result<()> {
