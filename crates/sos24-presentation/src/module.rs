@@ -11,7 +11,7 @@ use sos24_infrastructure::DefaultRepositories;
 pub type Repositories = DefaultRepositories;
 
 #[cfg(test)]
-use sos24_domain::test::MockRepositories;
+use sos24_domain::test::repository::MockRepositories;
 #[cfg(test)]
 pub type Repositories = MockRepositories;
 
