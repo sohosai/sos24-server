@@ -125,14 +125,41 @@ impl<R: Repositories> UserUseCase<R> {
         if !user.value.is_visible_to(actor) {
             return Err(UserUseCaseError::NotFound(id));
         }
+        if !user.value.is_updatable_by(actor) {
+            return Err(PermissionDeniedError.into());
+        }
 
         let mut new_user = user.value;
-        new_user.set_name(actor, UserName::new(user_data.name))?;
-        new_user.set_kana_name(actor, UserKanaName::new(user_data.kana_name))?;
-        new_user.set_email(actor, UserEmail::try_from(user_data.email)?)?;
-        new_user.set_phone_number(actor, UserPhoneNumber::new(user_data.phone_number))?;
-        new_user.set_role(actor, user_data.role.into_entity()?)?;
-        new_user.set_category(actor, user_data.category.into_entity()?)?;
+
+        let new_name = UserName::new(user_data.name);
+        if new_user.name() != &new_name {
+            new_user.set_name(actor, new_name)?;
+        }
+
+        let new_kana_name = UserKanaName::new(user_data.kana_name);
+        if new_user.kana_name() != &new_kana_name {
+            new_user.set_kana_name(actor, new_kana_name)?;
+        }
+
+        let new_email = UserEmail::try_from(user_data.email)?;
+        if new_user.email() != &new_email {
+            new_user.set_email(actor, new_email)?;
+        }
+
+        let new_phone_number = UserPhoneNumber::new(user_data.phone_number);
+        if new_user.phone_number() != &new_phone_number {
+            new_user.set_phone_number(actor, new_phone_number)?;
+        }
+
+        let new_role = user_data.role.into_entity()?;
+        if new_user.role() != &new_role {
+            new_user.set_role(actor, new_role)?;
+        }
+
+        let new_category = user_data.category.into_entity()?;
+        if new_user.category() != &new_category {
+            new_user.set_category(actor, new_category)?;
+        }
 
         self.repositories.user_repository().update(new_user).await?;
         Ok(())

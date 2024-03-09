@@ -99,7 +99,7 @@ impl User {
         actor.user_id() == self.id() || actor.has_permission(Permissions::READ_USER_ALL)
     }
 
-    fn is_updatable_by(&self, actor: &Actor) -> bool {
+    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
         actor.user_id() == self.id() || actor.has_permission(Permissions::UPDATE_USER_ALL)
     }
 
