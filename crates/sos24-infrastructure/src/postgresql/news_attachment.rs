@@ -96,7 +96,14 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
         news_attachment_row.map(WithDate::try_from).transpose()
     }
 
-    async fn delete_by_id(&self, _id: NewsAttachmentId) -> anyhow::Result<()> {
-        unimplemented!("delete_by_id()");
+    async fn delete_by_id(&self, id: NewsAttachmentId) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"UPDATE news_attachments SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
+            id.value()
+        )
+        .execute(&*self.db)
+        .await
+        .context("Failed to delete news attachment")?;
+        Ok(())
     }
 }

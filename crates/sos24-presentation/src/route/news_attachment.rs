@@ -7,7 +7,6 @@ use axum::{Extension, Json};
 use sos24_domain::entity::actor::Actor;
 use sos24_use_case::dto::news_attachment::CreateNewsAttachmentDto;
 
-use crate::model::news::News;
 use crate::model::news_attachment::{CreateNewsAttachment, NewsAttachment};
 use crate::module::Modules;
 
