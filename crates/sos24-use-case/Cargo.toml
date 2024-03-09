@@ -9,3 +9,6 @@ anyhow.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
