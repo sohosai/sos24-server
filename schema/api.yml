@@ -43,7 +43,7 @@ paths:
 
   /news:
     $ref: "./news.yml#/paths/~1news"
-  /news/{id}:
+  /news/{news_id}:
     $ref: "./news.yml#/paths/~1news~1{news_id}"
   # TODO: ニュースの添付ファイル
 

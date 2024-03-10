@@ -100,7 +100,7 @@ paths:
     delete:
       summary: 招待の削除
       tags:
-        - news
+        - invitations
         - committee
       parameters:
         - name: invitation_id
