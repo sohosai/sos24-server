@@ -1,0 +1,161 @@
+paths:
+  /forms/{form_id}/answers:
+    get:
+      summary: 特定のIDの申請に対する全ての回答を取得
+      tags:
+        - form-answers
+        - committee
+      parameters:
+        - name: form_id
+          in: path
+          schema: { type: string }
+          required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/FormAnswer"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+
+  /projects/{project_id}/forms/{form_id}/answer:
+    get:
+      summary: 特定のIDの企画の、特定のIDの申請に対する回答を取得
+      tags:
+        - form-answers
+      parameters:
+        - name: project_id
+          in: path
+          schema: { type: string }
+          required: true
+        - name: form_id
+          in: path
+          schema: { type: string }
+          required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/FormAnswer"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    post:
+      summary: 特定のIDの企画の、特定のIDの申請に対する回答を作成
+      tags:
+        - form-answers
+        - committee
+      parameters:
+        - name: project_id
+          in: path
+          schema: { type: string }
+          required: true
+        - name: form_id
+          in: path
+          schema: { type: string }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/CreateFormAnswer"
+      responses:
+        201:
+          description: Created
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+    put:
+      summary: 特定のIDの企画の、特定のIDの申請に対する回答を更新
+      tags:
+        - form-answers
+      parameters:
+        - name: project_id
+          in: path
+          schema: { type: string }
+          required: true
+        - name: form_id
+          in: path
+          schema: { type: string }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/UpdateFormAnswer"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+schemas:
+  FormAnswer:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      project_id:
+        type: string
+        format: uuid
+      form_id:
+        type: string
+        format: uuid
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+      items:
+        type: object
+  CreateFormAnswer:
+    type: object
+    properties:
+      items:
+        type: object
+  UpdateFormAnswer:
+    type: object
+    properties:
+      items:
+        type: object

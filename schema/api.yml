@@ -1,478 +1,68 @@
-openapi: '3.0.2'
+openapi: "3.0.2"
 info:
-  title:  Sohosai Online System
-  version: '1.0'
+  title: Sohosai Online System
+  version: "1.0"
 servers:
   - url: http://localhost:3000
 tags:
   - name: projects
     description: 企画関連の操作
   - name: users
-    description: ユーザ関連の操作
+    description: ユーザー関連の操作
   - name: news
     description: ニュース関連の操作
   - name: forms
     description: 申請関連の操作
-  - name: answers
+  - name: form-answers
     description: 申請結果関連の操作
+  - name: invitations
+    description: 招待関連の操作
   - name: committee
     description: 実委人のみが利用可能
 
 paths:
   /projects:
-    post:
-      summary: 新規プロジェクトの作成
-      operationId: createProject
-      tags:
-        - projects
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./project.yml#/paths/~1projects"
   /projects/me:
-    get:
-      summary: プロジェクトの取得 (user)
-      operationId: getMyProject
-      tags:
-        - projects
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    put:
-      summary: プロジェクトの更新
-      operationId: updateProject
-      tags:
-        - projects
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    delete:
-      summary: プロジェクトの削除
-      operationId: deleteProject
-      tags:
-        - projects
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./project.yml#/paths/~1projects~1me"
   /projects/{project_id}:
-    get:
-      summary: プロジェクトの基本情報の取得 
-      operationId: getProjectById
-      tags:
-        - projects
-        - committee
-      parameters:
-        - name: project_id
-          in: path
-          schema: {type: string}
-          required: true
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    put:
-      summary: プロジェクトの基本情報の更新
-      operationId: updateProjectById
-      tags:
-        - projects
-        - committee
-      parameters:
-        - name: project_id
-          in: path
-          schema: {type: string}
-          required: true
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    delete:
-      summary: プロジェクトの削除 (ソフトデリート) 
-      operationId: softDeleteProjectById
-      tags:
-        - projects
-        - committee
-      parameters:
-        - name: project_id
-          in: path
-          schema: {type: string}
-          required: true
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./project.yml#/paths/~1projects~1{project_id}"
+  /projects/{project_id}/forms:
+    $ref: "./form.yml#/paths/~1projects~1{project_id}~1forms"
+  /projects/{project_id}/forms/{form_id}/answer:
+    $ref: "./form-answer.yml#/paths/~1projects~1{project_id}~1forms~1{form_id}~1answer"
+  /projects/{project_id}/news:
+    $ref: "./news.yml#/paths/~1projects~1{project_id}~1news"
+
   /users:
-    get:
-      summary: ユーザー一覧の取得
-      operationId: getUsers
-      tags:
-        - users
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    post:
-      summary: ユーザ作成
-      tags:
-        - users
-      responses:
-        '200':
-          description: "成功時のレスポンス"
-  /users/{user_id}:
-    get:
-      summary: ユーザーの取得 
-      operationId: getUserById
-      tags:
-        - users
-        - committee
-      parameters:
-        - name: user_id
-          in: path
-          schema: {type: string}
-          required: true
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    put:
-      summary: ユーザーの更新 
-      operationId: updateUserById
-      tags:
-        - users
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    delete:
-      summary: ユーザーの削除 
-      operationId: deleteUserById
-      tags:
-        - users
-      parameters:
-        - name: user_id
-          in: path
-          schema: {type: string}
-          required: true
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./user.yml#/paths/~1users"
   /users/me:
-    get:
-      summary: 自分のユーザー情報の取得 (user)
-      operationId: getMyUser
-      tags:
-        - users
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    put:
-      summary: 自分のユーザー情報の更新 (user)
-      operationId: updateMyUser
-      tags:
-        - users
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    delete:
-      summary: 自分のユーザーの削除 (user)
-      operationId: deleteMyUser
-      tags:
-        - users
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./user.yml#/paths/~1users~1me"
+  /users/{user_id}:
+    $ref: "./user.yml#/paths/~1users~1{user_id}"
+
   /news:
-    get:
-      summary: ニュース一覧の取得
-      tags:
-        - news
-      responses:
-        200:
-          description: ニュース一覧
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/News'
-        500:
-          description: Internal server error
-    post:
-      summary: 新規ニュース作成
-      tags:
-        - news
-        - committee
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateNews'
-      responses:
-        201:
-          description: News article created
-        500:
-          description: Internal server error
-
+    $ref: "./news.yml#/paths/~1news"
   /news/{id}:
-    get:
-      summary: 特定のIDのニュースの取得
-      tags:
-        - news
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: News article found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/News'
-        404:
-          description: News article not found
-        500:
-          description: Internal server error
-    put:
-      summary: 特定のIDのニュースの更新
-      tags:
-        - news
-        - committee
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateNews'
-      responses:
-        200:
-          description: News article updated
-        404:
-          description: News article not found
-        500:
-          description: Internal server error
-    delete:
-      summary: 特定のIDのニュースの削除
-      tags:
-        - news
-        - committee
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: News article deleted
-        404:
-          description: News article not found
-        500:
-          description: Internal server error
+    $ref: "./news.yml#/paths/~1news~1{news_id}"
+  # TODO: ニュースの添付ファイル
 
-  /news/news_attachments:
-    post:
-      summary: ニュースの添付ファイルの作成 (committee)
-      operationId: createNewsAttachment
-      tags:
-        - news
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    delete:
-      summary: ニュース添付ファイルの削除
-      tags:
-        - news
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
+  /invitations:
+    $ref: "./invitation.yml#/paths/~1invitations"
+  /invitations/{invitation_id}:
+    $ref: "./invitation.yml#/paths/~1invitations~1{invitation_id}"
+
   /forms:
-    post:
-      summary: フォームの作成 (committee)
-      operationId: createForm
-      tags:
-        - forms
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    get:
-      summary: フォーム一覧の取得 (user)
-      operationId: getForms
-      tags:
-        - forms
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./form.yml#/paths/~1forms"
   /forms/{form_id}:
-    get:
-      summary: 特定のフォームの情報を取得 (user)
-      operationId: getFormById
-      tags:
-        - forms
-      parameters:
-        - name: form_id
-          in: path
-          schema: {type: string}
-          required: true
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    put:
-      summary: 特定のフォームの情報を更新 (committee)
-      operationId: updateFormById
-      tags:
-        - forms
-      parameters:
-        - name: form_id
-          in: path
-          schema: {type: string}
-          required: true
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    delete:
-      summary: 特定のフォームを削除 (committee)
-      operationId: deleteFormById
-      parameters:
-        - name: form_id
-          in: path
-          schema: {type: string}
-          required: true
-
-      tags:
-        - forms
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./form.yml#/paths/~1forms~1{form_id}"
   /forms/{form_id}/answers:
-    post:
-      summary: 特定のフォームに回答 (user)
-      operationId: submitAnswer
-      tags:
-        - forms
-      responses:
-        '200':
-          description: 成功時のレスポンス
-  /forms/{form_id}/answers/me:
-    put:
-      operationId: updateMe
-      tags:
-        - forms
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    delete:
-      operationId: deleteMe
-      tags:
-        - forms
-      responses:
-        '200':
-          description: 成功時のレスポンス
-  /form_answers:
-    get:
-      summary: 特定のフォームに対する全ての団体の回答を一括で取得 (committee)
-      operationId: getAllAnswersForForm
-      tags:
-        - answers
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
-  /form_answers/{answer_id}:
-    get:
-      summary: 特定のフォームに対する特定の回答を取得 (committee)
-      operationId: getAnswerForFormById
-      tags:
-        - answers
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
-    put:
-      summary: 特定のフォームに対する特定の回答を更新 (committee)
-      operationId: updateAnswerForFormById
-      tags:
-        - answers
-        - committee
-      responses:
-        '200':
-          description: 成功時のレスポンス
-  /form_answers/me:
-    get:
-      tags:
-        - forms
-      responses:
-        '200':
-          description: 成功時のレスポンス
-  /form_answers/?project_id={project_id}:
-    get:
-      summary: 特定のフォームに対する特定の団体の回答を取得 (committee)
-      operationId: getAnswersForFormByProjectId
-      tags:
-        - answers
-        - committee
-      parameters:
-        - name: project_id
-          in: query
-          description: プロジェクトID
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 成功時のレスポンス
+    $ref: "./form-answer.yml#/paths/~1forms~1{form_id}~1answers"
 
 components:
   securitySchemes:
     Bearer:
-     type: apiKey
-     name: Firebase Token
-     in: header
-     description: Firebaseのトークン
-  schemas:
-    News:
-      type: object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        body:
-          type: string
-        categories:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
-    CreateNews:
-      type: object
-      properties:
-        title:
-          type: string
-        body:
-          type: string
-        categories:
-          type: integer
-    UpdateNews:
-      type: object
-      properties:
-        title:
-          type: string
-        body:
-          type: string
-        categories:
-          type: integer
-
+      type: apiKey
+      name: Firebase Token
+      in: header
+      description: Firebaseのトークン
