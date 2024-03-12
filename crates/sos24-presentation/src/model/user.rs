@@ -31,7 +31,6 @@ pub struct UpdateUser {
     pub name: String,
     pub kana_name: String,
     pub email: String,
-    pub password: String,
     pub phone_number: String,
     pub role: UserRole,
     pub category: UserCategory,
