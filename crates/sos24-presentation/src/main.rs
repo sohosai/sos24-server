@@ -12,6 +12,7 @@ async fn main() {
 
     let config = Config {
         firebase_project_id: env::firebase_project_id(),
+        require_email_verification: true,
     };
     let modules = module::new(config).await.unwrap();
     let app = create_app(modules);
