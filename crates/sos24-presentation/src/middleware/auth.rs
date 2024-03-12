@@ -56,7 +56,7 @@ pub(crate) async fn jwt_auth(
 
     // メールが認証されているか確認
     if modules.config().require_email_verification && !token.claims.email_verified {
-        return Err(StatusCode::NOT_ACCEPTABLE);
+        return Err(StatusCode::UNAUTHORIZED);
     }
 
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
