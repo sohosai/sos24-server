@@ -21,6 +21,7 @@ pub(crate) struct Claims {
     pub exp: u64,
     pub iss: String,
     pub sub: String,
+    pub email_verified: bool
 }
 
 const JWK_URL: &str =
@@ -52,6 +53,11 @@ pub(crate) async fn jwt_auth(
             return Err(StatusCode::UNAUTHORIZED);
         }
     };
+
+    // メールが認証されているか確認
+    if modules.config().require_email_verification && !token.claims.email_verified {
+        return Err(StatusCode::NOT_ACCEPTABLE);
+    }
 
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
     let actor = modules
