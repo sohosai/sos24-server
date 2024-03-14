@@ -30,7 +30,7 @@ pub struct Project {
     #[getset(get = "pub")]
     sub_owner_id: Option<UserId>,
     #[getset(get = "pub")]
-    remarks: ProjectRemarks,
+    remarks: Option<ProjectRemarks>,
 }
 
 impl Project {
@@ -45,7 +45,7 @@ impl Project {
         attributes: ProjectAttributes,
         owner_id: UserId,
         sub_owner_id: Option<UserId>,
-        remarks: ProjectRemarks,
+        remarks: Option<ProjectRemarks>,
     ) -> Self {
         Self {
             id,
@@ -82,7 +82,7 @@ impl Project {
             attributes,
             owner_id,
             sub_owner_id: None,
-            remarks: ProjectRemarks::new(String::new()),
+            remarks: None,
         }
     }
 
@@ -115,7 +115,7 @@ pub struct DestructedProject {
     pub attributes: ProjectAttributes,
     pub owner_id: UserId,
     pub sub_owner_id: Option<UserId>,
-    pub remarks: ProjectRemarks,
+    pub remarks: Option<ProjectRemarks>,
 }
 
 impl_value_object!(ProjectId(uuid::Uuid));
