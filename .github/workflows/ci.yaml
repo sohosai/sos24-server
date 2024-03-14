@@ -3,10 +3,10 @@ name: Rust
 on:
   push:
     paths-ignore:
-      - 'docker-compose*'
-      - '**.md'
-      - '.**'
-      - '!.github/**',
+    - 'docker-compose*'
+    - '**.md'
+    - '.**'
+    - '!.github/**'
   pull_request:
 
 jobs:
