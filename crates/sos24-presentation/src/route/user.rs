@@ -57,6 +57,20 @@ pub async fn handle_get_id(
     }
 }
 
+pub async fn handle_get_me(
+    State(modules): State<Arc<Modules>>,
+    Extension(actor): Extension<Actor>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let user = modules.user_use_case().find_me(&actor).await;
+    match user {
+        Ok(user) => Ok((StatusCode::OK, Json(User::from(user)))),
+        Err(err) => {
+            tracing::error!("Failed to find me: {err}");
+            Err(err.status_code())
+        }
+    }
+}
+
 pub async fn handle_delete_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,

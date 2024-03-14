@@ -28,6 +28,7 @@ pub fn create_app(modules: Modules) -> Router {
 
     let user = Router::new()
         .route("/", get(user::handle_get))
+        .route("/me", get(user::handle_get_me))
         .route("/:user_id", get(user::handle_get_id))
         .route("/:user_id", delete(user::handle_delete_id))
         .route("/:user_id", put(user::handle_put_id));
