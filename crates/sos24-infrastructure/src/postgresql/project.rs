@@ -1,9 +1,17 @@
 use anyhow::Context;
+use futures_util::{StreamExt, TryStreamExt};
 use sos24_domain::{
-    entity::project::{Project, ProjectCategory},
+    entity::{
+        common::date::WithDate,
+        project::{
+            Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectIndex,
+            ProjectKanaGroupName, ProjectKanaTitle, ProjectRemarks, ProjectTitle,
+        },
+        user::UserId,
+    },
     repository::project::{ProjectRepository, ProjectRepositoryError},
 };
-use sqlx::prelude::Type;
+use sqlx::prelude::{FromRow, Type};
 
 use super::Postgresql;
 
@@ -19,7 +27,34 @@ pub struct ProjectRow {
     attributes: i32,
     owner_id: String,
     sub_owner_id: Option<String>,
-    remarks: String,
+    remarks: Option<String>,
+
+    created_at: chrono::DateTime<chrono::Utc>,
+    updated_at: chrono::DateTime<chrono::Utc>,
+    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl From<ProjectRow> for WithDate<Project> {
+    fn from(value: ProjectRow) -> Self {
+        WithDate::new(
+            Project::new(
+                ProjectId::new(value.id),
+                ProjectIndex::new(value.index),
+                ProjectTitle::new(value.title),
+                ProjectKanaTitle::new(value.kana_title),
+                ProjectGroupName::new(value.group_name),
+                ProjectKanaGroupName::new(value.kana_group_name),
+                value.category.into(),
+                ProjectAttributes::new(value.attributes),
+                UserId::new(value.owner_id),
+                value.sub_owner_id.map(UserId::new),
+                value.remarks.map(ProjectRemarks::new),
+            ),
+            value.created_at,
+            value.updated_at,
+            value.deleted_at,
+        )
+    }
 }
 
 #[derive(Type)]
@@ -32,6 +67,20 @@ pub enum ProjectCategoryRow {
     Stage1A,
     StageUniversityHall,
     StageUnited,
+}
+
+impl From<ProjectCategoryRow> for ProjectCategory {
+    fn from(value: ProjectCategoryRow) -> Self {
+        match value {
+            ProjectCategoryRow::General => ProjectCategory::General,
+            ProjectCategoryRow::FoodsWithKitchen => ProjectCategory::FoodsWithKitchen,
+            ProjectCategoryRow::FoodsWithoutKitchen => ProjectCategory::FoodsWithoutKitchen,
+            ProjectCategoryRow::FoodsWithoutCooking => ProjectCategory::FoodsWithoutCooking,
+            ProjectCategoryRow::Stage1A => ProjectCategory::Stage1A,
+            ProjectCategoryRow::StageUniversityHall => ProjectCategory::StageUniversityHall,
+            ProjectCategoryRow::StageUnited => ProjectCategory::StageUnited,
+        }
+    }
 }
 
 impl From<ProjectCategory> for ProjectCategoryRow {
@@ -60,6 +109,19 @@ impl PgProjectRepository {
 }
 
 impl ProjectRepository for PgProjectRepository {
+    async fn list(&self) -> Result<Vec<WithDate<Project>>, ProjectRepositoryError> {
+        let project_list = sqlx::query_as!(
+            ProjectRow,
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE deleted_at IS NULL"#
+        )
+        .fetch(&*self.db)
+        .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
+        .try_collect()
+        .await
+        .context("Failed to fetch project list")?;
+        Ok(project_list)
+    }
+
     async fn create(&self, project: Project) -> Result<(), ProjectRepositoryError> {
         let project = project.destruct();
         sqlx::query!(
@@ -72,7 +134,7 @@ impl ProjectRepository for PgProjectRepository {
         ProjectCategoryRow::from(project.category) as ProjectCategoryRow,
         project.attributes.value(),
         project.owner_id.value(),
-        project.remarks.value(),
+        project.remarks.map(|it| it.value()),
         )
         .execute(&*self.db)
         .await

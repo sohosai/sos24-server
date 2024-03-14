@@ -4,10 +4,27 @@ use axum::{extract::State, http::StatusCode, response::IntoResponse, Extension, 
 use sos24_domain::entity::actor::Actor;
 
 use crate::{
-    model::project::{ConvertToCreateProjectDto, CreateProject},
+    model::project::{ConvertToCreateProjectDto, CreateProject, Project},
     module::Modules,
     status_code::ToStatusCode,
 };
+
+pub async fn handle_get(
+    State(modules): State<Arc<Modules>>,
+    Extension(actor): Extension<Actor>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let raw_project_list = modules.project_use_case().list(&actor).await;
+    raw_project_list
+        .map(|raw_project_list| {
+            let project_list: Vec<Project> =
+                raw_project_list.into_iter().map(Project::from).collect();
+            (StatusCode::OK, Json(project_list))
+        })
+        .map_err(|err| {
+            tracing::error!("Failed to list project: {err:?}");
+            err.status_code()
+        })
+}
 
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,

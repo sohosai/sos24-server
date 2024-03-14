@@ -13,7 +13,10 @@ use sos24_domain::{
 };
 use thiserror::Error;
 
-use crate::dto::{project::CreateProjectDto, ToEntity};
+use crate::dto::{
+    project::{CreateProjectDto, ProjectDto},
+    FromEntity, ToEntity,
+};
 
 #[derive(Debug, Error)]
 pub enum ProjectUseCaseError {
@@ -32,6 +35,14 @@ pub struct ProjectUseCase<R: Repositories> {
 impl<R: Repositories> ProjectUseCase<R> {
     pub fn new(repositories: Arc<R>) -> Self {
         Self { repositories }
+    }
+
+    pub async fn list(&self, actor: &Actor) -> Result<Vec<ProjectDto>, ProjectUseCaseError> {
+        ensure!(actor.has_permission(Permissions::READ_PROJECT_ALL));
+
+        let raw_project_list = self.repositories.project_repository().list().await?;
+        let project_list = raw_project_list.into_iter().map(ProjectDto::from_entity);
+        Ok(project_list.collect())
     }
 
     pub async fn create(
