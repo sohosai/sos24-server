@@ -61,7 +61,7 @@ pub async fn handle_get_me(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let user = modules.user_use_case().find_me(&actor).await;
+    let user = modules.user_use_case().find_by_id(&actor, actor.user_id().clone().value()).await;
     match user {
         Ok(user) => Ok((StatusCode::OK, Json(User::from(user)))),
         Err(err) => {
