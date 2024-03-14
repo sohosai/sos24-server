@@ -12,6 +12,7 @@ use crate::{middleware::auth, module::Modules};
 
 pub mod health;
 pub mod news;
+pub mod project;
 pub mod user;
 
 pub fn create_app(modules: Modules) -> Router {
@@ -30,9 +31,12 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:user_id", delete(user::handle_delete_id))
         .route("/:user_id", put(user::handle_put_id));
 
+    let project = Router::new().route("/", post(project::handle_post));
+
     let private_routes = Router::new()
         .nest("/news", news)
         .nest("/users", user)
+        .nest("/projects", project)
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),
             auth::jwt_auth,

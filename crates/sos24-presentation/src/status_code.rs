@@ -3,10 +3,12 @@ use sos24_domain::{
     entity::{common::email::EmailError, news::NewsIdError, permission::PermissionDeniedError},
     repository::{
         firebase_user::FirebaseUserRepositoryError, news::NewsRepositoryError,
-        user::UserRepositoryError,
+        project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
-use sos24_use_case::interactor::{news::NewsUseCaseError, user::UserUseCaseError};
+use sos24_use_case::interactor::{
+    news::NewsUseCaseError, project::ProjectUseCaseError, user::UserUseCaseError,
+};
 
 pub trait ToStatusCode {
     fn status_code(&self) -> StatusCode;
@@ -20,6 +22,16 @@ impl ToStatusCode for NewsUseCaseError {
             NewsUseCaseError::NewsIdError(e) => e.status_code(),
             NewsUseCaseError::PermissionDeniedError(e) => e.status_code(),
             NewsUseCaseError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for ProjectUseCaseError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ProjectUseCaseError::ProjectRepositoryError(e) => e.status_code(),
+            ProjectUseCaseError::PermissionDeniedError(e) => e.status_code(),
+            ProjectUseCaseError::InternalError(e) => e.status_code(),
         }
     }
 }
@@ -41,6 +53,14 @@ impl ToStatusCode for NewsRepositoryError {
     fn status_code(&self) -> StatusCode {
         match self {
             NewsRepositoryError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for ProjectRepositoryError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ProjectRepositoryError::InternalError(e) => e.status_code(),
         }
     }
 }
