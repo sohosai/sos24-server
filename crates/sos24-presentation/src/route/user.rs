@@ -25,7 +25,7 @@ pub async fn handle_get(
             (StatusCode::OK, Json(user_list))
         })
         .map_err(|err| {
-            tracing::error!("Failed to list user: {err}");
+            tracing::error!("Failed to list user: {err:?}");
             err.status_code()
         })
 }
@@ -37,7 +37,7 @@ pub async fn handle_post(
     let user = CreateUserDto::from(raw_user);
     let res = modules.user_use_case().create(user).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create user: {err}");
+        tracing::error!("Failed to create user: {err:?}");
         err.status_code()
     })
 }
@@ -51,7 +51,7 @@ pub async fn handle_get_id(
     match raw_user {
         Ok(raw_user) => Ok((StatusCode::OK, Json(User::from(raw_user)))),
         Err(err) => {
-            tracing::error!("Failed to find user: {err}");
+            tracing::error!("Failed to find user: {err:?}");
             Err(err.status_code())
         }
     }
@@ -64,7 +64,7 @@ pub async fn handle_delete_id(
 ) -> Result<impl IntoResponse, StatusCode> {
     let res = modules.user_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to delete user: {err}");
+        tracing::error!("Failed to delete user: {err:?}");
         err.status_code()
     })
 }
@@ -78,7 +78,7 @@ pub async fn handle_put_id(
     let user = (id, raw_user).to_update_user_dto();
     let res = modules.user_use_case().update(&ctx, user).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to update user: {err}");
+        tracing::error!("Failed to update user: {err:?}");
         err.status_code()
     })
 }
