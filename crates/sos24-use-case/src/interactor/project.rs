@@ -17,7 +17,7 @@ use sos24_domain::{
 use thiserror::Error;
 
 use crate::{
-    context::{Context, ContextError},
+    context::{Context, ContextError, OwnedProject},
     dto::{
         project::{CreateProjectDto, ProjectDto, UpdateProjectDto},
         FromEntity, ToEntity,
@@ -28,6 +28,8 @@ use crate::{
 pub enum ProjectUseCaseError {
     #[error("Project not found: {0:?}")]
     NotFound(ProjectId),
+    #[error("User already owned project: {0:?}")]
+    AlreadyOwnedProject(ProjectId),
 
     #[error(transparent)]
     ContextError(#[from] ContextError),
@@ -68,7 +70,14 @@ impl<R: Repositories> ProjectUseCase<R> {
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
 
         // TODO: 企画募集期間かを確認する
-        // TODO: すでに別の企画の責任者でないかを確認する
+
+        if let Some(project) = ctx.project(Arc::clone(&self.repositories)).await? {
+            let project_id = match project {
+                OwnedProject::Owner(project) => project.value.id().clone(),
+                OwnedProject::SubOwner(project) => project.value.id().clone(),
+            };
+            return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
+        }
 
         let project = raw_project.into_entity()?;
         self.repositories
@@ -218,6 +227,14 @@ mod tests {
             .project_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
@@ -236,6 +253,50 @@ mod tests {
             )
             .await;
         assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn create_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id1(),
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateProjectDto::new(
+                    fixture::project::title1().value(),
+                    fixture::project::kana_title1().value(),
+                    fixture::project::group_name1().value(),
+                    fixture::project::kana_group_name1().value(),
+                    ProjectCategoryDto::General,
+                    0,
+                    fixture::user::id1().value(),
+                ),
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::AlreadyOwnedProject(_))
+        ));
     }
 
     #[tokio::test]
