@@ -15,6 +15,9 @@ pub struct FormDoc {
     description: String,
     starts_at: chrono::DateTime<chrono::Utc>,
     ends_at: chrono::DateTime<chrono::Utc>,
+    created_at: chrono::DateTime<chrono::Utc>,
+    updated_at: chrono::DateTime<chrono::Utc>,
+    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
     items: Vec<FormItemDoc>,
 }
 
@@ -27,6 +30,9 @@ impl From<Form> for FormDoc {
             description: form.description.value(),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            deleted_at: None,
             items: form.items.into_iter().map(FormItemDoc::from).collect(),
         }
     }
