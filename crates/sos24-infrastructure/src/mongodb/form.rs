@@ -1,6 +1,9 @@
 use anyhow::Context;
 use futures_util::{StreamExt, TryStreamExt};
-use mongodb::{bson::doc, Collection};
+use mongodb::{
+    bson::{self, doc},
+    Collection,
+};
 use serde::{Deserialize, Serialize};
 use sos24_domain::{
     entity::{
@@ -19,7 +22,7 @@ use super::MongoDb;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormDoc {
-    _id: uuid::Uuid,
+    _id: bson::Uuid,
     title: String,
     description: String,
     starts_at: chrono::DateTime<chrono::Utc>,
@@ -34,7 +37,7 @@ impl From<Form> for FormDoc {
     fn from(form: Form) -> Self {
         let form = form.destruct();
         Self {
-            _id: form.id.value(),
+            _id: bson::Uuid::from_uuid_1(form.id.value()),
             title: form.title.value(),
             description: form.description.value(),
             starts_at: form.starts_at.value(),
@@ -51,7 +54,7 @@ impl From<FormDoc> for WithDate<Form> {
     fn from(value: FormDoc) -> Self {
         WithDate::new(
             Form::new(
-                FormId::new(value._id),
+                FormId::new(value._id.into()),
                 FormTitle::new(value.title),
                 FormDescription::new(value.description),
                 DateTime::new(value.starts_at),
@@ -228,5 +231,14 @@ impl FormRepository for MongoFormRepository {
             .await
             .context("Failed to create form")?;
         Ok(())
+    }
+
+    async fn find_by_id(&self, id: FormId) -> Result<Option<WithDate<Form>>, FormRepositoryError> {
+        let form_doc = self
+            .collection
+            .find_one(doc! { "_id": id.value() }, None)
+            .await
+            .context("Failed to find form")?;
+        Ok(form_doc.map(WithDate::from))
     }
 }

@@ -4,6 +4,7 @@ use sos24_domain::{
     ensure,
     entity::{
         common::datetime::DateTimeError,
+        form::{FormId, FormIdError},
         permission::{PermissionDeniedError, Permissions},
     },
     repository::{
@@ -23,6 +24,11 @@ use crate::{
 
 #[derive(Debug, Error)]
 pub enum FormUseCaseError {
+    #[error("Form not found: {0:?}")]
+    NotFound(FormId),
+
+    #[error(transparent)]
+    FormIdError(#[from] FormIdError),
     #[error(transparent)]
     DateTimeError(#[from] DateTimeError),
     #[error(transparent)]
@@ -66,5 +72,22 @@ impl<R: Repositories> FormUseCase<R> {
         let form = raw_form.into_entity()?;
         self.repositors.form_repository().create(form).await?;
         Ok(())
+    }
+
+    pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<FormDto, FormUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositors)).await?;
+        ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
+
+        let id = FormId::try_from(id)?;
+        let form = self
+            .repositors
+            .form_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(FormUseCaseError::NotFound(id))?;
+
+        // TODO: 権限チェックを行う
+
+        Ok(FormDto::from_entity(form))
     }
 }

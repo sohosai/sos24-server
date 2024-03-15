@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use axum::{Extension, extract::State, http::StatusCode, Json, response::IntoResponse};
+use axum::{
+    Extension,
+    extract::{Path, State},
+    http::StatusCode,
+    Json, response::IntoResponse,
+};
 
 use sos24_use_case::{context::Context, dto::form::CreateFormDto};
 
@@ -35,4 +40,19 @@ pub async fn handle_post(
         tracing::error!("Failed to create form: {err:?}");
         err.into()
     })
+}
+
+pub async fn handle_get_id(
+    Path(id): Path<String>,
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, AppError> {
+    let raw_form = modules.form_use_case().find_by_id(&ctx, id).await;
+    match raw_form {
+        Ok(raw_form) => Ok((StatusCode::OK, Json(Form::from(raw_form)))),
+        Err(err) => {
+            tracing::error!("Failed to find form by id: {err:?}");
+            Err(err.into())
+        }
+    }
 }

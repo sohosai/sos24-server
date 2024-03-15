@@ -14,6 +14,7 @@ use sos24_domain::{
     },
 };
 use sos24_domain::entity::common::datetime::DateTimeError;
+use sos24_domain::entity::form::FormIdError;
 use sos24_domain::repository::form::FormRepositoryError;
 use sos24_use_case::{
     context::ContextError,
@@ -28,12 +29,15 @@ use super::AppError;
 
 impl From<FormUseCaseError> for AppError {
     fn from(error: FormUseCaseError) -> Self {
+        let message = error.to_string();
         match error {
+            FormUseCaseError::NotFound(_) => AppError::new(StatusCode::NOT_FOUND, "form/not-found".to_string(), message),
             FormUseCaseError::DateTimeError(e) => e.into(),
             FormUseCaseError::FormRepositoryError(e) => e.into(),
             FormUseCaseError::ContextError(e) => e.into(),
             FormUseCaseError::PermissionDeniedError(e) => e.into(),
             FormUseCaseError::InternalError(e) => e.into(),
+            FormUseCaseError::FormIdError(e) => e.into(),
         }
     }
 }
@@ -255,6 +259,18 @@ impl From<InvitationIdError> for AppError {
             InvitationIdError::InvalidUuid => AppError::new(
                 StatusCode::BAD_REQUEST,
                 "invitation/invalid-uuid".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<FormIdError> for AppError {
+    fn from(error: FormIdError) -> Self {
+        match error {
+            FormIdError::InvalidUuid => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/invalid-uuid".to_string(),
                 error.to_string(),
             ),
         }
