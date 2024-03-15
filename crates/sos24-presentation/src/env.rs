@@ -30,3 +30,12 @@ pub fn firebase_service_account_key() -> String {
 pub fn firebase_project_id() -> String {
     env::var("FIREBASE_PROJECT_ID").expect("Env `FIREBASE_PROJECT_ID` must be set")
 }
+
+pub fn project_application_start_at() -> String {
+    env::var("PROJECT_APPLICATION_START_AT")
+        .expect("Env `PROJECT_APPLICATION_START_AT` must be set")
+}
+
+pub fn project_application_end_at() -> String {
+    env::var("PROJECT_APPLICATION_END_AT").expect("Env `PROJECT_APPLICATION_END_AT` must be set")
+}

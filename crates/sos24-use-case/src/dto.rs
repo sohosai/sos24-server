@@ -1,4 +1,5 @@
 pub mod news;
+pub mod project;
 pub mod user;
 
 pub trait ToEntity {
