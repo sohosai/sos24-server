@@ -40,6 +40,21 @@ paths:
         500:
           description: Internal Server Error
 
+  /projects/export:
+    get:
+      summary: 企画一覧のエクスポート
+      tags:
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            text/csv:
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
   /projects/{project_id}:
     get:
       summary: 特定のIDの企画の取得

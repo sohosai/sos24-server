@@ -40,6 +40,21 @@ paths:
         500:
           description: Internal Server Error
 
+  /users/export:
+    get:
+      summary: ユーザー一覧のエクスポート
+      tags:
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            text/csv:
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
   /users/{user_id}:
     get:
       summary: 特定のIDのユーザーの取得
