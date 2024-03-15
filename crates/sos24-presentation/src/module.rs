@@ -5,7 +5,8 @@ use std::sync::Arc;
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
 use sos24_use_case::interactor::{
-    invitation::InvitationUseCase, news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
+    form::FormUseCase, invitation::InvitationUseCase, news::NewsUseCase,
+    project::ProjectUseCase,  user::UserUseCase,
 };
 
 #[cfg(not(test))]
@@ -20,6 +21,7 @@ pub type Repositories = MockRepositories;
 
 pub struct Modules {
     config: Config,
+    form_use_case: FormUseCase<Repositories>,
     invitation_use_case: InvitationUseCase<Repositories>,
     news_use_case: NewsUseCase<Repositories>,
     project_use_case: ProjectUseCase<Repositories>,
@@ -29,6 +31,10 @@ pub struct Modules {
 impl Modules {
     pub fn config(&self) -> &Config {
         &self.config
+    }
+
+    pub fn form_use_case(&self) -> &FormUseCase<Repositories> {
+        &self.form_use_case
     }
 
     pub fn invitation_use_case(&self) -> &InvitationUseCase<Repositories> {
@@ -51,11 +57,12 @@ impl Modules {
 #[cfg(not(test))]
 pub async fn new(config: Config) -> anyhow::Result<Modules> {
     use crate::env;
-    use sos24_infrastructure::{firebase::FirebaseAuth, postgresql::Postgresql};
+    use sos24_infrastructure::{firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql};
 
     let db = Postgresql::new(&env::postgres_db_url()).await?;
+    let mongo_db = MongoDb::new(&env::mongodb_db_url(), &env::mongodb_db_name()).await?;
     let auth = FirebaseAuth::new(&env::firebase_service_account_key()).await?;
-    let repository = Arc::new(DefaultRepositories::new(db, auth));
+    let repository = Arc::new(DefaultRepositories::new(db, mongo_db, auth));
 
     let application_period = ProjectApplicationPeriod::new(
         config.project_application_start_at.clone(),
@@ -64,6 +71,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
 
     Ok(Modules {
         config,
+        form_use_case: FormUseCase::new(Arc::clone(&repository)),
         invitation_use_case: InvitationUseCase::new(
             Arc::clone(&repository),
             application_period.clone(),
@@ -82,6 +90,7 @@ pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules>
 
     Ok(Modules {
         config: Config::default(),
+        form_use_case: FormUseCase::new(Arc::clone(&repositories)),
         invitation_use_case: InvitationUseCase::new(
             Arc::clone(&repositories),
             application_period.clone(),

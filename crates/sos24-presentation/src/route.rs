@@ -10,6 +10,7 @@ use tracing::Level;
 
 use crate::{middleware::auth, module::Modules};
 
+pub mod form;
 pub mod health;
 pub mod invitation;
 pub mod news;
@@ -50,11 +51,14 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:invitation_id", delete(invitation::handle_delete_id))
         .route("/:invitation_id", post(invitation::handle_post_id));
 
+    let form = Router::new().route("/", post(form::handle_post));
+
     let private_routes = Router::new()
         .nest("/news", news)
         .nest("/users", user)
         .nest("/projects", project)
         .nest("/invitations", invitation)
+        .nest("/forms", form)
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),
             auth::jwt_auth,

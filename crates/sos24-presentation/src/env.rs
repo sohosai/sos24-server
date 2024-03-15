@@ -46,3 +46,11 @@ pub fn require_email_verification() -> bool {
         .parse::<bool>()
         .expect("Env `REQUIRE_EMAIL_VERIFICATION` must be a boolean")
 }
+
+pub fn mongodb_db_url() -> String {
+    env::var("MONGO_DB_URL").expect("Env `MONGODB_DB_URL` must be set")
+}
+
+pub fn mongodb_db_name() -> String {
+    env::var("MONGO_DB").expect("Env `MONGODB_DB_NAME` must be set")
+}

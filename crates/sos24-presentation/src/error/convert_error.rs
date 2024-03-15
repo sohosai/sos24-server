@@ -13,6 +13,8 @@ use sos24_domain::{
         news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
+use sos24_domain::entity::common::datetime::DateTimeError;
+use sos24_domain::repository::form::FormRepositoryError;
 use sos24_use_case::{
     context::ContextError,
     interactor::{
@@ -20,8 +22,21 @@ use sos24_use_case::{
         user::UserUseCaseError,
     },
 };
+use sos24_use_case::interactor::form::FormUseCaseError;
 
 use super::AppError;
+
+impl From<FormUseCaseError> for AppError {
+    fn from(error: FormUseCaseError) -> Self {
+        match error {
+            FormUseCaseError::DateTimeError(e) => e.into(),
+            FormUseCaseError::FormRepositoryError(e) => e.into(),
+            FormUseCaseError::ContextError(e) => e.into(),
+            FormUseCaseError::PermissionDeniedError(e) => e.into(),
+            FormUseCaseError::InternalError(e) => e.into(),
+        }
+    }
+}
 
 impl From<InvitationUseCaseError> for AppError {
     fn from(error: InvitationUseCaseError) -> AppError {
@@ -135,6 +150,14 @@ impl From<ContextError> for AppError {
             ),
             ContextError::UserRepositoryError(e) => e.into(),
             ContextError::ProjectRepositoryError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FormRepositoryError> for AppError {
+    fn from(error: FormRepositoryError) -> Self {
+        match error {
+            FormRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
@@ -275,6 +298,18 @@ impl From<EmailError> for AppError {
                 "email/invalid-domain".to_string(),
                 error.to_string(),
             ),
+        }
+    }
+}
+
+impl From<DateTimeError> for AppError {
+    fn from(error: DateTimeError) -> Self {
+        match error {
+            DateTimeError::InvalidFormat => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "datetime/invalid-format".to_string(),
+                error.to_string(),
+            )
         }
     }
 }
