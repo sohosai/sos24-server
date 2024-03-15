@@ -230,6 +230,6 @@ schemas:
       category:
         type: string
         enum:
-          - undergraduate
-          - graduate
+          - undergraduate_student
+          - graduate_student
           - academic_staff
