@@ -90,4 +90,21 @@ impl<R: Repositories> FormUseCase<R> {
 
         Ok(FormDto::from_entity(form))
     }
+
+    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), FormUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositors)).await?;
+        ensure!(actor.has_permission(Permissions::DELETE_FORM_ALL));
+
+        let id = FormId::try_from(id)?;
+        self.repositors
+            .form_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(FormUseCaseError::NotFound(id.clone()))?;
+
+        // TODO: 権限チェックを行う
+
+        self.repositors.form_repository().delete_by_id(id).await?;
+        Ok(())
+    }
 }

@@ -56,3 +56,15 @@ pub async fn handle_get_id(
         }
     }
 }
+
+pub async fn handle_delete_id(
+    Path(id): Path<String>,
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let res = modules.form_use_case().delete_by_id(&ctx, id).await;
+    res.map(|_| StatusCode::OK).map_err(|err| {
+        tracing::error!("Failed to delete form: {err:?}");
+        err.status_code()
+    })
+}

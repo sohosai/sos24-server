@@ -22,7 +22,8 @@ use super::MongoDb;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormDoc {
-    _id: bson::Uuid,
+    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
+    _id: uuid::Uuid,
     title: String,
     description: String,
     starts_at: chrono::DateTime<chrono::Utc>,
@@ -37,7 +38,7 @@ impl From<Form> for FormDoc {
     fn from(form: Form) -> Self {
         let form = form.destruct();
         Self {
-            _id: bson::Uuid::from_uuid_1(form.id.value()),
+            _id: form.id.value(),
             title: form.title.value(),
             description: form.description.value(),
             starts_at: form.starts_at.value(),
@@ -54,7 +55,7 @@ impl From<FormDoc> for WithDate<Form> {
     fn from(value: FormDoc) -> Self {
         WithDate::new(
             Form::new(
-                FormId::new(value._id.into()),
+                FormId::new(value._id),
                 FormTitle::new(value.title),
                 FormDescription::new(value.description),
                 DateTime::new(value.starts_at),
@@ -240,5 +241,17 @@ impl FormRepository for MongoFormRepository {
             .await
             .context("Failed to find form")?;
         Ok(form_doc.map(WithDate::from))
+    }
+
+    async fn delete_by_id(&self, id: FormId) -> Result<(), FormRepositoryError> {
+        self.collection
+            .update_one(
+                doc! { "_id": id.value() },
+                doc! { "$set": { "deleted_at": chrono::Utc::now() } },
+                None,
+            )
+            .await
+            .context("Failed to delete form")?;
+        Ok(())
     }
 }

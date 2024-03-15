@@ -18,4 +18,5 @@ pub trait FormRepository: Send + Sync + 'static {
     async fn list(&self) -> Result<Vec<WithDate<Form>>, FormRepositoryError>;
     async fn create(&self, form: Form) -> Result<(), FormRepositoryError>;
     async fn find_by_id(&self, id: FormId) -> Result<Option<WithDate<Form>>, FormRepositoryError>;
+    async fn delete_by_id(&self, id: FormId) -> Result<(), FormRepositoryError>;
 }
