@@ -8,6 +8,7 @@ use sos24_domain::{
             ProjectAttributes, ProjectGroupName, ProjectId, ProjectIdError, ProjectKanaGroupName,
             ProjectKanaTitle, ProjectRemarks, ProjectTitle,
         },
+        project_application_period::ProjectApplicationPeriod,
     },
     repository::{
         project::{ProjectRepository, ProjectRepositoryError},
@@ -30,6 +31,8 @@ pub enum ProjectUseCaseError {
     NotFound(ProjectId),
     #[error("User already owned project: {0:?}")]
     AlreadyOwnedProject(ProjectId),
+    #[error("Project applications are not being accepted")]
+    ApplicationsNotAccepted,
 
     #[error(transparent)]
     ContextError(#[from] ContextError),
@@ -45,11 +48,15 @@ pub enum ProjectUseCaseError {
 
 pub struct ProjectUseCase<R: Repositories> {
     repositories: Arc<R>,
+    project_application_period: ProjectApplicationPeriod, // TODO
 }
 
 impl<R: Repositories> ProjectUseCase<R> {
-    pub fn new(repositories: Arc<R>) -> Self {
-        Self { repositories }
+    pub fn new(repositories: Arc<R>, project_application_period: ProjectApplicationPeriod) -> Self {
+        Self {
+            repositories,
+            project_application_period,
+        }
     }
 
     pub async fn list(&self, ctx: &Context) -> Result<Vec<ProjectDto>, ProjectUseCaseError> {
@@ -69,7 +76,9 @@ impl<R: Repositories> ProjectUseCase<R> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
 
-        // TODO: 企画募集期間かを確認する
+        if !self.project_application_period.contains(ctx.requested_at()) {
+            return Err(ProjectUseCaseError::ApplicationsNotAccepted);
+        }
 
         if let Some(project) = ctx.project(Arc::clone(&self.repositories)).await? {
             let project_id = match project {
@@ -130,7 +139,11 @@ impl<R: Repositories> ProjectUseCase<R> {
         ensure!(project.value.is_visible_to(&actor));
         ensure!(project.value.is_updatable_by(&actor));
 
-        // TODO: roleがgeneralの場合、企画募集期間かを確認する
+        if !actor.has_permission(Permissions::UPDATE_PROJECT_ALL)
+            && !self.project_application_period.contains(ctx.requested_at())
+        {
+            return Err(ProjectUseCaseError::ApplicationsNotAccepted);
+        }
 
         let mut new_project = project.value;
         new_project.set_title(&actor, ProjectTitle::new(project_data.title))?;
@@ -180,8 +193,10 @@ mod tests {
         entity::{
             permission::PermissionDeniedError,
             project::{ProjectAttributes, ProjectCategory},
+            project_application_period::ProjectApplicationPeriod,
             user::UserRole,
         },
+        repository::Repositories,
         test::{fixture, repository::MockRepositories},
     };
 
@@ -191,10 +206,24 @@ mod tests {
         interactor::project::{ProjectUseCase, ProjectUseCaseError},
     };
 
+    fn new_project_use_case<R: Repositories>(repositories: R) -> ProjectUseCase<R> {
+        let application_period = ProjectApplicationPeriod::new(
+            chrono::Utc::now()
+                .checked_sub_days(chrono::Days::new(1))
+                .unwrap()
+                .to_rfc3339(),
+            chrono::Utc::now()
+                .checked_add_days(chrono::Days::new(1))
+                .unwrap()
+                .to_rfc3339(),
+        );
+        ProjectUseCase::new(Arc::new(repositories), application_period)
+    }
+
     #[tokio::test]
     async fn list_general_fail() {
         let repositories = MockRepositories::default();
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
@@ -213,7 +242,7 @@ mod tests {
             .project_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
@@ -235,7 +264,7 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -276,7 +305,7 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -312,7 +341,7 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -334,7 +363,7 @@ mod tests {
                     fixture::user::id2(),
                 ))))
             });
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -361,7 +390,7 @@ mod tests {
                     fixture::user::id2(),
                 ))))
             });
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -383,7 +412,7 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -414,7 +443,7 @@ mod tests {
             .project_repository_mut()
             .expect_delete_by_id()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
@@ -440,7 +469,7 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -478,7 +507,7 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -521,7 +550,7 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories));
+        let use_case = new_project_use_case(repositories);
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case

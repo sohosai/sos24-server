@@ -3,6 +3,7 @@
 use std::sync::Arc;
 
 use crate::config::Config;
+use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
 use sos24_use_case::interactor::{news::NewsUseCase, project::ProjectUseCase, user::UserUseCase};
 
 #[cfg(not(test))]
@@ -48,10 +49,16 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
     let db = Postgresql::new(&env::postgres_db_url()).await?;
     let auth = FirebaseAuth::new(&env::firebase_service_account_key()).await?;
     let repository = Arc::new(DefaultRepositories::new(db, auth));
+
+    let application_period = ProjectApplicationPeriod::new(
+        config.project_application_start_at.clone(),
+        config.project_application_end_at.clone(),
+    );
+
     Ok(Modules {
         config,
         news_use_case: NewsUseCase::new(Arc::clone(&repository)),
-        project_use_case: ProjectUseCase::new(Arc::clone(&repository)),
+        project_use_case: ProjectUseCase::new(Arc::clone(&repository), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repository)),
     })
 }
@@ -59,10 +66,13 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
 #[cfg(test)]
 pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules> {
     let repositories = Arc::new(repositories);
+
+    let application_period = ProjectApplicationPeriod::default();
+
     Ok(Modules {
         config: Config::default(),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories)),
-        project_use_case: ProjectUseCase::new(Arc::clone(&repositories)),
+        project_use_case: ProjectUseCase::new(Arc::clone(&repositories), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })
 }

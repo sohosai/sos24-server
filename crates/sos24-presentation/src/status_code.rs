@@ -35,6 +35,7 @@ impl ToStatusCode for ProjectUseCaseError {
     fn status_code(&self) -> StatusCode {
         match self {
             ProjectUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
+            ProjectUseCaseError::ApplicationsNotAccepted => StatusCode::BAD_REQUEST,
             ProjectUseCaseError::AlreadyOwnedProject(_) => StatusCode::CONFLICT,
             ProjectUseCaseError::ContextError(e) => e.status_code(),
             ProjectUseCaseError::ProjectRepositoryError(e) => e.status_code(),

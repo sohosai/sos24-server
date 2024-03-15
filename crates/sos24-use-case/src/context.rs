@@ -34,6 +34,7 @@ pub enum OwnedProject {
 #[derive(Debug, Clone)]
 pub struct Context {
     user_id: UserId,
+    requested_at: chrono::DateTime<chrono::Utc>,
 
     actor: Option<Actor>, // for test purpose only
 }
@@ -42,6 +43,7 @@ impl Context {
     pub fn new(user_id: String) -> Self {
         Self {
             user_id: UserId::new(user_id),
+            requested_at: chrono::Utc::now(),
             actor: None,
         }
     }
@@ -50,12 +52,17 @@ impl Context {
     pub fn with_actor(actor: Actor) -> Self {
         Self {
             user_id: actor.user_id().clone(),
+            requested_at: chrono::Utc::now(),
             actor: Some(actor),
         }
     }
 
     pub fn user_id(&self) -> &UserId {
         &self.user_id
+    }
+
+    pub fn requested_at(&self) -> &chrono::DateTime<chrono::Utc> {
+        &self.requested_at
     }
 
     pub async fn user<R: Repositories>(
