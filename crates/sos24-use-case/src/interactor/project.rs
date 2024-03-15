@@ -5,6 +5,7 @@ use sos24_domain::{
     entity::{
         actor::Actor,
         permission::{PermissionDeniedError, Permissions},
+        project::{ProjectId, ProjectIdError},
     },
     repository::{
         project::{ProjectRepository, ProjectRepositoryError},
@@ -20,8 +21,13 @@ use crate::dto::{
 
 #[derive(Debug, Error)]
 pub enum ProjectUseCaseError {
+    #[error("Project not found: {0:?}")]
+    NotFound(ProjectId),
+
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
+    #[error(transparent)]
+    ProjectIdError(#[from] ProjectIdError),
     #[error(transparent)]
     PermissionDeniedError(#[from] PermissionDeniedError),
     #[error(transparent)]
@@ -61,5 +67,23 @@ impl<R: Repositories> ProjectUseCase<R> {
             .create(project)
             .await?;
         Ok(())
+    }
+
+    pub async fn find_by_id(
+        &self,
+        actor: &Actor,
+        id: String,
+    ) -> Result<ProjectDto, ProjectUseCaseError> {
+        let id = ProjectId::try_from(id)?;
+        let raw_project = self
+            .repositories
+            .project_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(ProjectUseCaseError::NotFound(id))?;
+
+        ensure!(raw_project.value.is_visible_to(actor));
+
+        Ok(ProjectDto::from_entity(raw_project))
     }
 }

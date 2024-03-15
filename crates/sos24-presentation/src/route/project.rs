@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use axum::{extract::State, http::StatusCode, response::IntoResponse, Extension, Json};
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    Extension, Json,
+};
 use sos24_domain::entity::actor::Actor;
 
 use crate::{
@@ -38,4 +43,19 @@ pub async fn handle_post(
         tracing::error!("Failed to create project: {err:?}");
         err.status_code()
     })
+}
+
+pub async fn handle_get_id(
+    Path(id): Path<String>,
+    Extension(actor): Extension<Actor>,
+    State(modules): State<Arc<Modules>>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let raw_project = modules.project_use_case().find_by_id(&actor, id).await;
+    match raw_project {
+        Ok(raw_project) => Ok((StatusCode::OK, Json(Project::from(raw_project)))),
+        Err(err) => {
+            tracing::error!("Failed to find project: {err:?}");
+            Err(err.status_code())
+        }
+    }
 }

@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use crate::impl_value_object;
 
-use super::user::UserId;
+use super::{actor::Actor, permission::Permissions, user::UserId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct Project {
@@ -116,6 +116,20 @@ pub struct DestructedProject {
     pub owner_id: UserId,
     pub sub_owner_id: Option<UserId>,
     pub remarks: Option<ProjectRemarks>,
+}
+
+impl Project {
+    pub fn is_owned_by(&self, user_id: &UserId) -> bool {
+        self.owner_id() == user_id
+            || self
+                .sub_owner_id()
+                .as_ref()
+                .map_or(false, |sub_owner_id| sub_owner_id == user_id)
+    }
+
+    pub fn is_visible_to(&self, actor: &Actor) -> bool {
+        self.is_owned_by(actor.user_id()) || actor.has_permission(Permissions::READ_PROJECT_ALL)
+    }
 }
 
 impl_value_object!(ProjectId(uuid::Uuid));

@@ -141,4 +141,19 @@ impl ProjectRepository for PgProjectRepository {
         .context("Failed to create project")?;
         Ok(())
     }
+
+    async fn find_by_id(
+        &self,
+        id: ProjectId,
+    ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+        let project_row = sqlx::query_as!(
+            ProjectRow,
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE id = $1 AND deleted_at IS NULL"#,
+            id.value()
+        )
+        .fetch_optional(&*self.db)
+        .await
+        .context("Failed to fetch project")?;
+        Ok(project_row.map(WithDate::from))
+    }
 }

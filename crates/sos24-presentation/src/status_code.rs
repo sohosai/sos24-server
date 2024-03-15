@@ -1,6 +1,9 @@
 use axum::http::StatusCode;
 use sos24_domain::{
-    entity::{common::email::EmailError, news::NewsIdError, permission::PermissionDeniedError},
+    entity::{
+        common::email::EmailError, news::NewsIdError, permission::PermissionDeniedError,
+        project::ProjectIdError,
+    },
     repository::{
         firebase_user::FirebaseUserRepositoryError, news::NewsRepositoryError,
         project::ProjectRepositoryError, user::UserRepositoryError,
@@ -29,7 +32,9 @@ impl ToStatusCode for NewsUseCaseError {
 impl ToStatusCode for ProjectUseCaseError {
     fn status_code(&self) -> StatusCode {
         match self {
+            ProjectUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
             ProjectUseCaseError::ProjectRepositoryError(e) => e.status_code(),
+            ProjectUseCaseError::ProjectIdError(e) => e.status_code(),
             ProjectUseCaseError::PermissionDeniedError(e) => e.status_code(),
             ProjectUseCaseError::InternalError(e) => e.status_code(),
         }
@@ -88,6 +93,14 @@ impl ToStatusCode for NewsIdError {
     fn status_code(&self) -> StatusCode {
         match self {
             NewsIdError::InvalidUuid => StatusCode::BAD_REQUEST,
+        }
+    }
+}
+
+impl ToStatusCode for ProjectIdError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ProjectIdError::InvalidUuid => StatusCode::BAD_REQUEST,
         }
     }
 }
