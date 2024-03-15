@@ -1,5 +1,5 @@
 use sos24_domain::entity::{
-    common::datetime::DateTime,
+    common::{date::WithDate, datetime::DateTime},
     form::{
         Form, FormDescription, FormItem, FormItemAllowNewline, FormItemDescription,
         FormItemExtention, FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
@@ -10,7 +10,7 @@ use sos24_domain::entity::{
 
 use crate::interactor::form::FormUseCaseError;
 
-use super::ToEntity;
+use super::{FromEntity, ToEntity};
 
 #[derive(Debug)]
 pub struct CreateFormDto {
@@ -18,7 +18,7 @@ pub struct CreateFormDto {
     description: String,
     starts_at: String,
     ends_at: String,
-    items: Vec<CreateFormItemDto>,
+    items: Vec<FormItemDto>,
 }
 
 impl CreateFormDto {
@@ -27,7 +27,7 @@ impl CreateFormDto {
         description: String,
         starts_at: String,
         ends_at: String,
-        items: Vec<CreateFormItemDto>,
+        items: Vec<FormItemDto>,
     ) -> Self {
         Self {
             title,
@@ -50,21 +50,56 @@ impl ToEntity for CreateFormDto {
             DateTime::try_from(self.ends_at)?,
             self.items
                 .into_iter()
-                .map(CreateFormItemDto::into_entity)
+                .map(FormItemDto::into_entity)
                 .collect::<Result<Vec<_>, _>>()?,
         ))
     }
 }
 
 #[derive(Debug)]
-pub struct CreateFormItemDto {
+pub struct FormDto {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: chrono::DateTime<chrono::Utc>,
+    pub ends_at: chrono::DateTime<chrono::Utc>,
+    pub items: Vec<FormItemDto>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl FromEntity for FormDto {
+    type Entity = WithDate<Form>;
+    fn from_entity(entity: Self::Entity) -> Self {
+        let form = entity.value.destruct();
+        Self {
+            id: form.id.value().to_string(),
+            title: form.title.value(),
+            description: form.description.value(),
+            starts_at: form.starts_at.value(),
+            ends_at: form.ends_at.value(),
+            items: form
+                .items
+                .into_iter()
+                .map(FormItemDto::from_entity)
+                .collect(),
+            created_at: entity.created_at,
+            updated_at: entity.updated_at,
+            deleted_at: entity.deleted_at,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct FormItemDto {
     pub name: String,
     pub description: String,
     pub required: bool,
     pub kind: FormItemKindDto,
 }
 
-impl CreateFormItemDto {
+impl FormItemDto {
     pub fn new(name: String, description: String, required: bool, kind: FormItemKindDto) -> Self {
         Self {
             name,
@@ -75,7 +110,7 @@ impl CreateFormItemDto {
     }
 }
 
-impl ToEntity for CreateFormItemDto {
+impl ToEntity for FormItemDto {
     type Entity = FormItem;
     type Error = FormUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
@@ -85,6 +120,19 @@ impl ToEntity for CreateFormItemDto {
             FormItemRequired::new(self.required),
             self.kind.into_entity()?,
         ))
+    }
+}
+
+impl FromEntity for FormItemDto {
+    type Entity = FormItem;
+    fn from_entity(entity: Self::Entity) -> Self {
+        let entity = entity.destruct();
+        Self::new(
+            entity.name.value(),
+            entity.description.value(),
+            entity.required.value(),
+            FormItemKindDto::from_entity(entity.kind),
+        )
     }
 }
 
@@ -147,6 +195,43 @@ impl ToEntity for FormItemKindDto {
                 extentions: extentions.into_iter().map(FormItemExtention::new).collect(),
                 limit: FormItemLimit::new(limit),
             }),
+        }
+    }
+}
+
+impl FromEntity for FormItemKindDto {
+    type Entity = FormItemKind;
+    fn from_entity(entity: Self::Entity) -> Self {
+        match entity {
+            FormItemKind::String {
+                min_length,
+                max_length,
+                allow_newline,
+            } => FormItemKindDto::String {
+                min_length: min_length.value(),
+                max_length: max_length.value(),
+                allow_newline: allow_newline.value(),
+            },
+            FormItemKind::Int { min, max } => FormItemKindDto::Int {
+                min: min.value(),
+                max: max.value(),
+            },
+            FormItemKind::ChooseOne { options } => FormItemKindDto::ChooseOne {
+                options: options.into_iter().map(|o| o.value()).collect(),
+            },
+            FormItemKind::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            } => FormItemKindDto::ChooseMany {
+                options: options.into_iter().map(|o| o.value()).collect(),
+                min_selection: min_selection.value(),
+                max_selection: max_selection.value(),
+            },
+            FormItemKind::File { extentions, limit } => FormItemKindDto::File {
+                extentions: extentions.into_iter().map(|e| e.value()).collect(),
+                limit: limit.value(),
+            },
         }
     }
 }

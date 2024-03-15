@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sos24_use_case::dto::form::{CreateFormDto, CreateFormItemDto, FormItemKindDto};
+use sos24_use_case::dto::form::{CreateFormDto, FormDto, FormItemDto, FormItemKindDto};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateForm {
@@ -7,7 +7,7 @@ pub struct CreateForm {
     description: String,
     starts_at: String,
     ends_at: String,
-    items: Vec<CreateFormItem>,
+    items: Vec<FormItem>,
 }
 
 impl From<CreateForm> for CreateFormDto {
@@ -20,15 +20,44 @@ impl From<CreateForm> for CreateFormDto {
             create_form
                 .items
                 .into_iter()
-                .map(CreateFormItemDto::from)
+                .map(FormItemDto::from)
                 .collect(),
         )
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct Form {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub items: Vec<FormItem>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
+}
+
+impl From<FormDto> for Form {
+    fn from(form: FormDto) -> Self {
+        Form {
+            id: form.id.to_string(),
+            title: form.title,
+            description: form.description,
+            starts_at: form.starts_at.to_rfc3339(),
+            ends_at: form.ends_at.to_rfc3339(),
+            items: form.items.into_iter().map(FormItem::from).collect(),
+            created_at: form.created_at.to_rfc3339(),
+            updated_at: form.updated_at.to_rfc3339(),
+            deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum CreateFormItem {
+pub enum FormItem {
     String {
         name: String,
         description: String,
@@ -67,17 +96,17 @@ pub enum CreateFormItem {
     },
 }
 
-impl From<CreateFormItem> for CreateFormItemDto {
-    fn from(value: CreateFormItem) -> Self {
+impl From<FormItem> for FormItemDto {
+    fn from(value: FormItem) -> Self {
         match value {
-            CreateFormItem::String {
+            FormItem::String {
                 name,
                 description,
                 required,
                 min_length,
                 max_length,
                 allow_newline,
-            } => CreateFormItemDto::new(
+            } => FormItemDto::new(
                 name,
                 description,
                 required,
@@ -87,37 +116,37 @@ impl From<CreateFormItem> for CreateFormItemDto {
                     allow_newline,
                 },
             ),
-            CreateFormItem::Int {
+            FormItem::Int {
                 name,
                 description,
                 required,
                 min,
                 max,
-            } => CreateFormItemDto::new(
+            } => FormItemDto::new(
                 name,
                 description,
                 required,
                 FormItemKindDto::Int { min, max },
             ),
-            CreateFormItem::ChooseOne {
+            FormItem::ChooseOne {
                 name,
                 description,
                 required,
                 options,
-            } => CreateFormItemDto::new(
+            } => FormItemDto::new(
                 name,
                 description,
                 required,
                 FormItemKindDto::ChooseOne { options },
             ),
-            CreateFormItem::ChooseMany {
+            FormItem::ChooseMany {
                 name,
                 description,
                 required,
                 options,
                 min_selection,
                 max_selection,
-            } => CreateFormItemDto::new(
+            } => FormItemDto::new(
                 name,
                 description,
                 required,
@@ -127,18 +156,69 @@ impl From<CreateFormItem> for CreateFormItemDto {
                     max_selection,
                 },
             ),
-            CreateFormItem::File {
+            FormItem::File {
                 name,
                 description,
                 required,
                 extentions,
                 limit,
-            } => CreateFormItemDto::new(
+            } => FormItemDto::new(
                 name,
                 description,
                 required,
                 FormItemKindDto::File { extentions, limit },
             ),
+        }
+    }
+}
+
+impl From<FormItemDto> for FormItem {
+    fn from(value: FormItemDto) -> Self {
+        match value.kind {
+            FormItemKindDto::String {
+                min_length,
+                max_length,
+                allow_newline,
+            } => FormItem::String {
+                name: value.name,
+                description: value.description,
+                required: value.required,
+                min_length,
+                max_length,
+                allow_newline,
+            },
+            FormItemKindDto::Int { min, max } => FormItem::Int {
+                name: value.name,
+                description: value.description,
+                required: value.required,
+                min,
+                max,
+            },
+            FormItemKindDto::ChooseOne { options } => FormItem::ChooseOne {
+                name: value.name,
+                description: value.description,
+                required: value.required,
+                options,
+            },
+            FormItemKindDto::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            } => FormItem::ChooseMany {
+                name: value.name,
+                description: value.description,
+                required: value.required,
+                options,
+                min_selection,
+                max_selection,
+            },
+            FormItemKindDto::File { extentions, limit } => FormItem::File {
+                name: value.name,
+                description: value.description,
+                required: value.required,
+                extentions,
+                limit,
+            },
         }
     }
 }

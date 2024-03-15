@@ -15,7 +15,10 @@ use thiserror::Error;
 
 use crate::{
     context::{Context, ContextError},
-    dto::{form::CreateFormDto, ToEntity},
+    dto::{
+        form::{CreateFormDto, FormDto},
+        FromEntity, ToEntity,
+    },
 };
 
 #[derive(Debug, Error)]
@@ -41,6 +44,15 @@ impl<R: Repositories> FormUseCase<R> {
         Self {
             repositors: repositories,
         }
+    }
+
+    pub async fn list(&self, ctx: &Context) -> Result<Vec<FormDto>, FormUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositors)).await?;
+        ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
+
+        let raw_form_list = self.repositors.form_repository().list().await?;
+        let form_list = raw_form_list.into_iter().map(FormDto::from_entity);
+        Ok(form_list.collect())
     }
 
     pub async fn create(

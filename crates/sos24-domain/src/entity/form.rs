@@ -41,6 +41,24 @@ impl Form {
         }
     }
 
+    pub fn new(
+        id: FormId,
+        title: FormTitle,
+        description: FormDescription,
+        starts_at: DateTime,
+        ends_at: DateTime,
+        items: Vec<FormItem>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            description,
+            starts_at,
+            ends_at,
+            items,
+        }
+    }
+
     pub fn destruct(self) -> DestructedForm {
         DestructedForm {
             id: self.id,

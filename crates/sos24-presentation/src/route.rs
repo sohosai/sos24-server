@@ -51,7 +51,9 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:invitation_id", delete(invitation::handle_delete_id))
         .route("/:invitation_id", post(invitation::handle_post_id));
 
-    let form = Router::new().route("/", post(form::handle_post));
+    let form = Router::new()
+        .route("/", get(form::handle_get))
+        .route("/", post(form::handle_post));
 
     let private_routes = Router::new()
         .nest("/news", news)

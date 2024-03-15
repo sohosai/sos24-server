@@ -1,8 +1,17 @@
 use anyhow::Context;
-use mongodb::Collection;
+use futures_util::{StreamExt, TryStreamExt};
+use mongodb::{bson::doc, Collection};
 use serde::{Deserialize, Serialize};
 use sos24_domain::{
-    entity::form::{Form, FormItem, FormItemKind},
+    entity::{
+        common::{date::WithDate, datetime::DateTime},
+        form::{
+            Form, FormDescription, FormId, FormItem, FormItemAllowNewline, FormItemDescription,
+            FormItemExtention, FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
+            FormItemMaxSelection, FormItemMin, FormItemMinLength, FormItemMinSelection,
+            FormItemName, FormItemOption, FormItemRequired, FormTitle,
+        },
+    },
     repository::form::{FormRepository, FormRepositoryError},
 };
 
@@ -15,10 +24,10 @@ pub struct FormDoc {
     description: String,
     starts_at: chrono::DateTime<chrono::Utc>,
     ends_at: chrono::DateTime<chrono::Utc>,
+    items: Vec<FormItemDoc>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
     deleted_at: Option<chrono::DateTime<chrono::Utc>>,
-    items: Vec<FormItemDoc>,
 }
 
 impl From<Form> for FormDoc {
@@ -30,11 +39,29 @@ impl From<Form> for FormDoc {
             description: form.description.value(),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
+            items: form.items.into_iter().map(FormItemDoc::from).collect(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
             deleted_at: None,
-            items: form.items.into_iter().map(FormItemDoc::from).collect(),
         }
+    }
+}
+
+impl From<FormDoc> for WithDate<Form> {
+    fn from(value: FormDoc) -> Self {
+        WithDate::new(
+            Form::new(
+                FormId::new(value._id),
+                FormTitle::new(value.title),
+                FormDescription::new(value.description),
+                DateTime::new(value.starts_at),
+                DateTime::new(value.ends_at),
+                value.items.into_iter().map(FormItemDoc::into).collect(),
+            ),
+            value.created_at,
+            value.updated_at,
+            value.deleted_at,
+        )
     }
 }
 
@@ -55,6 +82,17 @@ impl From<FormItem> for FormItemDoc {
             required: value.required.value(),
             kind: FormItemKindDoc::from(value.kind),
         }
+    }
+}
+
+impl From<FormItemDoc> for FormItem {
+    fn from(value: FormItemDoc) -> Self {
+        FormItem::new(
+            FormItemName::new(value.name),
+            FormItemDescription::new(value.description),
+            FormItemRequired::new(value.required),
+            FormItemKind::from(value.kind),
+        )
     }
 }
 
@@ -119,6 +157,42 @@ impl From<FormItemKind> for FormItemKindDoc {
     }
 }
 
+impl From<FormItemKindDoc> for FormItemKind {
+    fn from(value: FormItemKindDoc) -> Self {
+        match value {
+            FormItemKindDoc::String {
+                min_length,
+                max_length,
+                allow_newline,
+            } => FormItemKind::String {
+                min_length: FormItemMinLength::new(min_length),
+                max_length: FormItemMaxLength::new(max_length),
+                allow_newline: FormItemAllowNewline::new(allow_newline),
+            },
+            FormItemKindDoc::Int { min, max } => FormItemKind::Int {
+                min: FormItemMin::new(min),
+                max: FormItemMax::new(max),
+            },
+            FormItemKindDoc::ChooseOne { options } => FormItemKind::ChooseOne {
+                options: options.into_iter().map(FormItemOption::new).collect(),
+            },
+            FormItemKindDoc::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            } => FormItemKind::ChooseMany {
+                options: options.into_iter().map(FormItemOption::new).collect(),
+                min_selection: FormItemMinSelection::new(min_selection),
+                max_selection: FormItemMaxSelection::new(max_selection),
+            },
+            FormItemKindDoc::File { extentions, limit } => FormItemKind::File {
+                extentions: extentions.into_iter().map(FormItemExtention::new).collect(),
+                limit: FormItemLimit::new(limit),
+            },
+        }
+    }
+}
+
 pub struct MongoFormRepository {
     collection: Collection<FormDoc>,
 }
@@ -132,6 +206,21 @@ impl MongoFormRepository {
 }
 
 impl FormRepository for MongoFormRepository {
+    async fn list(&self) -> Result<Vec<WithDate<Form>>, FormRepositoryError> {
+        let form_list = self
+            .collection
+            .find(doc! { "deleted_at": None::<String> }, None)
+            .await
+            .context("Failed to list forms")?;
+        let forms = form_list
+            .map(|doc| {
+                Ok::<_, anyhow::Error>(WithDate::from(doc.context("Failed to fetch form list")?))
+            })
+            .try_collect()
+            .await?;
+        Ok(forms)
+    }
+
     async fn create(&self, form: Form) -> Result<(), FormRepositoryError> {
         let form_doc = FormDoc::from(form);
         self.collection
