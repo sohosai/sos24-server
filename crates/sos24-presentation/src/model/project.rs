@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
-use sos24_use_case::dto::project::{CreateProjectDto, ProjectCategoryDto, ProjectDto};
+use sos24_use_case::dto::project::{
+    CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateProject {
@@ -26,6 +28,37 @@ impl ConvertToCreateProjectDto for (CreateProject, String) {
             ProjectCategoryDto::from(project.category),
             project.attributes,
             owner_id,
+        )
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateProject {
+    title: String,
+    kana_title: String,
+    group_name: String,
+    kana_group_name: String,
+    category: ProjectCategory,
+    attributes: i32,
+    remarks: Option<String>,
+}
+
+pub trait ConvertToUpdateProjectDto {
+    fn to_update_project_dto(self) -> UpdateProjectDto;
+}
+
+impl ConvertToUpdateProjectDto for (UpdateProject, String) {
+    fn to_update_project_dto(self) -> UpdateProjectDto {
+        let (project, id) = self;
+        UpdateProjectDto::new(
+            id,
+            project.title,
+            project.kana_title,
+            project.group_name,
+            project.kana_group_name,
+            ProjectCategoryDto::from(project.category),
+            project.attributes,
+            project.remarks,
         )
     }
 }

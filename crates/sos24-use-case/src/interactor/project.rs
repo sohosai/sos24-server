@@ -5,7 +5,10 @@ use sos24_domain::{
     entity::{
         actor::Actor,
         permission::{PermissionDeniedError, Permissions},
-        project::{ProjectId, ProjectIdError},
+        project::{
+            ProjectAttributes, ProjectGroupName, ProjectId, ProjectIdError, ProjectKanaGroupName,
+            ProjectKanaTitle, ProjectRemarks, ProjectTitle,
+        },
     },
     repository::{
         project::{ProjectRepository, ProjectRepositoryError},
@@ -15,7 +18,7 @@ use sos24_domain::{
 use thiserror::Error;
 
 use crate::dto::{
-    project::{CreateProjectDto, ProjectDto},
+    project::{CreateProjectDto, ProjectDto, UpdateProjectDto},
     FromEntity, ToEntity,
 };
 
@@ -84,7 +87,51 @@ impl<R: Repositories> ProjectUseCase<R> {
 
         ensure!(raw_project.value.is_visible_to(actor));
 
-        Ok(ProjectDto::from_entity(raw_project))
+        let mut project = ProjectDto::from_entity(raw_project);
+        if !actor.has_permission(Permissions::READ_PROJECT_ALL) {
+            project.remarks = None;
+        }
+
+        Ok(project)
+    }
+
+    pub async fn update(
+        &self,
+        actor: &Actor,
+        project_data: UpdateProjectDto,
+    ) -> Result<(), ProjectUseCaseError> {
+        let id = ProjectId::try_from(project_data.id)?;
+        let project = self
+            .repositories
+            .project_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(ProjectUseCaseError::NotFound(id))?;
+
+        ensure!(project.value.is_visible_to(actor));
+        ensure!(project.value.is_updatable_by(actor));
+
+        // TODO: roleがgeneralの場合、企画募集期間かを確認する
+
+        let mut new_project = project.value;
+        new_project.set_title(actor, ProjectTitle::new(project_data.title))?;
+        new_project.set_kana_title(actor, ProjectKanaTitle::new(project_data.kana_title))?;
+        new_project.set_group_name(actor, ProjectGroupName::new(project_data.group_name))?;
+        new_project.set_kana_group_name(
+            actor,
+            ProjectKanaGroupName::new(project_data.kana_group_name),
+        )?;
+        new_project.set_category(actor, project_data.category.into_entity()?)?;
+        new_project.set_attributes(actor, ProjectAttributes::new(project_data.attributes))?;
+        if let Some(remarks) = project_data.remarks {
+            new_project.set_remarks(actor, ProjectRemarks::new(remarks))?;
+        }
+
+        self.repositories
+            .project_repository()
+            .update(new_project)
+            .await?;
+        Ok(())
     }
 
     pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), ProjectUseCaseError> {
@@ -119,7 +166,7 @@ mod tests {
     };
 
     use crate::{
-        dto::project::{CreateProjectDto, ProjectCategoryDto},
+        dto::project::{CreateProjectDto, ProjectCategoryDto, UpdateProjectDto},
         interactor::project::{ProjectUseCase, ProjectUseCaseError},
     };
 
@@ -299,6 +346,125 @@ mod tests {
         let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
         let res = use_case
             .delete_by_id(&actor, fixture::project::id1().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn update_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id1(),
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .update(
+                &actor,
+                UpdateProjectDto::new(
+                    fixture::project::id2().value().to_string(),
+                    fixture::project::title2().value(),
+                    fixture::project::kana_title2().value(),
+                    fixture::project::group_name2().value(),
+                    fixture::project::kana_group_name2().value(),
+                    ProjectCategoryDto::Stage1A,
+                    1,
+                    None,
+                ),
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn update_committee_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .update(
+                &actor,
+                UpdateProjectDto::new(
+                    fixture::project::id2().value().to_string(),
+                    fixture::project::title2().value(),
+                    fixture::project::kana_title2().value(),
+                    fixture::project::group_name2().value(),
+                    fixture::project::kana_group_name2().value(),
+                    ProjectCategoryDto::Stage1A,
+                    1,
+                    None,
+                ),
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn update_operator_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let res = use_case
+            .update(
+                &actor,
+                UpdateProjectDto::new(
+                    fixture::project::id2().value().to_string(),
+                    fixture::project::title2().value(),
+                    fixture::project::kana_title2().value(),
+                    fixture::project::group_name2().value(),
+                    fixture::project::kana_group_name2().value(),
+                    ProjectCategoryDto::Stage1A,
+                    1,
+                    None,
+                ),
+            )
             .await;
         assert!(matches!(res, Ok(())));
     }

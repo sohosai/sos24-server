@@ -35,7 +35,8 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/", get(project::handle_get))
         .route("/", post(project::handle_post))
         .route("/:project_id", get(project::handle_get_id))
-        .route("/:project_id", delete(project::handle_delete_id));
+        .route("/:project_id", delete(project::handle_delete_id))
+        .route("/:project_id", put(project::handle_put_id));
 
     let private_routes = Router::new()
         .nest("/news", news)

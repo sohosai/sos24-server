@@ -9,7 +9,9 @@ use axum::{
 use sos24_domain::entity::actor::Actor;
 
 use crate::{
-    model::project::{ConvertToCreateProjectDto, CreateProject, Project},
+    model::project::{
+        ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project, UpdateProject,
+    },
     module::Modules,
     status_code::ToStatusCode,
 };
@@ -68,6 +70,20 @@ pub async fn handle_delete_id(
     let res = modules.project_use_case().delete_by_id(&actor, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete project: {err:?}");
+        err.status_code()
+    })
+}
+
+pub async fn handle_put_id(
+    Path(id): Path<String>,
+    State(modules): State<Arc<Modules>>,
+    Extension(actor): Extension<Actor>,
+    Json(raw_project): Json<UpdateProject>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let project = (raw_project, id).to_update_project_dto();
+    let res = modules.project_use_case().update(&actor, project).await;
+    res.map(|_| StatusCode::OK).map_err(|err| {
+        tracing::error!("Failed to update project: {err:?}");
         err.status_code()
     })
 }

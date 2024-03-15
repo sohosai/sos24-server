@@ -157,6 +157,27 @@ impl ProjectRepository for PgProjectRepository {
         Ok(project_row.map(WithDate::from))
     }
 
+    async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {
+        let project = project.destruct();
+        sqlx::query!(
+            r#"UPDATE projects SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10 WHERE id = $1 AND deleted_at IS NULL"#,
+            project.id.value(),
+            project.title.value(),
+            project.kana_title.value(),
+            project.group_name.value(),
+            project.kana_group_name.value(),
+            ProjectCategoryRow::from(project.category) as ProjectCategoryRow,
+            project.attributes.value(),
+            project.owner_id.value(),
+            project.sub_owner_id.map(|it| it.value()),
+            project.remarks.map(|it| it.value()),
+        )
+        .execute(&*self.db)
+        .await
+        .context("Failed to update project")?;
+        Ok(())
+    }
+
     async fn delete_by_id(&self, id: ProjectId) -> Result<(), ProjectRepositoryError> {
         sqlx::query!(
             r#"UPDATE projects SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,

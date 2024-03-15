@@ -21,5 +21,6 @@ pub trait ProjectRepository: Send + Sync + 'static {
         &self,
         id: ProjectId,
     ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError>;
+    async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError>;
     async fn delete_by_id(&self, id: ProjectId) -> Result<(), ProjectRepositoryError>;
 }

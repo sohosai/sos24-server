@@ -61,6 +61,42 @@ impl ToEntity for CreateProjectDto {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub struct UpdateProjectDto {
+    pub id: String,
+    pub title: String,
+    pub kana_title: String,
+    pub group_name: String,
+    pub kana_group_name: String,
+    pub category: ProjectCategoryDto,
+    pub attributes: i32,
+    pub remarks: Option<String>,
+}
+
+impl UpdateProjectDto {
+    pub fn new(
+        id: String,
+        title: String,
+        kana_title: String,
+        group_name: String,
+        kana_group_name: String,
+        category: ProjectCategoryDto,
+        attributes: i32,
+        remarks: Option<String>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            kana_title,
+            group_name,
+            kana_group_name,
+            category,
+            attributes,
+            remarks,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct ProjectDto {
     pub id: String,
     pub index: i32,
