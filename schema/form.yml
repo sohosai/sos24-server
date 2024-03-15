@@ -231,8 +231,6 @@ schemas:
         # TODO: スキーマを考える
       items:
         type: array
-        schema:
-          type: FormItem
   CreateForm:
     type: object
     properties:
@@ -251,8 +249,6 @@ schemas:
         # TODO: スキーマを考える
       items:
         type: array
-        schema:
-          type: FormItem
   UpdateForm:
     type: object
     properties:
@@ -271,5 +267,3 @@ schemas:
         # TODO: スキーマを考える
       items:
         type: array
-        schema:
-          type: FormItem
