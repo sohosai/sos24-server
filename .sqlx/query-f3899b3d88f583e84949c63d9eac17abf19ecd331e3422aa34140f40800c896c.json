@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        {
+          "Custom": {
+            "name": "project_category",
+            "kind": {
+              "Enum": [
+                "general",
+                "foods_with_kitchen",
+                "foods_without_kitchen",
+                "foods_without_cooking",
+                "stage_1a",
+                "stage_university_hall",
+                "stage_united"
+              ]
+            }
+          }
+        },
+        "Int4",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f3899b3d88f583e84949c63d9eac17abf19ecd331e3422aa34140f40800c896c"
+}

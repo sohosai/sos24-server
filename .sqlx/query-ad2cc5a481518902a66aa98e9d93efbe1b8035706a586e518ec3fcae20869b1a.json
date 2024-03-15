@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE projects SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10 WHERE id = $1 AND deleted_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        {
+          "Custom": {
+            "name": "project_category",
+            "kind": {
+              "Enum": [
+                "general",
+                "foods_with_kitchen",
+                "foods_without_kitchen",
+                "foods_without_cooking",
+                "stage_1a",
+                "stage_university_hall",
+                "stage_united"
+              ]
+            }
+          }
+        },
+        "Int4",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ad2cc5a481518902a66aa98e9d93efbe1b8035706a586e518ec3fcae20869b1a"
+}
