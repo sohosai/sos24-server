@@ -1,0 +1,264 @@
+paths:
+  /projects:
+    get:
+      summary: 企画一覧の取得
+      tags:
+        - projects
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/Project"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+    post:
+      summary: 企画の作成
+      tags:
+        - projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/CreateProject"
+      responses:
+        201:
+          description: Created
+        400:
+          description: Bad Request
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+  /projects/{project_id}:
+    get:
+      summary: 特定のIDの企画の取得
+      tags:
+        - projects
+        - committee
+      parameters:
+        - name: project_id
+          in: path
+          schema: { type: string }
+          required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/Project"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    put:
+      summary: 特定のIDの企画の更新
+      tags:
+        - projects
+        - committee
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/UpdateProject"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+    delete:
+      summary: 特定のIDの企画の削除
+      tags:
+        - projects
+        - committee
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+
+  /projects/me:
+    get:
+      summary: 自分が企画責任者・副企画責任者になっている企画の取得
+      tags:
+        - projects
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/Project"
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    put:
+      summary: 自分が企画責任者・副企画責任者になっている企画の更新
+      tags:
+        - projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/UpdateProject"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+schemas:
+  Project:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      index:
+        type: integer
+      title:
+        type: string
+      kana_title:
+        type: string
+      group_name:
+        type: string
+      kana_group_name:
+        type: string
+      category:
+        type: string
+        enum:
+          - general
+          - foods_with_kitchen
+          - foods_without_kitchen
+          - foods_without_cooking
+          - stage_1a
+          - stage_university_hall
+          - stage_united
+      attributes:
+        type: integer
+        # TODO: スキーマを考える
+      owner_id:
+        type: string
+        format: uuid
+      sub_owner_id:
+        type: string
+        format: uuid
+        nullable: true
+      remarks:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+        nullable: true
+  CreateProject:
+    type: object
+    properties:
+      title:
+        type: string
+      kana_title:
+        type: string
+      group_name:
+        type: string
+      kana_group_name:
+        type: string
+      category:
+        type: string
+        enum:
+          - general
+          - foods_with_kitchen
+          - foods_without_kitchen
+          - foods_without_cooking
+          - stage_1a
+          - stage_university_hall
+          - stage_united
+      attributes:
+        type: integer
+        # TODO: スキーマを考える
+  UpdateProject:
+    type: object
+    properties:
+      title:
+        type: string
+      kana_title:
+        type: string
+      group_name:
+        type: string
+      kana_group_name:
+        type: string
+      category:
+        type: string
+        enum:
+          - general
+          - foods_with_kitchen
+          - foods_without_kitchen
+          - foods_without_cooking
+          - stage_1a
+          - stage_university_hall
+          - stage_united
+      attributes:
+        type: integer
+        # TODO: スキーマを考える
+      remarks:
+        type: string

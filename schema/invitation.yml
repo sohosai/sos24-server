@@ -1,0 +1,168 @@
+paths:
+  /invitations:
+    get:
+      summary: 招待一覧の取得
+      tags:
+        - invitations
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/Invitation"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+    post:
+      summary: 招待の作成
+      tags:
+        - invitations
+        - committee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/CreateInvitation"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/Invitation"
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+  /invitations/{invitation_id}:
+    get:
+      summary: 特定のIDの招待の取得
+      tags:
+        - invitations
+        - committee
+      parameters:
+        - name: invitation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/Invitation"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    post:
+      summary: 特定のIDの招待の受諾
+      tags:
+        - invitations
+      parameters:
+        - name: invitation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    delete:
+      summary: 招待の削除
+      tags:
+        - invitations
+        - committee
+      parameters:
+        - name: invitation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+
+schemas:
+  Invitation:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      project_id:
+        type: string
+        format: uuid
+      position:
+        type: string
+        enum:
+          - owner
+          - sub_owner
+      inviter:
+        type: string
+      invitee_email:
+        type: string
+      invitee:
+        type: string
+        nullable: true
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+        nullable: true
+  CreateInvitation:
+    type: object
+    properties:
+      project_id:
+        type: string
+        format: uuid
+      position:
+        type: string
+        enum:
+          - owner
+          - sub_owner
+      invitee_email:
+        type: string
+        format: email
