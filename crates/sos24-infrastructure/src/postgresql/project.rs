@@ -157,6 +157,35 @@ impl ProjectRepository for PgProjectRepository {
         Ok(project_row.map(WithDate::from))
     }
 
+    async fn find_by_owner_id(
+        &self,
+        owner_id: UserId,
+    ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+        let project_row = sqlx::query_as!(
+            ProjectRow,
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE owner_id = $1 AND deleted_at IS NULL"#,
+            owner_id.value()
+        )
+        .fetch_optional(&*self.db)
+        .await
+        .context("Failed to fetch project")?;
+        Ok(project_row.map(WithDate::from))
+    }
+
+    async fn find_by_sub_owner_id(
+        &self,
+        sub_owner_id: UserId,
+    ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+        let project_row = sqlx::query_as!(
+            ProjectRow,
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
+            sub_owner_id.value()
+        ).fetch_optional(&*self.db)
+        .await
+        .context("Failed to fetch project")?;
+        Ok(project_row.map(WithDate::from))
+    }
+
     async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {
         let project = project.destruct();
         sqlx::query!(
