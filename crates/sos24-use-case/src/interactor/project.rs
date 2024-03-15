@@ -166,10 +166,10 @@ mod tests {
             .create(
                 &actor,
                 CreateProjectDto::new(
-                    fixture::project::title().value(),
-                    fixture::project::kana_title().value(),
-                    fixture::project::group_name().value(),
-                    fixture::project::kana_group_name().value(),
+                    fixture::project::title1().value(),
+                    fixture::project::kana_title1().value(),
+                    fixture::project::group_name1().value(),
+                    fixture::project::kana_group_name1().value(),
                     ProjectCategoryDto::General,
                     0,
                     fixture::user::id1().value(),
@@ -186,7 +186,7 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project(
+                Ok(Some(fixture::date::with(fixture::project::project1(
                     ProjectCategory::General,
                     ProjectAttributes::new(0),
                     fixture::user::id1(),
@@ -196,7 +196,7 @@ mod tests {
 
         let actor = fixture::actor::actor1(UserRole::General);
         let res = use_case
-            .find_by_id(&actor, fixture::project::id().value().to_string())
+            .find_by_id(&actor, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(res, Ok(_)));
     }
@@ -208,7 +208,7 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project(
+                Ok(Some(fixture::date::with(fixture::project::project1(
                     ProjectCategory::General,
                     ProjectAttributes::new(0),
                     fixture::user::id2(),
@@ -218,7 +218,7 @@ mod tests {
 
         let actor = fixture::actor::actor1(UserRole::General);
         let res = use_case
-            .find_by_id(&actor, fixture::project::id().value().to_string())
+            .find_by_id(&actor, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(
             res,
@@ -235,7 +235,7 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project(
+                Ok(Some(fixture::date::with(fixture::project::project1(
                     ProjectCategory::General,
                     ProjectAttributes::new(0),
                     fixture::user::id2(),
@@ -245,7 +245,7 @@ mod tests {
 
         let actor = fixture::actor::actor1(UserRole::Committee);
         let res = use_case
-            .find_by_id(&actor, fixture::project::id().value().to_string())
+            .find_by_id(&actor, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(res, Ok(_)));
     }
@@ -257,7 +257,7 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project(
+                Ok(Some(fixture::date::with(fixture::project::project1(
                     ProjectCategory::General,
                     ProjectAttributes::new(0),
                     fixture::user::id1(),
@@ -267,7 +267,7 @@ mod tests {
 
         let actor = fixture::actor::actor1(UserRole::Committee);
         let res = use_case
-            .delete_by_id(&actor, fixture::project::id().value().to_string())
+            .delete_by_id(&actor, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(
             res,
@@ -284,7 +284,7 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project(
+                Ok(Some(fixture::date::with(fixture::project::project1(
                     ProjectCategory::General,
                     ProjectAttributes::new(0),
                     fixture::user::id2(),
@@ -298,7 +298,7 @@ mod tests {
 
         let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
         let res = use_case
-            .delete_by_id(&actor, fixture::project::id().value().to_string())
+            .delete_by_id(&actor, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(res, Ok(())));
     }
