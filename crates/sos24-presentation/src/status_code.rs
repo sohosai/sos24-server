@@ -9,8 +9,9 @@ use sos24_domain::{
         project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
-use sos24_use_case::interactor::{
-    news::NewsUseCaseError, project::ProjectUseCaseError, user::UserUseCaseError,
+use sos24_use_case::{
+    context::ContextError,
+    interactor::{news::NewsUseCaseError, project::ProjectUseCaseError, user::UserUseCaseError},
 };
 
 pub trait ToStatusCode {
@@ -21,6 +22,7 @@ impl ToStatusCode for NewsUseCaseError {
     fn status_code(&self) -> StatusCode {
         match self {
             NewsUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
+            NewsUseCaseError::ContextError(e) => e.status_code(),
             NewsUseCaseError::NewsRepositoryError(e) => e.status_code(),
             NewsUseCaseError::NewsIdError(e) => e.status_code(),
             NewsUseCaseError::PermissionDeniedError(e) => e.status_code(),
@@ -33,6 +35,7 @@ impl ToStatusCode for ProjectUseCaseError {
     fn status_code(&self) -> StatusCode {
         match self {
             ProjectUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
+            ProjectUseCaseError::ContextError(e) => e.status_code(),
             ProjectUseCaseError::ProjectRepositoryError(e) => e.status_code(),
             ProjectUseCaseError::ProjectIdError(e) => e.status_code(),
             ProjectUseCaseError::PermissionDeniedError(e) => e.status_code(),
@@ -45,11 +48,22 @@ impl ToStatusCode for UserUseCaseError {
     fn status_code(&self) -> StatusCode {
         match self {
             UserUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
+            UserUseCaseError::ContextError(e) => e.status_code(),
             UserUseCaseError::UserRepositoryError(e) => e.status_code(),
             UserUseCaseError::FirebaseUserRepositoryError(e) => e.status_code(),
             UserUseCaseError::EmailError(e) => e.status_code(),
             UserUseCaseError::PermissionDenied(e) => e.status_code(),
             UserUseCaseError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for ContextError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ContextError::UserNotFound(_) => StatusCode::NOT_FOUND,
+            ContextError::UserRepositoryError(e) => e.status_code(),
+            ContextError::ProjectRepositoryError(e) => e.status_code(),
         }
     }
 }

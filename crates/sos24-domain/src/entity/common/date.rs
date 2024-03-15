@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WithDate<T> {
     pub value: T,
     pub created_at: chrono::DateTime<chrono::Utc>,

@@ -3,7 +3,6 @@ use std::sync::Arc;
 use sos24_domain::{
     ensure,
     entity::{
-        actor::Actor,
         permission::{PermissionDeniedError, Permissions},
         project::{
             ProjectAttributes, ProjectGroupName, ProjectId, ProjectIdError, ProjectKanaGroupName,
@@ -17,9 +16,12 @@ use sos24_domain::{
 };
 use thiserror::Error;
 
-use crate::dto::{
-    project::{CreateProjectDto, ProjectDto, UpdateProjectDto},
-    FromEntity, ToEntity,
+use crate::{
+    context::{Context, ContextError},
+    dto::{
+        project::{CreateProjectDto, ProjectDto, UpdateProjectDto},
+        FromEntity, ToEntity,
+    },
 };
 
 #[derive(Debug, Error)]
@@ -27,6 +29,8 @@ pub enum ProjectUseCaseError {
     #[error("Project not found: {0:?}")]
     NotFound(ProjectId),
 
+    #[error(transparent)]
+    ContextError(#[from] ContextError),
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
     #[error(transparent)]
@@ -46,7 +50,8 @@ impl<R: Repositories> ProjectUseCase<R> {
         Self { repositories }
     }
 
-    pub async fn list(&self, actor: &Actor) -> Result<Vec<ProjectDto>, ProjectUseCaseError> {
+    pub async fn list(&self, ctx: &Context) -> Result<Vec<ProjectDto>, ProjectUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_PROJECT_ALL));
 
         let raw_project_list = self.repositories.project_repository().list().await?;
@@ -56,9 +61,10 @@ impl<R: Repositories> ProjectUseCase<R> {
 
     pub async fn create(
         &self,
-        actor: &Actor,
+        ctx: &Context,
         raw_project: CreateProjectDto,
     ) -> Result<(), ProjectUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
 
         // TODO: 企画募集期間かを確認する
@@ -74,9 +80,11 @@ impl<R: Repositories> ProjectUseCase<R> {
 
     pub async fn find_by_id(
         &self,
-        actor: &Actor,
+        ctx: &Context,
         id: String,
     ) -> Result<ProjectDto, ProjectUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+
         let id = ProjectId::try_from(id)?;
         let raw_project = self
             .repositories
@@ -85,7 +93,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             .await?
             .ok_or(ProjectUseCaseError::NotFound(id))?;
 
-        ensure!(raw_project.value.is_visible_to(actor));
+        ensure!(raw_project.value.is_visible_to(&actor));
 
         let mut project = ProjectDto::from_entity(raw_project);
         if !actor.has_permission(Permissions::READ_PROJECT_ALL) {
@@ -97,9 +105,11 @@ impl<R: Repositories> ProjectUseCase<R> {
 
     pub async fn update(
         &self,
-        actor: &Actor,
+        ctx: &Context,
         project_data: UpdateProjectDto,
     ) -> Result<(), ProjectUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+
         let id = ProjectId::try_from(project_data.id)?;
         let project = self
             .repositories
@@ -108,23 +118,23 @@ impl<R: Repositories> ProjectUseCase<R> {
             .await?
             .ok_or(ProjectUseCaseError::NotFound(id))?;
 
-        ensure!(project.value.is_visible_to(actor));
-        ensure!(project.value.is_updatable_by(actor));
+        ensure!(project.value.is_visible_to(&actor));
+        ensure!(project.value.is_updatable_by(&actor));
 
         // TODO: roleがgeneralの場合、企画募集期間かを確認する
 
         let mut new_project = project.value;
-        new_project.set_title(actor, ProjectTitle::new(project_data.title))?;
-        new_project.set_kana_title(actor, ProjectKanaTitle::new(project_data.kana_title))?;
-        new_project.set_group_name(actor, ProjectGroupName::new(project_data.group_name))?;
+        new_project.set_title(&actor, ProjectTitle::new(project_data.title))?;
+        new_project.set_kana_title(&actor, ProjectKanaTitle::new(project_data.kana_title))?;
+        new_project.set_group_name(&actor, ProjectGroupName::new(project_data.group_name))?;
         new_project.set_kana_group_name(
-            actor,
+            &actor,
             ProjectKanaGroupName::new(project_data.kana_group_name),
         )?;
-        new_project.set_category(actor, project_data.category.into_entity()?)?;
-        new_project.set_attributes(actor, ProjectAttributes::new(project_data.attributes))?;
+        new_project.set_category(&actor, project_data.category.into_entity()?)?;
+        new_project.set_attributes(&actor, ProjectAttributes::new(project_data.attributes))?;
         if let Some(remarks) = project_data.remarks {
-            new_project.set_remarks(actor, ProjectRemarks::new(remarks))?;
+            new_project.set_remarks(&actor, ProjectRemarks::new(remarks))?;
         }
 
         self.repositories
@@ -134,7 +144,8 @@ impl<R: Repositories> ProjectUseCase<R> {
         Ok(())
     }
 
-    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), ProjectUseCaseError> {
+    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), ProjectUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::DELETE_PROJECT_ALL));
 
         let id = ProjectId::try_from(id)?;
@@ -166,6 +177,7 @@ mod tests {
     };
 
     use crate::{
+        context::Context,
         dto::project::{CreateProjectDto, ProjectCategoryDto, UpdateProjectDto},
         interactor::project::{ProjectUseCase, ProjectUseCaseError},
     };
@@ -175,8 +187,8 @@ mod tests {
         let repositories = MockRepositories::default();
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::General);
-        let res = use_case.list(&actor).await;
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
             Err(ProjectUseCaseError::PermissionDeniedError(
@@ -194,8 +206,8 @@ mod tests {
             .returning(|| Ok(vec![]));
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
-        let res = use_case.list(&actor).await;
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case.list(&ctx).await;
         assert!(matches!(res, Ok(list) if list.is_empty()));
     }
 
@@ -208,10 +220,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::General);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .create(
-                &actor,
+                &ctx,
                 CreateProjectDto::new(
                     fixture::project::title1().value(),
                     fixture::project::kana_title1().value(),
@@ -241,9 +253,9 @@ mod tests {
             });
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::General);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
-            .find_by_id(&actor, fixture::project::id1().value().to_string())
+            .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(res, Ok(_)));
     }
@@ -263,9 +275,9 @@ mod tests {
             });
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::General);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
-            .find_by_id(&actor, fixture::project::id1().value().to_string())
+            .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(
             res,
@@ -290,9 +302,9 @@ mod tests {
             });
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
-            .find_by_id(&actor, fixture::project::id1().value().to_string())
+            .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(res, Ok(_)));
     }
@@ -312,9 +324,9 @@ mod tests {
             });
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
-            .delete_by_id(&actor, fixture::project::id1().value().to_string())
+            .delete_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(
             res,
@@ -343,9 +355,9 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
-            .delete_by_id(&actor, fixture::project::id1().value().to_string())
+            .delete_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
         assert!(matches!(res, Ok(())));
     }
@@ -369,10 +381,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
-                &actor,
+                &ctx,
                 UpdateProjectDto::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),
@@ -407,10 +419,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
-                &actor,
+                &ctx,
                 UpdateProjectDto::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),
@@ -450,10 +462,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
-                &actor,
+                &ctx,
                 UpdateProjectDto::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),

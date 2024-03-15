@@ -6,7 +6,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use sos24_domain::entity::actor::Actor;
+use sos24_use_case::context::Context;
 
 use crate::{
     model::project::{
@@ -18,9 +18,9 @@ use crate::{
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_project_list = modules.project_use_case().list(&actor).await;
+    let raw_project_list = modules.project_use_case().list(&ctx).await;
     raw_project_list
         .map(|raw_project_list| {
             let project_list: Vec<Project> =
@@ -35,12 +35,12 @@ pub async fn handle_get(
 
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
     Json(raw_project): Json<CreateProject>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let user_id = actor.user_id().clone().value();
+    let user_id = ctx.user_id().clone().value();
     let project = (raw_project, user_id).to_create_project_dto();
-    let res = modules.project_use_case().create(&actor, project).await;
+    let res = modules.project_use_case().create(&ctx, project).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create project: {err:?}");
         err.status_code()
@@ -49,10 +49,10 @@ pub async fn handle_post(
 
 pub async fn handle_get_id(
     Path(id): Path<String>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_project = modules.project_use_case().find_by_id(&actor, id).await;
+    let raw_project = modules.project_use_case().find_by_id(&ctx, id).await;
     match raw_project {
         Ok(raw_project) => Ok((StatusCode::OK, Json(Project::from(raw_project)))),
         Err(err) => {
@@ -64,10 +64,10 @@ pub async fn handle_get_id(
 
 pub async fn handle_delete_id(
     Path(id): Path<String>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let res = modules.project_use_case().delete_by_id(&actor, id).await;
+    let res = modules.project_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete project: {err:?}");
         err.status_code()
@@ -77,11 +77,11 @@ pub async fn handle_delete_id(
 pub async fn handle_put_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
     Json(raw_project): Json<UpdateProject>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let project = (raw_project, id).to_update_project_dto();
-    let res = modules.project_use_case().update(&actor, project).await;
+    let res = modules.project_use_case().update(&ctx, project).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to update project: {err:?}");
         err.status_code()

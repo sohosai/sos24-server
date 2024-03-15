@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use sos24_domain::ensure;
-use sos24_domain::entity::actor::Actor;
 use sos24_domain::entity::common::email::EmailError;
 use sos24_domain::entity::firebase_user::{
     FirebaseUserEmail, FirebaseUserPassword, NewFirebaseUser,
@@ -15,6 +14,7 @@ use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 use thiserror::Error;
 
+use crate::context::{Context, ContextError};
 use crate::dto::user::{UpdateUserDto, UserDto};
 use crate::dto::FromEntity;
 use crate::dto::{user::CreateUserDto, ToEntity};
@@ -24,6 +24,8 @@ pub enum UserUseCaseError {
     #[error("User not found: {0:?}")]
     NotFound(UserId),
 
+    #[error(transparent)]
+    ContextError(#[from] ContextError),
     #[error(transparent)]
     UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
@@ -45,7 +47,8 @@ impl<R: Repositories> UserUseCase<R> {
         Self { repositories }
     }
 
-    pub async fn list(&self, actor: &Actor) -> Result<Vec<UserDto>, UserUseCaseError> {
+    pub async fn list(&self, ctx: &Context) -> Result<Vec<UserDto>, UserUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_USER_ALL));
 
         let raw_user_list = self.repositories.user_repository().list().await?;
@@ -79,7 +82,9 @@ impl<R: Repositories> UserUseCase<R> {
         }
     }
 
-    pub async fn find_by_id(&self, actor: &Actor, id: String) -> Result<UserDto, UserUseCaseError> {
+    pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<UserDto, UserUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+
         let id = UserId::new(id);
         let raw_user = self
             .repositories
@@ -88,32 +93,20 @@ impl<R: Repositories> UserUseCase<R> {
             .await?
             .ok_or(UserUseCaseError::NotFound(id.clone()))?;
 
-        if raw_user.value.is_visible_to(actor) {
+        if raw_user.value.is_visible_to(&actor) {
             Ok(UserDto::from_entity(raw_user))
         } else {
             Err(UserUseCaseError::NotFound(id))
         }
     }
 
-    pub async fn find_by_id_as_actor(&self, id: String) -> Result<Actor, UserUseCaseError> {
-        let id = UserId::new(id);
-        let raw_user = self
-            .repositories
-            .user_repository()
-            .find_by_id(id.clone())
-            .await?;
-
-        match raw_user {
-            Some(raw_user) => Ok(raw_user.value.into_actor()),
-            _ => Err(UserUseCaseError::NotFound(id)),
-        }
-    }
-
     pub async fn update(
         &self,
-        actor: &Actor,
+        ctx: &Context,
         user_data: UpdateUserDto,
     ) -> Result<(), UserUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+
         let id = UserId::new(user_data.id);
         let user = self
             .repositories
@@ -122,10 +115,10 @@ impl<R: Repositories> UserUseCase<R> {
             .await?
             .ok_or(UserUseCaseError::NotFound(id.clone()))?;
 
-        if !user.value.is_visible_to(actor) {
+        if !user.value.is_visible_to(&actor) {
             return Err(UserUseCaseError::NotFound(id));
         }
-        if !user.value.is_updatable_by(actor) {
+        if !user.value.is_updatable_by(&actor) {
             return Err(PermissionDeniedError.into());
         }
 
@@ -133,39 +126,40 @@ impl<R: Repositories> UserUseCase<R> {
 
         let new_name = UserName::new(user_data.name);
         if new_user.name() != &new_name {
-            new_user.set_name(actor, new_name)?;
+            new_user.set_name(&actor, new_name)?;
         }
 
         let new_kana_name = UserKanaName::new(user_data.kana_name);
         if new_user.kana_name() != &new_kana_name {
-            new_user.set_kana_name(actor, new_kana_name)?;
+            new_user.set_kana_name(&actor, new_kana_name)?;
         }
 
         let new_email = UserEmail::try_from(user_data.email)?;
         if new_user.email() != &new_email {
-            new_user.set_email(actor, new_email)?;
+            new_user.set_email(&actor, new_email)?;
         }
 
         let new_phone_number = UserPhoneNumber::new(user_data.phone_number);
         if new_user.phone_number() != &new_phone_number {
-            new_user.set_phone_number(actor, new_phone_number)?;
+            new_user.set_phone_number(&actor, new_phone_number)?;
         }
 
         let new_role = user_data.role.into_entity()?;
         if new_user.role() != &new_role {
-            new_user.set_role(actor, new_role)?;
+            new_user.set_role(&actor, new_role)?;
         }
 
         let new_category = user_data.category.into_entity()?;
         if new_user.category() != &new_category {
-            new_user.set_category(actor, new_category)?;
+            new_user.set_category(&actor, new_category)?;
         }
 
         self.repositories.user_repository().update(new_user).await?;
         Ok(())
     }
 
-    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), UserUseCaseError> {
+    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), UserUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::DELETE_USER_ALL));
 
         let id = UserId::new(id);
@@ -192,6 +186,7 @@ mod tests {
     };
 
     use crate::{
+        context::Context,
         dto::{
             user::{CreateUserDto, UpdateUserDto, UserCategoryDto, UserRoleDto},
             FromEntity,
@@ -204,8 +199,8 @@ mod tests {
         let repositories = MockRepositories::default();
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::General);
-        let res = use_case.list(&actor).await;
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
             Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
@@ -221,8 +216,8 @@ mod tests {
             .returning(|| Ok(vec![]));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
-        let res = use_case.list(&actor).await;
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case.list(&ctx).await;
         assert!(matches!(res, Ok(list) if list.is_empty()));
     }
 
@@ -302,9 +297,9 @@ mod tests {
             });
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::General);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
-            .find_by_id(&actor, fixture::user::id1().value())
+            .find_by_id(&ctx, fixture::user::id1().value())
             .await;
         assert!(matches!(res, Ok(_)));
     }
@@ -322,9 +317,9 @@ mod tests {
             });
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::General);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
-            .find_by_id(&actor, fixture::user::id2().value())
+            .find_by_id(&ctx, fixture::user::id2().value())
             .await;
         assert!(matches!(res, Err(UserUseCaseError::NotFound(_))));
     }
@@ -342,9 +337,9 @@ mod tests {
             });
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
-            .find_by_id(&actor, fixture::user::id2().value())
+            .find_by_id(&ctx, fixture::user::id2().value())
             .await;
         assert!(matches!(res, Ok(_)));
     }
@@ -366,10 +361,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
-                &actor,
+                &ctx,
                 UpdateUserDto::new(
                     fixture::user::id1().value(),
                     fixture::user::name2().value(),
@@ -401,10 +396,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
-                &actor,
+                &ctx,
                 UpdateUserDto::new(
                     fixture::user::id1().value(),
                     fixture::user::name1().value(),
@@ -439,10 +434,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
-                &actor,
+                &ctx,
                 UpdateUserDto::new(
                     fixture::user::id2().value(),
                     fixture::user::name2().value(),
@@ -477,10 +472,10 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
-                &actor,
+                &ctx,
                 UpdateUserDto::new(
                     fixture::user::id1().value(),
                     fixture::user::name2().value(),
@@ -512,9 +507,9 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
-            .delete_by_id(&actor, fixture::user::id1().value())
+            .delete_by_id(&ctx, fixture::user::id1().value())
             .await;
         assert!(matches!(
             res,
@@ -539,9 +534,9 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::Committee);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
-            .delete_by_id(&actor, fixture::user::id2().value())
+            .delete_by_id(&ctx, fixture::user::id2().value())
             .await;
         assert!(matches!(
             res,
@@ -566,9 +561,9 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
-            .delete_by_id(&actor, fixture::user::id2().value())
+            .delete_by_id(&ctx, fixture::user::id2().value())
             .await;
         assert!(matches!(res, Ok(())));
     }
