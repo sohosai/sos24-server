@@ -22,11 +22,16 @@ bitflags! {
       const UPDATE_PROJECT_ALL = 1 << 9;
       const DELETE_PROJECT_ALL = 1 << 10;
 
-      const CREATE_INVITATION = 1 << 11;
-      const CREATE_INVITATION_ANYTIME = 1 << 12;
-      const READ_INVITATION_ALL = 1 << 13;
-      const UPDATE_INVITATION_ALL = 1 << 14;
-      const DELETE_INVITATION_ALL = 1 << 15;
+      const CREATE_FORM = 1 << 11;
+      const READ_FORM_ALL = 1 << 12;
+      const UPDATE_FORM_ALL = 1 << 13;
+      const DELETE_FORM_ALL = 1 << 14;
+
+      const CREATE_INVITATION = 1 << 15;
+      const CREATE_INVITATION_ANYTIME = 1 << 16;
+      const READ_INVITATION_ALL = 1 << 17;
+      const UPDATE_INVITATION_ALL = 1 << 18;
+      const DELETE_INVITATION_ALL = 1 << 19;
     }
 }
 
@@ -43,6 +48,9 @@ impl UserRole {
                     | Permissions::DELETE_USER_ALL
                     | Permissions::UPDATE_PROJECT_ALL
                     | Permissions::DELETE_PROJECT_ALL
+                    | Permissions::CREATE_FORM
+                    | Permissions::UPDATE_FORM_ALL
+                    | Permissions::DELETE_FORM_ALL
                     | Permissions::UPDATE_INVITATION_ALL
                     | Permissions::DELETE_INVITATION_ALL
                     | Permissions::CREATE_INVITATION_ANYTIME
@@ -57,6 +65,7 @@ impl UserRole {
                 Permissions::READ_NEWS_ALL
                     | Permissions::CREATE_PROJECT
                     | Permissions::CREATE_INVITATION
+                    | Permissions::READ_FORM_ALL
             }
         }
     }
