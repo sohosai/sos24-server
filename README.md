@@ -1,5 +1,8 @@
 # sos24-server
 
+> [!NOTE]
+> クエリを変更した場合はCIを通すために `cargo sqlx prepare --workspace` を実行してください。
+
 ## sos24-presentation
 
 sos24-presentationクレートは、アプリケーションのHTTPサーバーとしての役割を果たしています。このクレートは、HTTPリクエストを適切なユースケースにルーティングし、その結果をHTTPレスポンスとしてクライアントに返します。
