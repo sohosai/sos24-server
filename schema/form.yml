@@ -1,0 +1,269 @@
+paths:
+  /forms:
+    get:
+      summary: 申請一覧の取得
+      tags:
+        - forms
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/Form"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+    post:
+      summary: 申請の作成
+      tags:
+        - forms
+        - committee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/CreateForm"
+      responses:
+        201:
+          description: Created
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+  /forms/{form_id}:
+    get:
+      summary: 特定のIDの申請を取得
+      tags:
+        - forms
+      parameters:
+        - name: form_id
+          in: path
+          schema: { type: string }
+          required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/Form"
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    put:
+      summary: 特定のIDの申請を更新
+      tags:
+        - forms
+        - committee
+      parameters:
+        - name: form_id
+          in: path
+          schema: { type: string }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/UpdateForm"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+    delete:
+      summary: 特定のIDの申請を削除
+      tags:
+        - forms
+        - committee
+      parameters:
+        - name: form_id
+          in: path
+          schema: { type: string }
+          required: true
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+
+  /projects/{project_id}/forms:
+    get:
+      summary: 特定のIDの企画に対する全ての申請を取得
+      tags:
+        - forms
+      parameters:
+        - name: project_id
+          in: path
+          schema: { type: string }
+          required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/Form"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+
+schemas:
+  FormItem:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      required:
+        type: boolean
+      type:
+        type: string
+        enum:
+          - string
+          - int
+          - choose_one
+          - choose_many
+          - file
+      min:
+        type: integer
+        nullable: true
+      max:
+        type: integer
+        nullable: true
+      min_length:
+        type: integer
+        nullable: true
+      max_length:
+        type: integer
+        nullable: true
+      min_selection:
+        type: integer
+        nullable: true
+      max_selection:
+        type: integer
+        nullable: true
+      allow_newline:
+        type: boolean
+        nullable: true
+      options:
+        type: array
+        items:
+          type: string
+        nullable: true
+      extensions:
+        type: array
+        items:
+          type: string
+        nullable: true
+      limit:
+        type: integer
+        nullable: true
+  Form:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      title:
+        type: string
+      description:
+        type: string
+      starts_at:
+        type: string
+        format: date-time
+      ends_at:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+      categories:
+        type: integer
+        # TODO: スキーマを考える
+      items:
+        type: array
+  CreateForm:
+    type: object
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      starts_at:
+        type: string
+        format: date-time
+      ends_at:
+        type: string
+        format: date-time
+      categories:
+        type: integer
+        # TODO: スキーマを考える
+      items:
+        type: array
+  UpdateForm:
+    type: object
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      starts_at:
+        type: string
+        format: date-time
+      ends_at:
+        type: string
+        format: date-time
+      categories:
+        type: integer
+        # TODO: スキーマを考える
+      items:
+        type: array

@@ -3,6 +3,8 @@ pub mod common;
 pub mod firebase_user;
 pub mod news;
 pub mod permission;
+pub mod project;
+pub mod project_application_period;
 pub mod user;
 
 #[macro_export]

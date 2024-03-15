@@ -6,8 +6,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use sos24_domain::entity::actor::Actor;
-use sos24_use_case::dto::user::CreateUserDto;
+use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
 use crate::{
     model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User},
@@ -17,16 +16,16 @@ use crate::{
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_user_list = modules.user_use_case().list(&actor).await;
+    let raw_user_list = modules.user_use_case().list(&ctx).await;
     raw_user_list
         .map(|raw_user_list| {
             let user_list: Vec<User> = raw_user_list.into_iter().map(User::from).collect();
             (StatusCode::OK, Json(user_list))
         })
         .map_err(|err| {
-            tracing::error!("Failed to list user: {err}");
+            tracing::error!("Failed to list user: {err:?}");
             err.status_code()
         })
 }
@@ -38,21 +37,21 @@ pub async fn handle_post(
     let user = CreateUserDto::from(raw_user);
     let res = modules.user_use_case().create(user).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create user: {err}");
+        tracing::error!("Failed to create user: {err:?}");
         err.status_code()
     })
 }
 
 pub async fn handle_get_id(
     Path(id): Path<String>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_user = modules.user_use_case().find_by_id(&actor, id).await;
+    let raw_user = modules.user_use_case().find_by_id(&ctx, id).await;
     match raw_user {
         Ok(raw_user) => Ok((StatusCode::OK, Json(User::from(raw_user)))),
         Err(err) => {
-            tracing::error!("Failed to find user: {err}");
+            tracing::error!("Failed to find user: {err:?}");
             Err(err.status_code())
         }
     }
@@ -60,12 +59,12 @@ pub async fn handle_get_id(
 
 pub async fn handle_delete_id(
     Path(id): Path<String>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let res = modules.user_use_case().delete_by_id(&actor, id).await;
+    let res = modules.user_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to delete user: {err}");
+        tracing::error!("Failed to delete user: {err:?}");
         err.status_code()
     })
 }
@@ -73,13 +72,13 @@ pub async fn handle_delete_id(
 pub async fn handle_put_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
-    Extension(actor): Extension<Actor>,
+    Extension(ctx): Extension<Context>,
     Json(raw_user): Json<UpdateUser>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let user = (id, raw_user).to_update_user_dto();
-    let res = modules.user_use_case().update(&actor, user).await;
+    let res = modules.user_use_case().update(&ctx, user).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to update user: {err}");
+        tracing::error!("Failed to update user: {err:?}");
         err.status_code()
     })
 }

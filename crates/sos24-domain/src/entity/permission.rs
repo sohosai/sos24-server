@@ -16,6 +16,11 @@ bitflags! {
       const READ_USER_ALL = 1 << 4;
       const UPDATE_USER_ALL = 1 << 5;
       const DELETE_USER_ALL = 1 << 6;
+
+      const CREATE_PROJECT = 1 << 7;
+      const READ_PROJECT_ALL = 1 << 8;
+      const UPDATE_PROJECT_ALL = 1 << 9;
+      const DELETE_PROJECT_ALL = 1 << 10;
     }
 }
 
@@ -30,9 +35,15 @@ impl UserRole {
                     | Permissions::DELETE_NEWS_ALL
                     | Permissions::UPDATE_USER_ALL
                     | Permissions::DELETE_USER_ALL
+                    | Permissions::UPDATE_PROJECT_ALL
+                    | Permissions::DELETE_PROJECT_ALL
             }
-            UserRole::Committee => UserRole::General.permissions() | Permissions::READ_USER_ALL,
-            UserRole::General => Permissions::READ_NEWS_ALL,
+            UserRole::Committee => {
+                UserRole::General.permissions()
+                    | Permissions::READ_USER_ALL
+                    | Permissions::READ_PROJECT_ALL
+            }
+            UserRole::General => Permissions::READ_NEWS_ALL | Permissions::CREATE_PROJECT,
         }
     }
 }

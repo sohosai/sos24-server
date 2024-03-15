@@ -1,5 +1,6 @@
 use firebase::firebase_user::FirebaseUserRepositoryImpl;
 use firebase::FirebaseAuth;
+use postgresql::project::PgProjectRepository;
 use postgresql::user::PgUserRepository;
 use sos24_domain::repository::Repositories;
 
@@ -12,6 +13,7 @@ pub mod postgresql;
 pub struct DefaultRepositories {
     firebase_user_repository: FirebaseUserRepositoryImpl,
     news_repository: PgNewsRepository,
+    project_repository: PgProjectRepository,
     user_repository: PgUserRepository,
 }
 
@@ -20,6 +22,7 @@ impl DefaultRepositories {
         Self {
             firebase_user_repository: FirebaseUserRepositoryImpl::new(auth),
             news_repository: PgNewsRepository::new(postgresql.clone()),
+            project_repository: PgProjectRepository::new(postgresql.clone()),
             user_repository: PgUserRepository::new(postgresql.clone()),
         }
     }
@@ -28,6 +31,7 @@ impl DefaultRepositories {
 impl Repositories for DefaultRepositories {
     type FirebaseUserRepositoryImpl = FirebaseUserRepositoryImpl;
     type NewsRepositoryImpl = PgNewsRepository;
+    type ProjectRepositoryImpl = PgProjectRepository;
     type UserRepositoryImpl = PgUserRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
@@ -36,6 +40,10 @@ impl Repositories for DefaultRepositories {
 
     fn news_repository(&self) -> &Self::NewsRepositoryImpl {
         &self.news_repository
+    }
+
+    fn project_repository(&self) -> &Self::ProjectRepositoryImpl {
+        &self.project_repository
     }
 
     fn user_repository(&self) -> &Self::UserRepositoryImpl {

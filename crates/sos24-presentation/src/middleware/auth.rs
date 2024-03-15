@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anyhow::Context;
+use anyhow::Context as _;
 use axum::{
     extract::{Request, State},
     http::StatusCode,
@@ -11,6 +11,7 @@ use jsonwebtoken::{
     decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
+use sos24_use_case::context::Context;
 
 use crate::module::Modules;
 
@@ -60,12 +61,8 @@ pub(crate) async fn jwt_auth(
     }
 
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
-    let actor = modules
-        .user_use_case()
-        .find_by_id_as_actor(token.claims.sub.clone())
-        .await
-        .map_err(|_| StatusCode::UNAUTHORIZED)?;
-    request.extensions_mut().insert(actor);
+    let ctx = Context::new(token.claims.sub.clone());
+    request.extensions_mut().insert(ctx);
 
     Ok(next.run(request).await)
 }
