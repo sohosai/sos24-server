@@ -2,19 +2,20 @@ name: Rust
 
 on:
   push:
-    paths-ignore:
-    - 'docker-compose*'
-    - '**.md'
-    - '.**'
-    - '!.github/**'
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install stable --profile minimal
+      - uses: Swatinem/rust-cache@v2
       - name: Build
+        env:
+          SQLX_OFFLINE: true
         run: cargo build --verbose
       - name: Run tests
+        env:
+          SQLX_OFFLINE: true
         run: cargo test --verbose
