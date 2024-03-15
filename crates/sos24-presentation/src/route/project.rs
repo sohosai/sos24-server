@@ -59,3 +59,15 @@ pub async fn handle_get_id(
         }
     }
 }
+
+pub async fn handle_delete_id(
+    Path(id): Path<String>,
+    Extension(actor): Extension<Actor>,
+    State(modules): State<Arc<Modules>>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let res = modules.project_use_case().delete_by_id(&actor, id).await;
+    res.map(|_| StatusCode::OK).map_err(|err| {
+        tracing::error!("Failed to delete project: {err:?}");
+        err.status_code()
+    })
+}

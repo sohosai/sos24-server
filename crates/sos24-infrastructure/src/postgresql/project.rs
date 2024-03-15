@@ -156,4 +156,15 @@ impl ProjectRepository for PgProjectRepository {
         .context("Failed to fetch project")?;
         Ok(project_row.map(WithDate::from))
     }
+
+    async fn delete_by_id(&self, id: ProjectId) -> Result<(), ProjectRepositoryError> {
+        sqlx::query!(
+            r#"UPDATE projects SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
+            id.value()
+        )
+        .execute(&*self.db)
+        .await
+        .context("Failed to delete project")?;
+        Ok(())
+    }
 }

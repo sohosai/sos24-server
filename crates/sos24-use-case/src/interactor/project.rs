@@ -86,6 +86,23 @@ impl<R: Repositories> ProjectUseCase<R> {
 
         Ok(ProjectDto::from_entity(raw_project))
     }
+
+    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), ProjectUseCaseError> {
+        ensure!(actor.has_permission(Permissions::DELETE_PROJECT_ALL));
+
+        let id = ProjectId::try_from(id)?;
+        self.repositories
+            .project_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(ProjectUseCaseError::NotFound(id.clone()))?;
+
+        self.repositories
+            .project_repository()
+            .delete_by_id(id)
+            .await?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -231,5 +248,58 @@ mod tests {
             .find_by_id(&actor, fixture::project::id().value().to_string())
             .await;
         assert!(matches!(res, Ok(_)));
+    }
+
+    #[tokio::test]
+    async fn delete_by_id_committee_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id1(),
+                ))))
+            });
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .delete_by_id(&actor, fixture::project::id().value().to_string())
+            .await;
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn delete_by_id_operator_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_delete_by_id()
+            .returning(|_| Ok(()));
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+        let res = use_case
+            .delete_by_id(&actor, fixture::project::id().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(())));
     }
 }
