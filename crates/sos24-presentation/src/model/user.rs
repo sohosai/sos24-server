@@ -87,6 +87,7 @@ impl From<UserDto> for User {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum UserRole {
     Administrator,
     CommitteeOperator,
