@@ -87,3 +87,149 @@ impl<R: Repositories> ProjectUseCase<R> {
         Ok(ProjectDto::from_entity(raw_project))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use sos24_domain::{
+        entity::{
+            permission::PermissionDeniedError,
+            project::{ProjectAttributes, ProjectCategory},
+            user::UserRole,
+        },
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{
+        dto::project::{CreateProjectDto, ProjectCategoryDto},
+        interactor::project::{ProjectUseCase, ProjectUseCaseError},
+    };
+
+    #[tokio::test]
+    async fn list_general_fail() {
+        let repositories = MockRepositories::default();
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::General);
+        let res = use_case.list(&actor).await;
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn list_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case.list(&actor).await;
+        assert!(matches!(res, Ok(list) if list.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn create_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::General);
+        let res = use_case
+            .create(
+                &actor,
+                CreateProjectDto::new(
+                    fixture::project::title().value(),
+                    fixture::project::kana_title().value(),
+                    fixture::project::group_name().value(),
+                    fixture::project::kana_group_name().value(),
+                    ProjectCategoryDto::General,
+                    0,
+                    fixture::user::id1().value(),
+                ),
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_general_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id1(),
+                ))))
+            });
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::General);
+        let res = use_case
+            .find_by_id(&actor, fixture::project::id().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_general_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id2(),
+                ))))
+            });
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::General);
+        let res = use_case
+            .find_by_id(&actor, fixture::project::id().value().to_string())
+            .await;
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id2(),
+                ))))
+            });
+        let use_case = ProjectUseCase::new(Arc::new(repositories));
+
+        let actor = fixture::actor::actor1(UserRole::Committee);
+        let res = use_case
+            .find_by_id(&actor, fixture::project::id().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+}
