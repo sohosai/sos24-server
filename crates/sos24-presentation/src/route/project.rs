@@ -6,6 +6,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
+use axum::response::Response;
 use sos24_use_case::context::Context;
 
 use crate::{
@@ -44,6 +45,54 @@ pub async fn handle_post(
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create project: {err:?}");
         err.status_code()
+    })
+}
+
+pub async fn handle_export(
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let raw_project_list = modules.project_use_case().list(&ctx).await;
+    let project_list = match raw_project_list.map(|raw_project_list| {
+        raw_project_list
+            .into_iter()
+            .map(Project::from)
+            .collect::<Vec<Project>>()
+    }).map_err(|err| {
+        tracing::error!("Failed to list project: {err:?}");
+        err.status_code()
+    }) {
+        Ok(project_list) => project_list,
+        Err(status_code) => return Err(status_code),
+    };
+
+    let mut wrt = csv::Writer::from_writer(vec![]);
+    for project in project_list {
+        wrt.serialize(project).unwrap();
+    }
+
+    let csv = match wrt.into_inner() {
+        Ok(csv) => csv,
+        Err(err) => {
+            tracing::error!("Failed to write csv: {err:?}");
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let data = match String::from_utf8(csv) {
+        Ok(data) => data,
+        Err(err) => {
+            tracing::error!("Failed to convert csv to string: {err:?}");
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    Response::builder()
+        .header("Content-Type", "text/csv")
+        .header("Content-Disposition", "attachment; filename=projects.csv")
+        .body(data).map(|response| response).map_err(|err| {
+        tracing::error!("Failed to create response: {err:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
     })
 }
 

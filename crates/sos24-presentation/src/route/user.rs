@@ -70,13 +70,13 @@ pub async fn handle_export(
         }
     };
 
-    let response = Response::builder()
+    Response::builder()
         .header("Content-Type", "text/csv")
         .header("Content-Disposition", "attachment; filename=users.csv")
-        .body(data)
-        .unwrap();
-
-    Ok(response)
+        .body(data).map(|response| response).map_err(|err| {
+        tracing::error!("Failed to create response: {err:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })
 }
 
 pub async fn handle_post(
