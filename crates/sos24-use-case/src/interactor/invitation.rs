@@ -215,3 +215,321 @@ impl<R: Repositories> InvitationUseCase<R> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use sos24_domain::{
+        entity::{
+            invitation::InvitationPosition,
+            permission::PermissionDeniedError,
+            project::{ProjectAttributes, ProjectCategory},
+            project_application_period::ProjectApplicationPeriod,
+            user::UserRole,
+        },
+        repository::Repositories,
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{
+        context::Context,
+        dto::invitation::{CreateInvitationDto, InvitationPositionDto},
+        interactor::invitation::InvitationUseCaseError,
+    };
+
+    use super::InvitationUseCase;
+
+    fn new_invitation_use_case<R: Repositories>(repositories: R) -> InvitationUseCase<R> {
+        let application_period = ProjectApplicationPeriod::new(
+            chrono::Utc::now()
+                .checked_sub_days(chrono::Days::new(1))
+                .unwrap()
+                .to_rfc3339(),
+            chrono::Utc::now()
+                .checked_add_days(chrono::Days::new(1))
+                .unwrap()
+                .to_rfc3339(),
+        );
+        InvitationUseCase::new(Arc::new(repositories), application_period)
+    }
+
+    #[tokio::test]
+    async fn list_general_fail() {
+        let repositories = MockRepositories::default();
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case.list(&ctx).await;
+        assert!(matches!(
+            res,
+            Err(InvitationUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn list_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .invitation_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case.list(&ctx).await;
+        assert!(matches!(res, Ok(list) if list.is_empty()));
+    }
+
+    #[tokio::test]
+    async fn create_general_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id1(),
+                ))))
+            });
+        repositories
+            .invitation_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateInvitationDto {
+                    inviter: fixture::user::id1().value().to_string(),
+                    project_id: fixture::project::id1().value().to_string(),
+                    position: InvitationPositionDto::SubOwner,
+                },
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn create_general_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .invitation_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateInvitationDto {
+                    inviter: fixture::user::id1().value().to_string(),
+                    project_id: fixture::project::id1().value().to_string(),
+                    position: InvitationPositionDto::SubOwner,
+                },
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(InvitationUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn receive_general_sucess() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .invitation_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                    fixture::user::id2(),
+                    fixture::project::id1(),
+                    InvitationPosition::SubOwner,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    ProjectCategory::General,
+                    ProjectAttributes::new(0),
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        repositories
+            .invitation_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .receive(&ctx, fixture::invitation::id().value().to_string())
+            .await;
+        println!("{res:?}");
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_general_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .invitation_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                    fixture::user::id1(),
+                    fixture::project::id1(),
+                    InvitationPosition::SubOwner,
+                ))))
+            });
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .find_by_id(&ctx, fixture::invitation::id().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_general_fail() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .invitation_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                    fixture::user::id2(),
+                    fixture::project::id1(),
+                    InvitationPosition::SubOwner,
+                ))))
+            });
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .find_by_id(&ctx, fixture::invitation::id().value().to_string())
+            .await;
+        assert!(matches!(
+            res,
+            Err(InvitationUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn find_by_id_committee_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .invitation_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                    fixture::user::id2(),
+                    fixture::project::id1(),
+                    InvitationPosition::SubOwner,
+                ))))
+            });
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case
+            .find_by_id(&ctx, fixture::invitation::id().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+
+    #[tokio::test]
+    async fn delete_by_id_committee_fail() {
+        let repositories = MockRepositories::default();
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor2(UserRole::Committee));
+        let res = use_case
+            .delete_by_id(&ctx, fixture::invitation::id().value().to_string())
+            .await;
+        assert!(matches!(
+            res,
+            Err(InvitationUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn delete_by_id_operator_success() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .invitation_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                    fixture::user::id1(),
+                    fixture::project::id1(),
+                    InvitationPosition::SubOwner,
+                ))))
+            });
+        repositories
+            .invitation_repository_mut()
+            .expect_delete_by_id()
+            .returning(|_| Ok(()));
+        let use_case = new_invitation_use_case(repositories);
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let res = use_case
+            .delete_by_id(&ctx, fixture::invitation::id().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+}
