@@ -10,6 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Symlink
+        run: mkdir -p /home/runner/work/$GITHUB_REPO/
         run: ln -s $GITHUB_WORKSPACE /home/runner/work/$GITHUB_REPO/$GITHUB_REPO
       - name: ubuntu mirror
         run: sudo sed -i.bak -r 's@http://(jp\.)?archive\.ubuntu\.com/ubuntu/?@https://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
