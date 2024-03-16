@@ -9,7 +9,7 @@ jobs:
     runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
-      - run: rustup toolchain install stable --profile minimal
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
         env:
