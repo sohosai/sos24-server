@@ -128,6 +128,16 @@ paths:
           description: Internal Server Error
 
 schemas:
+  FormAnswerItem:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      type:
+        $ref: "./form.yml#/schemas/FormItemType"
+      value:
+        type: string
   FormAnswerSummary:
     type: object
     properties:
@@ -162,14 +172,20 @@ schemas:
         type: string
         format: date-time
       items:
-        type: object
+        $ref: "#/schemas/FormAnswerItem"
   CreateFormAnswer:
     type: object
     properties:
+      form_id:
+        type: string
+        format: uuid
       items:
-        type: object
+        $ref: "#/schemas/FormAnswerItem"
   UpdateFormAnswer:
     type: object
     properties:
+      form_id:
+        type: string
+        format: uuid
       items:
-        type: object
+        $ref: "#/schemas/FormAnswerItem"
