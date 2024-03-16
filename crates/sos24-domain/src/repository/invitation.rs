@@ -22,4 +22,5 @@ pub trait InvitationRepository: Send + Sync + 'static {
         id: InvitationId,
     ) -> Result<Option<WithDate<Invitation>>, InvitationRepositoryError>;
     async fn update(&self, invitation: Invitation) -> Result<(), InvitationRepositoryError>;
+    async fn delete_by_id(&self, id: InvitationId) -> Result<(), InvitationRepositoryError>;
 }

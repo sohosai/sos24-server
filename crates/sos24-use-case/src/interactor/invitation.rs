@@ -181,4 +181,26 @@ impl<R: Repositories> InvitationUseCase<R> {
 
         Ok(InvitationDto::from_entity(raw_invitation))
     }
+
+    pub async fn delete_by_id(
+        &self,
+        ctx: &Context,
+        id: String,
+    ) -> Result<(), InvitationUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        ensure!(actor.has_permission(Permissions::DELETE_INVITATION_ALL));
+
+        let id = InvitationId::try_from(id)?;
+        self.repositories
+            .invitation_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(InvitationUseCaseError::NotFound(id.clone()))?;
+
+        self.repositories
+            .invitation_repository()
+            .delete_by_id(id)
+            .await?;
+        Ok(())
+    }
 }

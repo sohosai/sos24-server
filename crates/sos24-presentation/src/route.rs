@@ -43,6 +43,7 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/", get(invitation::handle_get))
         .route("/", post(invitation::handle_post))
         .route("/:invitation_id", get(invitation::handle_get_id))
+        .route("/:invitation_id", delete(invitation::handle_delete_id))
         .route("/:invitation_id", post(invitation::handle_post_id));
 
     let private_routes = Router::new()

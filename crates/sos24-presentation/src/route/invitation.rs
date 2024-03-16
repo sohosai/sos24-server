@@ -73,3 +73,15 @@ pub async fn handle_post_id(
         err.status_code()
     })
 }
+
+pub async fn handle_delete_id(
+    Path(id): Path<String>,
+    Extension(ctx): Extension<Context>,
+    State(modules): State<Arc<Modules>>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let res = modules.invitation_use_case().delete_by_id(&ctx, id).await;
+    res.map(|_| StatusCode::OK).map_err(|err| {
+        tracing::error!("Failed to delete invitation: {err:?}");
+        err.status_code()
+    })
+}
