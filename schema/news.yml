@@ -13,7 +13,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/schemas/News"
+                  $ref: "#/schemas/NewsSummary"
         401:
           description: Unauthorized
         500:
@@ -141,7 +141,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/schemas/News"
+                  $ref: "#/schemas/NewsSummary"
         401:
           description: Unauthorized
         403:
@@ -152,6 +152,25 @@ paths:
           description: Internal Server Error
 
 schemas:
+  NewsSummary:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      title:
+        type: string
+      categories:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
+      updated_at:
+        type: string
+        format: date-time
   News:
     type: object
     properties:
