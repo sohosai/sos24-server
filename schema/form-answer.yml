@@ -16,7 +16,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/schemas/FormAnswer"
+                type: array
+                items:
+                  $ref: "#/schemas/FormAnswerSummary"
         401:
           description: Unauthorized
         403:
@@ -126,6 +128,18 @@ paths:
           description: Internal Server Error
 
 schemas:
+  FormAnswerSummary:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      project_id:
+        type: string
+        format: uuid
+      updated_at:
+        type: string
+        format: date-time
   FormAnswer:
     type: object
     properties:
