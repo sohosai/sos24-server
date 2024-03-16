@@ -6,6 +6,7 @@ use sos24_domain::{
         common::email::EmailError,
         permission::{PermissionDeniedError, Permissions},
         project::{ProjectId, ProjectIdError},
+        project_application_period::ProjectApplicationPeriod,
         user::UserId,
     },
     repository::{
@@ -49,11 +50,15 @@ pub enum InvitationUseCaseError {
 
 pub struct InvitationUseCase<R: Repositories> {
     repositories: Arc<R>,
+    project_application_period: ProjectApplicationPeriod, // TODO
 }
 
 impl<R: Repositories> InvitationUseCase<R> {
-    pub fn new(repositories: Arc<R>) -> Self {
-        Self { repositories }
+    pub fn new(repositories: Arc<R>, project_application_period: ProjectApplicationPeriod) -> Self {
+        Self {
+            repositories,
+            project_application_period,
+        }
     }
 
     pub async fn create(
@@ -65,6 +70,11 @@ impl<R: Repositories> InvitationUseCase<R> {
         ensure!(actor.has_permission(Permissions::CREATE_INVITATION));
 
         let invitation = raw_invitation.into_entity()?;
+
+        ensure!(
+            self.project_application_period.contains(ctx.requested_at())
+                || actor.has_permission(Permissions::CREATE_INVITATION_ANYTIME)
+        );
 
         self.repositories
             .user_repository()

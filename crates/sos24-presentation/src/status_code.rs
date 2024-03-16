@@ -25,13 +25,15 @@ impl ToStatusCode for InvitationUseCaseError {
     fn status_code(&self) -> StatusCode {
         match self {
             InvitationUseCaseError::ProjectNotFound(_) => StatusCode::NOT_FOUND,
+            InvitationUseCaseError::InviterNotFound(_) => StatusCode::NOT_FOUND,
             InvitationUseCaseError::ContextError(e) => e.status_code(),
             InvitationUseCaseError::InvitationRepositoryError(e) => e.status_code(),
             InvitationUseCaseError::InternalError(e) => e.status_code(),
-            InvitationUseCaseError::ProjectIdError(_) => todo!(),
-            InvitationUseCaseError::EmailError(_) => todo!(),
-            InvitationUseCaseError::ProjectRepositoryError(_) => todo!(),
-            InvitationUseCaseError::PermissionDeniedError(_) => todo!(),
+            InvitationUseCaseError::ProjectIdError(e) => e.status_code(),
+            InvitationUseCaseError::EmailError(e) => e.status_code(),
+            InvitationUseCaseError::ProjectRepositoryError(e) => e.status_code(),
+            InvitationUseCaseError::PermissionDeniedError(e) => e.status_code(),
+            InvitationUseCaseError::UserRepositoryError(e) => e.status_code(),
         }
     }
 }

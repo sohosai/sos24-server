@@ -64,7 +64,10 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
 
     Ok(Modules {
         config,
-        invitation_use_case: InvitationUseCase::new(Arc::clone(&repository)),
+        invitation_use_case: InvitationUseCase::new(
+            Arc::clone(&repository),
+            application_period.clone(),
+        ),
         news_use_case: NewsUseCase::new(Arc::clone(&repository)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repository), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repository)),
@@ -79,7 +82,10 @@ pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules>
 
     Ok(Modules {
         config: Config::default(),
-        invitation_use_case: InvitationUseCase::new(Arc::clone(&repositories)),
+        invitation_use_case: InvitationUseCase::new(
+            Arc::clone(&repositories),
+            application_period.clone(),
+        ),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repositories), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
