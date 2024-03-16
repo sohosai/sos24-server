@@ -41,6 +41,7 @@ pub fn create_app(modules: Modules) -> Router {
 
     let invitation = Router::new()
         .route("/", post(invitation::handle_post))
+        .route("/:invitation_id", get(invitation::handle_get_id))
         .route("/:invitation_id", post(invitation::handle_post_id));
 
     let private_routes = Router::new()

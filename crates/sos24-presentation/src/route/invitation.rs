@@ -9,7 +9,7 @@ use axum::{
 use sos24_use_case::context::Context;
 
 use crate::{
-    model::invitation::{ConvertToCreateInvitationDto, CreateInvitation},
+    model::invitation::{ConvertToCreateInvitationDto, CreateInvitation, Invitation},
     module::Modules,
     status_code::ToStatusCode,
 };
@@ -26,6 +26,21 @@ pub async fn handle_post(
         tracing::error!("Failed to create invitation: {err:?}");
         err.status_code()
     })
+}
+
+pub async fn handle_get_id(
+    Path(id): Path<String>,
+    Extension(ctx): Extension<Context>,
+    State(modules): State<Arc<Modules>>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let raw_invitation = modules.invitation_use_case().find_by_id(&ctx, id).await;
+    match raw_invitation {
+        Ok(raw_invitation) => Ok((StatusCode::OK, Json(Invitation::from(raw_invitation)))),
+        Err(err) => {
+            tracing::error!("Failed to find invitation: {err:?}");
+            Err(err.status_code())
+        }
+    }
 }
 
 pub async fn handle_post_id(

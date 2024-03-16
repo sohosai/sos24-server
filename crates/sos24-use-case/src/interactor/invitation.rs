@@ -21,7 +21,10 @@ use thiserror::Error;
 
 use crate::{
     context::{Context, ContextError},
-    dto::{invitation::CreateInvitationDto, ToEntity},
+    dto::{
+        invitation::{CreateInvitationDto, InvitationDto},
+        FromEntity, ToEntity,
+    },
 };
 
 #[derive(Debug, Error)]
@@ -146,5 +149,25 @@ impl<R: Repositories> InvitationUseCase<R> {
             .await?;
 
         Ok(())
+    }
+
+    pub async fn find_by_id(
+        &self,
+        ctx: &Context,
+        id: String,
+    ) -> Result<InvitationDto, InvitationUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+
+        let id = InvitationId::try_from(id)?;
+        let raw_invitation = self
+            .repositories
+            .invitation_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(InvitationUseCaseError::NotFound(id.clone()))?;
+
+        ensure!(raw_invitation.value.is_visible_to(&actor));
+
+        Ok(InvitationDto::from_entity(raw_invitation))
     }
 }
