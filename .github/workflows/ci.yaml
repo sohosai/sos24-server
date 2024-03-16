@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal
