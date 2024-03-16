@@ -71,6 +71,17 @@ impl<R: Repositories> InvitationUseCase<R> {
         }
     }
 
+    pub async fn list(&self, ctx: &Context) -> Result<Vec<InvitationDto>, InvitationUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        ensure!(actor.has_permission(Permissions::READ_INVITATION_ALL));
+
+        let raw_invitation_list = self.repositories.invitation_repository().list().await?;
+        let invitation_list = raw_invitation_list
+            .into_iter()
+            .map(|invitation| InvitationDto::from_entity(invitation));
+        Ok(invitation_list.collect())
+    }
+
     pub async fn create(
         &self,
         ctx: &Context,

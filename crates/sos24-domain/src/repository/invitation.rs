@@ -15,6 +15,7 @@ pub enum InvitationRepositoryError {
 #[automock]
 #[allow(async_fn_in_trait)]
 pub trait InvitationRepository: Send + Sync + 'static {
+    async fn list(&self) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError>;
     async fn create(&self, invitation: Invitation) -> Result<(), InvitationRepositoryError>;
     async fn find_by_id(
         &self,

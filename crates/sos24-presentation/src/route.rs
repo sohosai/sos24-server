@@ -40,6 +40,7 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:project_id", put(project::handle_put_id));
 
     let invitation = Router::new()
+        .route("/", get(invitation::handle_get))
         .route("/", post(invitation::handle_post))
         .route("/:invitation_id", get(invitation::handle_get_id))
         .route("/:invitation_id", post(invitation::handle_post_id));

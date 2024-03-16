@@ -1,4 +1,5 @@
 use anyhow::Context;
+use futures_util::{StreamExt, TryStreamExt};
 use sos24_domain::{
     entity::{
         common::date::WithDate,
@@ -77,6 +78,19 @@ impl PgInvitationRepository {
 }
 
 impl InvitationRepository for PgInvitationRepository {
+    async fn list(&self) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError> {
+        let invitations_list = sqlx::query_as!(
+            InvitationRow,
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE deleted_at IS NULL"#
+        )
+        .fetch(&*self.db)
+        .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
+        .try_collect()
+        .await
+        .context("Failed to fetch invitations list")?;
+        Ok(invitations_list)
+    }
+
     async fn create(&self, invitation: Invitation) -> Result<(), InvitationRepositoryError> {
         let invitation = invitation.destruct();
         sqlx::query!(

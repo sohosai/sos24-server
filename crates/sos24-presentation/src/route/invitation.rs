@@ -14,6 +14,25 @@ use crate::{
     status_code::ToStatusCode,
 };
 
+pub async fn handle_get(
+    Extension(ctx): Extension<Context>,
+    State(modules): State<Arc<Modules>>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let raw_invitation_list = modules.invitation_use_case().list(&ctx).await;
+    raw_invitation_list
+        .map(|raw_invitation_list| {
+            let invitation_list: Vec<Invitation> = raw_invitation_list
+                .into_iter()
+                .map(Invitation::from)
+                .collect();
+            (StatusCode::OK, Json(invitation_list))
+        })
+        .map_err(|err| {
+            tracing::error!("Failed to list invitations: {err:?}");
+            err.status_code()
+        })
+}
+
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
