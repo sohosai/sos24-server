@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Symlink
-        run: echo "${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}" && mkdir -p /home/runner/work/$GITHUB_REPOSITORY/ && ln -s $GITHUB_WORKSPACE /home/runner/work/$GITHUB_REPOSITORY/$GITHUB_REPOSITORY
+        run: mkdir -p /home/runner/work/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}/ && ln -s $GITHUB_WORKSPACE /home/runner/work/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
       - name: ubuntu mirror
         run: sudo sed -i.bak -r 's@http://(jp\.)?archive\.ubuntu\.com/ubuntu/?@https://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
       - name: Install dependencies
