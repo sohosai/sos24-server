@@ -4,7 +4,9 @@ use std::sync::Arc;
 
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
-use sos24_use_case::interactor::{news::NewsUseCase, project::ProjectUseCase, user::UserUseCase};
+use sos24_use_case::interactor::{
+    invitation::InvitationUseCase, news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
+};
 
 #[cfg(not(test))]
 use sos24_infrastructure::DefaultRepositories;
@@ -18,6 +20,7 @@ pub type Repositories = MockRepositories;
 
 pub struct Modules {
     config: Config,
+    invitation_use_case: InvitationUseCase<Repositories>,
     news_use_case: NewsUseCase<Repositories>,
     project_use_case: ProjectUseCase<Repositories>,
     user_use_case: UserUseCase<Repositories>,
@@ -26,6 +29,10 @@ pub struct Modules {
 impl Modules {
     pub fn config(&self) -> &Config {
         &self.config
+    }
+
+    pub fn invitation_use_case(&self) -> &InvitationUseCase<Repositories> {
+        &self.invitation_use_case
     }
 
     pub fn news_use_case(&self) -> &NewsUseCase<Repositories> {
@@ -57,6 +64,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
 
     Ok(Modules {
         config,
+        invitation_use_case: InvitationUseCase::new(Arc::clone(&repository)),
         news_use_case: NewsUseCase::new(Arc::clone(&repository)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repository), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repository)),
@@ -71,6 +79,7 @@ pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules>
 
     Ok(Modules {
         config: Config::default(),
+        invitation_use_case: InvitationUseCase::new(Arc::clone(&repositories)),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repositories), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),

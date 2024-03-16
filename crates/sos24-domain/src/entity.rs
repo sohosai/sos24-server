@@ -1,6 +1,7 @@
 pub mod actor;
 pub mod common;
 pub mod firebase_user;
+pub mod invitation;
 pub mod news;
 pub mod permission;
 pub mod project;

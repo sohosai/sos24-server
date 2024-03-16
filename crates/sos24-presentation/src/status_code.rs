@@ -5,17 +5,35 @@ use sos24_domain::{
         project::ProjectIdError,
     },
     repository::{
-        firebase_user::FirebaseUserRepositoryError, news::NewsRepositoryError,
-        project::ProjectRepositoryError, user::UserRepositoryError,
+        firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
+        news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
 use sos24_use_case::{
     context::ContextError,
-    interactor::{news::NewsUseCaseError, project::ProjectUseCaseError, user::UserUseCaseError},
+    interactor::{
+        invitation::InvitationUseCaseError, news::NewsUseCaseError, project::ProjectUseCaseError,
+        user::UserUseCaseError,
+    },
 };
 
 pub trait ToStatusCode {
     fn status_code(&self) -> StatusCode;
+}
+
+impl ToStatusCode for InvitationUseCaseError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationUseCaseError::ProjectNotFound(_) => StatusCode::NOT_FOUND,
+            InvitationUseCaseError::ContextError(e) => e.status_code(),
+            InvitationUseCaseError::InvitationRepositoryError(e) => e.status_code(),
+            InvitationUseCaseError::InternalError(e) => e.status_code(),
+            InvitationUseCaseError::ProjectIdError(_) => todo!(),
+            InvitationUseCaseError::EmailError(_) => todo!(),
+            InvitationUseCaseError::ProjectRepositoryError(_) => todo!(),
+            InvitationUseCaseError::PermissionDeniedError(_) => todo!(),
+        }
+    }
 }
 
 impl ToStatusCode for NewsUseCaseError {
@@ -66,6 +84,14 @@ impl ToStatusCode for ContextError {
             ContextError::UserNotFound(_) => StatusCode::NOT_FOUND,
             ContextError::UserRepositoryError(e) => e.status_code(),
             ContextError::ProjectRepositoryError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for InvitationRepositoryError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationRepositoryError::InternalError(e) => e.status_code(),
         }
     }
 }
