@@ -208,6 +208,14 @@ impl Project {
         self.remarks.replace(remarks);
         Ok(())
     }
+
+    pub fn set_owner_id(&mut self, id: UserId) {
+        self.owner_id = id;
+    }
+
+    pub fn set_sub_owner_id(&mut self, id: UserId) {
+        self.sub_owner_id.replace(id);
+    }
 }
 
 impl_value_object!(ProjectId(uuid::Uuid));

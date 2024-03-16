@@ -6,6 +6,7 @@ CREATE TABLE invitations (
   inviter TEXT NOT NULL REFERENCES users(id),
   project_id UUID NOT NULL REFERENCES projects(id),
   position invitation_position NOT NULL,
+  used_by TEXT DEFAULT NULL REFERENCES users(id),
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

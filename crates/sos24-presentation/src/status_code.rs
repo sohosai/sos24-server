@@ -1,7 +1,10 @@
 use axum::http::StatusCode;
 use sos24_domain::{
     entity::{
-        common::email::EmailError, news::NewsIdError, permission::PermissionDeniedError,
+        common::email::EmailError,
+        invitation::{InvitationError, InvitationIdError},
+        news::NewsIdError,
+        permission::PermissionDeniedError,
         project::ProjectIdError,
     },
     repository::{
@@ -24,8 +27,10 @@ pub trait ToStatusCode {
 impl ToStatusCode for InvitationUseCaseError {
     fn status_code(&self) -> StatusCode {
         match self {
+            InvitationUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
             InvitationUseCaseError::ProjectNotFound(_) => StatusCode::NOT_FOUND,
             InvitationUseCaseError::InviterNotFound(_) => StatusCode::NOT_FOUND,
+            InvitationUseCaseError::InvitationError(e) => e.status_code(),
             InvitationUseCaseError::ContextError(e) => e.status_code(),
             InvitationUseCaseError::InvitationRepositoryError(e) => e.status_code(),
             InvitationUseCaseError::InternalError(e) => e.status_code(),
@@ -34,6 +39,7 @@ impl ToStatusCode for InvitationUseCaseError {
             InvitationUseCaseError::ProjectRepositoryError(e) => e.status_code(),
             InvitationUseCaseError::PermissionDeniedError(e) => e.status_code(),
             InvitationUseCaseError::UserRepositoryError(e) => e.status_code(),
+            InvitationUseCaseError::InvitationIdError(e) => e.status_code(),
         }
     }
 }
@@ -129,6 +135,22 @@ impl ToStatusCode for FirebaseUserRepositoryError {
         match self {
             FirebaseUserRepositoryError::EmailExists(_) => StatusCode::CONFLICT,
             FirebaseUserRepositoryError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for InvitationError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationError::AlreadyUsed => StatusCode::BAD_REQUEST,
+        }
+    }
+}
+
+impl ToStatusCode for InvitationIdError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationIdError::InvalidUuid => StatusCode::BAD_REQUEST,
         }
     }
 }
