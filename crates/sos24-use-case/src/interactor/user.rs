@@ -100,21 +100,6 @@ impl<R: Repositories> UserUseCase<R> {
         }
     }
 
-    pub async fn find_me(&self, actor: &Actor) -> Result<UserDto, UserUseCaseError> {
-        let id = actor.user_id().clone();
-        let raw_user = self
-            .repositories
-            .user_repository()
-            .find_by_id(id.clone())
-            .await?
-            .ok_or(UserUseCaseError::NotFound(id.clone()))?;
-        if raw_user.value.is_visible_to(actor) {
-            Ok(UserDto::from_entity(raw_user))
-        } else {
-            Err(UserUseCaseError::NotFound(id))
-        }
-    }
-
     pub async fn update(
         &self,
         ctx: &Context,
