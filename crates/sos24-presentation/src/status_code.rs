@@ -1,21 +1,49 @@
 use axum::http::StatusCode;
 use sos24_domain::{
     entity::{
-        common::email::EmailError, news::NewsIdError, permission::PermissionDeniedError,
-        project::ProjectIdError,
+        common::email::EmailError,
+        invitation::{InvitationError, InvitationIdError},
+        news::NewsIdError,
+        permission::PermissionDeniedError,
+        project::{ProjectError, ProjectIdError},
     },
     repository::{
-        firebase_user::FirebaseUserRepositoryError, news::NewsRepositoryError,
-        project::ProjectRepositoryError, user::UserRepositoryError,
+        firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
+        news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
 use sos24_use_case::{
     context::ContextError,
-    interactor::{news::NewsUseCaseError, project::ProjectUseCaseError, user::UserUseCaseError},
+    interactor::{
+        invitation::InvitationUseCaseError, news::NewsUseCaseError, project::ProjectUseCaseError,
+        user::UserUseCaseError,
+    },
 };
 
 pub trait ToStatusCode {
     fn status_code(&self) -> StatusCode;
+}
+
+impl ToStatusCode for InvitationUseCaseError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
+            InvitationUseCaseError::ProjectNotFound(_) => StatusCode::NOT_FOUND,
+            InvitationUseCaseError::InviterNotFound(_) => StatusCode::NOT_FOUND,
+            InvitationUseCaseError::AlreadyOwnerOrSubOwner => StatusCode::CONFLICT,
+            InvitationUseCaseError::InvitationError(e) => e.status_code(),
+            InvitationUseCaseError::ContextError(e) => e.status_code(),
+            InvitationUseCaseError::InvitationRepositoryError(e) => e.status_code(),
+            InvitationUseCaseError::InternalError(e) => e.status_code(),
+            InvitationUseCaseError::ProjectIdError(e) => e.status_code(),
+            InvitationUseCaseError::EmailError(e) => e.status_code(),
+            InvitationUseCaseError::ProjectRepositoryError(e) => e.status_code(),
+            InvitationUseCaseError::PermissionDeniedError(e) => e.status_code(),
+            InvitationUseCaseError::UserRepositoryError(e) => e.status_code(),
+            InvitationUseCaseError::InvitationIdError(e) => e.status_code(),
+            InvitationUseCaseError::ProjectError(e) => e.status_code(),
+        }
+    }
 }
 
 impl ToStatusCode for NewsUseCaseError {
@@ -70,6 +98,14 @@ impl ToStatusCode for ContextError {
     }
 }
 
+impl ToStatusCode for InvitationRepositoryError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationRepositoryError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
 impl ToStatusCode for NewsRepositoryError {
     fn status_code(&self) -> StatusCode {
         match self {
@@ -101,6 +137,31 @@ impl ToStatusCode for FirebaseUserRepositoryError {
         match self {
             FirebaseUserRepositoryError::EmailExists(_) => StatusCode::CONFLICT,
             FirebaseUserRepositoryError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for ProjectError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ProjectError::AlreadyOwnerOrSubOwner => StatusCode::CONFLICT,
+        }
+    }
+}
+
+impl ToStatusCode for InvitationError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationError::AlreadyUsed => StatusCode::BAD_REQUEST,
+            InvitationError::InviterAndReceiverAreSame => StatusCode::BAD_REQUEST,
+        }
+    }
+}
+
+impl ToStatusCode for InvitationIdError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            InvitationIdError::InvalidUuid => StatusCode::BAD_REQUEST,
         }
     }
 }
