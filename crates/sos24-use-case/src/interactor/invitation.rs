@@ -6,10 +6,12 @@ use sos24_domain::{
         common::email::EmailError,
         permission::{PermissionDeniedError, Permissions},
         project::{ProjectId, ProjectIdError},
+        user::UserId,
     },
     repository::{
         invitation::{InvitationRepository, InvitationRepositoryError},
         project::{ProjectRepository, ProjectRepositoryError},
+        user::{UserRepository, UserRepositoryError},
         Repositories,
     },
 };
@@ -22,6 +24,8 @@ use crate::{
 
 #[derive(Debug, Error)]
 pub enum InvitationUseCaseError {
+    #[error("Inviter not found: {0:?}")]
+    InviterNotFound(UserId),
     #[error("Project not found: {0:?}")]
     ProjectNotFound(ProjectId),
 
@@ -33,6 +37,8 @@ pub enum InvitationUseCaseError {
     InvitationRepositoryError(#[from] InvitationRepositoryError),
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
+    #[error(transparent)]
+    UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
     ContextError(#[from] ContextError),
     #[error(transparent)]
@@ -60,17 +66,21 @@ impl<R: Repositories> InvitationUseCase<R> {
 
         let invitation = raw_invitation.into_entity()?;
 
-        if self
-            .repositories
+        self.repositories
+            .user_repository()
+            .find_by_id(invitation.inviter().clone())
+            .await?
+            .ok_or(InvitationUseCaseError::InviterNotFound(
+                invitation.inviter().clone(),
+            ))?;
+
+        self.repositories
             .project_repository()
             .find_by_id(invitation.project_id().clone())
             .await?
-            .is_none()
-        {
-            return Err(InvitationUseCaseError::ProjectNotFound(
+            .ok_or(InvitationUseCaseError::ProjectNotFound(
                 invitation.project_id().clone(),
-            ));
-        }
+            ))?;
 
         self.repositories
             .invitation_repository()
