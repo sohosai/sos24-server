@@ -13,7 +13,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/schemas/Form"
+                  $ref: "#/schemas/FormSummary"
         401:
           description: Unauthorized
         403:
@@ -150,6 +150,14 @@ paths:
           description: Internal Server Error
 
 schemas:
+  FormItemType:
+    type: string
+    enum:
+      - string
+      - int
+      - choose_one
+      - choose_many
+      - file
   FormItem:
     type: object
     properties:
@@ -160,110 +168,208 @@ schemas:
       required:
         type: boolean
       type:
-        type: string
-        enum:
-          - string
-          - int
-          - choose_one
-          - choose_many
-          - file
+        $ref: "#/schemas/FormItemType"
       min:
         type: integer
-        nullable: true
       max:
         type: integer
-        nullable: true
       min_length:
         type: integer
-        nullable: true
       max_length:
         type: integer
-        nullable: true
       min_selection:
         type: integer
-        nullable: true
       max_selection:
         type: integer
-        nullable: true
       allow_newline:
         type: boolean
-        nullable: true
+        example: false
       options:
         type: array
         items:
           type: string
-        nullable: true
       extensions:
         type: array
         items:
           type: string
-        nullable: true
       limit:
         type: integer
-        nullable: true
+        example: 100
+    example:
+      string:
+        name: "項目1"
+        description: "これは項目1です"
+        required: true
+        type: "string"
+        min_length: 5
+        max_length: 20
+        allow_newline: false
+      int:
+        name: "項目2"
+        description: "これは項目2です"
+        required: true
+        type: "int"
+        min: 0
+        max: 10
+      choose_one:
+        name: "項目3"
+        description: "これは項目3です"
+        required: true
+        type: "choose_one"
+        options: ["オプション1", "オプション2", "オプション3"]
+      choose_many:
+        name: "項目4"
+        description: "これは項目4です"
+        required: true
+        type: "choose_many"
+        min_selection: 1
+        max_selection: 3
+        options: ["オプション1", "オプション2", "オプション3"]
+      file:
+        name: "項目5"
+        description: "これは項目5です"
+        required: true
+        type: "file"
+        extensions: [".jpg", ".png"]
+        limit: 2
+  FormSummary:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"
+      title:
+        type: string
+        example: "マイフォーム"
+      description:
+        type: string
+        example: "これはフォームです"
+      starts_at:
+        type: string
+        format: date-time
+        example: "2024-03-16T09:00:00Z"
+      ends_at:
+        type: string
+        format: date-time
+        example: "2024-03-20T18:00:00Z"
+      updated_at:
+        type: string
+        format: date-time
+        example: "2024-03-15T14:45:00Z"
+      categories:
+        type: array
+        description: "対象となる企画区分"
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        description: "対象となる企画属性"
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
+
   Form:
     type: object
     properties:
       id:
         type: string
         format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"
       title:
         type: string
+        example: "マイフォーム"
       description:
         type: string
+        example: "これはフォームです"
       starts_at:
         type: string
         format: date-time
+        example: "2024-03-16T09:00:00Z"
       ends_at:
         type: string
         format: date-time
+        example: "2024-03-20T18:00:00Z"
       created_at:
         type: string
         format: date-time
+        example: "2024-03-15T10:30:00Z"
       updated_at:
         type: string
         format: date-time
+        example: "2024-03-15T14:45:00Z"
       deleted_at:
         type: string
         format: date-time
+        example: null
       categories:
-        type: integer
-        # TODO: スキーマを考える
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
       items:
         type: array
+        items:
+          $ref: "#/schemas/FormItem"
+
   CreateForm:
     type: object
     properties:
       title:
         type: string
+        example: "新しいフォーム"
       description:
         type: string
+        example: "これは新しいフォームです"
       starts_at:
         type: string
         format: date-time
+        example: "2024-03-16T09:00:00Z"
       ends_at:
         type: string
         format: date-time
+        example: "2024-03-20T18:00:00Z"
       categories:
-        type: integer
-        # TODO: スキーマを考える
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
       items:
         type: array
+        items:
+          $ref: "#/schemas/FormItem"
+
   UpdateForm:
     type: object
     properties:
       title:
         type: string
+        example: "更新されたフォーム"
       description:
         type: string
+        example: "これは更新されたフォームです"
       starts_at:
         type: string
         format: date-time
+        example: "2024-03-16T09:00:00Z"
       ends_at:
         type: string
         format: date-time
+        example: "2024-03-20T18:00:00Z"
       categories:
-        type: integer
-        # TODO: スキーマを考える
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
       items:
         type: array
+        items:
+          $ref: "#/schemas/FormItem"

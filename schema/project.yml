@@ -40,6 +40,21 @@ paths:
         500:
           description: Internal Server Error
 
+  /projects/export:
+    get:
+      summary: 企画一覧のエクスポート
+      tags:
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            text/csv:
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
   /projects/{project_id}:
     get:
       summary: 特定のIDの企画の取得
@@ -163,7 +178,43 @@ paths:
         500:
           description: Internal Server Error
 
+components:
+  ProjectCategory:
+    type: string
+    enum:
+      - general
+      - foods_with_kitchen
+      - foods_without_kitchen
+      - foods_without_cooking
+      - stage_1a
+      - stage_university_hall
+      - stage_united
+
+  ProjectAttribute:
+    type: string
+    enum:
+      - "academic"
+      - "art"
+      - "official"
+      - "inside"
+      - "outside"
+
 schemas:
+  ProjectSummary:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      index:
+        type: integer
+        example: 0
+      title:
+        type: string
+        example: そぽたん焼き
+      category:
+        $ref: "#/components/ProjectCategory"
+
   Project:
     type: object
     properties:
@@ -172,27 +223,23 @@ schemas:
         format: uuid
       index:
         type: integer
+        example: 0
       title:
         type: string
+        example: そぽたん焼き
       kana_title:
         type: string
+        example: そぽたんやき
       group_name:
         type: string
+        example: そぽたん愛好会
       kana_group_name:
         type: string
+        example: そぽたんあいこうかい
       category:
-        type: string
-        enum:
-          - general
-          - foods_with_kitchen
-          - foods_without_kitchen
-          - foods_without_cooking
-          - stage_1a
-          - stage_university_hall
-          - stage_united
+        $ref: "#/components/ProjectCategory"
       attributes:
-        type: integer
-        # TODO: スキーマを考える
+        $ref: "#/components/ProjectAttribute"
       owner_id:
         type: string
         format: uuid
@@ -217,22 +264,18 @@ schemas:
     properties:
       title:
         type: string
+        example: そぽたん焼き
       kana_title:
         type: string
+        example: そぽたんやき
       group_name:
         type: string
+        example: そぽたん愛好会
       kana_group_name:
         type: string
+        example: そぽたんあいこうかい
       category:
-        type: string
-        enum:
-          - general
-          - foods_with_kitchen
-          - foods_without_kitchen
-          - foods_without_cooking
-          - stage_1a
-          - stage_university_hall
-          - stage_united
+        $ref: "#/components/ProjectCategory"
       attributes:
         type: integer
         # TODO: スキーマを考える
@@ -241,22 +284,19 @@ schemas:
     properties:
       title:
         type: string
+        example: そぽたん焼き
       kana_title:
         type: string
+        example: そぽたんやき
       group_name:
         type: string
+        example: そぽたん愛好会
       kana_group_name:
         type: string
+        example: そぽたんあいこうかい
       category:
-        type: string
-        enum:
-          - general
-          - foods_with_kitchen
-          - foods_without_kitchen
-          - foods_without_cooking
-          - stage_1a
-          - stage_university_hall
-          - stage_united
+        $ref: "#/components/ProjectCategory"
+        example: foods_with_kitchen
       attributes:
         type: integer
         # TODO: スキーマを考える

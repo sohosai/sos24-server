@@ -13,7 +13,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/schemas/User"
+                  $ref: "#/schemas/UserSummary"
         401:
           description: Unauthorized
         403:
@@ -37,6 +37,21 @@ paths:
           description: Bad Request
         422:
           description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+  /users/export:
+    get:
+      summary: ユーザー一覧のエクスポート
+      tags:
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            text/csv:
+        401:
+          description: Unauthorized
         500:
           description: Internal Server Error
 
@@ -159,7 +174,29 @@ paths:
         500:
           description: Internal Server Error
 
+components:
+  UserRole:
+    type: string
+    enum:
+      - administrator
+      - committee_operator
+      - committee
+      - general
+
 schemas:
+  UserSummary:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      email:
+        type: string
+        format: email
+      role:
+        $ref: "#/components/UserRole"
+
   User:
     type: object
     properties:
@@ -175,18 +212,16 @@ schemas:
       phone_number:
         type: string
       role:
+        $ref: "#/components/UserRole"
+      created_at:
         type: string
-        enum:
-          - administrator
-          - committee_operator
-          - committee
-          - general
-      category:
+        format: date-time
+      updated_at:
         type: string
-        enum:
-          - undergraduate_student
-          - graduate_student
-          - academic_staff
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
   CreateUser:
     type: object
     properties:
@@ -202,12 +237,6 @@ schemas:
         format: password
       phone_number:
         type: string
-      category:
-        type: string
-        enum:
-          - undergraduate_student
-          - graduate_student
-          - academic_staff
   UpdateUser:
     type: object
     properties:
@@ -221,15 +250,4 @@ schemas:
       phone_number:
         type: string
       role:
-        type: string
-        enum:
-          - administrator
-          - committee_operator
-          - committee
-          - general
-      category:
-        type: string
-        enum:
-          - undergraduate_student
-          - graduate_student
-          - academic_staff
+        $ref: "#/components/UserRole"

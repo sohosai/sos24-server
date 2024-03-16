@@ -23,6 +23,8 @@ tags:
 paths:
   /projects:
     $ref: "./schema/project.yml#/paths/~1projects"
+  /projects/export:
+    $ref: "./schema/project.yml#/paths/~1projects~1export"
   /projects/me:
     $ref: "./schema/project.yml#/paths/~1projects~1me"
   /projects/{project_id}:
@@ -36,6 +38,8 @@ paths:
 
   /users:
     $ref: "./schema/user.yml#/paths/~1users"
+  /users/export:
+    $ref: "./schema/user.yml#/paths/~1users~1export"
   /users/me:
     $ref: "./schema/user.yml#/paths/~1users~1me"
   /users/{user_id}:
@@ -58,6 +62,8 @@ paths:
     $ref: "./schema/form.yml#/paths/~1forms~1{form_id}"
   /forms/{form_id}/answers:
     $ref: "./schema/form-answer.yml#/paths/~1forms~1{form_id}~1answers"
+security:
+  - Bearer: []
 
 components:
   securitySchemes:
