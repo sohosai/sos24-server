@@ -5,7 +5,7 @@ use sos24_domain::{
         invitation::{InvitationError, InvitationIdError},
         news::NewsIdError,
         permission::PermissionDeniedError,
-        project::ProjectIdError,
+        project::{ProjectError, ProjectIdError},
     },
     repository::{
         firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
@@ -30,6 +30,7 @@ impl ToStatusCode for InvitationUseCaseError {
             InvitationUseCaseError::NotFound(_) => StatusCode::NOT_FOUND,
             InvitationUseCaseError::ProjectNotFound(_) => StatusCode::NOT_FOUND,
             InvitationUseCaseError::InviterNotFound(_) => StatusCode::NOT_FOUND,
+            InvitationUseCaseError::AlreadyOwnerOrSubOwner => StatusCode::CONFLICT,
             InvitationUseCaseError::InvitationError(e) => e.status_code(),
             InvitationUseCaseError::ContextError(e) => e.status_code(),
             InvitationUseCaseError::InvitationRepositoryError(e) => e.status_code(),
@@ -40,6 +41,7 @@ impl ToStatusCode for InvitationUseCaseError {
             InvitationUseCaseError::PermissionDeniedError(e) => e.status_code(),
             InvitationUseCaseError::UserRepositoryError(e) => e.status_code(),
             InvitationUseCaseError::InvitationIdError(e) => e.status_code(),
+            InvitationUseCaseError::ProjectError(e) => e.status_code(),
         }
     }
 }
@@ -135,6 +137,14 @@ impl ToStatusCode for FirebaseUserRepositoryError {
         match self {
             FirebaseUserRepositoryError::EmailExists(_) => StatusCode::CONFLICT,
             FirebaseUserRepositoryError::InternalError(e) => e.status_code(),
+        }
+    }
+}
+
+impl ToStatusCode for ProjectError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ProjectError::AlreadyOwnerOrSubOwner => StatusCode::CONFLICT,
         }
     }
 }

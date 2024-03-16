@@ -6,7 +6,7 @@ use sos24_domain::{
         common::email::EmailError,
         invitation::{InvitationError, InvitationId, InvitationIdError, InvitationPosition},
         permission::{PermissionDeniedError, Permissions},
-        project::{ProjectId, ProjectIdError},
+        project::{ProjectError, ProjectId, ProjectIdError},
         project_application_period::ProjectApplicationPeriod,
         user::UserId,
     },
@@ -35,7 +35,11 @@ pub enum InvitationUseCaseError {
     InviterNotFound(UserId),
     #[error("Project not found: {0:?}")]
     ProjectNotFound(ProjectId),
+    #[error("Already owner or sub-owner")]
+    AlreadyOwnerOrSubOwner,
 
+    #[error(transparent)]
+    ProjectError(#[from] ProjectError),
     #[error(transparent)]
     InvitationError(#[from] InvitationError),
     #[error(transparent)]
@@ -105,13 +109,16 @@ impl<R: Repositories> InvitationUseCase<R> {
                 invitation.inviter().clone(),
             ))?;
 
-        self.repositories
+        let project = self
+            .repositories
             .project_repository()
             .find_by_id(invitation.project_id().clone())
             .await?
             .ok_or(InvitationUseCaseError::ProjectNotFound(
                 invitation.project_id().clone(),
             ))?;
+
+        ensure!(project.value.is_visible_to(&actor));
 
         self.repositories
             .invitation_repository()
@@ -123,6 +130,10 @@ impl<R: Repositories> InvitationUseCase<R> {
 
     pub async fn receive(&self, ctx: &Context, id: String) -> Result<(), InvitationUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+
+        if ctx.project(Arc::clone(&self.repositories)).await?.is_some() {
+            return Err(InvitationUseCaseError::AlreadyOwnerOrSubOwner);
+        }
 
         // TODO: トランザクションを貼るとより良い
 
@@ -144,8 +155,8 @@ impl<R: Repositories> InvitationUseCase<R> {
 
         let mut new_project = project.value;
         match invitation.value.position() {
-            InvitationPosition::Owner => new_project.set_owner_id(ctx.user_id().clone()),
-            InvitationPosition::SubOwner => new_project.set_sub_owner_id(ctx.user_id().clone()),
+            InvitationPosition::Owner => new_project.set_owner_id(ctx.user_id().clone())?,
+            InvitationPosition::SubOwner => new_project.set_sub_owner_id(ctx.user_id().clone())?,
         }
         self.repositories
             .project_repository()
