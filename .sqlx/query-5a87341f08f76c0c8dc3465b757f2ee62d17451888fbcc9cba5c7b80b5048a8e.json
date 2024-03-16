@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO invitations (id, inviter, project_id, position) VALUES ($1, $2, $3, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Uuid",
+        {
+          "Custom": {
+            "name": "invitation_position",
+            "kind": {
+              "Enum": [
+                "owner",
+                "sub_owner"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5a87341f08f76c0c8dc3465b757f2ee62d17451888fbcc9cba5c7b80b5048a8e"
+}

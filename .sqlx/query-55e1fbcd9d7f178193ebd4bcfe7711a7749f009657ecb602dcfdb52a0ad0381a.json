@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE invitations SET inviter = $2, project_id = $3, position = $4, used_by = $5 WHERE id = $1 AND deleted_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Uuid",
+        {
+          "Custom": {
+            "name": "invitation_position",
+            "kind": {
+              "Enum": [
+                "owner",
+                "sub_owner"
+              ]
+            }
+          }
+        },
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "55e1fbcd9d7f178193ebd4bcfe7711a7749f009657ecb602dcfdb52a0ad0381a"
+}
