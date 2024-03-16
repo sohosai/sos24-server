@@ -152,27 +152,6 @@ paths:
           description: Unauthorized
         500:
           description: Internal Server Error
-    put:
-      summary: 自分のユーザーの更新
-      tags:
-        - users
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/schemas/UpdateUser"
-      responses:
-        200:
-          description: OK
-        400:
-          description: Bad Request
-        401:
-          description: Unauthorized
-        422:
-          description: Unprocessable Entity
-        500:
-          description: Internal Server Error
 
 components:
   UserRole:
