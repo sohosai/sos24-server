@@ -13,7 +13,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/schemas/Form"
+                  $ref: "#/schemas/FormSummary"
         401:
           description: Unauthorized
         403:
@@ -215,6 +215,41 @@ schemas:
         type: integer
         nullable: true
         example: 100
+  FormSummary:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"
+      title:
+        type: string
+        example: "マイフォーム"
+      description:
+        type: string
+        example: "これはフォームです"
+      starts_at:
+        type: string
+        format: date-time
+        example: "2024-03-16T09:00:00Z"
+      ends_at:
+        type: string
+        format: date-time
+        example: "2024-03-20T18:00:00Z"
+      updated_at:
+        type: string
+        format: date-time
+        example: "2024-03-15T14:45:00Z"
+      categories:
+        type: array
+        description: "対象となる企画区分"
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        description: "対象となる企画属性"
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
 
   Form:
     type: object
