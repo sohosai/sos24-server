@@ -187,14 +187,19 @@ schemas:
         format: uuid
       index:
         type: integer
+        example: 0
       title:
         type: string
+        example: そぽたん焼き
       kana_title:
         type: string
+        example: そぽたんやき
       group_name:
         type: string
+        example: そぽたん愛好会
       kana_group_name:
         type: string
+        example: そぽたんあいこうかい
       category:
         type: string
         enum:
@@ -205,6 +210,7 @@ schemas:
           - stage_1a
           - stage_university_hall
           - stage_united
+        example: foods_with_kitchen
       attributes:
         type: integer
         # TODO: スキーマを考える
@@ -232,12 +238,16 @@ schemas:
     properties:
       title:
         type: string
+        example: そぽたん焼き
       kana_title:
         type: string
+        example: そぽたんやき
       group_name:
         type: string
+        example: そぽたん愛好会
       kana_group_name:
         type: string
+        example: そぽたんあいこうかい
       category:
         type: string
         enum:
@@ -248,6 +258,7 @@ schemas:
           - stage_1a
           - stage_university_hall
           - stage_united
+        example: foods_with_kitchen
       attributes:
         type: integer
         # TODO: スキーマを考える
@@ -256,12 +267,16 @@ schemas:
     properties:
       title:
         type: string
+        example: そぽたん焼き
       kana_title:
         type: string
+        example: そぽたんやき
       group_name:
         type: string
+        example: そぽたん愛好会
       kana_group_name:
         type: string
+        example: そぽたんあいこうかい
       category:
         type: string
         enum:
@@ -272,6 +287,7 @@ schemas:
           - stage_1a
           - stage_university_hall
           - stage_united
+        example: foods_with_kitchen
       attributes:
         type: integer
         # TODO: スキーマを考える

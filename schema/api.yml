@@ -62,6 +62,8 @@ paths:
     $ref: "./schema/form.yml#/paths/~1forms~1{form_id}"
   /forms/{form_id}/answers:
     $ref: "./schema/form-answer.yml#/paths/~1forms~1{form_id}~1answers"
+security:
+  - Bearer: []
 
 components:
   securitySchemes:
