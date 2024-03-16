@@ -143,6 +143,7 @@ impl ToStatusCode for InvitationError {
     fn status_code(&self) -> StatusCode {
         match self {
             InvitationError::AlreadyUsed => StatusCode::BAD_REQUEST,
+            InvitationError::InviterAndReceiverAreSame => StatusCode::BAD_REQUEST,
         }
     }
 }

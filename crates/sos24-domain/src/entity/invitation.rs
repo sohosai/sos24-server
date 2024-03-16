@@ -3,7 +3,7 @@ use thiserror::Error;
 
 use crate::impl_value_object;
 
-use super::{project::ProjectId, user::UserId};
+use super::{actor::Actor, permission::Permissions, project::ProjectId, user::UserId};
 
 #[derive(Debug, PartialEq, Eq, Getters)]
 pub struct Invitation {
@@ -70,12 +70,21 @@ pub struct DestructedInvitation {
 pub enum InvitationError {
     #[error("Invitation already used")]
     AlreadyUsed,
+    #[error("Inviter and receiver are same")]
+    InviterAndReceiverAreSame,
 }
 
 impl Invitation {
+    pub fn is_visible_to(&self, actor: &Actor) -> bool {
+        &self.inviter == actor.user_id() || actor.has_permission(Permissions::READ_INVITATION_ALL)
+    }
+
     pub fn receive(&mut self, user: UserId) -> Result<(), InvitationError> {
         if self.used_by.is_some() {
             return Err(InvitationError::AlreadyUsed);
+        }
+        if self.inviter() == &user {
+            return Err(InvitationError::InviterAndReceiverAreSame);
         }
 
         self.used_by.replace(user);
