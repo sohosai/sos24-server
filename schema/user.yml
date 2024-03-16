@@ -199,8 +199,8 @@ schemas:
       category:
         type: string
         enum:
-          - undergraduate
-          - graduate
+          - undergraduate_student
+          - graduate_student
           - academic_staff
   CreateUser:
     type: object
@@ -220,8 +220,8 @@ schemas:
       category:
         type: string
         enum:
-          - undergraduate
-          - graduate
+          - undergraduate_student
+          - graduate_student
           - academic_staff
   UpdateUser:
     type: object
@@ -245,6 +245,6 @@ schemas:
       category:
         type: string
         enum:
-          - undergraduate
-          - graduate
+          - undergraduate_student
+          - graduate_student
           - academic_staff

@@ -103,6 +103,7 @@ impl From<ProjectDto> for Project {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ProjectCategory {
     General,
     FoodsWithKitchen,
