@@ -182,8 +182,13 @@ schemas:
       body:
         type: string
       categories:
-        type: integer
-        # TODO: スキーマを考える
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
       created_at:
         type: string
         format: date-time
