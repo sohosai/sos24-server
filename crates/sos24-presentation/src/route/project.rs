@@ -96,6 +96,21 @@ pub async fn handle_export(
     })
 }
 
+pub async fn handle_get_me(
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let raw_project = modules.project_use_case().find_owned(&ctx).await;
+    match raw_project {
+        Ok(Some(raw_project)) => Ok((StatusCode::OK, Json(Project::from(raw_project)))),
+        Ok(None) => Err(StatusCode::NOT_FOUND),
+        Err(err) => {
+            tracing::error!("Failed to find me: {err}");
+            Err(err.status_code())
+        }
+    }
+}
+
 pub async fn handle_get_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,

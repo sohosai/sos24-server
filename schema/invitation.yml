@@ -135,13 +135,6 @@ schemas:
         enum:
           - owner
           - sub_owner
-      inviter:
-        type: string
-      invitee_email:
-        type: string
-      invitee:
-        type: string
-        nullable: true
       created_at:
         type: string
         format: date-time
@@ -163,6 +156,3 @@ schemas:
         enum:
           - owner
           - sub_owner
-      invitee_email:
-        type: string
-        format: email

@@ -121,6 +121,29 @@ impl<R: Repositories> ProjectUseCase<R> {
         Ok(project)
     }
 
+    pub async fn find_owned(
+        &self,
+        ctx: &Context,
+    ) -> Result<Option<ProjectDto>, ProjectUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let project = ctx.project(Arc::clone(&self.repositories)).await?;
+
+        let project = match project {
+            Some(OwnedProject::Owner(project)) => project,
+            Some(OwnedProject::SubOwner(project)) => project,
+            None => return Ok(None),
+        };
+
+        ensure!(project.value.is_visible_to(&actor));
+
+        let mut project = ProjectDto::from_entity(project);
+        if !actor.has_permission(Permissions::READ_PROJECT_ALL) {
+            project.remarks = None;
+        }
+
+        Ok(Some(project))
+    }
+
     pub async fn update(
         &self,
         ctx: &Context,

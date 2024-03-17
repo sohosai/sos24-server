@@ -1,11 +1,13 @@
 use crate::repository::{
-    firebase_user::MockFirebaseUserRepository, news::MockNewsRepository,
-    project::MockProjectRepository, user::MockUserRepository, Repositories,
+    firebase_user::MockFirebaseUserRepository, invitation::MockInvitationRepository,
+    news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
+    Repositories,
 };
 
 #[derive(Default)]
 pub struct MockRepositories {
     firebase_user_repository: MockFirebaseUserRepository,
+    invitation_repository: MockInvitationRepository,
     news_repository: MockNewsRepository,
     project_repository: MockProjectRepository,
     user_repository: MockUserRepository,
@@ -14,6 +16,10 @@ pub struct MockRepositories {
 impl MockRepositories {
     pub fn firebase_user_repository_mut(&mut self) -> &mut MockFirebaseUserRepository {
         &mut self.firebase_user_repository
+    }
+
+    pub fn invitation_repository_mut(&mut self) -> &mut MockInvitationRepository {
+        &mut self.invitation_repository
     }
 
     pub fn news_repository_mut(&mut self) -> &mut MockNewsRepository {
@@ -31,12 +37,17 @@ impl MockRepositories {
 
 impl Repositories for MockRepositories {
     type FirebaseUserRepositoryImpl = MockFirebaseUserRepository;
+    type InvitationRepositoryImpl = MockInvitationRepository;
     type NewsRepositoryImpl = MockNewsRepository;
     type ProjectRepositoryImpl = MockProjectRepository;
     type UserRepositoryImpl = MockUserRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
+    }
+
+    fn invitation_repository(&self) -> &Self::InvitationRepositoryImpl {
+        &self.invitation_repository
     }
 
     fn news_repository(&self) -> &Self::NewsRepositoryImpl {

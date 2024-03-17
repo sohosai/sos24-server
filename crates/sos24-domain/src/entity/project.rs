@@ -122,6 +122,12 @@ pub struct DestructedProject {
     pub remarks: Option<ProjectRemarks>,
 }
 
+#[derive(Debug, Error)]
+pub enum ProjectError {
+    #[error("Already owner or sub-owner")]
+    AlreadyOwnerOrSubOwner,
+}
+
 impl Project {
     pub fn is_owned_by(&self, user_id: &UserId) -> bool {
         self.owner_id() == user_id
@@ -206,6 +212,36 @@ impl Project {
     ) -> Result<(), PermissionDeniedError> {
         ensure!(actor.has_permission(Permissions::UPDATE_PROJECT_ALL));
         self.remarks.replace(remarks);
+        Ok(())
+    }
+
+    pub fn set_owner_id(&mut self, id: UserId) -> Result<(), ProjectError> {
+        if id == self.owner_id
+            || self
+                .sub_owner_id
+                .as_ref()
+                .map(|sub_owner_id| sub_owner_id == &id)
+                .unwrap_or(false)
+        {
+            return Err(ProjectError::AlreadyOwnerOrSubOwner);
+        }
+
+        self.owner_id = id;
+        Ok(())
+    }
+
+    pub fn set_sub_owner_id(&mut self, id: UserId) -> Result<(), ProjectError> {
+        if id == self.owner_id
+            || self
+                .sub_owner_id
+                .as_ref()
+                .map(|sub_owner_id| sub_owner_id == &id)
+                .unwrap_or(false)
+        {
+            return Err(ProjectError::AlreadyOwnerOrSubOwner);
+        }
+
+        self.sub_owner_id.replace(id);
         Ok(())
     }
 }
