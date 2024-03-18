@@ -96,7 +96,7 @@ impl UpdateProjectDto {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ProjectDto {
     pub id: String,
     pub index: i32,
@@ -137,7 +137,7 @@ impl FromEntity for ProjectDto {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ProjectCategoryDto {
     General,
     FoodsWithKitchen,

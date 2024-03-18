@@ -1,14 +1,16 @@
 use std::sync::Arc;
 
+use axum::response::Response;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
     Extension, Json,
 };
-use axum::response::Response;
+use csv::Writer;
 use sos24_use_case::context::Context;
 
+use crate::model::user::User;
 use crate::{
     model::project::{
         ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project, UpdateProject,
@@ -47,28 +49,46 @@ pub async fn handle_post(
         err.status_code()
     })
 }
-
 pub async fn handle_export(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let raw_project_list = modules.project_use_case().list(&ctx).await;
-    let project_list = match raw_project_list.map(|raw_project_list| {
-        raw_project_list
-            .into_iter()
-            .map(Project::from)
-            .collect::<Vec<Project>>()
-    }).map_err(|err| {
-        tracing::error!("Failed to list project: {err:?}");
-        err.status_code()
-    }) {
-        Ok(project_list) => project_list,
-        Err(status_code) => return Err(status_code),
+    let raw_project_list = match modules.project_use_case().list(&ctx).await {
+        Ok(list) => list,
+        Err(err) => {
+            tracing::error!("Failed to list project: {err:?}");
+            return Err(err.status_code());
+        }
     };
 
-    let mut wrt = csv::Writer::from_writer(vec![]);
-    for project in project_list {
-        wrt.serialize(project).unwrap();
+    type ProjectWithUser = (User, Project);
+
+    let mut project_with_user: Vec<ProjectWithUser> = Vec::new();
+
+    for project in raw_project_list {
+        let user = match modules
+            .user_use_case()
+            .find_by_id(&ctx, project.clone().owner_id)
+            .await
+        {
+            Ok(user) => user,
+            Err(err) => {
+                tracing::error!("Failed to find user: {err:?}");
+                return Err(err.status_code());
+            }
+        };
+        project_with_user.push((User::from(user), Project::from(project)));
+    }
+    
+    let mut wrt = Writer::from_writer(vec![]);
+    for user_with_project in project_with_user {
+        match wrt.serialize(user_with_project) {
+            Ok(result) => result,
+            Err(err) => {
+                tracing::error!("Failed to serialize: {err:?}");
+                return Err(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        };
     }
 
     let csv = match wrt.into_inner() {
@@ -90,10 +110,12 @@ pub async fn handle_export(
     Response::builder()
         .header("Content-Type", "text/csv")
         .header("Content-Disposition", "attachment; filename=projects.csv")
-        .body(data).map(|response| response).map_err(|err| {
-        tracing::error!("Failed to create response: {err:?}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })
+        .body(data)
+        .map(|response| response)
+        .map_err(|err| {
+            tracing::error!("Failed to create response: {err:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
 }
 
 pub async fn handle_get_me(
