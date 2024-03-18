@@ -1,16 +1,16 @@
 use std::sync::Arc;
 
+use axum::response::Response;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
     Extension, Json,
 };
-use axum::response::Response;
 use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
 use crate::{
-    model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User},
+    model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserTobeExport},
     module::Modules,
     status_code::ToStatusCode,
 };
@@ -36,17 +36,12 @@ pub async fn handle_export(
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let raw_user_list = modules.user_use_case().list(&ctx).await;
-    let user_list = match raw_user_list.map(|raw_user_list| {
-        raw_user_list
-            .into_iter()
-            .map(User::from)
-            .collect::<Vec<User>>()
-    }).map_err(|err| {
-        tracing::error!("Failed to list user: {err:?}");
-        err.status_code()
-    }) {
-        Ok(user_list) => user_list,
-        Err(status_code) => return Err(status_code),
+    let user_list = match raw_user_list {
+        Ok(user_list) => user_list.into_iter().map(UserTobeExport::from).collect::<Vec<UserTobeExport>>(),
+        Err(err) => {
+            tracing::error!("Failed to list user: {err:?}");
+            return Err(err.status_code())
+        }
     };
 
     let mut wrt = csv::Writer::from_writer(vec![]);
@@ -79,10 +74,12 @@ pub async fn handle_export(
     Response::builder()
         .header("Content-Type", "text/csv")
         .header("Content-Disposition", "attachment; filename=users.csv")
-        .body(data).map(|response| response).map_err(|err| {
-        tracing::error!("Failed to create response: {err:?}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })
+        .body(data)
+        .map(|response| response)
+        .map_err(|err| {
+            tracing::error!("Failed to create response: {err:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
 }
 
 pub async fn handle_post(

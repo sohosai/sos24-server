@@ -86,6 +86,29 @@ impl From<UserDto> for User {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct UserTobeExport {
+    id: String,
+    名前: String,
+    なまえ: String,
+    メールアドレス: String,
+    ロール: String,
+    作成日時: String,
+}
+
+impl From<UserDto> for UserTobeExport {
+    fn from(user: UserDto) -> Self {
+        UserTobeExport {
+            id: user.id,
+            名前: user.name,
+            なまえ: user.kana_name,
+            メールアドレス: user.email,
+            ロール: user.role.to_string(),
+            作成日時: user.created_at.to_rfc2822(),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum UserRole {
@@ -105,6 +128,8 @@ impl From<UserRole> for UserRoleDto {
         }
     }
 }
+
+
 
 impl From<UserRoleDto> for UserRole {
     fn from(value: UserRoleDto) -> Self {
