@@ -51,7 +51,13 @@ pub async fn handle_export(
 
     let mut wrt = csv::Writer::from_writer(vec![]);
     for user in user_list {
-        wrt.serialize(user).unwrap();
+        match wrt.serialize(user) {
+            Ok(result) => result,
+            Err(err) => {
+                tracing::error!("Failed to serialize user: {err:?}");
+                return Err(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        }
     }
 
     let csv = match wrt.into_inner() {
