@@ -45,7 +45,6 @@ paths:
       summary: 特定のIDの添付ファイルの取得
       tags:
         - news-attachments
-        - committee
       parameters:
         - name: news_attachment_id
           in: path
@@ -66,7 +65,7 @@ paths:
         500:
           description: Internal Server Error
     delete:
-      summary: 特定のIDのニュースの添付ファイルの削除
+      summary: 特定のIDの添付ファイルの削除
       tags:
         - news-attachments
         - committee

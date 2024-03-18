@@ -11,6 +11,8 @@ tags:
     description: ユーザー関連の操作
   - name: news
     description: ニュース関連の操作
+  - name: news-attachments
+    description: ニュースの添付ファイル関連の操作
   - name: forms
     description: 申請関連の操作
   - name: form-answers
