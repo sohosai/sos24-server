@@ -1,0 +1,117 @@
+paths:
+  /news-attachments:
+    get:
+      summary: ニュースの添付ファイル一覧の取得
+      tags:
+        - news-attachments
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+    post:
+      summary: ニュースの添付ファイルの作成
+      tags:
+        - news-attachments
+        - committee
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/schemas/CreateNewsAttachment"
+      responses:
+        201:
+          description: Created
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+  /news-attachments/{news_attachment_id}:
+    get:
+      summary: 特定のIDの添付ファイルの取得
+      tags:
+        - news-attachments
+        - committee
+      parameters:
+        - name: news_attachment_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/NewsAttachment"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+    delete:
+      summary: 特定のIDのニュースの添付ファイルの削除
+      tags:
+        - news-attachments
+        - committee
+      parameters:
+        - name: news_attachment_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+
+schemas:
+  CreateNewsAttachment:
+    type: object
+    properties:
+      filename:
+        type: string
+      file:
+        type: string
+        format: binary
+  NewsAttachment:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      filename:
+        type: string
+      file_url:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+        nullable: true

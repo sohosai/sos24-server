@@ -51,6 +51,11 @@ paths:
     $ref: "./schema/news.yml#/paths/~1news~1{news_id}"
   # TODO: ニュースの添付ファイル
 
+  /news-attachments:
+    $ref: "./schema/news-attachment.yml#/paths/~1news-attachments"
+  /news-attachments/{news_attachment_id}:
+    $ref: "./schema/news-attachment.yml#/paths/~1news-attachments~1{news_attachment_id}"
+
   /invitations:
     $ref: "./schema/invitation.yml#/paths/~1invitations"
   /invitations/{invitation_id}:
