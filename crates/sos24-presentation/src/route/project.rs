@@ -10,7 +10,7 @@ use axum::{
 use csv::Writer;
 use sos24_use_case::context::Context;
 
-use crate::model::user::User;
+use crate::model::project::ProjectToBeExport;
 use crate::{
     model::project::{
         ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project, UpdateProject,
@@ -49,6 +49,7 @@ pub async fn handle_post(
         err.status_code()
     })
 }
+
 pub async fn handle_export(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -61,12 +62,10 @@ pub async fn handle_export(
         }
     };
 
-    type ProjectWithUser = (User, Project);
-
-    let mut project_with_user: Vec<ProjectWithUser> = Vec::new();
+    let mut project_with_user: Vec<ProjectToBeExport> = Vec::new();
 
     for project in raw_project_list {
-        let user = match modules
+        let owner = match modules
             .user_use_case()
             .find_by_id(&ctx, project.clone().owner_id)
             .await
@@ -77,9 +76,25 @@ pub async fn handle_export(
                 return Err(err.status_code());
             }
         };
-        project_with_user.push((User::from(user), Project::from(project)));
+
+        let sub_owner = match project.clone().sub_owner_id {
+            Some(sub_owner_id) => match modules
+                .user_use_case()
+                .find_by_id(&ctx, sub_owner_id)
+                .await
+            {
+                Ok(user) => Some(user),
+                Err(err) => {
+                    tracing::error!("Failed to find user: {err:?}");
+                    return Err(err.status_code());
+                }
+            },
+            None => None,
+        };
+
+        project_with_user.push(ProjectToBeExport::from((project, owner, sub_owner)));
     }
-    
+
     let mut wrt = Writer::from_writer(vec![]);
     for user_with_project in project_with_user {
         match wrt.serialize(user_with_project) {

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use sos24_use_case::dto::project::{
-    CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto,
+use sos24_use_case::dto::{
+    project::{CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto},
+    user::UserDto,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -98,6 +99,45 @@ impl From<ProjectDto> for Project {
             created_at: project.created_at.to_rfc3339(),
             updated_at: project.updated_at.to_rfc3339(),
             deleted_at: project.deleted_at.map(|it| it.to_rfc3339()),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ProjectToBeExport {
+    企画番号: i32,
+    企画名: String,
+    きかくめい: String,
+    企画団体名: String,
+    企画責任者: String,
+    企画責任者電話番号: String,
+    企画責任者メールアドレス: String,
+    副企画責任者: Option<String>,
+    副企画責任者メールアドレス: String,
+    副企画責任者電話番号: String,
+    企画区分: String,
+    企画属性: String,
+    備考: Option<String>,
+    作成日: String,
+}
+
+impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExport {
+    fn from((project, owner, sub_owner): (ProjectDto, UserDto, Option<UserDto>)) -> Self {
+        ProjectToBeExport {
+            企画番号: project.index,
+            企画責任者: owner.name,
+            副企画責任者: sub_owner.as_ref().map(|it| it.name.clone()),
+            企画責任者メールアドレス: owner.email,
+            副企画責任者メールアドレス: sub_owner.as_ref().map(|it| it.email.clone()).unwrap_or_default(),
+            企画責任者電話番号: owner.phone_number,
+            副企画責任者電話番号: sub_owner.map(|it| it.phone_number.clone()).unwrap_or_default(),
+            企画名: project.title,
+            きかくめい: project.kana_title,
+            企画団体名: project.group_name,
+            企画区分: project.category.to_string(),
+            企画属性: project.attributes.to_string(),
+            備考: project.remarks,
+            作成日: project.created_at.to_rfc3339(),
         }
     }
 }

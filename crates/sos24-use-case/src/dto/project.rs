@@ -1,3 +1,5 @@
+use std::fmt;
+
 use sos24_domain::entity::{
     common::date::WithDate,
     project::{
@@ -146,6 +148,19 @@ pub enum ProjectCategoryDto {
     Stage1A,
     StageUniversityHall,
     StageUnited,
+}
+impl fmt::Display for ProjectCategoryDto {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ProjectCategoryDto::General => write!(f, "一般企画"),
+            ProjectCategoryDto::FoodsWithKitchen => write!(f, "調理企画（仕込み場あり）"),
+            ProjectCategoryDto::FoodsWithoutKitchen => write!(f, "調理企画（仕込み場不要）"),
+            ProjectCategoryDto::FoodsWithoutCooking => write!(f, "既成食品販売企画"),
+            ProjectCategoryDto::Stage1A => write!(f, "ステージ企画（1A）"),
+            ProjectCategoryDto::StageUniversityHall => write!(f, "ステージ企画（大学会館）"),
+            ProjectCategoryDto::StageUnited => write!(f, "ステージ企画（統一）"),
+        }
+    }
 }
 
 impl ToEntity for ProjectCategoryDto {
