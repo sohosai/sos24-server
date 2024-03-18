@@ -8,7 +8,6 @@ paths:
       responses:
         200:
           description: OK
-          content:
         401:
           description: Unauthorized
         403:
