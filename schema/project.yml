@@ -13,7 +13,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/schemas/Project"
+                  $ref: "#/schemas/ProjectSummary"
         401:
           description: Unauthorized
         403:
@@ -193,6 +193,8 @@ schemas:
         example: そぽたん焼き
       category:
         $ref: "#/components/ProjectCategory"
+      attributes:
+        $ref: "#/components/ProjectAttribute"
 
   Project:
     type: object
