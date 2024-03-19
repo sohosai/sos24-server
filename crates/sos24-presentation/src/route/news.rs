@@ -8,7 +8,7 @@ use sos24_use_case::context::Context;
 use sos24_use_case::dto::news::CreateNewsDto;
 
 use crate::error::AppError;
-use crate::model::news::{ConvertToUpdateNewsDto, CreateNews, News, UpdateNews};
+use crate::model::news::{ConvertToUpdateNewsDto, CreateNews, News, NewsSummary, UpdateNews};
 use crate::module::Modules;
 
 pub async fn handle_get(
@@ -18,7 +18,8 @@ pub async fn handle_get(
     let raw_news_list = modules.news_use_case().list(&ctx).await;
     raw_news_list
         .map(|raw_news_list| {
-            let news_list: Vec<News> = raw_news_list.into_iter().map(News::from).collect();
+            let news_list: Vec<NewsSummary> =
+                raw_news_list.into_iter().map(NewsSummary::from).collect();
             (StatusCode::OK, Json(news_list))
         })
         .map_err(|err| {
