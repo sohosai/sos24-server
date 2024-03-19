@@ -232,7 +232,7 @@ pub struct ProjectSummary {
     index: i32,
     title: String,
     category: ProjectCategory,
-    attributes: i32,
+    attributes: Vec<ProjectAttribute>,
 }
 
 impl From<ProjectDto> for ProjectSummary {
@@ -242,7 +242,11 @@ impl From<ProjectDto> for ProjectSummary {
             index: project.index,
             title: project.title,
             category: ProjectCategory::from(project.category),
-            attributes: project.attributes,
+            attributes: project
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
         }
     }
 }

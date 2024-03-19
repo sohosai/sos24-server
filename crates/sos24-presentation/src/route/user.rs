@@ -11,7 +11,9 @@ use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
 use crate::error::AppError;
 use crate::{
-    model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserTobeExported},
+    model::user::{
+        ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserSummary, UserTobeExported,
+    },
     module::Modules,
 };
 
@@ -22,7 +24,8 @@ pub async fn handle_get(
     let raw_user_list = modules.user_use_case().list(&ctx).await;
     raw_user_list
         .map(|raw_user_list| {
-            let user_list: Vec<User> = raw_user_list.into_iter().map(User::from).collect();
+            let user_list: Vec<UserSummary> =
+                raw_user_list.into_iter().map(UserSummary::from).collect();
             (StatusCode::OK, Json(user_list))
         })
         .map_err(|err| {

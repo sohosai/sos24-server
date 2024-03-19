@@ -115,6 +115,25 @@ impl From<UserDto> for UserTobeExported {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct UserSummary {
+    id: String,
+    name: String,
+    email: String,
+    role: UserRole,
+}
+
+impl From<UserDto> for UserSummary {
+    fn from(value: UserDto) -> Self {
+        UserSummary {
+            id: value.id,
+            name: value.name,
+            email: value.email,
+            role: value.role.into(),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum UserRole {
