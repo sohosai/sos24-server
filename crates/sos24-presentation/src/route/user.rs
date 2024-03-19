@@ -10,7 +10,7 @@ use axum::{
 use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
 use crate::{
-    model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserTobeExport},
+    model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserTobeExported},
     module::Modules,
     status_code::ToStatusCode,
 };
@@ -37,10 +37,13 @@ pub async fn handle_export(
 ) -> Result<impl IntoResponse, StatusCode> {
     let raw_user_list = modules.user_use_case().list(&ctx).await;
     let user_list = match raw_user_list {
-        Ok(user_list) => user_list.into_iter().map(UserTobeExport::from).collect::<Vec<UserTobeExport>>(),
+        Ok(user_list) => user_list
+            .into_iter()
+            .map(UserTobeExported::from)
+            .collect::<Vec<UserTobeExported>>(),
         Err(err) => {
             tracing::error!("Failed to list user: {err:?}");
-            return Err(err.status_code())
+            return Err(err.status_code());
         }
     };
 

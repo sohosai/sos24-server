@@ -22,7 +22,7 @@ pub(crate) struct Claims {
     pub exp: u64,
     pub iss: String,
     pub sub: String,
-    pub email_verified: bool
+    pub email_verified: bool,
 }
 
 const JWK_URL: &str =

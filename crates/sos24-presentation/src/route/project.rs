@@ -10,7 +10,7 @@ use axum::{
 use csv::Writer;
 use sos24_use_case::context::Context;
 
-use crate::model::project::ProjectToBeExport;
+use crate::model::project::ProjectToBeExported;
 use crate::{
     model::project::{
         ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project, UpdateProject,
@@ -62,12 +62,12 @@ pub async fn handle_export(
         }
     };
 
-    let mut project_with_user: Vec<ProjectToBeExport> = Vec::new();
+    let mut projects: Vec<ProjectToBeExported> = Vec::new();
 
     for project in raw_project_list {
         let owner = match modules
             .user_use_case()
-            .find_by_id(&ctx, project.clone().owner_id)
+            .find_by_id(&ctx, project.owner_id.clone())
             .await
         {
             Ok(user) => user,
@@ -77,27 +77,25 @@ pub async fn handle_export(
             }
         };
 
-        let sub_owner = match project.clone().sub_owner_id {
-            Some(sub_owner_id) => match modules
-                .user_use_case()
-                .find_by_id(&ctx, sub_owner_id)
-                .await
-            {
-                Ok(user) => Some(user),
-                Err(err) => {
-                    tracing::error!("Failed to find user: {err:?}");
-                    return Err(err.status_code());
+        let sub_owner = match project.sub_owner_id.clone() {
+            Some(sub_owner_id) => {
+                match modules.user_use_case().find_by_id(&ctx, sub_owner_id).await {
+                    Ok(user) => Some(user),
+                    Err(err) => {
+                        tracing::error!("Failed to find user: {err:?}");
+                        return Err(err.status_code());
+                    }
                 }
-            },
+            }
             None => None,
         };
 
-        project_with_user.push(ProjectToBeExport::from((project, owner, sub_owner)));
+        projects.push(ProjectToBeExported::from((project, owner, sub_owner)));
     }
 
     let mut wrt = Writer::from_writer(vec![]);
-    for user_with_project in project_with_user {
-        match wrt.serialize(user_with_project) {
+    for project in projects {
+        match wrt.serialize(project) {
             Ok(result) => result,
             Err(err) => {
                 tracing::error!("Failed to serialize: {err:?}");

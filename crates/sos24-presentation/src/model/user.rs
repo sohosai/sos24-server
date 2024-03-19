@@ -87,24 +87,30 @@ impl From<UserDto> for User {
 }
 
 #[derive(Debug, Serialize)]
-pub struct UserTobeExport {
+pub struct UserTobeExported {
+    #[serde(rename(serialize = "ID"))]
     id: String,
-    名前: String,
-    なまえ: String,
-    メールアドレス: String,
-    ロール: String,
-    作成日時: String,
+    #[serde(rename(serialize = "名前"))]
+    name: String,
+    #[serde(rename(serialize = "なまえ"))]
+    kana_name: String,
+    #[serde(rename(serialize = "メールアドレス"))]
+    email: String,
+    #[serde(rename(serialize = "権限"))]
+    role: String,
+    #[serde(rename(serialize = "作成日時"))]
+    created_at: String,
 }
 
-impl From<UserDto> for UserTobeExport {
+impl From<UserDto> for UserTobeExported {
     fn from(user: UserDto) -> Self {
-        UserTobeExport {
+        UserTobeExported {
             id: user.id,
-            名前: user.name,
-            なまえ: user.kana_name,
-            メールアドレス: user.email,
-            ロール: user.role.to_string(),
-            作成日時: user.created_at.to_rfc2822(),
+            name: user.name,
+            kana_name: user.kana_name,
+            email: user.email,
+            role: user.role.to_string(),
+            created_at: user.created_at.to_rfc3339(),
         }
     }
 }
@@ -128,8 +134,6 @@ impl From<UserRole> for UserRoleDto {
         }
     }
 }
-
-
 
 impl From<UserRoleDto> for UserRole {
     fn from(value: UserRoleDto) -> Self {

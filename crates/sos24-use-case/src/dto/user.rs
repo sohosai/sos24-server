@@ -157,7 +157,7 @@ impl std::fmt::Display for UserRoleDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             UserRoleDto::Administrator => write!(f, "管理者"),
-            UserRoleDto::CommitteeOperator => write!(f, "実委人（管理者）"),
+            UserRoleDto::CommitteeOperator => write!(f, "実委人(管理者)"),
             UserRoleDto::Committee => write!(f, "実委人"),
             UserRoleDto::General => write!(f, "一般"),
         }
