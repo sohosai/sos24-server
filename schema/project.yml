@@ -193,6 +193,8 @@ schemas:
         example: そぽたん焼き
       category:
         $ref: "#/components/ProjectCategory"
+      attribute:
+        $ref: "#/components/ProjectAttribute"
 
   Project:
     type: object
@@ -218,7 +220,9 @@ schemas:
       category:
         $ref: "#/components/ProjectCategory"
       attributes:
-        $ref: "#/components/ProjectAttribute"
+        type: array
+        items:
+          $ref: "#/components/ProjectAttribute"
       owner_id:
         type: string
         format: uuid

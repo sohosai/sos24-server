@@ -14,7 +14,8 @@ use crate::error::AppError;
 use crate::model::project::{ProjectToBeExported, ProjectWithUser};
 use crate::{
     model::project::{
-        ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project, UpdateProject,
+        ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project,
+        ProjectSummary, UpdateProject,
     },
     module::Modules,
 };
@@ -26,8 +27,10 @@ pub async fn handle_get(
     let raw_project_list = modules.project_use_case().list(&ctx).await;
     raw_project_list
         .map(|raw_project_list| {
-            let project_list: Vec<Project> =
-                raw_project_list.into_iter().map(Project::from).collect();
+            let project_list: Vec<ProjectSummary> = raw_project_list
+                .into_iter()
+                .map(ProjectSummary::from)
+                .collect();
             (StatusCode::OK, Json(project_list))
         })
         .map_err(|err| {
