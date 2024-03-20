@@ -32,7 +32,7 @@ pub async fn handle_get(
         })
         .map_err(|err| {
             tracing::error!("Failed to list project: {err:?}");
-            (&err).into()
+            err.into()
         })
 }
 
@@ -46,7 +46,7 @@ pub async fn handle_post(
     let res = modules.project_use_case().create(&ctx, project).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create project: {err:?}");
-        (&err).into()
+        err.into()
     })
 }
 
@@ -58,7 +58,7 @@ pub async fn handle_export(
         Ok(list) => list,
         Err(err) => {
             tracing::error!("Failed to list project: {err:?}");
-            return Err((&err).into());
+            return Err(err.into());
         }
     };
 
@@ -73,7 +73,7 @@ pub async fn handle_export(
             Ok(user) => user,
             Err(err) => {
                 tracing::error!("Failed to find user: {err:?}");
-                return Err((&err).into());
+                return Err(err.into());
             }
         };
 
@@ -83,7 +83,7 @@ pub async fn handle_export(
                     Ok(user) => Some(user),
                     Err(err) => {
                         tracing::error!("Failed to find user: {err:?}");
-                        return Err((&err).into());
+                        return Err(err.into());
                     }
                 }
             }
@@ -162,7 +162,7 @@ pub async fn handle_get_me(
         )),
         Err(err) => {
             tracing::error!("Failed to find me: {err}");
-            Err((&err).into())
+            Err(err.into())
         }
     }
 }
@@ -177,7 +177,7 @@ pub async fn handle_get_id(
         Ok(raw_project) => Ok((StatusCode::OK, Json(Project::from(raw_project)))),
         Err(err) => {
             tracing::error!("Failed to find project: {err:?}");
-            Err((&err).into())
+            Err(err.into())
         }
     }
 }
@@ -190,7 +190,7 @@ pub async fn handle_delete_id(
     let res = modules.project_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete project: {err:?}");
-        (&err).into()
+        err.into()
     })
 }
 
@@ -204,6 +204,6 @@ pub async fn handle_put_id(
     let res = modules.project_use_case().update(&ctx, project).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to update project: {err:?}");
-        (&err).into()
+        err.into()
     })
 }

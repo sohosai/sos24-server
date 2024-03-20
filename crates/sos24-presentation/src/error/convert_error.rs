@@ -22,8 +22,8 @@ use sos24_use_case::{
 
 use super::AppError;
 
-impl From<&InvitationUseCaseError> for AppError {
-    fn from(error: &InvitationUseCaseError) -> AppError {
+impl From<InvitationUseCaseError> for AppError {
+    fn from(error: InvitationUseCaseError) -> AppError {
         let message = error.to_string();
         match error {
             InvitationUseCaseError::NotFound(_) => AppError::new(
@@ -61,8 +61,8 @@ impl From<&InvitationUseCaseError> for AppError {
     }
 }
 
-impl From<&NewsUseCaseError> for AppError {
-    fn from(error: &NewsUseCaseError) -> AppError {
+impl From<NewsUseCaseError> for AppError {
+    fn from(error: NewsUseCaseError) -> AppError {
         let message = error.to_string();
         match error {
             NewsUseCaseError::NotFound(_) => {
@@ -77,8 +77,8 @@ impl From<&NewsUseCaseError> for AppError {
     }
 }
 
-impl From<&ProjectUseCaseError> for AppError {
-    fn from(error: &ProjectUseCaseError) -> AppError {
+impl From<ProjectUseCaseError> for AppError {
+    fn from(error: ProjectUseCaseError) -> AppError {
         let message = error.to_string();
         match error {
             ProjectUseCaseError::NotFound(_) => AppError::new(
@@ -105,8 +105,8 @@ impl From<&ProjectUseCaseError> for AppError {
     }
 }
 
-impl From<&UserUseCaseError> for AppError {
-    fn from(error: &UserUseCaseError) -> AppError {
+impl From<UserUseCaseError> for AppError {
+    fn from(error: UserUseCaseError) -> AppError {
         match error {
             UserUseCaseError::NotFound(_) => AppError::new(
                 StatusCode::NOT_FOUND,
@@ -123,8 +123,8 @@ impl From<&UserUseCaseError> for AppError {
     }
 }
 
-impl From<&ContextError> for AppError {
-    fn from(error: &ContextError) -> AppError {
+impl From<ContextError> for AppError {
+    fn from(error: ContextError) -> AppError {
         match error {
             ContextError::UserNotFound(_) => AppError::new(
                 StatusCode::NOT_FOUND,
@@ -137,32 +137,32 @@ impl From<&ContextError> for AppError {
     }
 }
 
-impl From<&InvitationRepositoryError> for AppError {
-    fn from(error: &InvitationRepositoryError) -> AppError {
+impl From<InvitationRepositoryError> for AppError {
+    fn from(error: InvitationRepositoryError) -> AppError {
         match error {
             InvitationRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
 
-impl From<&NewsRepositoryError> for AppError {
-    fn from(error: &NewsRepositoryError) -> AppError {
+impl From<NewsRepositoryError> for AppError {
+    fn from(error: NewsRepositoryError) -> AppError {
         match error {
             NewsRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
 
-impl From<&ProjectRepositoryError> for AppError {
-    fn from(error: &ProjectRepositoryError) -> AppError {
+impl From<ProjectRepositoryError> for AppError {
+    fn from(error: ProjectRepositoryError) -> AppError {
         match error {
             ProjectRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
 
-impl From<&UserRepositoryError> for AppError {
-    fn from(error: &UserRepositoryError) -> AppError {
+impl From<UserRepositoryError> for AppError {
+    fn from(error: UserRepositoryError) -> AppError {
         match error {
             UserRepositoryError::EmailAlreadyUsed(_) => AppError::new(
                 StatusCode::BAD_REQUEST,
@@ -181,8 +181,8 @@ impl From<&UserRepositoryError> for AppError {
     }
 }
 
-impl From<&FirebaseUserRepositoryError> for AppError {
-    fn from(error: &FirebaseUserRepositoryError) -> AppError {
+impl From<FirebaseUserRepositoryError> for AppError {
+    fn from(error: FirebaseUserRepositoryError) -> AppError {
         match error {
             FirebaseUserRepositoryError::EmailExists(_) => AppError::new(
                 StatusCode::BAD_REQUEST,
@@ -195,8 +195,8 @@ impl From<&FirebaseUserRepositoryError> for AppError {
     }
 }
 
-impl From<&ProjectError> for AppError {
-    fn from(error: &ProjectError) -> AppError {
+impl From<ProjectError> for AppError {
+    fn from(error: ProjectError) -> AppError {
         match error {
             ProjectError::AlreadyOwnerOrSubOwner => AppError::new(
                 StatusCode::CONFLICT,
@@ -207,8 +207,8 @@ impl From<&ProjectError> for AppError {
     }
 }
 
-impl From<&InvitationError> for AppError {
-    fn from(error: &InvitationError) -> AppError {
+impl From<InvitationError> for AppError {
+    fn from(error: InvitationError) -> AppError {
         match error {
             InvitationError::AlreadyUsed => AppError::new(
                 StatusCode::BAD_REQUEST,
@@ -224,8 +224,8 @@ impl From<&InvitationError> for AppError {
     }
 }
 
-impl From<&InvitationIdError> for AppError {
-    fn from(error: &InvitationIdError) -> AppError {
+impl From<InvitationIdError> for AppError {
+    fn from(error: InvitationIdError) -> AppError {
         match error {
             InvitationIdError::InvalidUuid => AppError::new(
                 StatusCode::BAD_REQUEST,
@@ -236,8 +236,8 @@ impl From<&InvitationIdError> for AppError {
     }
 }
 
-impl From<&NewsIdError> for AppError {
-    fn from(error: &NewsIdError) -> AppError {
+impl From<NewsIdError> for AppError {
+    fn from(error: NewsIdError) -> AppError {
         match error {
             NewsIdError::InvalidUuid => AppError::new(
                 StatusCode::BAD_REQUEST,
@@ -248,8 +248,8 @@ impl From<&NewsIdError> for AppError {
     }
 }
 
-impl From<&ProjectIdError> for AppError {
-    fn from(error: &ProjectIdError) -> AppError {
+impl From<ProjectIdError> for AppError {
+    fn from(error: ProjectIdError) -> AppError {
         match error {
             ProjectIdError::InvalidUuid => AppError::new(
                 StatusCode::BAD_REQUEST,
@@ -260,8 +260,8 @@ impl From<&ProjectIdError> for AppError {
     }
 }
 
-impl From<&EmailError> for AppError {
-    fn from(error: &EmailError) -> AppError {
+impl From<EmailError> for AppError {
+    fn from(error: EmailError) -> AppError {
         match error {
             EmailError::InvalidFormat => AppError::new(
                 StatusCode::BAD_REQUEST,
@@ -277,8 +277,8 @@ impl From<&EmailError> for AppError {
     }
 }
 
-impl From<&PermissionDeniedError> for AppError {
-    fn from(error: &PermissionDeniedError) -> AppError {
+impl From<PermissionDeniedError> for AppError {
+    fn from(error: PermissionDeniedError) -> AppError {
         AppError::new(
             StatusCode::FORBIDDEN,
             "permission-denied".to_string(),
@@ -287,8 +287,8 @@ impl From<&PermissionDeniedError> for AppError {
     }
 }
 
-impl From<&anyhow::Error> for AppError {
-    fn from(error: &anyhow::Error) -> AppError {
+impl From<anyhow::Error> for AppError {
+    fn from(error: anyhow::Error) -> AppError {
         AppError::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal-error".to_string(),

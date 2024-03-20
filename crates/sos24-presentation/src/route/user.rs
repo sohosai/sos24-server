@@ -27,7 +27,7 @@ pub async fn handle_get(
         })
         .map_err(|err| {
             tracing::error!("Failed to list user: {err:?}");
-            (&err).into()
+            err.into()
         })
 }
 
@@ -43,7 +43,7 @@ pub async fn handle_export(
             .collect::<Vec<UserTobeExported>>(),
         Err(err) => {
             tracing::error!("Failed to list user: {err:?}");
-            return Err((&err).into());
+            return Err(err.into());
         }
     };
 
@@ -109,7 +109,7 @@ pub async fn handle_post(
     let res = modules.user_use_case().create(user).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create user: {err:?}");
-        (&err).into()
+        err.into()
     })
 }
 
@@ -123,7 +123,7 @@ pub async fn handle_get_id(
         Ok(raw_user) => Ok((StatusCode::OK, Json(User::from(raw_user)))),
         Err(err) => {
             tracing::error!("Failed to find user: {err:?}");
-            Err((&err).into())
+            Err(err.into())
         }
     }
 }
@@ -140,7 +140,7 @@ pub async fn handle_get_me(
         Ok(user) => Ok((StatusCode::OK, Json(User::from(user)))),
         Err(err) => {
             tracing::error!("Failed to find me: {err}");
-            Err((&err).into())
+            Err(err.into())
         }
     }
 }
@@ -153,7 +153,7 @@ pub async fn handle_delete_id(
     let res = modules.user_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete user: {err:?}");
-        (&err).into()
+        err.into()
     })
 }
 
@@ -167,6 +167,6 @@ pub async fn handle_put_id(
     let res = modules.user_use_case().update(&ctx, user).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to update user: {err:?}");
-        (&err).into()
+        err.into()
     })
 }

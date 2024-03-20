@@ -29,7 +29,7 @@ pub async fn handle_get(
         })
         .map_err(|err| {
             tracing::error!("Failed to list invitations: {err:?}");
-            (&err).into()
+            err.into()
         })
 }
 
@@ -43,7 +43,7 @@ pub async fn handle_post(
     let res = modules.invitation_use_case().create(&ctx, invitation).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create invitation: {err:?}");
-        (&err).into()
+        err.into()
     })
 }
 
@@ -57,7 +57,7 @@ pub async fn handle_get_id(
         Ok(raw_invitation) => Ok((StatusCode::OK, Json(Invitation::from(raw_invitation)))),
         Err(err) => {
             tracing::error!("Failed to find invitation: {err:?}");
-            Err((&err).into())
+            Err(err.into())
         }
     }
 }
@@ -70,7 +70,7 @@ pub async fn handle_post_id(
     let res = modules.invitation_use_case().receive(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to receive invitation: {err:?}");
-        (&err).into()
+        err.into()
     })
 }
 
@@ -82,6 +82,6 @@ pub async fn handle_delete_id(
     let res = modules.invitation_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete invitation: {err:?}");
-        (&err).into()
+        err.into()
     })
 }
