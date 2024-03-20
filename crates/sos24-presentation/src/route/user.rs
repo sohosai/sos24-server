@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use axum::response::Response;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -9,7 +10,7 @@ use axum::{
 use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
 use crate::{
-    model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User},
+    model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserTobeExported},
     module::Modules,
     status_code::ToStatusCode,
 };
@@ -27,6 +28,60 @@ pub async fn handle_get(
         .map_err(|err| {
             tracing::error!("Failed to list user: {err:?}");
             err.status_code()
+        })
+}
+
+pub async fn handle_export(
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let raw_user_list = modules.user_use_case().list(&ctx).await;
+    let user_list = match raw_user_list {
+        Ok(user_list) => user_list
+            .into_iter()
+            .map(UserTobeExported::from)
+            .collect::<Vec<UserTobeExported>>(),
+        Err(err) => {
+            tracing::error!("Failed to list user: {err:?}");
+            return Err(err.status_code());
+        }
+    };
+
+    let mut wrt = csv::Writer::from_writer(vec![]);
+    for user in user_list {
+        match wrt.serialize(user) {
+            Ok(result) => result,
+            Err(err) => {
+                tracing::error!("Failed to serialize user: {err:?}");
+                return Err(StatusCode::INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    let csv = match wrt.into_inner() {
+        Ok(csv) => csv,
+        Err(err) => {
+            tracing::error!("Failed to write csv: {err:?}");
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let data = match String::from_utf8(csv) {
+        Ok(data) => data,
+        Err(err) => {
+            tracing::error!("Failed to convert csv to string: {err:?}");
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    Response::builder()
+        .header("Content-Type", "text/csv")
+        .header("Content-Disposition", "attachment; filename=users.csv")
+        .body(data)
+        .map(|response| response)
+        .map_err(|err| {
+            tracing::error!("Failed to create response: {err:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
         })
 }
 

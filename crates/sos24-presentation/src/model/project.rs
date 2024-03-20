@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use sos24_use_case::dto::project::{
-    CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto,
+use sos24_use_case::dto::{
+    project::{CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto},
+    user::UserDto,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -98,6 +99,59 @@ impl From<ProjectDto> for Project {
             created_at: project.created_at.to_rfc3339(),
             updated_at: project.updated_at.to_rfc3339(),
             deleted_at: project.deleted_at.map(|it| it.to_rfc3339()),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct ProjectToBeExported {
+    #[serde(rename(serialize = "企画番号"))]
+    id: i32,
+    #[serde(rename(serialize = "企画名"))]
+    title: String,
+    #[serde(rename(serialize = "きかくめい"))]
+    kana_title: String,
+    #[serde(rename(serialize = "企画団体名"))]
+    group_name: String,
+    #[serde(rename(serialize = "企画責任者"))]
+    owner_name: String,
+    #[serde(rename(serialize = "企画責任者電話番号"))]
+    owner_phone_number: String,
+    #[serde(rename(serialize = "企画責任者メールアドレス"))]
+    owner_email: String,
+    #[serde(rename(serialize = "副企画責任者"))]
+    sub_owner_name: Option<String>,
+    #[serde(rename(serialize = "副企画責任者メールアドレス"))]
+    sub_owner_email: Option<String>,
+    #[serde(rename(serialize = "副企画責任者電話番号"))]
+    sub_owner_phone_number: Option<String>,
+    #[serde(rename(serialize = "企画区分"))]
+    category: String,
+    #[serde(rename(serialize = "企画属性"))]
+    attributes: String,
+    #[serde(rename(serialize = "備考"))]
+    remark: Option<String>,
+    #[serde(rename(serialize = "作成日時"))]
+    created_at: String,
+}
+
+impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
+    fn from((project, owner, sub_owner): (ProjectDto, UserDto, Option<UserDto>)) -> Self {
+        ProjectToBeExported {
+            id: project.index,
+            owner_name: owner.name,
+            sub_owner_name: sub_owner.as_ref().map(|it| it.name.clone()),
+            owner_email: owner.email,
+            sub_owner_email: sub_owner.as_ref().map(|it| it.email.clone()),
+            owner_phone_number: owner.phone_number,
+            sub_owner_phone_number: sub_owner.map(|it| it.phone_number.clone()),
+            title: project.title,
+            kana_title: project.kana_title,
+            group_name: project.group_name,
+            category: project.category.to_string(),
+            attributes: project.attributes.to_string(),
+            remark: project.remarks,
+            created_at: project.created_at.to_rfc3339(),
         }
     }
 }

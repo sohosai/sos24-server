@@ -28,6 +28,7 @@ pub fn create_app(modules: Modules) -> Router {
 
     let user = Router::new()
         .route("/", get(user::handle_get))
+        .route("/export", get(user::handle_export))
         .route("/me", get(user::handle_get_me))
         .route("/:user_id", get(user::handle_get_id))
         .route("/:user_id", delete(user::handle_delete_id))
@@ -36,6 +37,7 @@ pub fn create_app(modules: Modules) -> Router {
     let project = Router::new()
         .route("/", get(project::handle_get))
         .route("/", post(project::handle_post))
+        .route("/export", get(project::handle_export))
         .route("/me", get(project::handle_get_me))
         .route("/:project_id", get(project::handle_get_id))
         .route("/:project_id", delete(project::handle_delete_id))

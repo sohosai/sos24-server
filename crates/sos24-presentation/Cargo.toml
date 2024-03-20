@@ -9,6 +9,7 @@ sos24-domain = { path = "../sos24-domain" }
 sos24-use-case = { path = "../sos24-use-case" }
 anyhow.workspace = true
 axum.workspace = true
+csv.workspace = true
 dotenvy.workspace = true
 jsonwebtoken.workspace = true
 reqwest.workspace = true

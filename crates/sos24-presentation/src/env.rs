@@ -42,5 +42,7 @@ pub fn project_application_end_at() -> String {
 
 pub fn require_email_verification() -> bool {
     env::var("REQUIRE_EMAIL_VERIFICATION")
-        .expect("Env `REQUIRE_EMAIL_VERIFICATION` must be set").parse::<bool>().expect("Env `REQUIRE_EMAIL_VERIFICATION` must be a boolean")
+        .expect("Env `REQUIRE_EMAIL_VERIFICATION` must be set")
+        .parse::<bool>()
+        .expect("Env `REQUIRE_EMAIL_VERIFICATION` must be a boolean")
 }
