@@ -13,7 +13,6 @@ use crate::error::AppError;
 use crate::{
     model::user::{ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserTobeExported},
     module::Modules,
-    status_code::ToAppError,
 };
 
 pub async fn handle_get(
@@ -28,7 +27,7 @@ pub async fn handle_get(
         })
         .map_err(|err| {
             tracing::error!("Failed to list user: {err:?}");
-            err.to_app_error()
+            (&err).into()
         })
 }
 
@@ -44,7 +43,7 @@ pub async fn handle_export(
             .collect::<Vec<UserTobeExported>>(),
         Err(err) => {
             tracing::error!("Failed to list user: {err:?}");
-            return Err(err.to_app_error());
+            return Err((&err).into());
         }
     };
 
@@ -110,7 +109,7 @@ pub async fn handle_post(
     let res = modules.user_use_case().create(user).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create user: {err:?}");
-        err.to_app_error()
+        (&err).into()
     })
 }
 
@@ -124,7 +123,7 @@ pub async fn handle_get_id(
         Ok(raw_user) => Ok((StatusCode::OK, Json(User::from(raw_user)))),
         Err(err) => {
             tracing::error!("Failed to find user: {err:?}");
-            Err(err.to_app_error())
+            Err((&err).into())
         }
     }
 }
@@ -141,7 +140,7 @@ pub async fn handle_get_me(
         Ok(user) => Ok((StatusCode::OK, Json(User::from(user)))),
         Err(err) => {
             tracing::error!("Failed to find me: {err}");
-            Err(err.to_app_error())
+            Err((&err).into())
         }
     }
 }
@@ -154,7 +153,7 @@ pub async fn handle_delete_id(
     let res = modules.user_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete user: {err:?}");
-        err.to_app_error()
+        (&err).into()
     })
 }
 
@@ -168,6 +167,6 @@ pub async fn handle_put_id(
     let res = modules.user_use_case().update(&ctx, user).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to update user: {err:?}");
-        err.to_app_error()
+        (&err).into()
     })
 }
