@@ -10,19 +10,20 @@ use axum::{
 use csv::Writer;
 use sos24_use_case::context::Context;
 
+use crate::error::AppError;
 use crate::model::project::ProjectToBeExported;
 use crate::{
     model::project::{
         ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project, UpdateProject,
     },
     module::Modules,
-    status_code::ToStatusCode,
+    status_code::ToAppError,
 };
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let raw_project_list = modules.project_use_case().list(&ctx).await;
     raw_project_list
         .map(|raw_project_list| {
@@ -32,7 +33,7 @@ pub async fn handle_get(
         })
         .map_err(|err| {
             tracing::error!("Failed to list project: {err:?}");
-            err.status_code()
+            err.to_app_error()
         })
 }
 
@@ -40,25 +41,25 @@ pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
     Json(raw_project): Json<CreateProject>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let user_id = ctx.user_id().clone().value();
     let project = (raw_project, user_id).to_create_project_dto();
     let res = modules.project_use_case().create(&ctx, project).await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create project: {err:?}");
-        err.status_code()
+        err.to_app_error()
     })
 }
 
 pub async fn handle_export(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let raw_project_list = match modules.project_use_case().list(&ctx).await {
         Ok(list) => list,
         Err(err) => {
             tracing::error!("Failed to list project: {err:?}");
-            return Err(err.status_code());
+            return Err(err.to_app_error());
         }
     };
 
@@ -73,7 +74,7 @@ pub async fn handle_export(
             Ok(user) => user,
             Err(err) => {
                 tracing::error!("Failed to find user: {err:?}");
-                return Err(err.status_code());
+                return Err(err.to_app_error());
             }
         };
 
@@ -83,7 +84,7 @@ pub async fn handle_export(
                     Ok(user) => Some(user),
                     Err(err) => {
                         tracing::error!("Failed to find user: {err:?}");
-                        return Err(err.status_code());
+                        return Err(err.to_app_error());
                     }
                 }
             }
@@ -94,12 +95,17 @@ pub async fn handle_export(
     }
 
     let mut wrt = Writer::from_writer(vec![]);
-    for project in projects {
-        match wrt.serialize(project) {
+    for user_with_project in projects {
+        match wrt.serialize(user_with_project) {
             Ok(result) => result,
             Err(err) => {
                 tracing::error!("Failed to serialize: {err:?}");
-                return Err(StatusCode::INTERNAL_SERVER_ERROR);
+                // ToDo: CSV関連の処理を何処かにまとめる
+                return Err(AppError::new(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "csv/failed-to-serialize".to_string(),
+                    format!("{err:?}"),
+                ));
             }
         };
     }
@@ -108,7 +114,11 @@ pub async fn handle_export(
         Ok(csv) => csv,
         Err(err) => {
             tracing::error!("Failed to write csv: {err:?}");
-            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+            return Err(AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "csv/failed-to-write".to_string(),
+                format!("{err:?}"),
+            ));
         }
     };
 
@@ -116,7 +126,11 @@ pub async fn handle_export(
         Ok(data) => data,
         Err(err) => {
             tracing::error!("Failed to convert csv to string: {err:?}");
-            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+            return Err(AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "csv/failed-to-convert".to_string(),
+                format!("{err:?}"),
+            ));
         }
     };
 
@@ -127,21 +141,29 @@ pub async fn handle_export(
         .map(|response| response)
         .map_err(|err| {
             tracing::error!("Failed to create response: {err:?}");
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "csv/failed-to-create-response".to_string(),
+                format!("{err:?}"),
+            )
         })
 }
 
 pub async fn handle_get_me(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let raw_project = modules.project_use_case().find_owned(&ctx).await;
     match raw_project {
         Ok(Some(raw_project)) => Ok((StatusCode::OK, Json(Project::from(raw_project)))),
-        Ok(None) => Err(StatusCode::NOT_FOUND),
+        Ok(None) => Err(AppError::new(
+            StatusCode::NOT_FOUND,
+            "project/no-project-found".to_string(),
+            "Project not found".to_string(),
+        )),
         Err(err) => {
             tracing::error!("Failed to find me: {err}");
-            Err(err.status_code())
+            Err(err.to_app_error())
         }
     }
 }
@@ -150,13 +172,13 @@ pub async fn handle_get_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,
     State(modules): State<Arc<Modules>>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let raw_project = modules.project_use_case().find_by_id(&ctx, id).await;
     match raw_project {
         Ok(raw_project) => Ok((StatusCode::OK, Json(Project::from(raw_project)))),
         Err(err) => {
             tracing::error!("Failed to find project: {err:?}");
-            Err(err.status_code())
+            Err(err.to_app_error())
         }
     }
 }
@@ -165,11 +187,11 @@ pub async fn handle_delete_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,
     State(modules): State<Arc<Modules>>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let res = modules.project_use_case().delete_by_id(&ctx, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete project: {err:?}");
-        err.status_code()
+        err.to_app_error()
     })
 }
 
@@ -178,11 +200,11 @@ pub async fn handle_put_id(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
     Json(raw_project): Json<UpdateProject>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let project = (raw_project, id).to_update_project_dto();
     let res = modules.project_use_case().update(&ctx, project).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to update project: {err:?}");
-        err.status_code()
+        err.to_app_error()
     })
 }
