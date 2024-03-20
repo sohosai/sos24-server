@@ -5,6 +5,8 @@ use axum::{
 };
 use serde::Serialize;
 
+pub mod convert_error;
+
 pub struct AppError {
     status_code: StatusCode,
     code: String,

@@ -20,7 +20,7 @@ use sos24_use_case::{
     },
 };
 
-use crate::error::AppError;
+use super::AppError;
 
 impl From<&InvitationUseCaseError> for AppError {
     fn from(error: &InvitationUseCaseError) -> AppError {
