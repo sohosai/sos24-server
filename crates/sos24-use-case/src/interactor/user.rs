@@ -96,7 +96,7 @@ impl<R: Repositories> UserUseCase<R> {
         if raw_user.value.is_visible_to(&actor) {
             Ok(UserDto::from_entity(raw_user))
         } else {
-            Err(UserUseCaseError::NotFound(id))
+            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
         }
     }
 
@@ -321,7 +321,7 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::user::id2().value())
             .await;
-        assert!(matches!(res, Err(UserUseCaseError::NotFound(_))));
+        assert!(matches!(res, Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))));
     }
 
     #[tokio::test]
