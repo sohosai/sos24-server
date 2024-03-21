@@ -13,7 +13,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/schemas/Project"
+                  $ref: "#/schemas/ProjectSummary"
         401:
           description: Unauthorized
         403:
@@ -194,7 +194,9 @@ schemas:
       category:
         $ref: "#/components/ProjectCategory"
       attribute:
-        $ref: "#/components/ProjectAttribute"
+        type: array
+        items:
+          $ref: "#/components/ProjectAttribute"
 
   Project:
     type: object
