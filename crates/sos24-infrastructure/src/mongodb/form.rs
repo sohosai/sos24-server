@@ -5,6 +5,8 @@ use mongodb::{
     Collection,
 };
 use serde::{Deserialize, Serialize};
+
+use sos24_domain::entity::form::FormItemId;
 use sos24_domain::{
     entity::{
         common::{date::WithDate, datetime::DateTime},
@@ -71,6 +73,8 @@ impl From<FormDoc> for WithDate<Form> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormItemDoc {
+    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
+    _id: uuid::Uuid,
     name: String,
     description: String,
     required: bool,
@@ -81,6 +85,7 @@ impl From<FormItem> for FormItemDoc {
     fn from(value: FormItem) -> Self {
         let value = value.destruct();
         Self {
+            _id: value.id.value(),
             name: value.name.value(),
             description: value.description.value(),
             required: value.required.value(),
@@ -92,6 +97,7 @@ impl From<FormItem> for FormItemDoc {
 impl From<FormItemDoc> for FormItem {
     fn from(value: FormItemDoc) -> Self {
         FormItem::new(
+            FormItemId::new(value._id),
             FormItemName::new(value.name),
             FormItemDescription::new(value.description),
             FormItemRequired::new(value.required),

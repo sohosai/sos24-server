@@ -19,6 +19,10 @@ pub struct Form {
     starts_at: DateTime,
     #[getset(get = "pub")]
     ends_at: DateTime,
+    // #[getset(get = "pub")]
+    // categories: NewsCategories,
+    // #[getset(get = "pub")]
+    // attributes: ProjectAttributes,
     #[getset(get = "pub")]
     items: Vec<FormItem>,
 }
@@ -87,6 +91,7 @@ pub enum FormIdError {
     #[error("Invalid UUID")]
     InvalidUuid,
 }
+
 impl TryFrom<String> for FormId {
     type Error = FormIdError;
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -101,6 +106,8 @@ impl_value_object!(FormDescription(String));
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormItem {
     #[getset(get = "pub")]
+    id: FormItemId,
+    #[getset(get = "pub")]
     name: FormItemName,
     #[getset(get = "pub")]
     description: FormItemDescription,
@@ -111,13 +118,30 @@ pub struct FormItem {
 }
 
 impl FormItem {
-    pub fn new(
+    pub fn create(
         name: FormItemName,
         description: FormItemDescription,
         required: FormItemRequired,
         kind: FormItemKind,
     ) -> Self {
         Self {
+            id: FormItemId::new(uuid::Uuid::new_v4()),
+            name,
+            description,
+            required,
+            kind,
+        }
+    }
+
+    pub fn new(
+        id: FormItemId,
+        name: FormItemName,
+        description: FormItemDescription,
+        required: FormItemRequired,
+        kind: FormItemKind,
+    ) -> Self {
+        Self {
+            id,
             name,
             description,
             required,
@@ -127,6 +151,7 @@ impl FormItem {
 
     pub fn destruct(self) -> DestructedFormItem {
         DestructedFormItem {
+            id: self.id,
             name: self.name,
             description: self.description,
             required: self.required,
@@ -137,10 +162,26 @@ impl FormItem {
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct DestructedFormItem {
+    pub id: FormItemId,
     pub name: FormItemName,
     pub description: FormItemDescription,
     pub required: FormItemRequired,
     pub kind: FormItemKind,
+}
+
+impl_value_object!(FormItemId(uuid::Uuid));
+#[derive(Debug, Error)]
+pub enum FormItemIdError {
+    #[error("Invalid UUID")]
+    InvalidUuid,
+}
+
+impl TryFrom<String> for FormItemId {
+    type Error = FormItemIdError;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let uuid = uuid::Uuid::from_str(&value).map_err(|_| FormItemIdError::InvalidUuid)?;
+        Ok(Self(uuid))
+    }
 }
 
 impl_value_object!(FormItemName(String));
