@@ -321,7 +321,10 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::user::id2().value())
             .await;
-        assert!(matches!(res, Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))));
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+        ));
     }
 
     #[tokio::test]

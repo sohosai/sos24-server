@@ -87,6 +87,25 @@ impl From<UserDto> for User {
 }
 
 #[derive(Debug, Serialize)]
+pub struct UserSummary {
+    id: String,
+    name: String,
+    email: String,
+    role: UserRole,
+}
+
+impl From<UserDto> for UserSummary {
+    fn from(value: UserDto) -> Self {
+        UserSummary {
+            id: value.id,
+            name: value.name,
+            email: value.email,
+            role: value.role.into(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct UserTobeExported {
     #[serde(rename(serialize = "ID"))]
     id: String,
@@ -111,25 +130,6 @@ impl From<UserDto> for UserTobeExported {
             email: user.email,
             role: user.role.to_string(),
             created_at: user.created_at.to_rfc3339(),
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct UserSummary {
-    id: String,
-    name: String,
-    email: String,
-    role: UserRole,
-}
-
-impl From<UserDto> for UserSummary {
-    fn from(value: UserDto) -> Self {
-        UserSummary {
-            id: value.id,
-            name: value.name,
-            email: value.email,
-            role: value.role.into(),
         }
     }
 }
