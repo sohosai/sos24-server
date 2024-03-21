@@ -35,8 +35,6 @@ paths:
     $ref: "./schema/form.yml#/paths/~1projects~1{project_id}~1forms"
   /projects/{project_id}/forms/{form_id}/answer:
     $ref: "./schema/form-answer.yml#/paths/~1projects~1{project_id}~1forms~1{form_id}~1answer"
-  /projects/{project_id}/news:
-    $ref: "./schema/news.yml#/paths/~1projects~1{project_id}~1news"
 
   /users:
     $ref: "./schema/user.yml#/paths/~1users"
@@ -51,7 +49,6 @@ paths:
     $ref: "./schema/news.yml#/paths/~1news"
   /news/{news_id}:
     $ref: "./schema/news.yml#/paths/~1news~1{news_id}"
-  # TODO: ニュースの添付ファイル
 
   /news-attachments:
     $ref: "./schema/news-attachment.yml#/paths/~1news-attachments"
