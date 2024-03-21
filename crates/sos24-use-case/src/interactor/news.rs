@@ -161,6 +161,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
+    use crate::dto::FromEntity;
     use crate::{
         context::Context,
         dto::news::{CreateNewsDto, UpdateNewsDto},
@@ -197,7 +198,8 @@ mod tests {
                 CreateNewsDto::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
-                    fixture::news::categories1().value(),
+                    Vec::from_entity(fixture::news::categories1()),
+                    Vec::from_entity(fixture::news::attributes1()),
                 ),
             )
             .await;
@@ -225,7 +227,8 @@ mod tests {
                 CreateNewsDto::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
-                    fixture::news::categories1().value(),
+                    Vec::from_entity(fixture::news::categories1()),
+                    Vec::from_entity(fixture::news::attributes1()),
                 ),
             )
             .await;
@@ -269,7 +272,8 @@ mod tests {
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),
-                    fixture::news::categories2().value(),
+                    Vec::from_entity(fixture::news::categories2()),
+                    Vec::from_entity(fixture::news::attributes2()),
                 ),
             )
             .await;
@@ -302,7 +306,8 @@ mod tests {
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),
-                    fixture::news::categories2().value(),
+                    Vec::from_entity(fixture::news::categories2()),
+                    Vec::from_entity(fixture::news::attributes2()),
                 ),
             )
             .await;
