@@ -4,7 +4,11 @@ paths:
       summary: 申請一覧の取得
       tags:
         - forms
-        - committee
+      parameters:
+        - name: project_id
+          in: query
+          schema: { type: string }
+          required: false
       responses:
         200:
           description: OK
@@ -18,6 +22,8 @@ paths:
           description: Unauthorized
         403:
           description: Forbidden
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
     post:

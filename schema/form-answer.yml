@@ -1,15 +1,18 @@
 paths:
-  /forms/{form_id}/answers:
+  /form-answers:
     get:
-      summary: 特定のIDの申請に対する全ての回答を取得
+      summary: 申請の回答一覧を取得
       tags:
         - form-answers
-        - committee
       parameters:
+        - name: project_id
+          in: path
+          schema: { type: string }
+          required: false
         - name: form_id
           in: path
           schema: { type: string }
-          required: true
+          required: false
       responses:
         200:
           description: OK
@@ -27,50 +30,10 @@ paths:
           description: Not Found
         500:
           description: Internal Server Error
-
-  /projects/{project_id}/forms/{form_id}/answer:
-    get:
-      summary: 特定のIDの企画の、特定のIDの申請に対する回答を取得
-      tags:
-        - form-answers
-      parameters:
-        - name: project_id
-          in: path
-          schema: { type: string }
-          required: true
-        - name: form_id
-          in: path
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/schemas/FormAnswer"
-        401:
-          description: Unauthorized
-        403:
-          description: Forbidden
-        404:
-          description: Not Found
-        500:
-          description: Internal Server Error
     post:
-      summary: 特定のIDの企画の、特定のIDの申請に対する回答を作成
+      summary: 申請の回答を作成
       tags:
         - form-answers
-        - committee
-      parameters:
-        - name: project_id
-          in: path
-          schema: { type: string }
-          required: true
-        - name: form_id
-          in: path
-          schema: { type: string }
-          required: true
       requestBody:
         required: true
         content:
@@ -92,16 +55,40 @@ paths:
           description: Unprocessable Entity
         500:
           description: Internal Server Error
-    put:
-      summary: 特定のIDの企画の、特定のIDの申請に対する回答を更新
+
+  /form_answers/{form_answer_id}:
+    get:
+      summary: 申請の回答を取得
       tags:
         - form-answers
       parameters:
-        - name: project_id
+        - name: form_answer_id
           in: path
           schema: { type: string }
           required: true
-        - name: form_id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/FormAnswer"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    put:
+      summary: 申請の回答を更新
+      tags:
+        - form-answers
+      parameters:
+        - name: form_answer_id
           in: path
           schema: { type: string }
           required: true
@@ -142,6 +129,9 @@ schemas:
     type: object
     properties:
       id:
+        type: string
+        format: uuid
+      form_id:
         type: string
         format: uuid
       project_id:

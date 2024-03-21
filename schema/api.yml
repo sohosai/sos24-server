@@ -31,10 +31,6 @@ paths:
     $ref: "./schema/project.yml#/paths/~1projects~1me"
   /projects/{project_id}:
     $ref: "./schema/project.yml#/paths/~1projects~1{project_id}"
-  /projects/{project_id}/forms:
-    $ref: "./schema/form.yml#/paths/~1projects~1{project_id}~1forms"
-  /projects/{project_id}/forms/{form_id}/answer:
-    $ref: "./schema/form-answer.yml#/paths/~1projects~1{project_id}~1forms~1{form_id}~1answer"
 
   /users:
     $ref: "./schema/user.yml#/paths/~1users"
@@ -64,10 +60,14 @@ paths:
     $ref: "./schema/form.yml#/paths/~1forms"
   /forms/{form_id}:
     $ref: "./schema/form.yml#/paths/~1forms~1{form_id}"
-  /forms/{form_id}/answers:
-    $ref: "./schema/form-answer.yml#/paths/~1forms~1{form_id}~1answers"
+
+  /form-answers:
+    $ref: "./schema/form-answer.yml#/paths/~1form-answers"
+  /form-answers/{form_answer_id}:
+    $ref: "./schema/form-answer.yml#/paths/~1form-answers~1{form_answer_id}"
+
 security:
-  - Bearer: []
+  - Bearer: [ ]
 
 components:
   securitySchemes:
