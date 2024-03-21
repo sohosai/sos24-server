@@ -1,4 +1,5 @@
 use anyhow::Context;
+use futures_util::{StreamExt, TryStreamExt};
 use mongodb::{
     bson::{self, doc},
     Collection,
@@ -159,7 +160,16 @@ impl MongoFormAnswerRepository {
 
 impl FormAnswerRepository for MongoFormAnswerRepository {
     async fn list(&self) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
-        todo!()
+        let form_answer_list = self
+            .collection
+            .find(doc! { "deleted_at": None::<String> }, None)
+            .await
+            .context("Failed to list form answers")?;
+        let form_answers = form_answer_list
+            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form answer list")?))
+            .try_collect()
+            .await?;
+        Ok(form_answers)
     }
 
     async fn create(&self, form_answer: FormAnswer) -> Result<(), FormAnswerRepositoryError> {

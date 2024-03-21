@@ -66,6 +66,17 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         Self { repositories }
     }
 
+    pub async fn list(&self, ctx: &Context) -> Result<Vec<FormAnswerDto>, FormAnswerUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        ensure!(actor.has_permission(Permissions::READ_FORM_ANSWER_ALL));
+
+        let raw_form_answer_list = self.repositories.form_answer_repository().list().await?;
+        let form_answer_list = raw_form_answer_list
+            .into_iter()
+            .map(FormAnswerDto::from_entity);
+        Ok(form_answer_list.collect())
+    }
+
     pub async fn create(
         &self,
         ctx: &Context,

@@ -14,6 +14,25 @@ use crate::{
     module::Modules,
 };
 
+pub async fn handle_get(
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, AppError> {
+    let raw_form_answer_list = modules.form_answer_use_case().list(&ctx).await;
+    raw_form_answer_list
+        .map(|raw_form_answer_list| {
+            let form_answer_list: Vec<FormAnswer> = raw_form_answer_list
+                .into_iter()
+                .map(FormAnswer::from)
+                .collect();
+            (StatusCode::OK, Json(form_answer_list))
+        })
+        .map_err(|err| {
+            tracing::error!("Failed to list form answer: {err:?}");
+            err.into()
+        })
+}
+
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
