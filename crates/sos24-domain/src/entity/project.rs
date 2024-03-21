@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use bitflags::bitflags;
 use getset::Getters;
 use thiserror::Error;
 
@@ -252,6 +253,7 @@ pub enum ProjectIdError {
     #[error("Invalid UUID")]
     InvalidUuid,
 }
+
 impl TryFrom<String> for ProjectId {
     type Error = ProjectIdError;
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -277,5 +279,17 @@ pub enum ProjectCategory {
     StageUnited,
 }
 
-impl_value_object!(ProjectAttributes(i32));
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProjectAttributes(u32);
+
+bitflags! {
+    impl ProjectAttributes: u32 {
+        const ACADEMIC = 1 << 0;
+        const ART = 1 << 1;
+        const OFFICIAL = 1 << 2;
+        const INSIDE = 1 << 3;
+        const OUTSIDE = 1 << 4;
+    }
+}
+
 impl_value_object!(ProjectRemarks(String));
