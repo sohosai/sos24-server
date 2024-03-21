@@ -1,8 +1,9 @@
 use axum::http::StatusCode;
 
 use sos24_domain::entity::common::datetime::DateTimeError;
-use sos24_domain::entity::form::FormIdError;
+use sos24_domain::entity::form::{FormIdError, FormItemIdError};
 use sos24_domain::repository::form::FormRepositoryError;
+use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
 use sos24_domain::{
     entity::{
         common::email::EmailError,
@@ -17,6 +18,7 @@ use sos24_domain::{
     },
 };
 use sos24_use_case::interactor::form::FormUseCaseError;
+use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
 use sos24_use_case::{
     context::ContextError,
     interactor::{
@@ -41,6 +43,28 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::PermissionDeniedError(e) => e.into(),
             FormUseCaseError::InternalError(e) => e.into(),
             FormUseCaseError::FormIdError(e) => e.into(),
+            FormUseCaseError::ProjectIdError(e) => e.into(),
+            FormUseCaseError::FormItemIdError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FormAnswerUseCaseError> for AppError {
+    fn from(error: FormAnswerUseCaseError) -> Self {
+        let message = error.to_string();
+        match error {
+            FormAnswerUseCaseError::ProjectNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form-answer/project-not-found".to_string(),
+                message,
+            ),
+            FormAnswerUseCaseError::FormUseCaseError(e) => e.into(),
+            FormAnswerUseCaseError::FormAnswerRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::ProjectRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::ContextError(e) => e.into(),
+            FormAnswerUseCaseError::PermissionDeniedError(e) => e.into(),
+            FormAnswerUseCaseError::InternalError(e) => e.into(),
+            FormAnswerUseCaseError::FormRepositoryError(e) => e.into(),
         }
     }
 }
@@ -169,6 +193,14 @@ impl From<FormRepositoryError> for AppError {
     }
 }
 
+impl From<FormAnswerRepositoryError> for AppError {
+    fn from(error: FormAnswerRepositoryError) -> Self {
+        match error {
+            FormAnswerRepositoryError::InternalError(e) => e.into(),
+        }
+    }
+}
+
 impl From<InvitationRepositoryError> for AppError {
     fn from(error: InvitationRepositoryError) -> AppError {
         match error {
@@ -274,6 +306,18 @@ impl From<FormIdError> for AppError {
             FormIdError::InvalidUuid => AppError::new(
                 StatusCode::BAD_REQUEST,
                 "form/invalid-uuid".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<FormItemIdError> for AppError {
+    fn from(error: FormItemIdError) -> Self {
+        match error {
+            FormItemIdError::InvalidUuid => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-item/invalid-uuid".to_string(),
                 error.to_string(),
             ),
         }

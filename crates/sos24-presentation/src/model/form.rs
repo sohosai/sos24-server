@@ -87,6 +87,7 @@ impl From<FormDto> for Form {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FormItem {
     String {
+        id: String,
         name: String,
         description: String,
         required: bool,
@@ -95,6 +96,7 @@ pub enum FormItem {
         allow_newline: bool,
     },
     Int {
+        id: String,
         name: String,
         description: String,
         required: bool,
@@ -102,12 +104,14 @@ pub enum FormItem {
         max: i32,
     },
     ChooseOne {
+        id: String,
         name: String,
         description: String,
         required: bool,
         options: Vec<String>,
     },
     ChooseMany {
+        id: String,
         name: String,
         description: String,
         required: bool,
@@ -116,6 +120,7 @@ pub enum FormItem {
         max_selection: i32,
     },
     File {
+        id: String,
         name: String,
         description: String,
         required: bool,
@@ -128,6 +133,7 @@ impl From<FormItem> for FormItemDto {
     fn from(value: FormItem) -> Self {
         match value {
             FormItem::String {
+                id,
                 name,
                 description,
                 required,
@@ -135,6 +141,7 @@ impl From<FormItem> for FormItemDto {
                 max_length,
                 allow_newline,
             } => FormItemDto::new(
+                id,
                 name,
                 description,
                 required,
@@ -145,29 +152,34 @@ impl From<FormItem> for FormItemDto {
                 },
             ),
             FormItem::Int {
+                id,
                 name,
                 description,
                 required,
                 min,
                 max,
             } => FormItemDto::new(
+                id,
                 name,
                 description,
                 required,
                 FormItemKindDto::Int { min, max },
             ),
             FormItem::ChooseOne {
+                id,
                 name,
                 description,
                 required,
                 options,
             } => FormItemDto::new(
+                id,
                 name,
                 description,
                 required,
                 FormItemKindDto::ChooseOne { options },
             ),
             FormItem::ChooseMany {
+                id,
                 name,
                 description,
                 required,
@@ -175,6 +187,7 @@ impl From<FormItem> for FormItemDto {
                 min_selection,
                 max_selection,
             } => FormItemDto::new(
+                id,
                 name,
                 description,
                 required,
@@ -185,12 +198,14 @@ impl From<FormItem> for FormItemDto {
                 },
             ),
             FormItem::File {
+                id,
                 name,
                 description,
                 required,
                 extensions,
                 limit,
             } => FormItemDto::new(
+                id,
                 name,
                 description,
                 required,
@@ -208,6 +223,7 @@ impl From<FormItemDto> for FormItem {
                 max_length,
                 allow_newline,
             } => FormItem::String {
+                id: value.id,
                 name: value.name,
                 description: value.description,
                 required: value.required,
@@ -216,6 +232,7 @@ impl From<FormItemDto> for FormItem {
                 allow_newline,
             },
             FormItemKindDto::Int { min, max } => FormItem::Int {
+                id: value.id,
                 name: value.name,
                 description: value.description,
                 required: value.required,
@@ -223,6 +240,7 @@ impl From<FormItemDto> for FormItem {
                 max,
             },
             FormItemKindDto::ChooseOne { options } => FormItem::ChooseOne {
+                id: value.id,
                 name: value.name,
                 description: value.description,
                 required: value.required,
@@ -233,6 +251,7 @@ impl From<FormItemDto> for FormItem {
                 min_selection,
                 max_selection,
             } => FormItem::ChooseMany {
+                id: value.id,
                 name: value.name,
                 description: value.description,
                 required: value.required,
@@ -241,6 +260,7 @@ impl From<FormItemDto> for FormItem {
                 max_selection,
             },
             FormItemKindDto::File { extensions, limit } => FormItem::File {
+                id: value.id,
                 name: value.name,
                 description: value.description,
                 required: value.required,

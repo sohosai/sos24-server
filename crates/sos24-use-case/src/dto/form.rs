@@ -107,6 +107,7 @@ impl FromEntity for FormDto {
 
 #[derive(Debug)]
 pub struct FormItemDto {
+    pub id: String,
     pub name: String,
     pub description: String,
     pub required: bool,
@@ -114,8 +115,15 @@ pub struct FormItemDto {
 }
 
 impl FormItemDto {
-    pub fn new(name: String, description: String, required: bool, kind: FormItemKindDto) -> Self {
+    pub fn new(
+        id: String,
+        name: String,
+        description: String,
+        required: bool,
+        kind: FormItemKindDto,
+    ) -> Self {
         Self {
+            id,
             name,
             description,
             required,
@@ -142,6 +150,7 @@ impl FromEntity for FormItemDto {
     fn from_entity(entity: Self::Entity) -> Self {
         let entity = entity.destruct();
         Self::new(
+            entity.id.value().to_string(),
             entity.name.value(),
             entity.description.value(),
             entity.required.value(),

@@ -6,8 +6,9 @@ use sos24_domain::{
     ensure,
     entity::{
         common::datetime::DateTimeError,
-        form::{FormId, FormIdError},
+        form::{FormId, FormIdError, FormItemIdError},
         permission::{PermissionDeniedError, Permissions},
+        project::ProjectIdError,
     },
     repository::{
         form::{FormRepository, FormRepositoryError},
@@ -32,7 +33,11 @@ pub enum FormUseCaseError {
     #[error(transparent)]
     ProjectUseCaseError(#[from] ProjectUseCaseError),
     #[error(transparent)]
+    ProjectIdError(#[from] ProjectIdError),
+    #[error(transparent)]
     FormIdError(#[from] FormIdError),
+    #[error(transparent)]
+    FormItemIdError(#[from] FormItemIdError),
     #[error(transparent)]
     DateTimeError(#[from] DateTimeError),
     #[error(transparent)]

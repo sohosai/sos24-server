@@ -1,6 +1,7 @@
 use firebase::firebase_user::FirebaseUserRepositoryImpl;
 use firebase::FirebaseAuth;
 use mongodb::form::MongoFormRepository;
+use mongodb::form_answer::MongoFormAnswerRepository;
 use mongodb::MongoDb;
 use postgresql::invitation::PgInvitationRepository;
 use postgresql::project::PgProjectRepository;
@@ -17,6 +18,7 @@ pub mod postgresql;
 pub struct DefaultRepositories {
     firebase_user_repository: FirebaseUserRepositoryImpl,
     form_repository: MongoFormRepository,
+    form_answer_repository: MongoFormAnswerRepository,
     invitation_repository: PgInvitationRepository,
     news_repository: PgNewsRepository,
     project_repository: PgProjectRepository,
@@ -28,6 +30,7 @@ impl DefaultRepositories {
         Self {
             firebase_user_repository: FirebaseUserRepositoryImpl::new(auth),
             form_repository: MongoFormRepository::new(mongodb.clone()),
+            form_answer_repository: MongoFormAnswerRepository::new(mongodb.clone()),
             invitation_repository: PgInvitationRepository::new(postgresql.clone()),
             news_repository: PgNewsRepository::new(postgresql.clone()),
             project_repository: PgProjectRepository::new(postgresql.clone()),
@@ -39,6 +42,7 @@ impl DefaultRepositories {
 impl Repositories for DefaultRepositories {
     type FirebaseUserRepositoryImpl = FirebaseUserRepositoryImpl;
     type FormRepositoryImpl = MongoFormRepository;
+    type FormAnswerRepositoryImpl = MongoFormAnswerRepository;
     type InvitationRepositoryImpl = PgInvitationRepository;
     type NewsRepositoryImpl = PgNewsRepository;
     type ProjectRepositoryImpl = PgProjectRepository;
@@ -50,6 +54,10 @@ impl Repositories for DefaultRepositories {
 
     fn form_repository(&self) -> &Self::FormRepositoryImpl {
         &self.form_repository
+    }
+
+    fn form_answer_repository(&self) -> &Self::FormAnswerRepositoryImpl {
+        &self.form_answer_repository
     }
 
     fn invitation_repository(&self) -> &Self::InvitationRepositoryImpl {

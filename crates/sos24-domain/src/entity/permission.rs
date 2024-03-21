@@ -32,6 +32,10 @@ bitflags! {
       const READ_INVITATION_ALL = 1 << 17;
       const UPDATE_INVITATION_ALL = 1 << 18;
       const DELETE_INVITATION_ALL = 1 << 19;
+
+      const CREATE_FORM_ANSWER = 1 << 20;
+      const READ_FORM_ANSWER_ALL = 1 << 21;
+      const UPDATE_FORM_ANSWER_ALL = 1 << 22;
     }
 }
 
@@ -54,18 +58,21 @@ impl UserRole {
                     | Permissions::UPDATE_INVITATION_ALL
                     | Permissions::DELETE_INVITATION_ALL
                     | Permissions::CREATE_INVITATION_ANYTIME
+                    | Permissions::UPDATE_FORM_ANSWER_ALL
             }
             UserRole::Committee => {
                 UserRole::General.permissions()
                     | Permissions::READ_USER_ALL
                     | Permissions::READ_PROJECT_ALL
                     | Permissions::READ_INVITATION_ALL
+                    | Permissions::READ_FORM_ANSWER_ALL
             }
             UserRole::General => {
                 Permissions::READ_NEWS_ALL
                     | Permissions::CREATE_PROJECT
                     | Permissions::CREATE_INVITATION
                     | Permissions::READ_FORM_ALL
+                    | Permissions::CREATE_FORM_ANSWER
             }
         }
     }

@@ -5,8 +5,8 @@ use std::sync::Arc;
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
 use sos24_use_case::interactor::{
-    form::FormUseCase, invitation::InvitationUseCase, news::NewsUseCase, project::ProjectUseCase,
-    user::UserUseCase,
+    form::FormUseCase, form_answer::FormAnswerUseCase, invitation::InvitationUseCase,
+    news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
 };
 
 #[cfg(not(test))]
@@ -22,6 +22,7 @@ pub type Repositories = MockRepositories;
 pub struct Modules {
     config: Config,
     form_use_case: FormUseCase<Repositories>,
+    form_answer_use_case: FormAnswerUseCase<Repositories>,
     invitation_use_case: InvitationUseCase<Repositories>,
     news_use_case: NewsUseCase<Repositories>,
     project_use_case: ProjectUseCase<Repositories>,
@@ -35,6 +36,10 @@ impl Modules {
 
     pub fn form_use_case(&self) -> &FormUseCase<Repositories> {
         &self.form_use_case
+    }
+
+    pub fn form_answer_use_case(&self) -> &FormAnswerUseCase<Repositories> {
+        &self.form_answer_use_case
     }
 
     pub fn invitation_use_case(&self) -> &InvitationUseCase<Repositories> {
@@ -72,6 +77,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
     Ok(Modules {
         config,
         form_use_case: FormUseCase::new(Arc::clone(&repository)),
+        form_answer_use_case: FormAnswerUseCase::new(Arc::clone(&repository)),
         invitation_use_case: InvitationUseCase::new(
             Arc::clone(&repository),
             application_period.clone(),
@@ -91,6 +97,7 @@ pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules>
     Ok(Modules {
         config: Config::default(),
         form_use_case: FormUseCase::new(Arc::clone(&repositories)),
+        form_answer_use_case: FormAnswerUseCase::new(Arc::clone(&repositories)),
         invitation_use_case: InvitationUseCase::new(
             Arc::clone(&repositories),
             application_period.clone(),

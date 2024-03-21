@@ -3,6 +3,7 @@ use std::ops::Deref;
 use mongodb::{options::ClientOptions, Client};
 
 pub mod form;
+pub mod form_answer;
 
 #[derive(Clone)]
 pub struct MongoDb(mongodb::Database);
