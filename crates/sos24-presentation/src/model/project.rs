@@ -118,6 +118,57 @@ impl From<ProjectDto> for Project {
 }
 
 #[derive(Debug, Serialize)]
+pub struct ProjectWithUser {
+    id: String,
+    index: i32,
+    title: String,
+    kana_title: String,
+    group_name: String,
+    kana_group_name: String,
+    category: ProjectCategory,
+    attributes: Vec<ProjectAttribute>,
+    owner_id: String,
+    owner_name: String,
+    owner_email: String,
+    sub_owner_id: Option<String>,
+    sub_owner_name: Option<String>,
+    sub_owner_email: Option<String>,
+    remarks: Option<String>,
+    created_at: String,
+    updated_at: String,
+    deleted_at: Option<String>,
+}
+
+impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectWithUser {
+    fn from((project, owner, sub_owner): (ProjectDto, UserDto, Option<UserDto>)) -> Self {
+        ProjectWithUser {
+            id: project.id,
+            index: project.index,
+            title: project.title,
+            kana_title: project.kana_title,
+            group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
+            category: ProjectCategory::from(project.category),
+            attributes: project
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
+            owner_id: project.owner_id,
+            owner_name: owner.name,
+            owner_email: owner.email,
+            sub_owner_id: project.sub_owner_id,
+            sub_owner_name: sub_owner.as_ref().map(|it| it.name.clone()),
+            sub_owner_email: sub_owner.map(|it| it.email),
+            remarks: project.remarks,
+            created_at: project.created_at.to_rfc3339(),
+            updated_at: project.updated_at.to_rfc3339(),
+            deleted_at: project.deleted_at.map(|it| it.to_rfc3339()),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct ProjectToBeExported {
     #[serde(rename(serialize = "企画番号"))]
     id: i32,
