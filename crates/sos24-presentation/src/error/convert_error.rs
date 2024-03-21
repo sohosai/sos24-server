@@ -4,6 +4,7 @@ use sos24_domain::entity::common::datetime::DateTimeError;
 use sos24_domain::entity::form::{FormIdError, FormItemIdError};
 use sos24_domain::repository::form::FormRepositoryError;
 use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
+use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
 use sos24_domain::{
     entity::{
         common::email::EmailError,
@@ -70,6 +71,7 @@ impl From<FormAnswerUseCaseError> for AppError {
             FormAnswerUseCaseError::PermissionDeniedError(e) => e.into(),
             FormAnswerUseCaseError::InternalError(e) => e.into(),
             FormAnswerUseCaseError::FormRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::VerifyFormAnswerError(e) => e.into(),
         }
     }
 }
@@ -323,6 +325,68 @@ impl From<FormItemIdError> for AppError {
             FormItemIdError::InvalidUuid => AppError::new(
                 StatusCode::BAD_REQUEST,
                 "form-item/invalid-uuid".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<VerifyFormAnswerError> for AppError {
+    fn from(error: VerifyFormAnswerError) -> AppError {
+        match error {
+            VerifyFormAnswerError::MissingAnswerItem(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/missing-answer-item".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::InvalidAnswerItemKind(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-answer-item-kind".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooShortString(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-short-string".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooLongString(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-long-string".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::NewlineNotAllowed(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/newline-not-allowed".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooSmallInt(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-small-int".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooLargeInt(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-large-int".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::InvalidChooseOneOption(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-choose-one-option".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::InvalidChooseManyOption(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-choose-many-option".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooFewOptionsChooseMany(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-few-options-choose-many".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooManyOptionsChooseMany(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-many-options-choose-many".to_string(),
                 error.to_string(),
             ),
         }

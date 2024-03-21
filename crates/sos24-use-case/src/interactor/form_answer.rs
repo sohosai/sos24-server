@@ -14,6 +14,7 @@ use sos24_domain::{
         project::{ProjectRepository, ProjectRepositoryError},
         Repositories,
     },
+    service::verify_form_answer::{self, VerifyFormAnswerError},
 };
 
 use crate::{
@@ -30,6 +31,8 @@ pub enum FormAnswerUseCaseError {
     #[error("Already answered")]
     AlreadyAnswered,
 
+    #[error(transparent)]
+    VerifyFormAnswerError(#[from] VerifyFormAnswerError),
     #[error(transparent)]
     FormRepositoryError(#[from] FormRepositoryError),
     #[error(transparent)]
@@ -88,7 +91,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         ensure!(project.value.is_visible_to(&actor));
 
-        let _form = self
+        let form = self
             .repositories
             .form_repository()
             .find_by_id(form_answer.form_id().clone())
@@ -98,7 +101,8 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             ))?;
 
         // TODO: 申請がその企画向けのものかどうかのチェック
-        // TODO: 回答をverifyする
+
+        verify_form_answer::verify(&form.value, &form_answer)?;
 
         self.repositories
             .form_answer_repository()
