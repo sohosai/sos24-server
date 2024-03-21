@@ -1,5 +1,8 @@
 use axum::http::StatusCode;
 
+use sos24_domain::entity::common::datetime::DateTimeError;
+use sos24_domain::entity::form::FormIdError;
+use sos24_domain::repository::form::FormRepositoryError;
 use sos24_domain::{
     entity::{
         common::email::EmailError,
@@ -13,9 +16,7 @@ use sos24_domain::{
         news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
-use sos24_domain::entity::common::datetime::DateTimeError;
-use sos24_domain::entity::form::FormIdError;
-use sos24_domain::repository::form::FormRepositoryError;
+use sos24_use_case::interactor::form::FormUseCaseError;
 use sos24_use_case::{
     context::ContextError,
     interactor::{
@@ -23,7 +24,6 @@ use sos24_use_case::{
         user::UserUseCaseError,
     },
 };
-use sos24_use_case::interactor::form::FormUseCaseError;
 
 use super::AppError;
 
@@ -31,7 +31,9 @@ impl From<FormUseCaseError> for AppError {
     fn from(error: FormUseCaseError) -> Self {
         let message = error.to_string();
         match error {
-            FormUseCaseError::NotFound(_) => AppError::new(StatusCode::NOT_FOUND, "form/not-found".to_string(), message),
+            FormUseCaseError::NotFound(_) => {
+                AppError::new(StatusCode::NOT_FOUND, "form/not-found".to_string(), message)
+            }
             FormUseCaseError::DateTimeError(e) => e.into(),
             FormUseCaseError::FormRepositoryError(e) => e.into(),
             FormUseCaseError::ContextError(e) => e.into(),
@@ -325,7 +327,7 @@ impl From<DateTimeError> for AppError {
                 StatusCode::BAD_REQUEST,
                 "datetime/invalid-format".to_string(),
                 error.to_string(),
-            )
+            ),
         }
     }
 }
