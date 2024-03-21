@@ -6,19 +6,19 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use sos24_domain::entity::form::FormItemId;
 use sos24_domain::{
     entity::{
         common::{date::WithDate, datetime::DateTime},
         form::{
-            Form, FormDescription, FormId, FormItem, FormItemAllowNewline, FormItemDescription,
-            FormItemExtention, FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
+            Form, FormDescription, FormId, FormItem, FormItemAllowNewline, FormItemDescription
+            , FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
             FormItemMaxSelection, FormItemMin, FormItemMinLength, FormItemMinSelection,
             FormItemName, FormItemOption, FormItemRequired, FormTitle,
         },
     },
     repository::form::{FormRepository, FormRepositoryError},
 };
+use sos24_domain::entity::form::{FormItemExtension, FormItemId};
 
 use super::MongoDb;
 
@@ -126,7 +126,7 @@ pub enum FormItemKindDoc {
         max_selection: i32,
     },
     File {
-        extentions: Vec<String>,
+        extensions: Vec<String>,
         limit: i32,
     },
 }
@@ -166,7 +166,7 @@ impl From<FormItemKind> for FormItemKindDoc {
             FormItemKind::File(item) => {
                 let item = item.destruct();
                 Self::File {
-                    extentions: item.extentions.into_iter().map(|it| it.value()).collect(),
+                    extensions: item.extensions.into_iter().map(|it| it.value()).collect(),
                     limit: item.limit.value(),
                 }
             }
@@ -201,8 +201,8 @@ impl From<FormItemKindDoc> for FormItemKind {
                 FormItemMinSelection::new(min_selection),
                 FormItemMaxSelection::new(max_selection),
             ),
-            FormItemKindDoc::File { extentions, limit } => FormItemKind::new_file(
-                extentions.into_iter().map(FormItemExtention::new).collect(),
+            FormItemKindDoc::File { extensions, limit } => FormItemKind::new_file(
+                extensions.into_iter().map(FormItemExtension::new).collect(),
                 FormItemLimit::new(limit),
             ),
         }

@@ -230,8 +230,8 @@ impl FormItemKind {
         })
     }
 
-    pub fn new_file(extentions: Vec<FormItemExtention>, limit: FormItemLimit) -> Self {
-        Self::File(FormItemFile { extentions, limit })
+    pub fn new_file(extensions: Vec<FormItemExtension>, limit: FormItemLimit) -> Self {
+        Self::File(FormItemFile { extensions, limit })
     }
 }
 
@@ -334,7 +334,7 @@ pub struct DestructedFormItemChooseMany {
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormItemFile {
     #[getset(get = "pub")]
-    extentions: Vec<FormItemExtention>,
+    extensions: Vec<FormItemExtension>,
     #[getset(get = "pub")]
     limit: FormItemLimit,
 }
@@ -342,7 +342,7 @@ pub struct FormItemFile {
 impl FormItemFile {
     pub fn destruct(self) -> DestructedFormItemFile {
         DestructedFormItemFile {
-            extentions: self.extentions,
+            extensions: self.extensions,
             limit: self.limit,
         }
     }
@@ -350,7 +350,7 @@ impl FormItemFile {
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct DestructedFormItemFile {
-    pub extentions: Vec<FormItemExtention>,
+    pub extensions: Vec<FormItemExtension>,
     pub limit: FormItemLimit,
 }
 
@@ -362,5 +362,5 @@ impl_value_object!(FormItemMax(i32));
 impl_value_object!(FormItemOption(String));
 impl_value_object!(FormItemMinSelection(i32));
 impl_value_object!(FormItemMaxSelection(i32));
-impl_value_object!(FormItemExtention(String));
+impl_value_object!(FormItemExtension(String));
 impl_value_object!(FormItemLimit(i32));

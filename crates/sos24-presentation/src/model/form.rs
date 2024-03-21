@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 use sos24_use_case::dto::form::{CreateFormDto, FormDto, FormItemDto, FormItemKindDto};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -91,7 +92,7 @@ pub enum FormItem {
         name: String,
         description: String,
         required: bool,
-        extentions: Vec<String>,
+        extensions: Vec<String>,
         limit: i32,
     },
 }
@@ -160,13 +161,13 @@ impl From<FormItem> for FormItemDto {
                 name,
                 description,
                 required,
-                extentions,
+                extensions,
                 limit,
             } => FormItemDto::new(
                 name,
                 description,
                 required,
-                FormItemKindDto::File { extentions, limit },
+                FormItemKindDto::File { extensions, limit },
             ),
         }
     }
@@ -212,11 +213,11 @@ impl From<FormItemDto> for FormItem {
                 min_selection,
                 max_selection,
             },
-            FormItemKindDto::File { extentions, limit } => FormItem::File {
+            FormItemKindDto::File { extensions, limit } => FormItem::File {
                 name: value.name,
                 description: value.description,
                 required: value.required,
-                extentions,
+                extensions,
                 limit,
             },
         }

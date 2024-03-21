@@ -1,12 +1,13 @@
 use sos24_domain::entity::{
     common::{date::WithDate, datetime::DateTime},
     form::{
-        Form, FormDescription, FormItem, FormItemAllowNewline, FormItemDescription,
-        FormItemExtention, FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
+        Form, FormDescription, FormItem, FormItemAllowNewline, FormItemDescription
+        , FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
         FormItemMaxSelection, FormItemMin, FormItemMinLength, FormItemMinSelection, FormItemName,
         FormItemOption, FormItemRequired, FormTitle,
     },
 };
+use sos24_domain::entity::form::FormItemExtension;
 
 use crate::interactor::form::FormUseCaseError;
 
@@ -156,7 +157,7 @@ pub enum FormItemKindDto {
         max_selection: i32,
     },
     File {
-        extentions: Vec<String>,
+        extensions: Vec<String>,
         limit: i32,
     },
 }
@@ -191,8 +192,8 @@ impl ToEntity for FormItemKindDto {
                 FormItemMinSelection::new(min_selection),
                 FormItemMaxSelection::new(max_selection),
             )),
-            FormItemKindDto::File { extentions, limit } => Ok(FormItemKind::new_file(
-                extentions.into_iter().map(FormItemExtention::new).collect(),
+            FormItemKindDto::File { extensions, limit } => Ok(FormItemKind::new_file(
+                extensions.into_iter().map(FormItemExtension::new).collect(),
                 FormItemLimit::new(limit),
             )),
         }
@@ -235,7 +236,7 @@ impl FromEntity for FormItemKindDto {
             FormItemKind::File(item) => {
                 let item = item.destruct();
                 Self::File {
-                    extentions: item.extentions.into_iter().map(|it| it.value()).collect(),
+                    extensions: item.extensions.into_iter().map(|it| it.value()).collect(),
                     limit: item.limit.value(),
                 }
             }
