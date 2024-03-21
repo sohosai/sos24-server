@@ -29,5 +29,10 @@ pub trait FormAnswerRepository: Send + Sync + 'static {
         &self,
         form_id: FormId,
     ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError>;
+    async fn find_by_project_id_and_form_id(
+        &self,
+        project_id: ProjectId,
+        form_id: FormId,
+    ) -> Result<Option<WithDate<FormAnswer>>, FormAnswerRepositoryError>;
     async fn update(&self, form_answer: FormAnswer) -> Result<(), FormAnswerRepositoryError>;
 }

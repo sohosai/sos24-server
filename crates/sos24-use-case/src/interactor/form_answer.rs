@@ -27,6 +27,8 @@ use super::form::FormUseCaseError;
 pub enum FormAnswerUseCaseError {
     #[error("Project not found: {0:?}")]
     ProjectNotFound(ProjectId),
+    #[error("Already answered")]
+    AlreadyAnswered,
 
     #[error(transparent)]
     FormRepositoryError(#[from] FormRepositoryError),
@@ -62,6 +64,18 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
 
         let form_answer = form_answer.into_entity()?;
+
+        let prev_form_answer = self
+            .repositories
+            .form_answer_repository()
+            .find_by_project_id_and_form_id(
+                form_answer.project_id().clone(),
+                form_answer.form_id().clone(),
+            )
+            .await?;
+        if let Some(_) = prev_form_answer {
+            return Err(FormAnswerUseCaseError::AlreadyAnswered);
+        }
 
         let project = self
             .repositories

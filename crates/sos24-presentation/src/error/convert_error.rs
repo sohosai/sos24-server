@@ -58,6 +58,11 @@ impl From<FormAnswerUseCaseError> for AppError {
                 "form-answer/project-not-found".to_string(),
                 message,
             ),
+            FormAnswerUseCaseError::AlreadyAnswered => AppError::new(
+                StatusCode::CONFLICT,
+                "form-answer/already-answered".to_string(),
+                message,
+            ),
             FormAnswerUseCaseError::FormUseCaseError(e) => e.into(),
             FormAnswerUseCaseError::FormAnswerRepositoryError(e) => e.into(),
             FormAnswerUseCaseError::ProjectRepositoryError(e) => e.into(),
