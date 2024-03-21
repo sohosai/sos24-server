@@ -109,4 +109,18 @@ impl TryFrom<String> for NewsId {
 
 impl_value_object!(NewsTitle(String));
 impl_value_object!(NewsBody(String));
-impl_value_object!(NewsCategories(i32));
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewsCategories(u32);
+
+bitflags! {
+    impl NewsCategories: u32 {
+        const GENERAL = 1 << 0;
+        const FOODS_WITH_KITCHEN = 1 << 1;
+        const FOODS_WITHOUT_KITCHEN = 1 << 2;
+        const FOODS_WITHOUT_COOKING = 1 << 3;
+        const STAGE_1A = 1 << 4;
+        const STAGE_UNIVERSITY_HALL = 1 << 5;
+        const STAGE_UNITED = 1 << 6;
+    }
+}
