@@ -101,6 +101,7 @@ pub struct NewsSummary {
     id: String,
     title: String,
     categories: Vec<ProjectCategory>,
+    attributes: Vec<ProjectAttribute>,
     updated_at: String,
 }
 
@@ -109,6 +110,11 @@ impl From<NewsDto> for NewsSummary {
         NewsSummary {
             id: news.id,
             title: news.title,
+            attributes: news
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
             categories: news
                 .categories
                 .into_iter()
