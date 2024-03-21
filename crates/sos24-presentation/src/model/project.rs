@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+
+use sos24_use_case::dto::project::ProjectAttributeDto;
 use sos24_use_case::dto::{
     project::{CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto},
     user::UserDto,
@@ -11,7 +13,7 @@ pub struct CreateProject {
     group_name: String,
     kana_group_name: String,
     category: ProjectCategory,
-    attributes: i32,
+    attributes: Vec<ProjectAttribute>,
 }
 
 pub trait ConvertToCreateProjectDto {
@@ -27,7 +29,11 @@ impl ConvertToCreateProjectDto for (CreateProject, String) {
             project.group_name,
             project.kana_group_name,
             ProjectCategoryDto::from(project.category),
-            project.attributes,
+            project
+                .attributes
+                .into_iter()
+                .map(ProjectAttributeDto::from)
+                .collect(),
             owner_id,
         )
     }
@@ -40,7 +46,7 @@ pub struct UpdateProject {
     group_name: String,
     kana_group_name: String,
     category: ProjectCategory,
-    attributes: i32,
+    attributes: Vec<ProjectAttribute>,
     remarks: Option<String>,
 }
 
@@ -58,7 +64,11 @@ impl ConvertToUpdateProjectDto for (UpdateProject, String) {
             project.group_name,
             project.kana_group_name,
             ProjectCategoryDto::from(project.category),
-            project.attributes,
+            project
+                .attributes
+                .into_iter()
+                .map(ProjectAttributeDto::from)
+                .collect(),
             project.remarks,
         )
     }
@@ -73,7 +83,7 @@ pub struct Project {
     group_name: String,
     kana_group_name: String,
     category: ProjectCategory,
-    attributes: i32,
+    attributes: Vec<ProjectAttribute>,
     owner_id: String,
     sub_owner_id: Option<String>,
     remarks: Option<String>,
@@ -92,7 +102,11 @@ impl From<ProjectDto> for Project {
             group_name: project.group_name,
             kana_group_name: project.kana_group_name,
             category: ProjectCategory::from(project.category),
-            attributes: project.attributes,
+            attributes: project
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
             owner_id: project.owner_id,
             sub_owner_id: project.sub_owner_id,
             remarks: project.remarks,
@@ -149,7 +163,12 @@ impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
             kana_title: project.kana_title,
             group_name: project.group_name,
             category: project.category.to_string(),
-            attributes: project.attributes.to_string(),
+            attributes: project
+                .attributes
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>()
+                .join(";"),
             remark: project.remarks,
             created_at: project.created_at.to_rfc3339(),
         }
@@ -192,6 +211,40 @@ impl From<ProjectCategoryDto> for ProjectCategory {
             ProjectCategoryDto::Stage1A => ProjectCategory::Stage1A,
             ProjectCategoryDto::StageUniversityHall => ProjectCategory::StageUniversityHall,
             ProjectCategoryDto::StageUnited => ProjectCategory::StageUnited,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProjectAttribute {
+    Academic,
+    Art,
+    Official,
+    Inside,
+    Outside,
+}
+
+impl From<ProjectAttribute> for ProjectAttributeDto {
+    fn from(value: ProjectAttribute) -> Self {
+        match value {
+            ProjectAttribute::Academic => ProjectAttributeDto::Academic,
+            ProjectAttribute::Art => ProjectAttributeDto::Art,
+            ProjectAttribute::Official => ProjectAttributeDto::Official,
+            ProjectAttribute::Inside => ProjectAttributeDto::Inside,
+            ProjectAttribute::Outside => ProjectAttributeDto::Outside,
+        }
+    }
+}
+
+impl From<ProjectAttributeDto> for ProjectAttribute {
+    fn from(value: ProjectAttributeDto) -> Self {
+        match value {
+            ProjectAttributeDto::Academic => ProjectAttribute::Academic,
+            ProjectAttributeDto::Art => ProjectAttribute::Art,
+            ProjectAttributeDto::Official => ProjectAttribute::Official,
+            ProjectAttributeDto::Inside => ProjectAttribute::Inside,
+            ProjectAttributeDto::Outside => ProjectAttribute::Outside,
         }
     }
 }

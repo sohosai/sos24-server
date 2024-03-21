@@ -1,4 +1,5 @@
 use std::fmt;
+use std::fmt::Formatter;
 
 use sos24_domain::entity::{
     common::date::WithDate,
@@ -20,7 +21,7 @@ pub struct CreateProjectDto {
     group_name: String,
     kana_group_name: String,
     category: ProjectCategoryDto,
-    attributes: i32,
+    attributes: Vec<ProjectAttributeDto>,
     owner_id: String,
 }
 
@@ -31,7 +32,7 @@ impl CreateProjectDto {
         group_name: String,
         kana_group_name: String,
         category: ProjectCategoryDto,
-        attributes: i32,
+        attributes: Vec<ProjectAttributeDto>,
         owner_id: String,
     ) -> Self {
         Self {
@@ -56,7 +57,7 @@ impl ToEntity for CreateProjectDto {
             ProjectGroupName::new(self.group_name),
             ProjectKanaGroupName::new(self.kana_group_name),
             self.category.into_entity()?,
-            ProjectAttributes::new(self.attributes),
+            self.attributes.into_entity()?,
             UserId::new(self.owner_id),
         ))
     }
@@ -70,7 +71,7 @@ pub struct UpdateProjectDto {
     pub group_name: String,
     pub kana_group_name: String,
     pub category: ProjectCategoryDto,
-    pub attributes: i32,
+    pub attributes: Vec<ProjectAttributeDto>,
     pub remarks: Option<String>,
 }
 
@@ -82,7 +83,7 @@ impl UpdateProjectDto {
         group_name: String,
         kana_group_name: String,
         category: ProjectCategoryDto,
-        attributes: i32,
+        attributes: Vec<ProjectAttributeDto>,
         remarks: Option<String>,
     ) -> Self {
         Self {
@@ -107,7 +108,7 @@ pub struct ProjectDto {
     pub group_name: String,
     pub kana_group_name: String,
     pub category: ProjectCategoryDto,
-    pub attributes: i32,
+    pub attributes: Vec<ProjectAttributeDto>,
     pub owner_id: String,
     pub sub_owner_id: Option<String>,
     pub remarks: Option<String>,
@@ -128,7 +129,7 @@ impl FromEntity for ProjectDto {
             group_name: project.group_name.value(),
             kana_group_name: project.kana_group_name.value(),
             category: ProjectCategoryDto::from_entity(project.category),
-            attributes: project.attributes.value(),
+            attributes: Vec::from_entity(project.attributes),
             owner_id: project.owner_id.value(),
             sub_owner_id: project.sub_owner_id.map(|id| id.value()),
             remarks: project.remarks.map(|it| it.value()),
@@ -149,6 +150,7 @@ pub enum ProjectCategoryDto {
     StageUniversityHall,
     StageUnited,
 }
+
 impl fmt::Display for ProjectCategoryDto {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -191,5 +193,62 @@ impl FromEntity for ProjectCategoryDto {
             ProjectCategory::StageUniversityHall => ProjectCategoryDto::StageUniversityHall,
             ProjectCategory::StageUnited => ProjectCategoryDto::StageUnited,
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProjectAttributeDto {
+    Academic,
+    Art,
+    Official,
+    Inside,
+    Outside,
+}
+
+impl fmt::Display for ProjectAttributeDto {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            ProjectAttributeDto::Academic => write!(f, "学術企画"),
+            ProjectAttributeDto::Art => write!(f, "芸術際企画"),
+            ProjectAttributeDto::Official => write!(f, "委員会開催企画"),
+            ProjectAttributeDto::Inside => write!(f, "屋内企画"),
+            ProjectAttributeDto::Outside => write!(f, "屋外企画"),
+        }
+    }
+}
+
+impl ToEntity for Vec<ProjectAttributeDto> {
+    type Entity = ProjectAttributes;
+    type Error = ProjectUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        let res = self
+            .into_iter()
+            .map(|attribute| match attribute {
+                ProjectAttributeDto::Academic => ProjectAttributes::ACADEMIC,
+                ProjectAttributeDto::Art => ProjectAttributes::ART,
+                ProjectAttributeDto::Official => ProjectAttributes::OFFICIAL,
+                ProjectAttributeDto::Inside => ProjectAttributes::INSIDE,
+                ProjectAttributeDto::Outside => ProjectAttributes::OUTSIDE,
+            })
+            .fold(ProjectAttributes::empty(), |acc, attribute| acc | attribute);
+        Ok(res)
+    }
+}
+
+impl FromEntity for Vec<ProjectAttributeDto> {
+    type Entity = ProjectAttributes;
+
+    fn from_entity(entity: Self::Entity) -> Self {
+        entity
+            .into_iter()
+            .map(|attribute| match attribute {
+                ProjectAttributes::ACADEMIC => ProjectAttributeDto::Academic,
+                ProjectAttributes::ART => ProjectAttributeDto::Art,
+                ProjectAttributes::OFFICIAL => ProjectAttributeDto::Official,
+                ProjectAttributes::INSIDE => ProjectAttributeDto::Inside,
+                ProjectAttributes::OUTSIDE => ProjectAttributeDto::Outside,
+                _ => panic!("unknown project attribute: {attribute:?}"),
+            })
+            .collect()
     }
 }

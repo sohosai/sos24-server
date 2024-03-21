@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
+use thiserror::Error;
+
 use sos24_domain::{
     ensure,
     entity::{
         permission::{PermissionDeniedError, Permissions},
         project::{
-            ProjectAttributes, ProjectGroupName, ProjectId, ProjectIdError, ProjectKanaGroupName,
-            ProjectKanaTitle, ProjectRemarks, ProjectTitle,
+            ProjectGroupName, ProjectId, ProjectIdError, ProjectKanaGroupName, ProjectKanaTitle,
+            ProjectRemarks, ProjectTitle,
         },
         project_application_period::ProjectApplicationPeriod,
     },
@@ -15,7 +17,6 @@ use sos24_domain::{
         Repositories,
     },
 };
-use thiserror::Error;
 
 use crate::{
     context::{Context, ContextError, OwnedProject},
@@ -177,7 +178,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             ProjectKanaGroupName::new(project_data.kana_group_name),
         )?;
         new_project.set_category(&actor, project_data.category.into_entity()?)?;
-        new_project.set_attributes(&actor, ProjectAttributes::new(project_data.attributes))?;
+        new_project.set_attributes(&actor, project_data.attributes.into_entity()?)?;
         if let Some(remarks) = project_data.remarks {
             new_project.set_remarks(&actor, ProjectRemarks::new(remarks))?;
         }
