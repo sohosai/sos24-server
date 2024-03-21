@@ -171,30 +171,40 @@ schemas:
         $ref: "#/schemas/FormItemType"
       min:
         type: integer
+        nullable: true
       max:
         type: integer
+        nullable: true
       min_length:
         type: integer
+        nullable: true
       max_length:
         type: integer
+        nullable: true
       min_selection:
         type: integer
+        nullable: true
       max_selection:
         type: integer
+        nullable: true
       allow_newline:
         type: boolean
         example: false
+        nullable: true
       options:
         type: array
         items:
           type: string
+        nullable: true
       extensions:
         type: array
         items:
           type: string
+        nullable: true
       limit:
         type: integer
         example: 100
+        nullable: true
     example:
       string:
         name: "項目1"
@@ -216,7 +226,7 @@ schemas:
         description: "これは項目3です"
         required: true
         type: "choose_one"
-        options: ["オプション1", "オプション2", "オプション3"]
+        options: [ "オプション1", "オプション2", "オプション3" ]
       choose_many:
         name: "項目4"
         description: "これは項目4です"
@@ -224,13 +234,13 @@ schemas:
         type: "choose_many"
         min_selection: 1
         max_selection: 3
-        options: ["オプション1", "オプション2", "オプション3"]
+        options: [ "オプション1", "オプション2", "オプション3" ]
       file:
         name: "項目5"
         description: "これは項目5です"
         required: true
         type: "file"
-        extensions: [".jpg", ".png"]
+        extensions: [ ".jpg", ".png" ]
         limit: 2
   FormSummary:
     type: object
@@ -300,6 +310,7 @@ schemas:
       deleted_at:
         type: string
         format: date-time
+        nullable: true
         example: null
       categories:
         type: array

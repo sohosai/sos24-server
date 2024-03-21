@@ -171,6 +171,7 @@ schemas:
       deleted_at:
         type: string
         format: date-time
+        nullable: true
       items:
         $ref: "#/schemas/FormAnswerItem"
   CreateFormAnswer:
