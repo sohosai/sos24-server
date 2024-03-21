@@ -34,6 +34,7 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::NotFound(_) => {
                 AppError::new(StatusCode::NOT_FOUND, "form/not-found".to_string(), message)
             }
+            FormUseCaseError::ProjectUseCaseError(e) => e.into(),
             FormUseCaseError::DateTimeError(e) => e.into(),
             FormUseCaseError::FormRepositoryError(e) => e.into(),
             FormUseCaseError::ContextError(e) => e.into(),

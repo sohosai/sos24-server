@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use futures_util::{StreamExt, TryStreamExt};
 use mongodb::{
     bson::{self, doc},
@@ -6,19 +6,20 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
+use sos24_domain::entity::form::{FormItemExtension, FormItemId};
+use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::{
     entity::{
         common::{date::WithDate, datetime::DateTime},
         form::{
-            Form, FormDescription, FormId, FormItem, FormItemAllowNewline, FormItemDescription
-            , FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
-            FormItemMaxSelection, FormItemMin, FormItemMinLength, FormItemMinSelection,
-            FormItemName, FormItemOption, FormItemRequired, FormTitle,
+            Form, FormDescription, FormId, FormItem, FormItemAllowNewline, FormItemDescription,
+            FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength, FormItemMaxSelection,
+            FormItemMin, FormItemMinLength, FormItemMinSelection, FormItemName, FormItemOption,
+            FormItemRequired, FormTitle,
         },
     },
     repository::form::{FormRepository, FormRepositoryError},
 };
-use sos24_domain::entity::form::{FormItemExtension, FormItemId};
 
 use super::MongoDb;
 
@@ -30,6 +31,8 @@ pub struct FormDoc {
     description: String,
     starts_at: chrono::DateTime<chrono::Utc>,
     ends_at: chrono::DateTime<chrono::Utc>,
+    categories: i32,
+    attributes: i32,
     items: Vec<FormItemDoc>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
@@ -45,6 +48,8 @@ impl From<Form> for FormDoc {
             description: form.description.value(),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
+            categories: form.categories.bits() as i32,
+            attributes: form.attributes.bits() as i32,
             items: form.items.into_iter().map(FormItemDoc::from).collect(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
@@ -53,21 +58,26 @@ impl From<Form> for FormDoc {
     }
 }
 
-impl From<FormDoc> for WithDate<Form> {
-    fn from(value: FormDoc) -> Self {
-        WithDate::new(
+impl TryFrom<FormDoc> for WithDate<Form> {
+    type Error = anyhow::Error;
+    fn try_from(value: FormDoc) -> Result<Self, Self::Error> {
+        Ok(WithDate::new(
             Form::new(
                 FormId::new(value._id),
                 FormTitle::new(value.title),
                 FormDescription::new(value.description),
                 DateTime::new(value.starts_at),
                 DateTime::new(value.ends_at),
+                ProjectCategories::from_bits(value.categories as u32)
+                    .ok_or(anyhow!("cannot convert project categories"))?,
+                ProjectAttributes::from_bits(value.attributes as u32)
+                    .ok_or(anyhow!("cannot convert project attributes"))?,
                 value.items.into_iter().map(FormItemDoc::into).collect(),
             ),
             value.created_at,
             value.updated_at,
             value.deleted_at,
-        )
+        ))
     }
 }
 
@@ -229,9 +239,7 @@ impl FormRepository for MongoFormRepository {
             .await
             .context("Failed to list forms")?;
         let forms = form_list
-            .map(|doc| {
-                Ok::<_, anyhow::Error>(WithDate::from(doc.context("Failed to fetch form list")?))
-            })
+            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form list")?))
             .try_collect()
             .await?;
         Ok(forms)
@@ -252,7 +260,7 @@ impl FormRepository for MongoFormRepository {
             .find_one(doc! { "_id": id.value() }, None)
             .await
             .context("Failed to find form")?;
-        Ok(form_doc.map(WithDate::from))
+        Ok(form_doc.map(WithDate::try_from).transpose()?)
     }
 
     async fn delete_by_id(&self, id: FormId) -> Result<(), FormRepositoryError> {

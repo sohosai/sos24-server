@@ -3,6 +3,7 @@ use std::str::FromStr;
 use getset::Getters;
 use thiserror::Error;
 
+use crate::entity::project::{ProjectAttributes, ProjectCategories};
 use crate::impl_value_object;
 
 use super::common::datetime::DateTime;
@@ -19,10 +20,10 @@ pub struct Form {
     starts_at: DateTime,
     #[getset(get = "pub")]
     ends_at: DateTime,
-    // #[getset(get = "pub")]
-    // categories: NewsCategories,
-    // #[getset(get = "pub")]
-    // attributes: ProjectAttributes,
+    #[getset(get = "pub")]
+    categories: ProjectCategories,
+    #[getset(get = "pub")]
+    attributes: ProjectAttributes,
     #[getset(get = "pub")]
     items: Vec<FormItem>,
 }
@@ -33,6 +34,8 @@ impl Form {
         description: FormDescription,
         starts_at: DateTime,
         ends_at: DateTime,
+        categories: ProjectCategories,
+        attributes: ProjectAttributes,
         items: Vec<FormItem>,
     ) -> Self {
         Self {
@@ -41,6 +44,8 @@ impl Form {
             description,
             starts_at,
             ends_at,
+            categories,
+            attributes,
             items,
         }
     }
@@ -51,6 +56,8 @@ impl Form {
         description: FormDescription,
         starts_at: DateTime,
         ends_at: DateTime,
+        categories: ProjectCategories,
+        attributes: ProjectAttributes,
         items: Vec<FormItem>,
     ) -> Self {
         Self {
@@ -59,6 +66,8 @@ impl Form {
             description,
             starts_at,
             ends_at,
+            categories,
+            attributes,
             items,
         }
     }
@@ -70,6 +79,8 @@ impl Form {
             description: self.description,
             starts_at: self.starts_at,
             ends_at: self.ends_at,
+            categories: self.categories,
+            attributes: self.attributes,
             items: self.items,
         }
     }
@@ -82,6 +93,8 @@ pub struct DestructedForm {
     pub description: FormDescription,
     pub starts_at: DateTime,
     pub ends_at: DateTime,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
     pub items: Vec<FormItem>,
 }
 

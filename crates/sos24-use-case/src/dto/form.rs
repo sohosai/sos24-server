@@ -1,14 +1,15 @@
+use sos24_domain::entity::form::FormItemExtension;
 use sos24_domain::entity::{
     common::{date::WithDate, datetime::DateTime},
     form::{
-        Form, FormDescription, FormItem, FormItemAllowNewline, FormItemDescription
-        , FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength,
-        FormItemMaxSelection, FormItemMin, FormItemMinLength, FormItemMinSelection, FormItemName,
-        FormItemOption, FormItemRequired, FormTitle,
+        Form, FormDescription, FormItem, FormItemAllowNewline, FormItemDescription, FormItemKind,
+        FormItemLimit, FormItemMax, FormItemMaxLength, FormItemMaxSelection, FormItemMin,
+        FormItemMinLength, FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired,
+        FormTitle,
     },
 };
-use sos24_domain::entity::form::FormItemExtension;
 
+use crate::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::interactor::form::FormUseCaseError;
 
 use super::{FromEntity, ToEntity};
@@ -19,6 +20,8 @@ pub struct CreateFormDto {
     description: String,
     starts_at: String,
     ends_at: String,
+    categories: Vec<ProjectCategoryDto>,
+    attributes: Vec<ProjectAttributeDto>,
     items: Vec<FormItemDto>,
 }
 
@@ -28,6 +31,8 @@ impl CreateFormDto {
         description: String,
         starts_at: String,
         ends_at: String,
+        categories: Vec<ProjectCategoryDto>,
+        attributes: Vec<ProjectAttributeDto>,
         items: Vec<FormItemDto>,
     ) -> Self {
         Self {
@@ -35,6 +40,8 @@ impl CreateFormDto {
             description,
             starts_at,
             ends_at,
+            categories,
+            attributes,
             items,
         }
     }
@@ -49,6 +56,8 @@ impl ToEntity for CreateFormDto {
             FormDescription::new(self.description),
             DateTime::try_from(self.starts_at)?,
             DateTime::try_from(self.ends_at)?,
+            self.categories.into_entity()?,
+            self.attributes.into_entity()?,
             self.items
                 .into_iter()
                 .map(FormItemDto::into_entity)
@@ -64,6 +73,8 @@ pub struct FormDto {
     pub description: String,
     pub starts_at: chrono::DateTime<chrono::Utc>,
     pub ends_at: chrono::DateTime<chrono::Utc>,
+    pub categories: Vec<ProjectCategoryDto>,
+    pub attributes: Vec<ProjectAttributeDto>,
     pub items: Vec<FormItemDto>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
@@ -80,6 +91,8 @@ impl FromEntity for FormDto {
             description: form.description.value(),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
+            categories: Vec::from_entity(form.categories),
+            attributes: Vec::from_entity(form.attributes),
             items: form
                 .items
                 .into_iter()

@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::dto::form::{CreateFormDto, FormDto, FormItemDto, FormItemKindDto};
+use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
+
+use crate::model::project::{ProjectAttribute, ProjectCategory};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateForm {
@@ -8,6 +11,8 @@ pub struct CreateForm {
     description: String,
     starts_at: String,
     ends_at: String,
+    categories: Vec<ProjectCategory>,
+    attributes: Vec<ProjectAttribute>,
     items: Vec<FormItem>,
 }
 
@@ -18,6 +23,16 @@ impl From<CreateForm> for CreateFormDto {
             create_form.description,
             create_form.starts_at,
             create_form.ends_at,
+            create_form
+                .categories
+                .into_iter()
+                .map(ProjectCategoryDto::from)
+                .collect(),
+            create_form
+                .attributes
+                .into_iter()
+                .map(ProjectAttributeDto::from)
+                .collect(),
             create_form
                 .items
                 .into_iter()
@@ -34,6 +49,8 @@ pub struct Form {
     pub description: String,
     pub starts_at: String,
     pub ends_at: String,
+    pub categories: Vec<ProjectCategory>,
+    pub attributes: Vec<ProjectAttribute>,
     pub items: Vec<FormItem>,
     pub created_at: String,
     pub updated_at: String,
@@ -48,6 +65,16 @@ impl From<FormDto> for Form {
             description: form.description,
             starts_at: form.starts_at.to_rfc3339(),
             ends_at: form.ends_at.to_rfc3339(),
+            categories: form
+                .categories
+                .into_iter()
+                .map(ProjectCategory::from)
+                .collect(),
+            attributes: form
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
             items: form.items.into_iter().map(FormItem::from).collect(),
             created_at: form.created_at.to_rfc3339(),
             updated_at: form.updated_at.to_rfc3339(),

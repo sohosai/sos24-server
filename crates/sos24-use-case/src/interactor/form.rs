@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use thiserror::Error;
+
 use sos24_domain::{
     ensure,
     entity::{
@@ -12,8 +14,8 @@ use sos24_domain::{
         Repositories,
     },
 };
-use thiserror::Error;
 
+use crate::interactor::project::ProjectUseCaseError;
 use crate::{
     context::{Context, ContextError},
     dto::{
@@ -27,6 +29,8 @@ pub enum FormUseCaseError {
     #[error("Form not found: {0:?}")]
     NotFound(FormId),
 
+    #[error(transparent)]
+    ProjectUseCaseError(#[from] ProjectUseCaseError),
     #[error(transparent)]
     FormIdError(#[from] FormIdError),
     #[error(transparent)]
