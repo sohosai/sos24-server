@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
+use thiserror::Error;
+
 use sos24_domain::{
     ensure,
     entity::{
         permission::{PermissionDeniedError, Permissions},
         project::{
-            ProjectAttributes, ProjectGroupName, ProjectId, ProjectIdError, ProjectKanaGroupName,
-            ProjectKanaTitle, ProjectRemarks, ProjectTitle,
+            ProjectGroupName, ProjectId, ProjectIdError, ProjectKanaGroupName, ProjectKanaTitle,
+            ProjectRemarks, ProjectTitle,
         },
         project_application_period::ProjectApplicationPeriod,
     },
@@ -15,7 +17,6 @@ use sos24_domain::{
         Repositories,
     },
 };
-use thiserror::Error;
 
 use crate::{
     context::{Context, ContextError, OwnedProject},
@@ -177,7 +178,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             ProjectKanaGroupName::new(project_data.kana_group_name),
         )?;
         new_project.set_category(&actor, project_data.category.into_entity()?)?;
-        new_project.set_attributes(&actor, ProjectAttributes::new(project_data.attributes))?;
+        new_project.set_attributes(&actor, project_data.attributes.into_entity()?)?;
         if let Some(remarks) = project_data.remarks {
             new_project.set_remarks(&actor, ProjectRemarks::new(remarks))?;
         }
@@ -215,14 +216,13 @@ mod tests {
     use sos24_domain::{
         entity::{
             permission::PermissionDeniedError,
-            project::{ProjectAttributes, ProjectCategory},
-            project_application_period::ProjectApplicationPeriod,
-            user::UserRole,
+            project_application_period::ProjectApplicationPeriod, user::UserRole,
         },
         repository::Repositories,
         test::{fixture, repository::MockRepositories},
     };
 
+    use crate::dto::FromEntity;
     use crate::{
         context::Context,
         dto::project::{CreateProjectDto, ProjectCategoryDto, UpdateProjectDto},
@@ -298,8 +298,8 @@ mod tests {
                     fixture::project::kana_title1().value(),
                     fixture::project::group_name1().value(),
                     fixture::project::kana_group_name1().value(),
-                    ProjectCategoryDto::General,
-                    0,
+                    ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    Vec::from_entity(fixture::project::attributes1()),
                     fixture::user::id1().value(),
                 ),
             )
@@ -319,8 +319,6 @@ mod tests {
             .expect_find_by_owner_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id1(),
                 ))))
             });
@@ -339,8 +337,8 @@ mod tests {
                     fixture::project::kana_title1().value(),
                     fixture::project::group_name1().value(),
                     fixture::project::kana_group_name1().value(),
-                    ProjectCategoryDto::General,
-                    0,
+                    ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    Vec::from_entity(fixture::project::attributes1()),
                     fixture::user::id1().value(),
                 ),
             )
@@ -359,8 +357,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id1(),
                 ))))
             });
@@ -381,8 +377,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id2(),
                 ))))
             });
@@ -408,8 +402,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id2(),
                 ))))
             });
@@ -430,8 +422,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id1(),
                 ))))
             });
@@ -457,8 +447,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id2(),
                 ))))
             });
@@ -483,8 +471,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id1(),
                 ))))
             });
@@ -504,8 +490,8 @@ mod tests {
                     fixture::project::kana_title2().value(),
                     fixture::project::group_name2().value(),
                     fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::Stage1A,
-                    1,
+                    ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    Vec::from_entity(fixture::project::attributes2()),
                     None,
                 ),
             )
@@ -521,8 +507,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id2(),
                 ))))
             });
@@ -542,8 +526,8 @@ mod tests {
                     fixture::project::kana_title2().value(),
                     fixture::project::group_name2().value(),
                     fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::Stage1A,
-                    1,
+                    ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    Vec::from_entity(fixture::project::attributes2()),
                     None,
                 ),
             )
@@ -564,8 +548,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id2(),
                 ))))
             });
@@ -585,8 +567,8 @@ mod tests {
                     fixture::project::kana_title2().value(),
                     fixture::project::group_name2().value(),
                     fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::Stage1A,
-                    1,
+                    ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    Vec::from_entity(fixture::project::attributes2()),
                     None,
                 ),
             )

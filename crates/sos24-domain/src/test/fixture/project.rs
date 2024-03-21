@@ -30,11 +30,15 @@ pub fn kana_group_name1() -> ProjectKanaGroupName {
     ProjectKanaGroupName::new("そぽたんあいこうかい".to_string())
 }
 
-pub fn project1(
-    category: ProjectCategory,
-    attributes: ProjectAttributes,
-    owner_id: UserId,
-) -> Project {
+pub fn category1() -> ProjectCategory {
+    ProjectCategory::General
+}
+
+pub fn attributes1() -> ProjectAttributes {
+    ProjectAttributes::OUTSIDE
+}
+
+pub fn project1(owner_id: UserId) -> Project {
     Project::new(
         id1(),
         index1(),
@@ -42,8 +46,8 @@ pub fn project1(
         kana_title1(),
         group_name1(),
         kana_group_name1(),
-        category,
-        attributes,
+        category1(),
+        attributes1(),
         owner_id,
         None,
         None,
@@ -74,11 +78,15 @@ pub fn kana_group_name2() -> ProjectKanaGroupName {
     ProjectKanaGroupName::new("そぽたんれんめい".to_string())
 }
 
-pub fn project2(
-    category: ProjectCategory,
-    attributes: ProjectAttributes,
-    owner_id: UserId,
-) -> Project {
+pub fn category2() -> ProjectCategory {
+    ProjectCategory::Stage1A
+}
+
+pub fn attributes2() -> ProjectAttributes {
+    ProjectAttributes::INSIDE
+}
+
+pub fn project2(owner_id: UserId) -> Project {
     Project::new(
         id2(),
         index2(),
@@ -86,8 +94,8 @@ pub fn project2(
         kana_title2(),
         group_name2(),
         kana_group_name2(),
-        category,
-        attributes,
+        category2(),
+        attributes2(),
         owner_id,
         None,
         None,

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO news (id, title, body, categories) VALUES ($1, $2, $3, $4)",
+  "query": "INSERT INTO news (id, title, body, categories, attributes) VALUES ($1, $2, $3, $4, $5)",
   "describe": {
     "columns": [],
     "parameters": {
@@ -8,10 +8,11 @@
         "Uuid",
         "Text",
         "Text",
+        "Int4",
         "Int4"
       ]
     },
     "nullable": []
   },
-  "hash": "f1d746da481e9a0009bc453c3ecfe461ff269fe70124ddf23662e3a2e7f02bd3"
+  "hash": "a84dfe3428980c85cb2a4470c161739b0d67a36308e581dbde5d65b0b1f0ea8e"
 }

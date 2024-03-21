@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use thiserror::Error;
+
 use sos24_domain::{
     ensure,
     entity::{
@@ -17,7 +19,6 @@ use sos24_domain::{
         Repositories,
     },
 };
-use thiserror::Error;
 
 use crate::{
     context::{Context, ContextError},
@@ -222,11 +223,8 @@ mod tests {
 
     use sos24_domain::{
         entity::{
-            invitation::InvitationPosition,
-            permission::PermissionDeniedError,
-            project::{ProjectAttributes, ProjectCategory},
-            project_application_period::ProjectApplicationPeriod,
-            user::UserRole,
+            invitation::InvitationPosition, permission::PermissionDeniedError,
+            project_application_period::ProjectApplicationPeriod, user::UserRole,
         },
         repository::Repositories,
         test::{fixture, repository::MockRepositories},
@@ -299,8 +297,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id1(),
                 ))))
             });
@@ -340,8 +336,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id2(),
                 ))))
             });
@@ -396,8 +390,6 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
-                    ProjectCategory::General,
-                    ProjectAttributes::new(0),
                     fixture::user::id2(),
                 ))))
             });

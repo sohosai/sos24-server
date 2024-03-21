@@ -37,6 +37,11 @@
         "ordinal": 6,
         "name": "deleted_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "attributes",
+        "type_info": "Int4"
       }
     ],
     "parameters": {
@@ -51,7 +56,8 @@
       false,
       false,
       false,
-      true
+      true,
+      false
     ]
   },
   "hash": "170cadd4a22d095dab43bd34ba27378870a27d0c43a4a23e08d628ca6a037620"

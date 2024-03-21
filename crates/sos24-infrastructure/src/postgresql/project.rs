@@ -1,5 +1,7 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use futures_util::{StreamExt, TryStreamExt};
+use sqlx::prelude::{FromRow, Type};
+
 use sos24_domain::{
     entity::{
         common::date::WithDate,
@@ -11,7 +13,6 @@ use sos24_domain::{
     },
     repository::project::{ProjectRepository, ProjectRepositoryError},
 };
-use sqlx::prelude::{FromRow, Type};
 
 use super::Postgresql;
 
@@ -34,9 +35,10 @@ pub struct ProjectRow {
     deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl From<ProjectRow> for WithDate<Project> {
-    fn from(value: ProjectRow) -> Self {
-        WithDate::new(
+impl TryFrom<ProjectRow> for WithDate<Project> {
+    type Error = anyhow::Error;
+    fn try_from(value: ProjectRow) -> Result<Self, Self::Error> {
+        Ok(WithDate::new(
             Project::new(
                 ProjectId::new(value.id),
                 ProjectIndex::new(value.index),
@@ -45,7 +47,8 @@ impl From<ProjectRow> for WithDate<Project> {
                 ProjectGroupName::new(value.group_name),
                 ProjectKanaGroupName::new(value.kana_group_name),
                 value.category.into(),
-                ProjectAttributes::new(value.attributes),
+                ProjectAttributes::from_bits(value.attributes as u32)
+                    .ok_or(anyhow!("cannot convert project attributes"))?,
                 UserId::new(value.owner_id),
                 value.sub_owner_id.map(UserId::new),
                 value.remarks.map(ProjectRemarks::new),
@@ -53,7 +56,7 @@ impl From<ProjectRow> for WithDate<Project> {
             value.created_at,
             value.updated_at,
             value.deleted_at,
-        )
+        ))
     }
 }
 
@@ -114,11 +117,11 @@ impl ProjectRepository for PgProjectRepository {
             ProjectRow,
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE deleted_at IS NULL"#
         )
-        .fetch(&*self.db)
-        .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
-        .try_collect()
-        .await
-        .context("Failed to fetch project list")?;
+            .fetch(&*self.db)
+            .map(|row| WithDate::try_from(row?))
+            .try_collect()
+            .await
+            .context("Failed to fetch project list")?;
         Ok(project_list)
     }
 
@@ -132,13 +135,13 @@ impl ProjectRepository for PgProjectRepository {
         project.group_name.value(),
         project.kana_group_name.value(),
         ProjectCategoryRow::from(project.category) as ProjectCategoryRow,
-        project.attributes.value(),
+        project.attributes.bits() as i32,
         project.owner_id.value(),
         project.remarks.map(|it| it.value()),
         )
-        .execute(&*self.db)
-        .await
-        .context("Failed to create project")?;
+            .execute(&*self.db)
+            .await
+            .context("Failed to create project")?;
         Ok(())
     }
 
@@ -151,10 +154,12 @@ impl ProjectRepository for PgProjectRepository {
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
-        .fetch_optional(&*self.db)
-        .await
-        .context("Failed to fetch project")?;
-        Ok(project_row.map(WithDate::from))
+            .fetch_optional(&*self.db)
+            .await
+            .context("Failed to fetch project")?;
+        Ok(project_row
+            .map(|project| WithDate::try_from(project))
+            .transpose()?)
     }
 
     async fn find_by_owner_id(
@@ -166,10 +171,12 @@ impl ProjectRepository for PgProjectRepository {
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE owner_id = $1 AND deleted_at IS NULL"#,
             owner_id.value()
         )
-        .fetch_optional(&*self.db)
-        .await
-        .context("Failed to fetch project")?;
-        Ok(project_row.map(WithDate::from))
+            .fetch_optional(&*self.db)
+            .await
+            .context("Failed to fetch project")?;
+        Ok(project_row
+            .map(|project| WithDate::try_from(project))
+            .transpose()?)
     }
 
     async fn find_by_sub_owner_id(
@@ -181,9 +188,11 @@ impl ProjectRepository for PgProjectRepository {
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
             sub_owner_id.value()
         ).fetch_optional(&*self.db)
-        .await
-        .context("Failed to fetch project")?;
-        Ok(project_row.map(WithDate::from))
+            .await
+            .context("Failed to fetch project")?;
+        Ok(project_row
+            .map(|project| WithDate::try_from(project))
+            .transpose()?)
     }
 
     async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {
@@ -196,14 +205,14 @@ impl ProjectRepository for PgProjectRepository {
             project.group_name.value(),
             project.kana_group_name.value(),
             ProjectCategoryRow::from(project.category) as ProjectCategoryRow,
-            project.attributes.value(),
+            project.attributes.bits() as i32,
             project.owner_id.value(),
             project.sub_owner_id.map(|it| it.value()),
             project.remarks.map(|it| it.value()),
         )
-        .execute(&*self.db)
-        .await
-        .context("Failed to update project")?;
+            .execute(&*self.db)
+            .await
+            .context("Failed to update project")?;
         Ok(())
     }
 

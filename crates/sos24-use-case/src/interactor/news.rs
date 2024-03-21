@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
+use thiserror::Error;
+
 use sos24_domain::{
     ensure,
     entity::{
-        news::{NewsBody, NewsCategories, NewsId, NewsIdError, NewsTitle},
+        news::{NewsBody, NewsId, NewsIdError, NewsTitle},
         permission::{PermissionDeniedError, Permissions},
     },
     repository::{
@@ -11,8 +13,8 @@ use sos24_domain::{
         Repositories,
     },
 };
-use thiserror::Error;
 
+use crate::interactor::project::ProjectUseCaseError;
 use crate::{context::Context, dto::FromEntity};
 use crate::{
     context::ContextError,
@@ -27,6 +29,8 @@ pub enum NewsUseCaseError {
     #[error("News not found: {0:?}")]
     NotFound(NewsId),
 
+    #[error(transparent)]
+    ProjectUseCaseError(#[from] ProjectUseCaseError),
     #[error(transparent)]
     ContextError(#[from] ContextError),
     #[error(transparent)]
@@ -118,9 +122,14 @@ impl<R: Repositories> NewsUseCase<R> {
             new_news.set_body(&actor, new_body)?;
         }
 
-        let new_categories = NewsCategories::new(news_data.categories);
+        let new_categories = news_data.categories.into_entity()?;
         if new_news.categories() != &new_categories {
             new_news.set_categories(&actor, new_categories)?;
+        }
+
+        let new_attributes = news_data.attributes.into_entity()?;
+        if new_news.attributes() != &new_attributes {
+            new_news.set_attributes(&actor, new_attributes)?;
         }
 
         self.repositories.news_repository().update(new_news).await?;
@@ -152,6 +161,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
+    use crate::dto::FromEntity;
     use crate::{
         context::Context,
         dto::news::{CreateNewsDto, UpdateNewsDto},
@@ -188,7 +198,8 @@ mod tests {
                 CreateNewsDto::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
-                    fixture::news::categories1().value(),
+                    Vec::from_entity(fixture::news::categories1()),
+                    Vec::from_entity(fixture::news::attributes1()),
                 ),
             )
             .await;
@@ -216,7 +227,8 @@ mod tests {
                 CreateNewsDto::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
-                    fixture::news::categories1().value(),
+                    Vec::from_entity(fixture::news::categories1()),
+                    Vec::from_entity(fixture::news::attributes1()),
                 ),
             )
             .await;
@@ -260,7 +272,8 @@ mod tests {
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),
-                    fixture::news::categories2().value(),
+                    Vec::from_entity(fixture::news::categories2()),
+                    Vec::from_entity(fixture::news::attributes2()),
                 ),
             )
             .await;
@@ -293,7 +306,8 @@ mod tests {
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),
-                    fixture::news::categories2().value(),
+                    Vec::from_entity(fixture::news::categories2()),
+                    Vec::from_entity(fixture::news::attributes2()),
                 ),
             )
             .await;
