@@ -1,6 +1,8 @@
+use bitflags::bitflags;
 use getset::Getters;
 use thiserror::Error;
 
+use crate::entity::project::ProjectAttributes;
 use crate::{ensure, impl_value_object};
 
 use super::{
@@ -18,24 +20,39 @@ pub struct News {
     body: NewsBody,
     #[getset(get = "pub")]
     categories: NewsCategories,
+    #[getset(get = "pub")]
+    attributes: ProjectAttributes,
 }
 
 impl News {
-    pub fn new(id: NewsId, title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
+    pub fn new(
+        id: NewsId,
+        title: NewsTitle,
+        body: NewsBody,
+        categories: NewsCategories,
+        attributes: ProjectAttributes,
+    ) -> Self {
         Self {
             id,
             title,
             body,
             categories,
+            attributes,
         }
     }
 
-    pub fn create(title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
+    pub fn create(
+        title: NewsTitle,
+        body: NewsBody,
+        categories: NewsCategories,
+        attributes: ProjectAttributes,
+    ) -> Self {
         Self {
             id: NewsId::new(uuid::Uuid::new_v4()),
             title,
             body,
             categories,
+            attributes,
         }
     }
 
@@ -45,6 +62,7 @@ impl News {
             title: self.title,
             body: self.body,
             categories: self.categories,
+            attributes: self.attributes,
         }
     }
 }
@@ -55,6 +73,7 @@ pub struct DestructedNews {
     pub title: NewsTitle,
     pub body: NewsBody,
     pub categories: NewsCategories,
+    pub attributes: ProjectAttributes,
 }
 
 impl News {
@@ -91,6 +110,16 @@ impl News {
         self.categories = categories;
         Ok(())
     }
+
+    pub fn set_attributes(
+        &mut self,
+        actor: &Actor,
+        attributes: ProjectAttributes,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.attributes = attributes;
+        Ok(())
+    }
 }
 
 impl_value_object!(NewsId(uuid::Uuid));
@@ -99,6 +128,7 @@ pub enum NewsIdError {
     #[error("Invalid UUID")]
     InvalidUuid,
 }
+
 impl TryFrom<String> for NewsId {
     type Error = NewsIdError;
     fn try_from(value: String) -> Result<Self, Self::Error> {

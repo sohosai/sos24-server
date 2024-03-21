@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+
 use sos24_domain::{
     entity::{
         common::email::EmailError,
@@ -68,6 +69,7 @@ impl From<NewsUseCaseError> for AppError {
             NewsUseCaseError::NotFound(_) => {
                 AppError::new(StatusCode::NOT_FOUND, "news/not-found".to_string(), message)
             }
+            NewsUseCaseError::ProjectUseCaseError(e) => e.into(),
             NewsUseCaseError::ContextError(e) => e.into(),
             NewsUseCaseError::NewsRepositoryError(e) => e.into(),
             NewsUseCaseError::NewsIdError(e) => e.into(),
