@@ -1,5 +1,5 @@
-use crate::entity::news::{News, NewsBody, NewsCategories, NewsId, NewsTitle};
-use crate::entity::project::ProjectAttributes;
+use crate::entity::news::{News, NewsBody, NewsId, NewsTitle};
+use crate::entity::project::{ProjectAttributes, ProjectCategories};
 
 pub fn id1() -> NewsId {
     NewsId::new(uuid::Uuid::from_u128(1))
@@ -13,8 +13,8 @@ pub fn body1() -> NewsBody {
     NewsBody::new("本文1".to_string())
 }
 
-pub fn categories1() -> NewsCategories {
-    NewsCategories::GENERAL
+pub fn categories1() -> ProjectCategories {
+    ProjectCategories::GENERAL
 }
 
 pub fn attributes1() -> ProjectAttributes {
@@ -37,8 +37,8 @@ pub fn body2() -> NewsBody {
     NewsBody::new("本文2".to_string())
 }
 
-pub fn categories2() -> NewsCategories {
-    NewsCategories::STAGE_1A
+pub fn categories2() -> ProjectCategories {
+    ProjectCategories::STAGE_1A
 }
 
 pub fn attributes2() -> ProjectAttributes {

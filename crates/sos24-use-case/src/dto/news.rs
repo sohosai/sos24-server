@@ -1,4 +1,4 @@
-use sos24_domain::entity::news::NewsCategories;
+use sos24_domain::entity::project::ProjectCategories;
 use sos24_domain::entity::{
     common::date::WithDate,
     news::{News, NewsBody, NewsId, NewsTitle},
@@ -6,6 +6,7 @@ use sos24_domain::entity::{
 
 use crate::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::interactor::news::NewsUseCaseError;
+use crate::interactor::project::ProjectUseCaseError;
 
 use super::{FromEntity, ToEntity};
 
@@ -117,38 +118,38 @@ impl FromEntity for NewsDto {
 }
 
 impl ToEntity for Vec<ProjectCategoryDto> {
-    type Entity = NewsCategories;
-    type Error = NewsUseCaseError;
+    type Entity = ProjectCategories;
+    type Error = ProjectUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         let res = self
             .into_iter()
             .map(|category| match category {
-                ProjectCategoryDto::General => NewsCategories::GENERAL,
-                ProjectCategoryDto::FoodsWithKitchen => NewsCategories::FOODS_WITH_KITCHEN,
-                ProjectCategoryDto::FoodsWithoutKitchen => NewsCategories::FOODS_WITHOUT_KITCHEN,
-                ProjectCategoryDto::FoodsWithoutCooking => NewsCategories::FOODS_WITHOUT_COOKING,
-                ProjectCategoryDto::Stage1A => NewsCategories::STAGE_1A,
-                ProjectCategoryDto::StageUniversityHall => NewsCategories::STAGE_UNIVERSITY_HALL,
-                ProjectCategoryDto::StageUnited => NewsCategories::STAGE_UNITED,
+                ProjectCategoryDto::General => ProjectCategories::GENERAL,
+                ProjectCategoryDto::FoodsWithKitchen => ProjectCategories::FOODS_WITH_KITCHEN,
+                ProjectCategoryDto::FoodsWithoutKitchen => ProjectCategories::FOODS_WITHOUT_KITCHEN,
+                ProjectCategoryDto::FoodsWithoutCooking => ProjectCategories::FOODS_WITHOUT_COOKING,
+                ProjectCategoryDto::Stage1A => ProjectCategories::STAGE_1A,
+                ProjectCategoryDto::StageUniversityHall => ProjectCategories::STAGE_UNIVERSITY_HALL,
+                ProjectCategoryDto::StageUnited => ProjectCategories::STAGE_UNITED,
             })
-            .fold(NewsCategories::empty(), |acc, category| acc | category);
+            .fold(ProjectCategories::empty(), |acc, category| acc | category);
         Ok(res)
     }
 }
 
 impl FromEntity for Vec<ProjectCategoryDto> {
-    type Entity = NewsCategories;
+    type Entity = ProjectCategories;
     fn from_entity(entity: Self::Entity) -> Self {
         entity
             .into_iter()
             .map(|category| match category {
-                NewsCategories::GENERAL => ProjectCategoryDto::General,
-                NewsCategories::FOODS_WITH_KITCHEN => ProjectCategoryDto::FoodsWithKitchen,
-                NewsCategories::FOODS_WITHOUT_KITCHEN => ProjectCategoryDto::FoodsWithoutKitchen,
-                NewsCategories::FOODS_WITHOUT_COOKING => ProjectCategoryDto::FoodsWithoutCooking,
-                NewsCategories::STAGE_1A => ProjectCategoryDto::Stage1A,
-                NewsCategories::STAGE_UNIVERSITY_HALL => ProjectCategoryDto::StageUniversityHall,
-                NewsCategories::STAGE_UNITED => ProjectCategoryDto::StageUnited,
+                ProjectCategories::GENERAL => ProjectCategoryDto::General,
+                ProjectCategories::FOODS_WITH_KITCHEN => ProjectCategoryDto::FoodsWithKitchen,
+                ProjectCategories::FOODS_WITHOUT_KITCHEN => ProjectCategoryDto::FoodsWithoutKitchen,
+                ProjectCategories::FOODS_WITHOUT_COOKING => ProjectCategoryDto::FoodsWithoutCooking,
+                ProjectCategories::STAGE_1A => ProjectCategoryDto::Stage1A,
+                ProjectCategories::STAGE_UNIVERSITY_HALL => ProjectCategoryDto::StageUniversityHall,
+                ProjectCategories::STAGE_UNITED => ProjectCategoryDto::StageUnited,
                 _ => panic!("unknown project category: {category:?}"),
             })
             .collect()
