@@ -1,11 +1,18 @@
 use anyhow::Context;
-use mongodb::{bson, Collection};
+use mongodb::{
+    bson::{self, doc},
+    Collection,
+};
 use serde::{Deserialize, Serialize};
 use sos24_domain::{
     entity::{
         common::date::WithDate,
-        form::FormId,
-        form_answer::{FormAnswer, FormAnswerId, FormAnswerItem, FormAnswerItemKind},
+        form::{FormId, FormItemId},
+        form_answer::{
+            FormAnswer, FormAnswerId, FormAnswerItem, FormAnswerItemChooseMany,
+            FormAnswerItemChooseOne, FormAnswerItemFile, FormAnswerItemInt, FormAnswerItemKind,
+            FormAnswerItemString,
+        },
         project::ProjectId,
     },
     repository::form_answer::{FormAnswerRepository, FormAnswerRepositoryError},
@@ -22,6 +29,9 @@ pub struct FormAnswerDoc {
     #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
     form_id: uuid::Uuid,
     items: Vec<FormAnswerItemDoc>,
+    created_at: chrono::DateTime<chrono::Utc>,
+    updated_at: chrono::DateTime<chrono::Utc>,
+    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<FormAnswer> for FormAnswerDoc {
@@ -36,7 +46,31 @@ impl From<FormAnswer> for FormAnswerDoc {
                 .into_iter()
                 .map(FormAnswerItemDoc::from)
                 .collect(),
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            deleted_at: None,
         }
+    }
+}
+
+impl TryFrom<FormAnswerDoc> for WithDate<FormAnswer> {
+    type Error = anyhow::Error;
+    fn try_from(form_answer_doc: FormAnswerDoc) -> Result<Self, Self::Error> {
+        Ok(WithDate::new(
+            FormAnswer::new(
+                FormAnswerId::new(form_answer_doc._id),
+                ProjectId::new(form_answer_doc.project_id),
+                FormId::new(form_answer_doc.form_id),
+                form_answer_doc
+                    .items
+                    .into_iter()
+                    .map(FormAnswerItem::from)
+                    .collect(),
+            ),
+            form_answer_doc.created_at,
+            form_answer_doc.updated_at,
+            form_answer_doc.deleted_at,
+        ))
     }
 }
 
@@ -54,6 +88,15 @@ impl From<FormAnswerItem> for FormAnswerItemDoc {
             item_id: form_answer_item.item_id.value(),
             kind: form_answer_item.kind.into(),
         }
+    }
+}
+
+impl From<FormAnswerItemDoc> for FormAnswerItem {
+    fn from(form_answer_item_doc: FormAnswerItemDoc) -> Self {
+        FormAnswerItem::new(
+            FormItemId::new(form_answer_item_doc.item_id),
+            form_answer_item_doc.kind.into(),
+        )
     }
 }
 
@@ -76,6 +119,28 @@ impl From<FormAnswerItemKind> for FormAnswerItemKindDoc {
                 FormAnswerItemKindDoc::ChooseMany(value.value())
             }
             FormAnswerItemKind::File(value) => FormAnswerItemKindDoc::File(value.value()),
+        }
+    }
+}
+
+impl From<FormAnswerItemKindDoc> for FormAnswerItemKind {
+    fn from(form_answer_item_kind_doc: FormAnswerItemKindDoc) -> Self {
+        match form_answer_item_kind_doc {
+            FormAnswerItemKindDoc::String(value) => {
+                FormAnswerItemKind::String(FormAnswerItemString::new(value))
+            }
+            FormAnswerItemKindDoc::Int(value) => {
+                FormAnswerItemKind::Int(FormAnswerItemInt::new(value))
+            }
+            FormAnswerItemKindDoc::ChooseOne(value) => {
+                FormAnswerItemKind::ChooseOne(FormAnswerItemChooseOne::new(value))
+            }
+            FormAnswerItemKindDoc::ChooseMany(value) => {
+                FormAnswerItemKind::ChooseMany(FormAnswerItemChooseMany::new(value))
+            }
+            FormAnswerItemKindDoc::File(value) => {
+                FormAnswerItemKind::File(FormAnswerItemFile::new(value))
+            }
         }
     }
 }
