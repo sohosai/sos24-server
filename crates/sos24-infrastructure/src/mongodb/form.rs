@@ -128,35 +128,42 @@ pub enum FormItemKindDoc {
 impl From<FormItemKind> for FormItemKindDoc {
     fn from(value: FormItemKind) -> Self {
         match value {
-            FormItemKind::String {
-                min_length,
-                max_length,
-                allow_newline,
-            } => Self::String {
-                min_length: min_length.value(),
-                max_length: max_length.value(),
-                allow_newline: allow_newline.value(),
-            },
-            FormItemKind::Int { min, max } => Self::Int {
-                min: min.value(),
-                max: max.value(),
-            },
-            FormItemKind::ChooseOne { options } => Self::ChooseOne {
-                options: options.into_iter().map(|it| it.value()).collect(),
-            },
-            FormItemKind::ChooseMany {
-                options,
-                min_selection,
-                max_selection,
-            } => Self::ChooseMany {
-                options: options.into_iter().map(|it| it.value()).collect(),
-                min_selection: min_selection.value(),
-                max_selection: max_selection.value(),
-            },
-            FormItemKind::File { extentions, limit } => Self::File {
-                extentions: extentions.into_iter().map(|it| it.value()).collect(),
-                limit: limit.value(),
-            },
+            FormItemKind::String(item) => {
+                let item = item.destruct();
+                Self::String {
+                    min_length: item.min_length.value(),
+                    max_length: item.max_length.value(),
+                    allow_newline: item.allow_newline.value(),
+                }
+            }
+            FormItemKind::Int(item) => {
+                let item = item.destruct();
+                Self::Int {
+                    min: item.min.value(),
+                    max: item.max.value(),
+                }
+            }
+            FormItemKind::ChooseOne(item) => {
+                let item = item.destruct();
+                Self::ChooseOne {
+                    options: item.options.into_iter().map(|it| it.value()).collect(),
+                }
+            }
+            FormItemKind::ChooseMany(item) => {
+                let item = item.destruct();
+                Self::ChooseMany {
+                    options: item.options.into_iter().map(|it| it.value()).collect(),
+                    min_selection: item.min_selection.value(),
+                    max_selection: item.max_selection.value(),
+                }
+            }
+            FormItemKind::File(item) => {
+                let item = item.destruct();
+                Self::File {
+                    extentions: item.extentions.into_iter().map(|it| it.value()).collect(),
+                    limit: item.limit.value(),
+                }
+            }
         }
     }
 }
@@ -168,31 +175,30 @@ impl From<FormItemKindDoc> for FormItemKind {
                 min_length,
                 max_length,
                 allow_newline,
-            } => FormItemKind::String {
-                min_length: FormItemMinLength::new(min_length),
-                max_length: FormItemMaxLength::new(max_length),
-                allow_newline: FormItemAllowNewline::new(allow_newline),
-            },
-            FormItemKindDoc::Int { min, max } => FormItemKind::Int {
-                min: FormItemMin::new(min),
-                max: FormItemMax::new(max),
-            },
-            FormItemKindDoc::ChooseOne { options } => FormItemKind::ChooseOne {
-                options: options.into_iter().map(FormItemOption::new).collect(),
-            },
+            } => FormItemKind::new_string(
+                FormItemMinLength::new(min_length),
+                FormItemMaxLength::new(max_length),
+                FormItemAllowNewline::new(allow_newline),
+            ),
+            FormItemKindDoc::Int { min, max } => {
+                FormItemKind::new_int(FormItemMin::new(min), FormItemMax::new(max))
+            }
+            FormItemKindDoc::ChooseOne { options } => {
+                FormItemKind::new_choose_one(options.into_iter().map(FormItemOption::new).collect())
+            }
             FormItemKindDoc::ChooseMany {
                 options,
                 min_selection,
                 max_selection,
-            } => FormItemKind::ChooseMany {
-                options: options.into_iter().map(FormItemOption::new).collect(),
-                min_selection: FormItemMinSelection::new(min_selection),
-                max_selection: FormItemMaxSelection::new(max_selection),
-            },
-            FormItemKindDoc::File { extentions, limit } => FormItemKind::File {
-                extentions: extentions.into_iter().map(FormItemExtention::new).collect(),
-                limit: FormItemLimit::new(limit),
-            },
+            } => FormItemKind::new_choose_many(
+                options.into_iter().map(FormItemOption::new).collect(),
+                FormItemMinSelection::new(min_selection),
+                FormItemMaxSelection::new(max_selection),
+            ),
+            FormItemKindDoc::File { extentions, limit } => FormItemKind::new_file(
+                extentions.into_iter().map(FormItemExtention::new).collect(),
+                FormItemLimit::new(limit),
+            ),
         }
     }
 }
