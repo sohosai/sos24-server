@@ -1,4 +1,5 @@
 use sos24_domain::entity::{
+    common::date::WithDate,
     form::{FormId, FormItemId},
     form_answer::{
         FormAnswer, FormAnswerItem, FormAnswerItemChooseMany, FormAnswerItemChooseOne,
@@ -9,7 +10,7 @@ use sos24_domain::entity::{
 
 use crate::interactor::form::FormUseCaseError;
 
-use super::ToEntity;
+use super::{FromEntity, ToEntity};
 
 #[derive(Debug)]
 pub struct CreateFormAnswerDto {
@@ -44,9 +45,34 @@ impl ToEntity for CreateFormAnswerDto {
 }
 
 #[derive(Debug)]
+pub struct FormAnswerDto {
+    pub id: String,
+    pub project_id: String,
+    pub form_id: String,
+    pub items: Vec<FormAnswerItemDto>,
+}
+
+impl FromEntity for FormAnswerDto {
+    type Entity = WithDate<FormAnswer>;
+    fn from_entity(entity: Self::Entity) -> Self {
+        let form_answer = entity.value.destruct();
+        Self {
+            id: form_answer.id.value().to_string(),
+            project_id: form_answer.project_id.value().to_string(),
+            form_id: form_answer.form_id.value().to_string(),
+            items: form_answer
+                .items
+                .into_iter()
+                .map(FormAnswerItemDto::from_entity)
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct FormAnswerItemDto {
-    item_id: String,
-    kind: FormAnswerItemKindDto,
+    pub item_id: String,
+    pub kind: FormAnswerItemKindDto,
 }
 
 impl FormAnswerItemDto {
@@ -63,6 +89,17 @@ impl ToEntity for FormAnswerItemDto {
             FormItemId::try_from(self.item_id)?,
             self.kind.into_entity()?,
         ))
+    }
+}
+
+impl FromEntity for FormAnswerItemDto {
+    type Entity = FormAnswerItem;
+    fn from_entity(entity: Self::Entity) -> Self {
+        let entity = entity.destruct();
+        Self::new(
+            entity.item_id.value().to_string(),
+            FormAnswerItemKindDto::from_entity(entity.kind),
+        )
     }
 }
 
@@ -94,6 +131,27 @@ impl ToEntity for FormAnswerItemKindDto {
             )),
             FormAnswerItemKindDto::File(value) => {
                 Ok(FormAnswerItemKind::File(FormAnswerItemFile::new(value)))
+            }
+        }
+    }
+}
+
+impl FromEntity for FormAnswerItemKindDto {
+    type Entity = FormAnswerItemKind;
+    fn from_entity(entity: Self::Entity) -> Self {
+        match entity {
+            FormAnswerItemKind::String(value) => {
+                FormAnswerItemKindDto::String(value.value().to_string())
+            }
+            FormAnswerItemKind::Int(value) => FormAnswerItemKindDto::Int(value.value()),
+            FormAnswerItemKind::ChooseOne(value) => {
+                FormAnswerItemKindDto::ChooseOne(value.value().to_string())
+            }
+            FormAnswerItemKind::ChooseMany(value) => {
+                FormAnswerItemKindDto::ChooseMany(value.value().to_vec())
+            }
+            FormAnswerItemKind::File(value) => {
+                FormAnswerItemKindDto::File(value.value().to_string())
             }
         }
     }

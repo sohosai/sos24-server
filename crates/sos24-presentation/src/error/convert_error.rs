@@ -2,6 +2,7 @@ use axum::http::StatusCode;
 
 use sos24_domain::entity::common::datetime::DateTimeError;
 use sos24_domain::entity::form::{FormIdError, FormItemIdError};
+use sos24_domain::entity::form_answer::FormAnswerIdError;
 use sos24_domain::repository::form::FormRepositoryError;
 use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
 use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
@@ -54,6 +55,11 @@ impl From<FormAnswerUseCaseError> for AppError {
     fn from(error: FormAnswerUseCaseError) -> Self {
         let message = error.to_string();
         match error {
+            FormAnswerUseCaseError::NotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form-answer/not-found".to_string(),
+                message,
+            ),
             FormAnswerUseCaseError::ProjectNotFound(_) => AppError::new(
                 StatusCode::NOT_FOUND,
                 "form-answer/project-not-found".to_string(),
@@ -72,6 +78,7 @@ impl From<FormAnswerUseCaseError> for AppError {
             FormAnswerUseCaseError::InternalError(e) => e.into(),
             FormAnswerUseCaseError::FormRepositoryError(e) => e.into(),
             FormAnswerUseCaseError::VerifyFormAnswerError(e) => e.into(),
+            FormAnswerUseCaseError::FormAnswerIdError(e) => e.into(),
         }
     }
 }
@@ -325,6 +332,18 @@ impl From<FormItemIdError> for AppError {
             FormItemIdError::InvalidUuid => AppError::new(
                 StatusCode::BAD_REQUEST,
                 "form-item/invalid-uuid".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<FormAnswerIdError> for AppError {
+    fn from(error: FormAnswerIdError) -> Self {
+        match error {
+            FormAnswerIdError::InvalidUuid => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-uuid".to_string(),
                 error.to_string(),
             ),
         }

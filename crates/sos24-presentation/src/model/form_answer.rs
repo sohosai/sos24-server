@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sos24_use_case::dto::form_answer::{
-    CreateFormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
+    CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -21,6 +21,29 @@ impl From<CreateFormAnswer> for CreateFormAnswerDto {
                 .map(FormAnswerItemDto::from)
                 .collect(),
         )
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FormAnswer {
+    id: String,
+    project_id: String,
+    form_id: String,
+    items: Vec<FormAnswerItem>,
+}
+
+impl From<FormAnswerDto> for FormAnswer {
+    fn from(form_answer_dto: FormAnswerDto) -> Self {
+        FormAnswer {
+            id: form_answer_dto.id,
+            project_id: form_answer_dto.project_id,
+            form_id: form_answer_dto.form_id,
+            items: form_answer_dto
+                .items
+                .into_iter()
+                .map(FormAnswerItem::from)
+                .collect(),
+        }
     }
 }
 
@@ -52,6 +75,21 @@ impl From<FormAnswerItem> for FormAnswerItemDto {
             FormAnswerItem::File { item_id, value } => {
                 FormAnswerItemDto::new(item_id, FormAnswerItemKindDto::File(value))
             }
+        }
+    }
+}
+
+impl From<FormAnswerItemDto> for FormAnswerItem {
+    fn from(form_answer_item_dto: FormAnswerItemDto) -> Self {
+        let FormAnswerItemDto { item_id, kind } = form_answer_item_dto;
+        match kind {
+            FormAnswerItemKindDto::String(value) => FormAnswerItem::String { item_id, value },
+            FormAnswerItemKindDto::Int(value) => FormAnswerItem::Int { item_id, value },
+            FormAnswerItemKindDto::ChooseOne(value) => FormAnswerItem::ChooseOne { item_id, value },
+            FormAnswerItemKindDto::ChooseMany(value) => {
+                FormAnswerItem::ChooseMany { item_id, value }
+            }
+            FormAnswerItemKindDto::File(value) => FormAnswerItem::File { item_id, value },
         }
     }
 }

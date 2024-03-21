@@ -175,7 +175,12 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         &self,
         id: FormAnswerId,
     ) -> Result<Option<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
-        todo!()
+        let form_answer_doc = self
+            .collection
+            .find_one(doc! { "_id": id.value() }, None)
+            .await
+            .context("Failed to find form answer")?;
+        Ok(form_answer_doc.map(WithDate::try_from).transpose()?)
     }
 
     async fn find_by_project_id(

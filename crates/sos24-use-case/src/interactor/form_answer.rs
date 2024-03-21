@@ -1,10 +1,11 @@
-use std::sync::Arc;
+use std::{env, sync::Arc};
 
 use thiserror::Error;
 
 use sos24_domain::{
     ensure,
     entity::{
+        form_answer::{FormAnswerId, FormAnswerIdError},
         permission::{PermissionDeniedError, Permissions},
         project::ProjectId,
     },
@@ -19,18 +20,25 @@ use sos24_domain::{
 
 use crate::{
     context::{Context, ContextError},
-    dto::{form_answer::CreateFormAnswerDto, ToEntity},
+    dto::{
+        form_answer::{CreateFormAnswerDto, FormAnswerDto},
+        FromEntity, ToEntity,
+    },
 };
 
 use super::form::FormUseCaseError;
 
 #[derive(Debug, Error)]
 pub enum FormAnswerUseCaseError {
+    #[error("Form answer not found: {0:?}")]
+    NotFound(FormAnswerId),
     #[error("Project not found: {0:?}")]
     ProjectNotFound(ProjectId),
     #[error("Already answered")]
     AlreadyAnswered,
 
+    #[error(transparent)]
+    FormAnswerIdError(#[from] FormAnswerIdError),
     #[error(transparent)]
     VerifyFormAnswerError(#[from] VerifyFormAnswerError),
     #[error(transparent)]
@@ -112,7 +120,25 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         Ok(())
     }
 
-    pub async fn find_by_id() {}
+    pub async fn find_by_id(
+        &self,
+        ctx: &Context,
+        id: String,
+    ) -> Result<FormAnswerDto, FormAnswerUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+
+        let id = FormAnswerId::try_from(id)?;
+        let form_answer = self
+            .repositories
+            .form_answer_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(FormAnswerUseCaseError::NotFound(id))?;
+
+        // TODO: 権限チェックを行う
+
+        Ok(FormAnswerDto::from_entity(form_answer))
+    }
 
     pub async fn find_by_project_id() {}
 
