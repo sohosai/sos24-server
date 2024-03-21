@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::form::{CreateFormDto, FormDto, FormItemDto, FormItemKindDto};
+use sos24_use_case::dto::form::{
+    CreateFormDto, CreateFormItemDto, FormDto, FormItemDto, FormItemKindDto,
+};
 use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 
 use crate::model::project::{ProjectAttribute, ProjectCategory};
@@ -13,7 +15,7 @@ pub struct CreateForm {
     ends_at: String,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
-    items: Vec<FormItem>,
+    items: Vec<CreateFormItem>,
 }
 
 impl From<CreateForm> for CreateFormDto {
@@ -36,8 +38,28 @@ impl From<CreateForm> for CreateFormDto {
             create_form
                 .items
                 .into_iter()
-                .map(FormItemDto::from)
+                .map(CreateFormItemDto::from)
                 .collect(),
+        )
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateFormItem {
+    name: String,
+    description: String,
+    required: bool,
+    #[serde(flatten)]
+    kind: FormItemKind,
+}
+
+impl From<CreateFormItem> for CreateFormItemDto {
+    fn from(create_form_item: CreateFormItem) -> Self {
+        CreateFormItemDto::new(
+            create_form_item.name,
+            create_form_item.description,
+            create_form_item.required,
+            FormItemKindDto::from(create_form_item.kind),
         )
     }
 }
@@ -84,189 +106,105 @@ impl From<FormDto> for Form {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum FormItem {
-    String {
-        id: String,
-        name: String,
-        description: String,
-        required: bool,
-        min_length: i32,
-        max_length: i32,
-        allow_newline: bool,
-    },
-    Int {
-        id: String,
-        name: String,
-        description: String,
-        required: bool,
-        min: i32,
-        max: i32,
-    },
-    ChooseOne {
-        id: String,
-        name: String,
-        description: String,
-        required: bool,
-        options: Vec<String>,
-    },
-    ChooseMany {
-        id: String,
-        name: String,
-        description: String,
-        required: bool,
-        options: Vec<String>,
-        min_selection: i32,
-        max_selection: i32,
-    },
-    File {
-        id: String,
-        name: String,
-        description: String,
-        required: bool,
-        extensions: Vec<String>,
-        limit: i32,
-    },
+pub struct FormItem {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub required: bool,
+    #[serde(flatten)]
+    pub kind: FormItemKind,
 }
 
-impl From<FormItem> for FormItemDto {
-    fn from(value: FormItem) -> Self {
-        match value {
-            FormItem::String {
-                id,
-                name,
-                description,
-                required,
-                min_length,
-                max_length,
-                allow_newline,
-            } => FormItemDto::new(
-                id,
-                name,
-                description,
-                required,
-                FormItemKindDto::String {
-                    min_length,
-                    max_length,
-                    allow_newline,
-                },
-            ),
-            FormItem::Int {
-                id,
-                name,
-                description,
-                required,
-                min,
-                max,
-            } => FormItemDto::new(
-                id,
-                name,
-                description,
-                required,
-                FormItemKindDto::Int { min, max },
-            ),
-            FormItem::ChooseOne {
-                id,
-                name,
-                description,
-                required,
-                options,
-            } => FormItemDto::new(
-                id,
-                name,
-                description,
-                required,
-                FormItemKindDto::ChooseOne { options },
-            ),
-            FormItem::ChooseMany {
-                id,
-                name,
-                description,
-                required,
-                options,
-                min_selection,
-                max_selection,
-            } => FormItemDto::new(
-                id,
-                name,
-                description,
-                required,
-                FormItemKindDto::ChooseMany {
-                    options,
-                    min_selection,
-                    max_selection,
-                },
-            ),
-            FormItem::File {
-                id,
-                name,
-                description,
-                required,
-                extensions,
-                limit,
-            } => FormItemDto::new(
-                id,
-                name,
-                description,
-                required,
-                FormItemKindDto::File { extensions, limit },
-            ),
+impl From<FormItemDto> for FormItem {
+    fn from(item: FormItemDto) -> Self {
+        FormItem {
+            id: item.id.to_string(),
+            name: item.name,
+            description: item.description,
+            required: item.required,
+            kind: item.kind.into(),
         }
     }
 }
 
-impl From<FormItemDto> for FormItem {
-    fn from(value: FormItemDto) -> Self {
-        match value.kind {
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum FormItemKind {
+    String {
+        min_length: Option<i32>,
+        max_length: Option<i32>,
+        allow_newline: bool,
+    },
+    Int {
+        min: Option<i32>,
+        max: Option<i32>,
+    },
+    ChooseOne {
+        options: Vec<String>,
+    },
+    ChooseMany {
+        options: Vec<String>,
+        min_selection: Option<i32>,
+        max_selection: Option<i32>,
+    },
+    File {
+        extensions: Option<Vec<String>>,
+        limit: Option<i32>,
+    },
+}
+
+impl From<FormItemKind> for FormItemKindDto {
+    fn from(kind: FormItemKind) -> Self {
+        match kind {
+            FormItemKind::String {
+                min_length,
+                max_length,
+                allow_newline,
+            } => FormItemKindDto::String {
+                min_length,
+                max_length,
+                allow_newline,
+            },
+            FormItemKind::Int { min, max } => FormItemKindDto::Int { min, max },
+            FormItemKind::ChooseOne { options } => FormItemKindDto::ChooseOne { options },
+            FormItemKind::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            } => FormItemKindDto::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            },
+            FormItemKind::File { extensions, limit } => FormItemKindDto::File { extensions, limit },
+        }
+    }
+}
+
+impl From<FormItemKindDto> for FormItemKind {
+    fn from(kind: FormItemKindDto) -> Self {
+        match kind {
             FormItemKindDto::String {
                 min_length,
                 max_length,
                 allow_newline,
-            } => FormItem::String {
-                id: value.id,
-                name: value.name,
-                description: value.description,
-                required: value.required,
+            } => FormItemKind::String {
                 min_length,
                 max_length,
                 allow_newline,
             },
-            FormItemKindDto::Int { min, max } => FormItem::Int {
-                id: value.id,
-                name: value.name,
-                description: value.description,
-                required: value.required,
-                min,
-                max,
-            },
-            FormItemKindDto::ChooseOne { options } => FormItem::ChooseOne {
-                id: value.id,
-                name: value.name,
-                description: value.description,
-                required: value.required,
-                options,
-            },
+            FormItemKindDto::Int { min, max } => FormItemKind::Int { min, max },
+            FormItemKindDto::ChooseOne { options } => FormItemKind::ChooseOne { options },
             FormItemKindDto::ChooseMany {
                 options,
                 min_selection,
                 max_selection,
-            } => FormItem::ChooseMany {
-                id: value.id,
-                name: value.name,
-                description: value.description,
-                required: value.required,
+            } => FormItemKind::ChooseMany {
                 options,
                 min_selection,
                 max_selection,
             },
-            FormItemKindDto::File { extensions, limit } => FormItem::File {
-                id: value.id,
-                name: value.name,
-                description: value.description,
-                required: value.required,
-                extensions,
-                limit,
-            },
+            FormItemKindDto::File { extensions, limit } => FormItemKind::File { extensions, limit },
         }
     }
 }

@@ -212,8 +212,8 @@ pub enum FormItemKind {
 
 impl FormItemKind {
     pub fn new_string(
-        min_length: FormItemMinLength,
-        max_length: FormItemMaxLength,
+        min_length: Option<FormItemMinLength>,
+        max_length: Option<FormItemMaxLength>,
         allow_newline: FormItemAllowNewline,
     ) -> Self {
         Self::String(FormItemString {
@@ -223,7 +223,7 @@ impl FormItemKind {
         })
     }
 
-    pub fn new_int(min: FormItemMin, max: FormItemMax) -> Self {
+    pub fn new_int(min: Option<FormItemMin>, max: Option<FormItemMax>) -> Self {
         Self::Int(FormItemInt { min, max })
     }
 
@@ -233,8 +233,8 @@ impl FormItemKind {
 
     pub fn new_choose_many(
         options: Vec<FormItemOption>,
-        min_selection: FormItemMinSelection,
-        max_selection: FormItemMaxSelection,
+        min_selection: Option<FormItemMinSelection>,
+        max_selection: Option<FormItemMaxSelection>,
     ) -> Self {
         Self::ChooseMany(FormItemChooseMany {
             options,
@@ -243,7 +243,10 @@ impl FormItemKind {
         })
     }
 
-    pub fn new_file(extensions: Vec<FormItemExtension>, limit: FormItemLimit) -> Self {
+    pub fn new_file(
+        extensions: Option<Vec<FormItemExtension>>,
+        limit: Option<FormItemLimit>,
+    ) -> Self {
         Self::File(FormItemFile { extensions, limit })
     }
 }
@@ -251,9 +254,9 @@ impl FormItemKind {
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormItemString {
     #[getset(get = "pub")]
-    min_length: FormItemMinLength,
+    min_length: Option<FormItemMinLength>,
     #[getset(get = "pub")]
-    max_length: FormItemMaxLength,
+    max_length: Option<FormItemMaxLength>,
     #[getset(get = "pub")]
     allow_newline: FormItemAllowNewline,
 }
@@ -270,17 +273,17 @@ impl FormItemString {
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct DestructedFormItemString {
-    pub min_length: FormItemMinLength,
-    pub max_length: FormItemMaxLength,
+    pub min_length: Option<FormItemMinLength>,
+    pub max_length: Option<FormItemMaxLength>,
     pub allow_newline: FormItemAllowNewline,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormItemInt {
     #[getset(get = "pub")]
-    min: FormItemMin,
+    min: Option<FormItemMin>,
     #[getset(get = "pub")]
-    max: FormItemMax,
+    max: Option<FormItemMax>,
 }
 
 impl FormItemInt {
@@ -294,8 +297,8 @@ impl FormItemInt {
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct DestructedFormItemInt {
-    pub min: FormItemMin,
-    pub max: FormItemMax,
+    pub min: Option<FormItemMin>,
+    pub max: Option<FormItemMax>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
@@ -322,9 +325,9 @@ pub struct FormItemChooseMany {
     #[getset(get = "pub")]
     options: Vec<FormItemOption>,
     #[getset(get = "pub")]
-    min_selection: FormItemMinSelection,
+    min_selection: Option<FormItemMinSelection>,
     #[getset(get = "pub")]
-    max_selection: FormItemMaxSelection,
+    max_selection: Option<FormItemMaxSelection>,
 }
 
 impl FormItemChooseMany {
@@ -340,16 +343,16 @@ impl FormItemChooseMany {
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct DestructedFormItemChooseMany {
     pub options: Vec<FormItemOption>,
-    pub min_selection: FormItemMinSelection,
-    pub max_selection: FormItemMaxSelection,
+    pub min_selection: Option<FormItemMinSelection>,
+    pub max_selection: Option<FormItemMaxSelection>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormItemFile {
     #[getset(get = "pub")]
-    extensions: Vec<FormItemExtension>,
+    extensions: Option<Vec<FormItemExtension>>,
     #[getset(get = "pub")]
-    limit: FormItemLimit,
+    limit: Option<FormItemLimit>,
 }
 
 impl FormItemFile {
@@ -363,8 +366,8 @@ impl FormItemFile {
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct DestructedFormItemFile {
-    pub extensions: Vec<FormItemExtension>,
-    pub limit: FormItemLimit,
+    pub extensions: Option<Vec<FormItemExtension>>,
+    pub limit: Option<FormItemLimit>,
 }
 
 impl_value_object!(FormItemMinLength(i32));

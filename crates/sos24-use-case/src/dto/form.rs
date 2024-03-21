@@ -22,7 +22,7 @@ pub struct CreateFormDto {
     ends_at: String,
     categories: Vec<ProjectCategoryDto>,
     attributes: Vec<ProjectAttributeDto>,
-    items: Vec<FormItemDto>,
+    items: Vec<CreateFormItemDto>,
 }
 
 impl CreateFormDto {
@@ -33,7 +33,7 @@ impl CreateFormDto {
         ends_at: String,
         categories: Vec<ProjectCategoryDto>,
         attributes: Vec<ProjectAttributeDto>,
-        items: Vec<FormItemDto>,
+        items: Vec<CreateFormItemDto>,
     ) -> Self {
         Self {
             title,
@@ -60,8 +60,40 @@ impl ToEntity for CreateFormDto {
             self.attributes.into_entity()?,
             self.items
                 .into_iter()
-                .map(FormItemDto::into_entity)
+                .map(CreateFormItemDto::into_entity)
                 .collect::<Result<Vec<_>, _>>()?,
+        ))
+    }
+}
+
+#[derive(Debug)]
+pub struct CreateFormItemDto {
+    name: String,
+    description: String,
+    required: bool,
+    kind: FormItemKindDto,
+}
+
+impl CreateFormItemDto {
+    pub fn new(name: String, description: String, required: bool, kind: FormItemKindDto) -> Self {
+        Self {
+            name,
+            description,
+            required,
+            kind,
+        }
+    }
+}
+
+impl ToEntity for CreateFormItemDto {
+    type Entity = FormItem;
+    type Error = FormUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(FormItem::create(
+            FormItemName::new(self.name),
+            FormItemDescription::new(self.description),
+            FormItemRequired::new(self.required),
+            self.kind.into_entity()?,
         ))
     }
 }
@@ -162,25 +194,25 @@ impl FromEntity for FormItemDto {
 #[derive(Debug)]
 pub enum FormItemKindDto {
     String {
-        min_length: i32,
-        max_length: i32,
+        min_length: Option<i32>,
+        max_length: Option<i32>,
         allow_newline: bool,
     },
     Int {
-        min: i32,
-        max: i32,
+        min: Option<i32>,
+        max: Option<i32>,
     },
     ChooseOne {
         options: Vec<String>,
     },
     ChooseMany {
         options: Vec<String>,
-        min_selection: i32,
-        max_selection: i32,
+        min_selection: Option<i32>,
+        max_selection: Option<i32>,
     },
     File {
-        extensions: Vec<String>,
-        limit: i32,
+        extensions: Option<Vec<String>>,
+        limit: Option<i32>,
     },
 }
 
@@ -194,13 +226,13 @@ impl ToEntity for FormItemKindDto {
                 max_length,
                 allow_newline,
             } => Ok(FormItemKind::new_string(
-                FormItemMinLength::new(min_length),
-                FormItemMaxLength::new(max_length),
+                min_length.map(FormItemMinLength::new),
+                max_length.map(FormItemMaxLength::new),
                 FormItemAllowNewline::new(allow_newline),
             )),
             FormItemKindDto::Int { min, max } => Ok(FormItemKind::new_int(
-                FormItemMin::new(min),
-                FormItemMax::new(max),
+                min.map(FormItemMin::new),
+                max.map(FormItemMax::new),
             )),
             FormItemKindDto::ChooseOne { options } => Ok(FormItemKind::new_choose_one(
                 options.into_iter().map(FormItemOption::new).collect(),
@@ -211,12 +243,12 @@ impl ToEntity for FormItemKindDto {
                 max_selection,
             } => Ok(FormItemKind::new_choose_many(
                 options.into_iter().map(FormItemOption::new).collect(),
-                FormItemMinSelection::new(min_selection),
-                FormItemMaxSelection::new(max_selection),
+                min_selection.map(FormItemMinSelection::new),
+                max_selection.map(FormItemMaxSelection::new),
             )),
             FormItemKindDto::File { extensions, limit } => Ok(FormItemKind::new_file(
-                extensions.into_iter().map(FormItemExtension::new).collect(),
-                FormItemLimit::new(limit),
+                extensions.map(|it| it.into_iter().map(FormItemExtension::new).collect()),
+                limit.map(FormItemLimit::new),
             )),
         }
     }
@@ -229,16 +261,16 @@ impl FromEntity for FormItemKindDto {
             FormItemKind::String(item) => {
                 let item = item.destruct();
                 Self::String {
-                    min_length: item.min_length.value(),
-                    max_length: item.max_length.value(),
+                    min_length: item.min_length.map(|it| it.value()),
+                    max_length: item.max_length.map(|it| it.value()),
                     allow_newline: item.allow_newline.value(),
                 }
             }
             FormItemKind::Int(item) => {
                 let item = item.destruct();
                 Self::Int {
-                    min: item.min.value(),
-                    max: item.max.value(),
+                    min: item.min.map(|it| it.value()),
+                    max: item.max.map(|it| it.value()),
                 }
             }
             FormItemKind::ChooseOne(item) => {
@@ -251,15 +283,17 @@ impl FromEntity for FormItemKindDto {
                 let item = item.destruct();
                 Self::ChooseMany {
                     options: item.options.into_iter().map(|it| it.value()).collect(),
-                    min_selection: item.min_selection.value(),
-                    max_selection: item.max_selection.value(),
+                    min_selection: item.min_selection.map(|it| it.value()),
+                    max_selection: item.max_selection.map(|it| it.value()),
                 }
             }
             FormItemKind::File(item) => {
                 let item = item.destruct();
                 Self::File {
-                    extensions: item.extensions.into_iter().map(|it| it.value()).collect(),
-                    limit: item.limit.value(),
+                    extensions: item
+                        .extensions
+                        .map(|it| it.into_iter().map(|it| it.value()).collect()),
+                    limit: item.limit.map(|it| it.value()),
                 }
             }
         }
