@@ -268,6 +268,30 @@ impl FormRepository for MongoFormRepository {
         Ok(form_doc.map(WithDate::try_from).transpose()?)
     }
 
+    async fn update(&self, form: Form) -> Result<(), FormRepositoryError> {
+        let form_doc = FormDoc::from(form);
+        self.collection
+            .update_one(
+                doc! { "_id": form_doc._id,  "deleted_at": None::<String> },
+                doc! { "$set":
+                    doc! {
+                        "title": form_doc.title,
+                        "description": form_doc.description,
+                        "starts_at": form_doc.starts_at,
+                        "ends_at": form_doc.ends_at,
+                        "categories": form_doc.categories,
+                        "attributes": form_doc.attributes,
+                        "items": bson::to_bson(&form_doc.items).unwrap(),
+                        "updated_at": form_doc.updated_at,
+                    }
+                },
+                None,
+            )
+            .await
+            .context("Failed to update form")?;
+        Ok(())
+    }
+
     async fn delete_by_id(&self, id: FormId) -> Result<(), FormRepositoryError> {
         self.collection
             .update_one(

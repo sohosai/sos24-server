@@ -4,9 +4,11 @@ use getset::Getters;
 use thiserror::Error;
 
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
-use crate::impl_value_object;
+use crate::{ensure, impl_value_object};
 
+use super::actor::Actor;
 use super::common::datetime::DateTime;
+use super::permission::{PermissionDeniedError, Permissions};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct Form {
@@ -96,6 +98,82 @@ pub struct DestructedForm {
     pub categories: ProjectCategories,
     pub attributes: ProjectAttributes,
     pub items: Vec<FormItem>,
+}
+
+impl Form {
+    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
+        actor.has_permission(Permissions::UPDATE_FORM_ALL)
+    }
+
+    pub fn set_title(
+        &mut self,
+        actor: &Actor,
+        title: FormTitle,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.title = title;
+        Ok(())
+    }
+
+    pub fn set_description(
+        &mut self,
+        actor: &Actor,
+        description: FormDescription,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.description = description;
+        Ok(())
+    }
+
+    pub fn set_starts_at(
+        &mut self,
+        actor: &Actor,
+        starts_at: DateTime,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.starts_at = starts_at;
+        Ok(())
+    }
+
+    pub fn set_ends_at(
+        &mut self,
+        actor: &Actor,
+        ends_at: DateTime,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.ends_at = ends_at;
+        Ok(())
+    }
+
+    pub fn set_categories(
+        &mut self,
+        actor: &Actor,
+        categories: ProjectCategories,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.categories = categories;
+        Ok(())
+    }
+
+    pub fn set_attributes(
+        &mut self,
+        actor: &Actor,
+        attributes: ProjectAttributes,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.attributes = attributes;
+        Ok(())
+    }
+
+    pub fn set_items(
+        &mut self,
+        actor: &Actor,
+        items: Vec<FormItem>,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.items = items;
+        Ok(())
+    }
 }
 
 impl_value_object!(FormId(uuid::Uuid));

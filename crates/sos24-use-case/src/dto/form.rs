@@ -22,7 +22,7 @@ pub struct CreateFormDto {
     ends_at: String,
     categories: Vec<ProjectCategoryDto>,
     attributes: Vec<ProjectAttributeDto>,
-    items: Vec<CreateFormItemDto>,
+    items: Vec<NewFormItemDto>,
 }
 
 impl CreateFormDto {
@@ -33,7 +33,7 @@ impl CreateFormDto {
         ends_at: String,
         categories: Vec<ProjectCategoryDto>,
         attributes: Vec<ProjectAttributeDto>,
-        items: Vec<CreateFormItemDto>,
+        items: Vec<NewFormItemDto>,
     ) -> Self {
         Self {
             title,
@@ -60,21 +60,21 @@ impl ToEntity for CreateFormDto {
             self.attributes.into_entity()?,
             self.items
                 .into_iter()
-                .map(CreateFormItemDto::into_entity)
+                .map(NewFormItemDto::into_entity)
                 .collect::<Result<Vec<_>, _>>()?,
         ))
     }
 }
 
 #[derive(Debug)]
-pub struct CreateFormItemDto {
+pub struct NewFormItemDto {
     name: String,
     description: String,
     required: bool,
     kind: FormItemKindDto,
 }
 
-impl CreateFormItemDto {
+impl NewFormItemDto {
     pub fn new(name: String, description: String, required: bool, kind: FormItemKindDto) -> Self {
         Self {
             name,
@@ -85,7 +85,7 @@ impl CreateFormItemDto {
     }
 }
 
-impl ToEntity for CreateFormItemDto {
+impl ToEntity for NewFormItemDto {
     type Entity = FormItem;
     type Error = FormUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
@@ -95,6 +95,42 @@ impl ToEntity for CreateFormItemDto {
             FormItemRequired::new(self.required),
             self.kind.into_entity()?,
         ))
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateFormDto {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub categories: Vec<ProjectCategoryDto>,
+    pub attributes: Vec<ProjectAttributeDto>,
+    pub items: Vec<NewFormItemDto>,
+}
+
+impl UpdateFormDto {
+    pub fn new(
+        id: String,
+        title: String,
+        description: String,
+        starts_at: String,
+        ends_at: String,
+        categories: Vec<ProjectCategoryDto>,
+        attributes: Vec<ProjectAttributeDto>,
+        items: Vec<NewFormItemDto>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            description,
+            starts_at,
+            ends_at,
+            categories,
+            attributes,
+            items,
+        }
     }
 }
 

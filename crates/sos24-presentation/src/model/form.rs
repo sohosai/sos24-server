@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::dto::form::{
-    CreateFormDto, CreateFormItemDto, FormDto, FormItemDto, FormItemKindDto,
+    CreateFormDto, FormDto, FormItemDto, FormItemKindDto, NewFormItemDto, UpdateFormDto,
 };
 use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 
@@ -15,7 +15,7 @@ pub struct CreateForm {
     ends_at: String,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
-    items: Vec<CreateFormItem>,
+    items: Vec<NewFormItem>,
 }
 
 impl From<CreateForm> for CreateFormDto {
@@ -38,14 +38,14 @@ impl From<CreateForm> for CreateFormDto {
             create_form
                 .items
                 .into_iter()
-                .map(CreateFormItemDto::from)
+                .map(NewFormItemDto::from)
                 .collect(),
         )
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CreateFormItem {
+pub struct NewFormItem {
     name: String,
     description: String,
     required: bool,
@@ -53,13 +53,51 @@ pub struct CreateFormItem {
     kind: FormItemKind,
 }
 
-impl From<CreateFormItem> for CreateFormItemDto {
-    fn from(create_form_item: CreateFormItem) -> Self {
-        CreateFormItemDto::new(
+impl From<NewFormItem> for NewFormItemDto {
+    fn from(create_form_item: NewFormItem) -> Self {
+        NewFormItemDto::new(
             create_form_item.name,
             create_form_item.description,
             create_form_item.required,
             FormItemKindDto::from(create_form_item.kind),
+        )
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateForm {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub categories: Vec<ProjectCategory>,
+    pub attributes: Vec<ProjectAttribute>,
+    pub items: Vec<NewFormItem>,
+}
+
+pub trait ConvertToUpdateFormDto {
+    fn to_update_form_dto(self) -> UpdateFormDto;
+}
+
+impl ConvertToUpdateFormDto for (String, UpdateForm) {
+    fn to_update_form_dto(self) -> UpdateFormDto {
+        let (id, form) = self;
+        UpdateFormDto::new(
+            id,
+            form.title,
+            form.description,
+            form.starts_at,
+            form.ends_at,
+            form.categories
+                .into_iter()
+                .map(ProjectCategoryDto::from)
+                .collect(),
+            form.attributes
+                .into_iter()
+                .map(ProjectAttributeDto::from)
+                .collect(),
+            form.items.into_iter().map(NewFormItemDto::from).collect(),
         )
     }
 }

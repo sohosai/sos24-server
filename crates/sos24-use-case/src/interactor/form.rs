@@ -5,8 +5,8 @@ use thiserror::Error;
 use sos24_domain::{
     ensure,
     entity::{
-        common::datetime::DateTimeError,
-        form::{FormId, FormIdError, FormItemIdError},
+        common::datetime::{DateTime, DateTimeError},
+        form::{FormDescription, FormId, FormIdError, FormItemIdError, FormTitle},
         permission::{PermissionDeniedError, Permissions},
         project::ProjectIdError,
     },
@@ -16,7 +16,6 @@ use sos24_domain::{
     },
 };
 
-use crate::interactor::project::ProjectUseCaseError;
 use crate::{
     context::{Context, ContextError},
     dto::{
@@ -24,6 +23,7 @@ use crate::{
         FromEntity, ToEntity,
     },
 };
+use crate::{dto::form::UpdateFormDto, interactor::project::ProjectUseCaseError};
 
 #[derive(Debug, Error)]
 pub enum FormUseCaseError {
@@ -51,21 +51,19 @@ pub enum FormUseCaseError {
 }
 
 pub struct FormUseCase<R: Repositories> {
-    repositors: Arc<R>,
+    repositories: Arc<R>,
 }
 
 impl<R: Repositories> FormUseCase<R> {
     pub fn new(repositories: Arc<R>) -> Self {
-        Self {
-            repositors: repositories,
-        }
+        Self { repositories }
     }
 
     pub async fn list(&self, ctx: &Context) -> Result<Vec<FormDto>, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositors)).await?;
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
-        let raw_form_list = self.repositors.form_repository().list().await?;
+        let raw_form_list = self.repositories.form_repository().list().await?;
         let form_list = raw_form_list.into_iter().map(FormDto::from_entity);
         Ok(form_list.collect())
     }
@@ -75,21 +73,21 @@ impl<R: Repositories> FormUseCase<R> {
         ctx: &Context,
         raw_form: CreateFormDto,
     ) -> Result<(), FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositors)).await?;
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM));
 
         let form = raw_form.into_entity()?;
-        self.repositors.form_repository().create(form).await?;
+        self.repositories.form_repository().create(form).await?;
         Ok(())
     }
 
     pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<FormDto, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositors)).await?;
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let id = FormId::try_from(id)?;
         let form = self
-            .repositors
+            .repositories
             .form_repository()
             .find_by_id(id.clone())
             .await?
@@ -100,12 +98,46 @@ impl<R: Repositories> FormUseCase<R> {
         Ok(FormDto::from_entity(form))
     }
 
+    pub async fn update(
+        &self,
+        ctx: &Context,
+        form_data: UpdateFormDto,
+    ) -> Result<(), FormUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        ensure!(actor.has_permission(Permissions::UPDATE_FORM_ALL));
+
+        let id = FormId::try_from(form_data.id)?;
+        let form = self
+            .repositories
+            .form_repository()
+            .find_by_id(id.clone())
+            .await?
+            .ok_or(FormUseCaseError::NotFound(id))?;
+
+        let mut new_form = form.value;
+        new_form.set_title(&actor, FormTitle::new(form_data.title))?;
+        new_form.set_description(&actor, FormDescription::new(form_data.description))?;
+        new_form.set_starts_at(&actor, DateTime::try_from(form_data.starts_at)?)?;
+        new_form.set_ends_at(&actor, DateTime::try_from(form_data.ends_at)?)?;
+        new_form.set_categories(&actor, form_data.categories.into_entity()?)?;
+        new_form.set_attributes(&actor, form_data.attributes.into_entity()?)?;
+        let new_items = form_data
+            .items
+            .into_iter()
+            .map(|item| item.into_entity())
+            .collect::<Result<_, _>>()?;
+        new_form.set_items(&actor, new_items)?;
+
+        self.repositories.form_repository().update(new_form).await?;
+        Ok(())
+    }
+
     pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositors)).await?;
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::DELETE_FORM_ALL));
 
         let id = FormId::try_from(id)?;
-        self.repositors
+        self.repositories
             .form_repository()
             .find_by_id(id.clone())
             .await?
@@ -113,7 +145,7 @@ impl<R: Repositories> FormUseCase<R> {
 
         // TODO: 権限チェックを行う
 
-        self.repositors.form_repository().delete_by_id(id).await?;
+        self.repositories.form_repository().delete_by_id(id).await?;
         Ok(())
     }
 }
