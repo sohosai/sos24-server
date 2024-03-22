@@ -1,0 +1,202 @@
+paths:
+  /news:
+    get:
+      summary: ニュース一覧の取得
+      tags:
+        - news
+        - committee
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/NewsSummary"
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    post:
+      summary: ニュースの作成
+      tags:
+        - news
+        - committee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/CreateNews"
+      responses:
+        201:
+          description: Created
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+
+  /news/{news_id}:
+    get:
+      summary: 特定のIDのニュースの取得
+      tags:
+        - news
+      parameters:
+        - name: news_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/News"
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    put:
+      summary: 特定のIDのニュースの更新
+      tags:
+        - news
+        - committee
+      parameters:
+        - name: news_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/UpdateNews"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        422:
+          description: Unprocessable Entity
+        500:
+          description: Internal Server Error
+    delete:
+      summary: 特定のIDのニュースの削除
+      tags:
+        - news
+        - committee
+      parameters:
+        - name: news_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+
+schemas:
+  NewsSummary:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      title:
+        type: string
+      categories:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
+      updated_at:
+        type: string
+        format: date-time
+  News:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      title:
+        type: string
+      body:
+        type: string
+      categories:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+        nullable: true
+  CreateNews:
+    type: object
+    properties:
+      title:
+        type: string
+      body:
+        type: string
+      categories:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
+  UpdateNews:
+    type: object
+    properties:
+      title:
+        type: string
+      body:
+        type: string
+      categories:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anyhow::Context;
+use anyhow::Context as _;
 use axum::{
     extract::{Request, State},
     http::StatusCode,
@@ -11,8 +11,9 @@ use jsonwebtoken::{
     decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
+use sos24_use_case::context::Context;
 
-use crate::module::Modules;
+use crate::{error::AppError, module::Modules};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {
@@ -21,6 +22,7 @@ pub(crate) struct Claims {
     pub exp: u64,
     pub iss: String,
     pub sub: String,
+    pub email_verified: bool,
 }
 
 const JWK_URL: &str =
@@ -30,17 +32,26 @@ pub(crate) async fn jwt_auth(
     State(modules): State<Arc<Modules>>,
     mut request: Request,
     next: Next,
-) -> Result<impl IntoResponse, StatusCode> {
-    let authorization_header = request
-        .headers()
-        .get("Authorization")
-        .ok_or(StatusCode::UNAUTHORIZED)?;
-    let authorization = authorization_header
-        .to_str()
-        .map_err(|_| StatusCode::UNAUTHORIZED)?;
+) -> Result<impl IntoResponse, AppError> {
+    let authorization_header = request.headers().get("Authorization").ok_or(AppError::new(
+        StatusCode::UNAUTHORIZED,
+        "auth/missing-authorization-header".to_string(),
+        "Authorization header is missing.".to_string(),
+    ))?;
+    let authorization = authorization_header.to_str().map_err(|e| {
+        AppError::new(
+            StatusCode::UNAUTHORIZED,
+            "auth/invalid-authorization-header".to_string(),
+            e.to_string(),
+        )
+    })?;
 
     if !authorization.starts_with("Bearer ") {
-        return Err(StatusCode::UNAUTHORIZED);
+        return Err(AppError::new(
+            StatusCode::UNAUTHORIZED,
+            "auth/invalid-authorization-header".to_string(),
+            "Authorization header is invalid. It should start with 'Bearer'.".to_string(),
+        ));
     }
 
     let jwt_token = authorization.trim_start_matches("Bearer ");
@@ -49,17 +60,26 @@ pub(crate) async fn jwt_auth(
         Ok(v) => v,
         Err(e) => {
             tracing::error!("Failed to verify: {e}");
-            return Err(StatusCode::UNAUTHORIZED);
+            return Err(AppError::new(
+                StatusCode::UNAUTHORIZED,
+                "auth/invalid-token".to_string(),
+                e.to_string(),
+            ));
         }
     };
 
+    // メールが認証されているか確認
+    if modules.config().require_email_verification && !token.claims.email_verified {
+        return Err(AppError::new(
+            StatusCode::UNAUTHORIZED,
+            "auth/email-not-verified".to_string(),
+            "Email is not verified.".to_string(),
+        ));
+    }
+
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
-    let actor = modules
-        .user_use_case()
-        .find_by_id_as_actor(token.claims.sub.clone())
-        .await
-        .map_err(|_| StatusCode::UNAUTHORIZED)?;
-    request.extensions_mut().insert(actor);
+    let ctx = Context::new(token.claims.sub.clone());
+    request.extensions_mut().insert(ctx);
 
     Ok(next.run(request).await)
 }

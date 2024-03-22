@@ -10,8 +10,12 @@ use tracing::Level;
 
 use crate::{middleware::auth, module::Modules};
 
+pub mod form;
+pub mod form_answer;
 pub mod health;
+pub mod invitation;
 pub mod news;
+pub mod project;
 pub mod news_attachment;
 pub mod user;
 
@@ -36,14 +40,49 @@ pub fn create_app(modules: Modules) -> Router {
 
     let user = Router::new()
         .route("/", get(user::handle_get))
+        .route("/export", get(user::handle_export))
+        .route("/me", get(user::handle_get_me))
         .route("/:user_id", get(user::handle_get_id))
         .route("/:user_id", delete(user::handle_delete_id))
         .route("/:user_id", put(user::handle_put_id));
+
+    let project = Router::new()
+        .route("/", get(project::handle_get))
+        .route("/", post(project::handle_post))
+        .route("/export", get(project::handle_export))
+        .route("/me", get(project::handle_get_me))
+        .route("/:project_id", get(project::handle_get_id))
+        .route("/:project_id", delete(project::handle_delete_id))
+        .route("/:project_id", put(project::handle_put_id));
+
+    let invitation = Router::new()
+        .route("/", get(invitation::handle_get))
+        .route("/", post(invitation::handle_post))
+        .route("/:invitation_id", get(invitation::handle_get_id))
+        .route("/:invitation_id", delete(invitation::handle_delete_id))
+        .route("/:invitation_id", post(invitation::handle_post_id));
+
+    let form = Router::new()
+        .route("/", get(form::handle_get))
+        .route("/", post(form::handle_post))
+        .route("/:form_id", get(form::handle_get_id))
+        .route("/:form_id", delete(form::handle_delete_id))
+        .route("/:form_id", put(form::handle_put_id));
+
+    let form_answers = Router::new()
+        .route("/", get(form_answer::handle_get))
+        .route("/", post(form_answer::handle_post))
+        .route("/:form_answer_id", get(form_answer::handle_get_id))
+        .route("/:form_answer_id", put(form_answer::handle_put_id));
 
     let private_routes = Router::new()
         .nest("/news", news)
         .nest("/news_attachments", news_attachment)
         .nest("/users", user)
+        .nest("/projects", project)
+        .nest("/invitations", invitation)
+        .nest("/forms", form)
+        .nest("/form-answers", form_answers)
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),
             auth::jwt_auth,

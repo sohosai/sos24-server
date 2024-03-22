@@ -1,0 +1,2 @@
+ALTER TABLE news
+    ADD COLUMN attributes INTEGER NOT NULL;

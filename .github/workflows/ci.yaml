@@ -1,0 +1,33 @@
+name: Rust
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: [self-hosted, portainer]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Symlink
+        run: mkdir -p /home/runner/work/${{ github.event.repository.name }}/ && ln -s ${{ github.workspace }} /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+      - name: ubuntu mirror
+        run: sudo sed -i.bak -r 's@http://(jp\.)?archive\.ubuntu\.com/ubuntu/?@https://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
+      - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "/home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}"
+      - name: Build
+        env:
+          SQLX_OFFLINE: true
+        run: cargo build --verbose
+      - name: Run tests
+        env:
+          SQLX_OFFLINE: true
+        run: cargo test --verbose

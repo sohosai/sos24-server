@@ -30,3 +30,27 @@ pub fn firebase_service_account_key() -> String {
 pub fn firebase_project_id() -> String {
     env::var("FIREBASE_PROJECT_ID").expect("Env `FIREBASE_PROJECT_ID` must be set")
 }
+
+pub fn project_application_start_at() -> String {
+    env::var("PROJECT_APPLICATION_START_AT")
+        .expect("Env `PROJECT_APPLICATION_START_AT` must be set")
+}
+
+pub fn project_application_end_at() -> String {
+    env::var("PROJECT_APPLICATION_END_AT").expect("Env `PROJECT_APPLICATION_END_AT` must be set")
+}
+
+pub fn require_email_verification() -> bool {
+    env::var("REQUIRE_EMAIL_VERIFICATION")
+        .expect("Env `REQUIRE_EMAIL_VERIFICATION` must be set")
+        .parse::<bool>()
+        .expect("Env `REQUIRE_EMAIL_VERIFICATION` must be a boolean")
+}
+
+pub fn mongodb_db_url() -> String {
+    env::var("MONGO_DB_URL").expect("Env `MONGODB_DB_URL` must be set")
+}
+
+pub fn mongodb_db_name() -> String {
+    env::var("MONGO_DB").expect("Env `MONGODB_DB_NAME` must be set")
+}

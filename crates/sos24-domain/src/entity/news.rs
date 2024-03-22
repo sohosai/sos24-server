@@ -1,6 +1,7 @@
 use getset::Getters;
 use thiserror::Error;
 
+use crate::entity::project::{ProjectAttributes, ProjectCategories};
 use crate::{ensure, impl_value_object};
 
 use super::{
@@ -17,25 +18,40 @@ pub struct News {
     #[getset(get = "pub")]
     body: NewsBody,
     #[getset(get = "pub")]
-    categories: NewsCategories,
+    categories: ProjectCategories,
+    #[getset(get = "pub")]
+    attributes: ProjectAttributes,
 }
 
 impl News {
-    pub fn new(id: NewsId, title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
+    pub fn new(
+        id: NewsId,
+        title: NewsTitle,
+        body: NewsBody,
+        categories: ProjectCategories,
+        attributes: ProjectAttributes,
+    ) -> Self {
         Self {
             id,
             title,
             body,
             categories,
+            attributes,
         }
     }
 
-    pub fn create(title: NewsTitle, body: NewsBody, categories: NewsCategories) -> Self {
+    pub fn create(
+        title: NewsTitle,
+        body: NewsBody,
+        categories: ProjectCategories,
+        attributes: ProjectAttributes,
+    ) -> Self {
         Self {
             id: NewsId::new(uuid::Uuid::new_v4()),
             title,
             body,
             categories,
+            attributes,
         }
     }
 
@@ -45,6 +61,7 @@ impl News {
             title: self.title,
             body: self.body,
             categories: self.categories,
+            attributes: self.attributes,
         }
     }
 }
@@ -54,11 +71,16 @@ pub struct DestructedNews {
     pub id: NewsId,
     pub title: NewsTitle,
     pub body: NewsBody,
-    pub categories: NewsCategories,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
 }
 
 impl News {
-    fn is_updatable_by(&self, actor: &Actor) -> bool {
+    pub fn is_visible_to(&self, actor: &Actor) -> bool {
+        actor.has_permission(Permissions::READ_NEWS_ALL)
+    }
+
+    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
         actor.has_permission(Permissions::UPDATE_NEWS_ALL)
     }
 
@@ -81,10 +103,20 @@ impl News {
     pub fn set_categories(
         &mut self,
         actor: &Actor,
-        categories: NewsCategories,
+        categories: ProjectCategories,
     ) -> Result<(), PermissionDeniedError> {
         ensure!(self.is_updatable_by(actor));
         self.categories = categories;
+        Ok(())
+    }
+
+    pub fn set_attributes(
+        &mut self,
+        actor: &Actor,
+        attributes: ProjectAttributes,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.attributes = attributes;
         Ok(())
     }
 }
@@ -95,6 +127,7 @@ pub enum NewsIdError {
     #[error("Invalid UUID")]
     InvalidUuid,
 }
+
 impl TryFrom<String> for NewsId {
     type Error = NewsIdError;
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -105,4 +138,3 @@ impl TryFrom<String> for NewsId {
 
 impl_value_object!(NewsTitle(String));
 impl_value_object!(NewsBody(String));
-impl_value_object!(NewsCategories(i32));

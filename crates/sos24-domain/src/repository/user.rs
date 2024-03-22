@@ -1,5 +1,3 @@
-use std::future::Future;
-
 use mockall::automock;
 use thiserror::Error;
 
@@ -19,21 +17,11 @@ pub enum UserRepositoryError {
 }
 
 #[automock]
+#[allow(async_fn_in_trait)]
 pub trait UserRepository: Send + Sync + 'static {
-    fn list(&self)
-        -> impl Future<Output = Result<Vec<WithDate<User>>, UserRepositoryError>> + Send;
-
-    fn create(&self, user: User) -> impl Future<Output = Result<(), UserRepositoryError>> + Send;
-
-    fn find_by_id(
-        &self,
-        id: UserId,
-    ) -> impl Future<Output = Result<Option<WithDate<User>>, UserRepositoryError>> + Send;
-
-    fn update(&self, user: User) -> impl Future<Output = Result<(), UserRepositoryError>> + Send;
-
-    fn delete_by_id(
-        &self,
-        id: UserId,
-    ) -> impl Future<Output = Result<(), UserRepositoryError>> + Send;
+    async fn list(&self) -> Result<Vec<WithDate<User>>, UserRepositoryError>;
+    async fn create(&self, user: User) -> Result<(), UserRepositoryError>;
+    async fn find_by_id(&self, id: UserId) -> Result<Option<WithDate<User>>, UserRepositoryError>;
+    async fn update(&self, user: User) -> Result<(), UserRepositoryError>;
+    async fn delete_by_id(&self, id: UserId) -> Result<(), UserRepositoryError>;
 }

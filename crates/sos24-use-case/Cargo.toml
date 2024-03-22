@@ -10,3 +10,6 @@ chrono.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 url.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

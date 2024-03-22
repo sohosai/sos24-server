@@ -10,7 +10,7 @@ mod test {
         body::Body,
         http::{Request, StatusCode},
     };
-    use sos24_domain::test::MockRepositories;
+    use sos24_domain::test::repository::MockRepositories;
     use tower::ServiceExt;
 
     use crate::{module, route::create_app};
