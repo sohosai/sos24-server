@@ -222,9 +222,19 @@ schemas:
       owner_id:
         type: string
         format: uuid
+      owner_name:
+        type: string
+      owner_email:
+        type: string
       sub_owner_id:
         type: string
         format: uuid
+        nullable: true
+      sub_owner_name:
+        type: string
+        nullable: true
+      sub_owner_email:
+        type: string
         nullable: true
       remarks:
         type: string
