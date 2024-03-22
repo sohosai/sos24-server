@@ -272,8 +272,9 @@ schemas:
       category:
         $ref: "#/components/ProjectCategory"
       attributes:
-        type: integer
-        # TODO: スキーマを考える
+        type: array
+        items:
+          $ref: "#/components/ProjectAttribute"
   UpdateProject:
     type: object
     properties:
@@ -293,7 +294,8 @@ schemas:
         $ref: "#/components/ProjectCategory"
         example: foods_with_kitchen
       attributes:
-        type: integer
-        # TODO: スキーマを考える
+        type: array
+        items:
+          $ref: "#/components/ProjectAttribute"
       remarks:
         type: string

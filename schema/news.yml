@@ -178,7 +178,6 @@ schemas:
       body:
         type: string
       categories:
-        type: integer
         type: array
         items:
           $ref: "./project.yml#/components/ProjectCategory"
@@ -194,8 +193,6 @@ schemas:
       body:
         type: string
       categories:
-        type: integer
-        # TODO: スキーマを考える
         type: array
         items:
           $ref: "./project.yml#/components/ProjectCategory"
