@@ -4,12 +4,10 @@ use std::sync::Arc;
 
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
+use sos24_use_case::interactor::news_attachment::NewsAttachmentUseCase;
 use sos24_use_case::interactor::{
     form::FormUseCase, form_answer::FormAnswerUseCase, invitation::InvitationUseCase,
     news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
-};
-use sos24_use_case::interactor::{
-    news::NewsUseCase, news_attachment::NewsAttachmentUseCase, user::UserUseCase,
 };
 
 #[cfg(not(test))]

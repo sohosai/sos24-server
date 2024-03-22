@@ -7,15 +7,14 @@ use axum::{Extension, Json};
 use sos24_domain::entity::actor::Actor;
 use sos24_use_case::dto::news_attachment::CreateNewsAttachmentDto;
 
+use crate::error::AppError;
 use crate::model::news_attachment::{CreateNewsAttachment, NewsAttachment};
 use crate::module::Modules;
-
-use crate::status_code::ToStatusCode;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let raw_news_list = modules.news_attachment_use_case().list(&actor).await;
     raw_news_list
         .map(|raw_news_list| {
@@ -27,7 +26,7 @@ pub async fn handle_get(
         })
         .map_err(|err| {
             tracing::error!("Failed to list news attachment: {err}");
-            err.status_code()
+            err.into()
         })
 }
 
@@ -35,7 +34,7 @@ pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
     Json(raw_news_attachment): Json<CreateNewsAttachment>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let news_attachment = CreateNewsAttachmentDto::from(raw_news_attachment);
     let res = modules
         .news_attachment_use_case()
@@ -43,7 +42,7 @@ pub async fn handle_post(
         .await;
     res.map(|_| StatusCode::CREATED).map_err(|err| {
         tracing::error!("Failed to create news attachment: {err}");
-        err.status_code()
+        err.into()
     })
 }
 
@@ -51,7 +50,7 @@ pub async fn handle_get_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let raw_news_attachment = modules
         .news_attachment_use_case()
         .find_by_id(&actor, id)
@@ -63,7 +62,7 @@ pub async fn handle_get_id(
         )),
         Err(err) => {
             tracing::error!("Failed to find news attachment: {err}");
-            Err(err.status_code())
+            Err(err.into())
         }
     }
 }
@@ -72,13 +71,13 @@ pub async fn handle_delete_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, AppError> {
     let res = modules
         .news_attachment_use_case()
         .delete_by_id(&actor, id)
         .await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete news attachment: {err}");
-        err.status_code()
+        err.into()
     })
 }

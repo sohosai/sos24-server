@@ -6,7 +6,7 @@ use sos24_domain::{
         news::NewsId,
         news_attachment::{NewsAttachment, NewsAttachmentId, NewsAttachmentUrl},
     },
-    repository::news_attachment::NewsAttachmentRepository,
+    repository::news_attachment::{NewsAttachmentRepository, NewsAttachmentRepositoryError},
 };
 use sqlx::prelude::*;
 
@@ -50,7 +50,7 @@ impl PgNewsAttachmentRepository {
 }
 
 impl NewsAttachmentRepository for PgNewsAttachmentRepository {
-    async fn list(&self) -> anyhow::Result<Vec<WithDate<NewsAttachment>>> {
+    async fn list(&self) -> Result<Vec<WithDate<NewsAttachment>>, NewsAttachmentRepositoryError> {
         let news_attachment_list = sqlx::query_as!(
             NewsAttachmentRow,
             r#"SELECT * FROM news_attachments WHERE deleted_at IS NULL"#
@@ -64,7 +64,10 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
         Ok(news_attachment_list)
     }
 
-    async fn create(&self, news_attachment: NewsAttachment) -> anyhow::Result<()> {
+    async fn create(
+        &self,
+        news_attachment: NewsAttachment,
+    ) -> Result<(), NewsAttachmentRepositoryError> {
         let news_attachment = news_attachment.destruct();
 
         sqlx::query!(
@@ -83,7 +86,7 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
     async fn find_by_id(
         &self,
         id: NewsAttachmentId,
-    ) -> anyhow::Result<Option<WithDate<NewsAttachment>>> {
+    ) -> Result<Option<WithDate<NewsAttachment>>, NewsAttachmentRepositoryError> {
         let news_attachment_row = sqlx::query_as!(
             NewsAttachmentRow,
             r#"SELECT * FROM news_attachments WHERE id = $1 AND deleted_at IS NULL"#,
@@ -93,10 +96,13 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
         .await
         .context("Failed to fetch news_attachment")?;
 
-        news_attachment_row.map(WithDate::try_from).transpose()
+        Ok(news_attachment_row.map(WithDate::try_from).transpose()?)
     }
 
-    async fn delete_by_id(&self, id: NewsAttachmentId) -> anyhow::Result<()> {
+    async fn delete_by_id(
+        &self,
+        id: NewsAttachmentId,
+    ) -> Result<(), NewsAttachmentRepositoryError> {
         sqlx::query!(
             r#"UPDATE news_attachments SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()

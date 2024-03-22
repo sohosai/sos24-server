@@ -17,7 +17,8 @@ use sos24_domain::{
     },
     repository::{
         firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
-        news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
+        news::NewsRepositoryError, news_attachment::NewsAttachmentRepositoryError,
+        project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
 use sos24_use_case::interactor::form::FormUseCaseError;
@@ -30,8 +31,7 @@ use sos24_use_case::{
         user::UserUseCaseError,
     },
 };
-
-use crate::model::news_attachment::NewsAttachment;
+use url::ParseError;
 
 use super::AppError;
 
@@ -142,13 +142,23 @@ impl From<NewsAttachmentUseCaseError> for AppError {
                 "news-attachment/not-found".to_string(),
                 message,
             ),
-            NewsAttachmentUseCaseError::ProjectUseCaseError(e) => e.into(),
-            NewsAttachmentUseCaseError::ContextError(e) => e.into(),
             NewsAttachmentUseCaseError::NewsAttachmentRepositoryError(e) => e.into(),
             NewsAttachmentUseCaseError::NewsAttachmentIdError(e) => e.into(),
             NewsAttachmentUseCaseError::PermissionDeniedError(e) => e.into(),
             NewsAttachmentUseCaseError::InternalError(e) => e.into(),
+            NewsAttachmentUseCaseError::NewsAttachmentNewsIdError(e) => e.into(),
+            NewsAttachmentUseCaseError::NewsAttachmentUrlError(e) => e.into(),
         }
+    }
+}
+
+impl From<ParseError> for AppError {
+    fn from(error: ParseError) -> AppError {
+        AppError::new(
+            StatusCode::BAD_REQUEST,
+            "parse-error".to_string(),
+            error.to_string(),
+        )
     }
 }
 
@@ -160,22 +170,21 @@ impl From<NewsRepositoryError> for AppError {
     }
 }
 
-impl from<NewsAttachmentIdError> for AppError {
-    fn from(error: NewsAttachmentIdError) -> AppError {
-        let message = error.to_string();
-        match error {
-            NewsAttachmentIdError::InvalidId => AppError::new(
-                StatusCode::BAD_REQUEST,
-                "news-attachment-id/invalid-id".to_string(),
-                message,
-            ),
+impl From<NewsAttachmentRepositoryError> for AppError {
+    fn from(value: NewsAttachmentRepositoryError) -> Self {
+        match value {
+            NewsAttachmentRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
 
-impl From<NewsAttachmentRepositoryError> for AppError {
-    fn from(value: NewsAttachmentRepositoryError) -> Self {
-        match value {}
+impl From<NewsAttachmentIdError> for AppError {
+    fn from(value: NewsAttachmentIdError) -> Self {
+        AppError::new(
+            StatusCode::BAD_REQUEST,
+            "news-attachment/news-attachment-id".to_string(),
+            value.to_string(),
+        )
     }
 }
 
@@ -276,14 +285,6 @@ impl From<InvitationRepositoryError> for AppError {
     fn from(error: InvitationRepositoryError) -> AppError {
         match error {
             InvitationRepositoryError::InternalError(e) => e.into(),
-        }
-    }
-}
-
-impl From<NewsRepositoryError> for AppError {
-    fn from(error: NewsRepositoryError) -> AppError {
-        match error {
-            NewsRepositoryError::InternalError(e) => e.into(),
         }
     }
 }

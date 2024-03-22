@@ -1,5 +1,3 @@
-use std::future::Future;
-
 use mockall::automock;
 use thiserror::Error;
 
@@ -15,18 +13,17 @@ pub enum NewsAttachmentRepositoryError {
 }
 
 #[automock]
+#[allow(async_fn_in_trait)]
 pub trait NewsAttachmentRepository: Send + Sync + 'static {
-    fn list(&self) -> impl Future<Output = anyhow::Result<Vec<WithDate<NewsAttachment>>>> + Send;
-    fn create(
+    async fn list(&self) -> Result<Vec<WithDate<NewsAttachment>>, NewsAttachmentRepositoryError>;
+    async fn create(
         &self,
         news_attachment: NewsAttachment,
-    ) -> impl Future<Output = anyhow::Result<()>> + Send;
-
-    fn find_by_id(
+    ) -> Result<(), NewsAttachmentRepositoryError>;
+    async fn find_by_id(
         &self,
         id: NewsAttachmentId,
-    ) -> impl Future<Output = anyhow::Result<Option<WithDate<NewsAttachment>>>> + Send;
-
-    fn delete_by_id(&self, id: NewsAttachmentId)
-        -> impl Future<Output = anyhow::Result<()>> + Send;
+    ) -> Result<Option<WithDate<NewsAttachment>>, NewsAttachmentRepositoryError>;
+    async fn delete_by_id(&self, id: NewsAttachmentId)
+        -> Result<(), NewsAttachmentRepositoryError>;
 }

@@ -13,7 +13,6 @@ pub trait Repositories: Send + Sync + 'static {
     type FormAnswerRepositoryImpl: form_answer::FormAnswerRepository;
     type InvitationRepositoryImpl: invitation::InvitationRepository;
     type NewsRepositoryImpl: news::NewsRepository;
-    type NewsAttachmentRepositoryImpl: news_attachment::NewsAttachmentRepository;
     type ProjectRepositoryImpl: project::ProjectRepository;
     type NewsAttachmentRepositoryImpl: news_attachment::NewsAttachmentRepository;
     type UserRepositoryImpl: user::UserRepository;

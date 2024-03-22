@@ -1,65 +1,9 @@
 use crate::repository::{
     firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
     form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
-    news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
-    Repositories,
+    news::MockNewsRepository, news_attachment::MockNewsAttachmentRepository,
+    project::MockProjectRepository, user::MockUserRepository, Repositories,
 };
-
-use crate::repository::{
-    firebase_user::MockFirebaseUserRepository, news::MockNewsRepository,
-    news_attachment::MockNewsAttachmentRepository, user::MockUserRepository, Repositories,
-};
-
-#[derive(Default)]
-pub struct MockRepositories {
-    firebase_user_repository: MockFirebaseUserRepository,
-    news_repository: MockNewsRepository,
-    news_attachment_repository: MockNewsAttachmentRepository,
-    user_repository: MockUserRepository,
-}
-
-impl Repositories for MockRepositories {
-    type FirebaseUserRepositoryImpl = MockFirebaseUserRepository;
-    type NewsRepositoryImpl = MockNewsRepository;
-    type UserRepositoryImpl = MockUserRepository;
-    fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
-        &self.firebase_user_repository
-    }
-
-    fn news_repository(&self) -> &Self::NewsRepositoryImpl {
-        &self.news_repository
-    }
-
-    type NewsAttachmentRepositoryImpl = MockNewsAttachmentRepository;
-
-    fn user_repository(&self) -> &Self::UserRepositoryImpl {
-        &self.user_repository
-    }
-
-    type FormRepositoryImpl;
-
-    type FormAnswerRepositoryImpl;
-
-    type InvitationRepositoryImpl;
-
-    type ProjectRepositoryImpl;
-
-    fn form_repository(&self) -> &Self::FormRepositoryImpl {
-        todo!()
-    }
-
-    fn form_answer_repository(&self) -> &Self::FormAnswerRepositoryImpl {
-        todo!()
-    }
-
-    fn invitation_repository(&self) -> &Self::InvitationRepositoryImpl {
-        todo!()
-    }
-
-    fn project_repository(&self) -> &Self::ProjectRepositoryImpl {
-        todo!()
-    }
-}
 
 #[derive(Default)]
 pub struct MockRepositories {
@@ -68,6 +12,7 @@ pub struct MockRepositories {
     form_answer_repository: MockFormAnswerRepository,
     invitation_repository: MockInvitationRepository,
     news_repository: MockNewsRepository,
+    news_attachment_repository: MockNewsAttachmentRepository,
     project_repository: MockProjectRepository,
     user_repository: MockUserRepository,
 }
@@ -110,6 +55,7 @@ impl Repositories for MockRepositories {
     type NewsRepositoryImpl = MockNewsRepository;
     type ProjectRepositoryImpl = MockProjectRepository;
     type UserRepositoryImpl = MockUserRepository;
+    type NewsAttachmentRepositoryImpl = MockNewsAttachmentRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -137,5 +83,9 @@ impl Repositories for MockRepositories {
 
     fn user_repository(&self) -> &Self::UserRepositoryImpl {
         &self.user_repository
+    }
+
+    fn news_attachment_repository(&self) -> &Self::NewsAttachmentRepositoryImpl {
+        &self.news_attachment_repository
     }
 }

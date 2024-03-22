@@ -4,8 +4,8 @@ use mongodb::form::MongoFormRepository;
 use mongodb::form_answer::MongoFormAnswerRepository;
 use mongodb::MongoDb;
 use postgresql::invitation::PgInvitationRepository;
-use postgresql::project::PgProjectRepository;
 use postgresql::news_attachment::PgNewsAttachmentRepository;
+use postgresql::project::PgProjectRepository;
 use postgresql::user::PgUserRepository;
 use sos24_domain::repository::Repositories;
 
@@ -36,7 +36,7 @@ impl DefaultRepositories {
             invitation_repository: PgInvitationRepository::new(postgresql.clone()),
             news_repository: PgNewsRepository::new(postgresql.clone()),
             project_repository: PgProjectRepository::new(postgresql.clone()),
-		    news_attachment_repository: PgNewsAttachmentRepository,
+            news_attachment_repository: PgNewsAttachmentRepository::new(postgresql.clone()),
             user_repository: PgUserRepository::new(postgresql.clone()),
         }
     }
@@ -74,7 +74,7 @@ impl Repositories for DefaultRepositories {
 
     fn project_repository(&self) -> &Self::ProjectRepositoryImpl {
         &self.project_repository
-	}
+    }
 
     fn news_attachment_repository(&self) -> &Self::NewsAttachmentRepositoryImpl {
         &self.news_attachment_repository
