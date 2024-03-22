@@ -5,8 +5,8 @@ use sqlx::PgPool;
 
 pub mod invitation;
 pub mod news;
-pub mod project;
 pub mod news_attachment;
+pub mod project;
 pub mod user;
 
 #[derive(Clone)]

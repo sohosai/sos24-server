@@ -15,8 +15,8 @@ pub mod form_answer;
 pub mod health;
 pub mod invitation;
 pub mod news;
-pub mod project;
 pub mod news_attachment;
+pub mod project;
 pub mod user;
 
 pub fn create_app(modules: Modules) -> Router {
