@@ -93,8 +93,6 @@ impl<R: Repositories> FormUseCase<R> {
             .await?
             .ok_or(FormUseCaseError::NotFound(id))?;
 
-        // TODO: 権限チェックを行う
-
         Ok(FormDto::from_entity(form))
     }
 
@@ -142,8 +140,6 @@ impl<R: Repositories> FormUseCase<R> {
             .find_by_id(id.clone())
             .await?
             .ok_or(FormUseCaseError::NotFound(id.clone()))?;
-
-        // TODO: 権限チェックを行う
 
         self.repositories.form_repository().delete_by_id(id).await?;
         Ok(())

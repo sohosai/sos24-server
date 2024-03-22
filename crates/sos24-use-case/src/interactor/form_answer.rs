@@ -126,7 +126,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 form_answer.project_id().clone(),
             ))?;
 
-        // TODO: 申請がその企画向けのものかどうかのチェック
+        // TODO: 申請がその企画向けのものかどうかのチェックするとよいかもしれない
 
         verify_form_answer::verify(&form.value, &form_answer)?;
 
@@ -153,7 +153,14 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .await?
             .ok_or(FormAnswerUseCaseError::NotFound(id))?;
 
-        // TODO: 権限チェックを行う
+        let project_id = form_answer.value.project_id();
+        let project = self
+            .repositories
+            .project_repository()
+            .find_by_id(project_id.clone())
+            .await?
+            .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
+        ensure!(project.value.is_visible_to(&actor));
 
         Ok(FormAnswerDto::from_entity(form_answer))
     }
