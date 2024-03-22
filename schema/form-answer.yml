@@ -6,11 +6,11 @@ paths:
         - form-answers
       parameters:
         - name: project_id
-          in: path
+          in: query
           schema: { type: string }
           required: false
         - name: form_id
-          in: path
+          in: query
           schema: { type: string }
           required: false
       responses:
@@ -56,7 +56,7 @@ paths:
         500:
           description: Internal Server Error
 
-  /form_answers/{form_answer_id}:
+  /form-answers/{form_answer_id}:
     get:
       summary: 申請の回答を取得
       tags:
