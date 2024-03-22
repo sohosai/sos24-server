@@ -179,6 +179,13 @@ schemas:
         type: string
       categories:
         type: integer
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"
   UpdateNews:
     type: object
     properties:
@@ -189,3 +196,10 @@ schemas:
       categories:
         type: integer
         # TODO: スキーマを考える
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectCategory"
+      attributes:
+        type: array
+        items:
+          $ref: "./project.yml#/components/ProjectAttribute"

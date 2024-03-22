@@ -1,8 +1,7 @@
-use bitflags::bitflags;
 use getset::Getters;
 use thiserror::Error;
 
-use crate::entity::project::ProjectAttributes;
+use crate::entity::project::{ProjectAttributes, ProjectCategories};
 use crate::{ensure, impl_value_object};
 
 use super::{
@@ -19,7 +18,7 @@ pub struct News {
     #[getset(get = "pub")]
     body: NewsBody,
     #[getset(get = "pub")]
-    categories: NewsCategories,
+    categories: ProjectCategories,
     #[getset(get = "pub")]
     attributes: ProjectAttributes,
 }
@@ -29,7 +28,7 @@ impl News {
         id: NewsId,
         title: NewsTitle,
         body: NewsBody,
-        categories: NewsCategories,
+        categories: ProjectCategories,
         attributes: ProjectAttributes,
     ) -> Self {
         Self {
@@ -44,7 +43,7 @@ impl News {
     pub fn create(
         title: NewsTitle,
         body: NewsBody,
-        categories: NewsCategories,
+        categories: ProjectCategories,
         attributes: ProjectAttributes,
     ) -> Self {
         Self {
@@ -72,7 +71,7 @@ pub struct DestructedNews {
     pub id: NewsId,
     pub title: NewsTitle,
     pub body: NewsBody,
-    pub categories: NewsCategories,
+    pub categories: ProjectCategories,
     pub attributes: ProjectAttributes,
 }
 
@@ -104,7 +103,7 @@ impl News {
     pub fn set_categories(
         &mut self,
         actor: &Actor,
-        categories: NewsCategories,
+        categories: ProjectCategories,
     ) -> Result<(), PermissionDeniedError> {
         ensure!(self.is_updatable_by(actor));
         self.categories = categories;
@@ -139,18 +138,3 @@ impl TryFrom<String> for NewsId {
 
 impl_value_object!(NewsTitle(String));
 impl_value_object!(NewsBody(String));
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NewsCategories(u32);
-
-bitflags! {
-    impl NewsCategories: u32 {
-        const GENERAL = 1 << 0;
-        const FOODS_WITH_KITCHEN = 1 << 1;
-        const FOODS_WITHOUT_KITCHEN = 1 << 2;
-        const FOODS_WITHOUT_COOKING = 1 << 3;
-        const STAGE_1A = 1 << 4;
-        const STAGE_UNIVERSITY_HALL = 1 << 5;
-        const STAGE_UNITED = 1 << 6;
-    }
-}

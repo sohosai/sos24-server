@@ -3,8 +3,8 @@ use futures_util::{StreamExt, TryStreamExt};
 use sqlx::prelude::*;
 
 use sos24_domain::entity::common::date::WithDate;
-use sos24_domain::entity::news::{News, NewsBody, NewsCategories, NewsId, NewsTitle};
-use sos24_domain::entity::project::ProjectAttributes;
+use sos24_domain::entity::news::{News, NewsBody, NewsId, NewsTitle};
+use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::repository::news::{NewsRepository, NewsRepositoryError};
 
 use crate::postgresql::Postgresql;
@@ -29,7 +29,7 @@ impl TryFrom<NewsRow> for WithDate<News> {
                 NewsId::new(value.id),
                 NewsTitle::new(value.title),
                 NewsBody::new(value.body),
-                NewsCategories::from_bits(value.categories as u32)
+                ProjectCategories::from_bits(value.categories as u32)
                     .ok_or(anyhow!("cannot convert project categories"))?,
                 ProjectAttributes::from_bits(value.attributes as u32)
                     .ok_or(anyhow!("cannot convert project attributes"))?,

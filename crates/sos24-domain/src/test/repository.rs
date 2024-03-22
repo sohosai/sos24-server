@@ -1,5 +1,6 @@
 use crate::repository::{
-    firebase_user::MockFirebaseUserRepository, invitation::MockInvitationRepository,
+    firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
+    form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
     news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
     Repositories,
 };
@@ -7,6 +8,8 @@ use crate::repository::{
 #[derive(Default)]
 pub struct MockRepositories {
     firebase_user_repository: MockFirebaseUserRepository,
+    form_repository: MockFormRepository,
+    form_answer_repository: MockFormAnswerRepository,
     invitation_repository: MockInvitationRepository,
     news_repository: MockNewsRepository,
     project_repository: MockProjectRepository,
@@ -16,6 +19,14 @@ pub struct MockRepositories {
 impl MockRepositories {
     pub fn firebase_user_repository_mut(&mut self) -> &mut MockFirebaseUserRepository {
         &mut self.firebase_user_repository
+    }
+
+    pub fn form_repository_mut(&mut self) -> &mut MockFormRepository {
+        &mut self.form_repository
+    }
+
+    pub fn form_answer_repository_mut(&mut self) -> &mut MockFormAnswerRepository {
+        &mut self.form_answer_repository
     }
 
     pub fn invitation_repository_mut(&mut self) -> &mut MockInvitationRepository {
@@ -37,6 +48,8 @@ impl MockRepositories {
 
 impl Repositories for MockRepositories {
     type FirebaseUserRepositoryImpl = MockFirebaseUserRepository;
+    type FormRepositoryImpl = MockFormRepository;
+    type FormAnswerRepositoryImpl = MockFormAnswerRepository;
     type InvitationRepositoryImpl = MockInvitationRepository;
     type NewsRepositoryImpl = MockNewsRepository;
     type ProjectRepositoryImpl = MockProjectRepository;
@@ -44,6 +57,14 @@ impl Repositories for MockRepositories {
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
+    }
+
+    fn form_repository(&self) -> &Self::FormRepositoryImpl {
+        &self.form_repository
+    }
+
+    fn form_answer_repository(&self) -> &Self::FormAnswerRepositoryImpl {
+        &self.form_answer_repository
     }
 
     fn invitation_repository(&self) -> &Self::InvitationRepositoryImpl {

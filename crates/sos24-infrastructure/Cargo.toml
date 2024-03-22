@@ -8,6 +8,9 @@ sos24-domain = { path = "../sos24-domain" }
 anyhow.workspace = true
 chrono.workspace = true
 futures-util.workspace = true
+mongodb.workspace = true
 rs-firebase-admin-sdk.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 sqlx.workspace = true
 uuid.workspace = true

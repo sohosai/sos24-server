@@ -1,5 +1,11 @@
 use axum::http::StatusCode;
 
+use sos24_domain::entity::common::datetime::DateTimeError;
+use sos24_domain::entity::form::{FormIdError, FormItemIdError};
+use sos24_domain::entity::form_answer::FormAnswerIdError;
+use sos24_domain::repository::form::FormRepositoryError;
+use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
+use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
 use sos24_domain::{
     entity::{
         common::email::EmailError,
@@ -13,6 +19,8 @@ use sos24_domain::{
         news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
+use sos24_use_case::interactor::form::FormUseCaseError;
+use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
 use sos24_use_case::{
     context::ContextError,
     interactor::{
@@ -22,6 +30,65 @@ use sos24_use_case::{
 };
 
 use super::AppError;
+
+impl From<FormUseCaseError> for AppError {
+    fn from(error: FormUseCaseError) -> Self {
+        let message = error.to_string();
+        match error {
+            FormUseCaseError::NotFound(_) => {
+                AppError::new(StatusCode::NOT_FOUND, "form/not-found".to_string(), message)
+            }
+            FormUseCaseError::ProjectUseCaseError(e) => e.into(),
+            FormUseCaseError::DateTimeError(e) => e.into(),
+            FormUseCaseError::FormRepositoryError(e) => e.into(),
+            FormUseCaseError::ContextError(e) => e.into(),
+            FormUseCaseError::PermissionDeniedError(e) => e.into(),
+            FormUseCaseError::InternalError(e) => e.into(),
+            FormUseCaseError::FormIdError(e) => e.into(),
+            FormUseCaseError::ProjectIdError(e) => e.into(),
+            FormUseCaseError::FormItemIdError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FormAnswerUseCaseError> for AppError {
+    fn from(error: FormAnswerUseCaseError) -> Self {
+        let message = error.to_string();
+        match error {
+            FormAnswerUseCaseError::NotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form-answer/not-found".to_string(),
+                message,
+            ),
+            FormAnswerUseCaseError::ProjectNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form-answer/project-not-found".to_string(),
+                message,
+            ),
+            FormAnswerUseCaseError::FormNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form-answer/form-not-found".to_string(),
+                message,
+            ),
+            FormAnswerUseCaseError::AlreadyAnswered => AppError::new(
+                StatusCode::CONFLICT,
+                "form-answer/already-answered".to_string(),
+                message,
+            ),
+            FormAnswerUseCaseError::FormIdError(e) => e.into(),
+            FormAnswerUseCaseError::ProjectIdError(e) => e.into(),
+            FormAnswerUseCaseError::FormUseCaseError(e) => e.into(),
+            FormAnswerUseCaseError::FormAnswerRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::ProjectRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::ContextError(e) => e.into(),
+            FormAnswerUseCaseError::PermissionDeniedError(e) => e.into(),
+            FormAnswerUseCaseError::InternalError(e) => e.into(),
+            FormAnswerUseCaseError::FormRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::VerifyFormAnswerError(e) => e.into(),
+            FormAnswerUseCaseError::FormAnswerIdError(e) => e.into(),
+        }
+    }
+}
 
 impl From<InvitationUseCaseError> for AppError {
     fn from(error: InvitationUseCaseError) -> AppError {
@@ -139,6 +206,22 @@ impl From<ContextError> for AppError {
     }
 }
 
+impl From<FormRepositoryError> for AppError {
+    fn from(error: FormRepositoryError) -> Self {
+        match error {
+            FormRepositoryError::InternalError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FormAnswerRepositoryError> for AppError {
+    fn from(error: FormAnswerRepositoryError) -> Self {
+        match error {
+            FormAnswerRepositoryError::InternalError(e) => e.into(),
+        }
+    }
+}
+
 impl From<InvitationRepositoryError> for AppError {
     fn from(error: InvitationRepositoryError) -> AppError {
         match error {
@@ -238,6 +321,104 @@ impl From<InvitationIdError> for AppError {
     }
 }
 
+impl From<FormIdError> for AppError {
+    fn from(error: FormIdError) -> Self {
+        match error {
+            FormIdError::InvalidUuid => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/invalid-uuid".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<FormItemIdError> for AppError {
+    fn from(error: FormItemIdError) -> Self {
+        match error {
+            FormItemIdError::InvalidUuid => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-item/invalid-uuid".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<FormAnswerIdError> for AppError {
+    fn from(error: FormAnswerIdError) -> Self {
+        match error {
+            FormAnswerIdError::InvalidUuid => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-uuid".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<VerifyFormAnswerError> for AppError {
+    fn from(error: VerifyFormAnswerError) -> AppError {
+        match error {
+            VerifyFormAnswerError::MissingAnswerItem(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/missing-answer-item".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::InvalidAnswerItemKind(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-answer-item-kind".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooShortString(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-short-string".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooLongString(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-long-string".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::NewlineNotAllowed(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/newline-not-allowed".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooSmallInt(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-small-int".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooLargeInt(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-large-int".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::InvalidChooseOneOption(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-choose-one-option".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::InvalidChooseManyOption(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-choose-many-option".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooFewOptionsChooseMany(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-few-options-choose-many".to_string(),
+                error.to_string(),
+            ),
+            VerifyFormAnswerError::TooManyOptionsChooseMany(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-many-options-choose-many".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
 impl From<NewsIdError> for AppError {
     fn from(error: NewsIdError) -> AppError {
         match error {
@@ -273,6 +454,18 @@ impl From<EmailError> for AppError {
             EmailError::InvalidDomain => AppError::new(
                 StatusCode::BAD_GATEWAY,
                 "email/invalid-domain".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<DateTimeError> for AppError {
+    fn from(error: DateTimeError) -> Self {
+        match error {
+            DateTimeError::InvalidFormat => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "datetime/invalid-format".to_string(),
                 error.to_string(),
             ),
         }
