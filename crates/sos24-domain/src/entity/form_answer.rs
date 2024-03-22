@@ -5,7 +5,10 @@ use thiserror::Error;
 
 use crate::entity::form::{FormId, FormItemId};
 use crate::entity::project::ProjectId;
-use crate::impl_value_object;
+use crate::{ensure, impl_value_object};
+
+use super::actor::Actor;
+use super::permission::{PermissionDeniedError, Permissions};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormAnswer {
@@ -59,6 +62,42 @@ pub struct DestructedFormAnswer {
     pub project_id: ProjectId,
     pub form_id: FormId,
     pub items: Vec<FormAnswerItem>,
+}
+
+impl FormAnswer {
+    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
+        actor.has_permission(Permissions::UPDATE_FORM_ANSWER_ALL)
+    }
+
+    pub fn set_project_id(
+        &mut self,
+        actor: &Actor,
+        project_id: ProjectId,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.project_id = project_id;
+        Ok(())
+    }
+
+    pub fn set_form_id(
+        &mut self,
+        actor: &Actor,
+        form_id: FormId,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.form_id = form_id;
+        Ok(())
+    }
+
+    pub fn set_items(
+        &mut self,
+        actor: &Actor,
+        items: Vec<FormAnswerItem>,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.items = items;
+        Ok(())
+    }
 }
 
 impl_value_object!(FormAnswerId(uuid::Uuid));

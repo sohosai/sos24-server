@@ -248,6 +248,22 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
     }
 
     async fn update(&self, form_answer: FormAnswer) -> Result<(), FormAnswerRepositoryError> {
-        todo!()
+        let form_answer_doc = FormAnswerDoc::from(form_answer);
+        self.collection
+            .update_one(
+                doc! { "_id": form_answer_doc._id,  "deleted_at": None::<String> },
+                doc! { "$set":
+                    doc! {
+                        "project_id": form_answer_doc.project_id,
+                        "form_d": form_answer_doc.form_id,
+                        "items": bson::to_bson(&form_answer_doc.items).unwrap(),
+                        "updated_at": form_answer_doc.updated_at,
+                    }
+                },
+                None,
+            )
+            .await
+            .context("Failed to update form")?;
+        Ok(())
     }
 }

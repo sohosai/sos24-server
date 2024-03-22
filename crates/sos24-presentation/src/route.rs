@@ -56,13 +56,14 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/", get(form::handle_get))
         .route("/", post(form::handle_post))
         .route("/:form_id", get(form::handle_get_id))
-        .route("/:form_id", delete(form::handle_delete_id));
+        .route("/:form_id", delete(form::handle_delete_id))
+        .route("/:form_id", put(form::handle_put_id));
 
     let form_answers = Router::new()
         .route("/", get(form_answer::handle_get))
         .route("/", post(form_answer::handle_post))
-        .route("/:form_answer_id", get(form_answer::handle_get_id));
-    // .route("/:form_answer_id", put(form_answer::handle_put_id));
+        .route("/:form_answer_id", get(form_answer::handle_get_id))
+        .route("/:form_answer_id", put(form_answer::handle_put_id));
 
     let private_routes = Router::new()
         .nest("/news", news)

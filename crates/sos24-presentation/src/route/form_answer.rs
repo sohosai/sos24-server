@@ -10,7 +10,10 @@ use sos24_use_case::{context::Context, dto::form_answer::CreateFormAnswerDto};
 
 use crate::{
     error::AppError,
-    model::form_answer::{CreateFormAnswer, FormAnswer, FormAnswerQuery},
+    model::{
+        form::{ConvertToUpdateFormDto, UpdateForm},
+        form_answer::{CreateFormAnswer, FormAnswer, FormAnswerQuery},
+    },
     module::Modules,
 };
 
@@ -85,4 +88,18 @@ pub async fn handle_get_id(
             Err(err.into())
         }
     }
+}
+
+pub async fn handle_put_id(
+    Path(id): Path<String>,
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+    Json(raw_form): Json<UpdateForm>,
+) -> Result<impl IntoResponse, AppError> {
+    let form = (id, raw_form).to_update_form_dto();
+    let res = modules.form_use_case().update(&ctx, form).await;
+    res.map(|_| StatusCode::OK).map_err(|err| {
+        tracing::error!("Failed to update form: {err:?}");
+        err.into()
+    })
 }
