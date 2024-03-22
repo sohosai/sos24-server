@@ -259,7 +259,10 @@ impl FormRepository for MongoFormRepository {
     async fn find_by_id(&self, id: FormId) -> Result<Option<WithDate<Form>>, FormRepositoryError> {
         let form_doc = self
             .collection
-            .find_one(doc! { "_id": id.value() }, None)
+            .find_one(
+                doc! { "_id": id.value(),  "deleted_at": None::<String>  },
+                None,
+            )
             .await
             .context("Failed to find form")?;
         Ok(form_doc.map(WithDate::try_from).transpose()?)
@@ -268,7 +271,7 @@ impl FormRepository for MongoFormRepository {
     async fn delete_by_id(&self, id: FormId) -> Result<(), FormRepositoryError> {
         self.collection
             .update_one(
-                doc! { "_id": id.value() },
+                doc! { "_id": id.value(),  "deleted_at": None::<String> },
                 doc! { "$set": { "deleted_at": chrono::Utc::now() } },
                 None,
             )
