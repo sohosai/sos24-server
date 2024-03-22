@@ -36,6 +36,9 @@ pub struct FormAnswer {
     project_id: String,
     form_id: String,
     items: Vec<FormAnswerItem>,
+    created_at: String,
+    updated_at: String,
+    deleted_at: Option<String>,
 }
 
 impl From<FormAnswerDto> for FormAnswer {
@@ -49,6 +52,9 @@ impl From<FormAnswerDto> for FormAnswer {
                 .into_iter()
                 .map(FormAnswerItem::from)
                 .collect(),
+            created_at: form_answer_dto.created_at.to_rfc3339(),
+            updated_at: form_answer_dto.updated_at.to_rfc3339(),
+            deleted_at: form_answer_dto.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

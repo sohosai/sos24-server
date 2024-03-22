@@ -50,6 +50,9 @@ pub struct FormAnswerDto {
     pub project_id: String,
     pub form_id: String,
     pub items: Vec<FormAnswerItemDto>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl FromEntity for FormAnswerDto {
@@ -65,6 +68,9 @@ impl FromEntity for FormAnswerDto {
                 .into_iter()
                 .map(FormAnswerItemDto::from_entity)
                 .collect(),
+            created_at: entity.created_at,
+            updated_at: entity.updated_at,
+            deleted_at: entity.deleted_at,
         }
     }
 }
