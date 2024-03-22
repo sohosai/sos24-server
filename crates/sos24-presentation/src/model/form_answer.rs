@@ -24,6 +24,12 @@ impl From<CreateFormAnswer> for CreateFormAnswerDto {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct FormAnswerQuery {
+    pub project_id: Option<String>,
+    pub form_id: Option<String>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormAnswer {
     id: String,

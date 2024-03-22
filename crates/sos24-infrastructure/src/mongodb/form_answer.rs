@@ -197,14 +197,38 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         &self,
         project_id: ProjectId,
     ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
-        todo!()
+        let form_answer_list = self
+            .collection
+            .find(
+                doc! { "project_id": project_id.value(), "deleted_at": None::<String> },
+                None,
+            )
+            .await
+            .context("Failed to find form answers")?;
+        let form_answers = form_answer_list
+            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form answer")?))
+            .try_collect()
+            .await?;
+        Ok(form_answers)
     }
 
     async fn find_by_form_id(
         &self,
         form_id: FormId,
     ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
-        todo!()
+        let form_answer_list = self
+            .collection
+            .find(
+                doc! { "form_id": form_id.value(), "deleted_at": None::<String> },
+                None,
+            )
+            .await
+            .context("Failed to find form answers")?;
+        let form_answers = form_answer_list
+            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form answer")?))
+            .try_collect()
+            .await?;
+        Ok(form_answers)
     }
 
     async fn find_by_project_id_and_form_id(

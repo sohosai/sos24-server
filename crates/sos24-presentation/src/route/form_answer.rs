@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
     Extension, Json,
@@ -10,15 +10,38 @@ use sos24_use_case::{context::Context, dto::form_answer::CreateFormAnswerDto};
 
 use crate::{
     error::AppError,
-    model::form_answer::{CreateFormAnswer, FormAnswer},
+    model::form_answer::{CreateFormAnswer, FormAnswer, FormAnswerQuery},
     module::Modules,
 };
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
+    Query(query): Query<FormAnswerQuery>,
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, AppError> {
-    let raw_form_answer_list = modules.form_answer_use_case().list(&ctx).await;
+    let raw_form_answer_list = match (query.project_id, query.form_id) {
+        (None, None) => modules.form_answer_use_case().list(&ctx).await,
+        (Some(project_id), None) => {
+            modules
+                .form_answer_use_case()
+                .find_by_project_id(&ctx, project_id)
+                .await
+        }
+        (None, Some(form_id)) => {
+            modules
+                .form_answer_use_case()
+                .find_by_form_id(&ctx, form_id)
+                .await
+        }
+        _ => {
+            return Err(AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/invalid-query".to_string(),
+                "Invalid query".to_string(),
+            ))
+        }
+    };
+
     raw_form_answer_list
         .map(|raw_form_answer_list| {
             let form_answer_list: Vec<FormAnswer> = raw_form_answer_list
