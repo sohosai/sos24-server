@@ -227,6 +227,31 @@ impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct ProjectSummary {
+    id: String,
+    index: i32,
+    title: String,
+    category: ProjectCategory,
+    attributes: Vec<ProjectAttribute>,
+}
+
+impl From<ProjectDto> for ProjectSummary {
+    fn from(project: ProjectDto) -> Self {
+        ProjectSummary {
+            id: project.id,
+            index: project.index,
+            title: project.title,
+            category: ProjectCategory::from(project.category),
+            attributes: project
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProjectCategory {
     General,

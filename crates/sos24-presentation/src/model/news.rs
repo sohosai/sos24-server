@@ -95,3 +95,32 @@ impl From<NewsDto> for News {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct NewsSummary {
+    id: String,
+    title: String,
+    categories: Vec<ProjectCategory>,
+    attributes: Vec<ProjectAttribute>,
+    updated_at: String,
+}
+
+impl From<NewsDto> for NewsSummary {
+    fn from(news: NewsDto) -> Self {
+        NewsSummary {
+            id: news.id,
+            title: news.title,
+            attributes: news
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
+            categories: news
+                .categories
+                .into_iter()
+                .map(ProjectCategory::from)
+                .collect(),
+            updated_at: news.updated_at.to_rfc3339(),
+        }
+    }
+}
