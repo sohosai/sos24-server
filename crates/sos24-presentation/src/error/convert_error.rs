@@ -5,19 +5,20 @@ use sos24_domain::entity::form::{FormIdError, FormItemIdError};
 use sos24_domain::entity::form_answer::FormAnswerIdError;
 use sos24_domain::repository::form::FormRepositoryError;
 use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
+use sos24_domain::repository::news_attachment_object::NewsAttachmentObjectRepositoryError;
 use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
 use sos24_domain::{
     entity::{
         common::email::EmailError,
         invitation::{InvitationError, InvitationIdError},
         news::NewsIdError,
-        news_attachment::NewsAttachmentIdError,
+        news_attachment_data::NewsAttachmentIdError,
         permission::PermissionDeniedError,
         project::{ProjectError, ProjectIdError},
     },
     repository::{
         firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
-        news::NewsRepositoryError, news_attachment::NewsAttachmentRepositoryError,
+        news::NewsRepositoryError, news_attachment_data::NewsAttachmentRepositoryError,
         project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
@@ -148,6 +149,15 @@ impl From<NewsAttachmentUseCaseError> for AppError {
             NewsAttachmentUseCaseError::InternalError(e) => e.into(),
             NewsAttachmentUseCaseError::NewsAttachmentNewsIdError(e) => e.into(),
             NewsAttachmentUseCaseError::NewsAttachmentUrlError(e) => e.into(),
+            NewsAttachmentUseCaseError::NewsAttachmentObjectRepositoryError(e) => e.into(),
+        }
+    }
+}
+
+impl From<NewsAttachmentObjectRepositoryError> for AppError {
+    fn from(error: NewsAttachmentObjectRepositoryError) -> AppError {
+        match error {
+            NewsAttachmentObjectRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
