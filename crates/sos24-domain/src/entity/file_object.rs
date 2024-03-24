@@ -4,49 +4,49 @@ use thiserror::Error;
 use crate::impl_value_object;
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
-pub struct NewsAttachmentObject {
+pub struct FileObject {
     #[getset(get = "pub", set = "pub")]
     data: String,
     #[getset(get = "pub", set = "pub")]
-    key: NewsAttachmentObjectKey,
+    key: FileObjectKey,
 }
 
-impl NewsAttachmentObject {
-    pub fn new(data: String, key: NewsAttachmentObjectKey) -> Self {
+impl FileObject {
+    pub fn new(data: String, key: FileObjectKey) -> Self {
         Self { data, key }
     }
     pub fn create(data: String, prefix: &str, filename: &str) -> Self {
         Self {
             data,
-            key: NewsAttachmentObjectKey::generate(prefix, filename),
+            key: FileObjectKey::generate(prefix, filename),
         }
     }
 }
 
-impl_value_object!(NewsAttachmentObjectKey(String));
-impl_value_object!(NewsAttachmentSignedUrl(url::Url));
+impl_value_object!(FileObjectKey(String));
+impl_value_object!(FileSignedUrl(url::Url));
 
 #[derive(Debug, Error)]
-pub enum NewsAttachmentSignedUrlError {
+pub enum FileSignedUrlError {
     #[error("Invalid URL")]
     InvalidUrl,
 }
-impl TryFrom<&str> for NewsAttachmentSignedUrl {
-    type Error = NewsAttachmentSignedUrlError;
+impl TryFrom<&str> for FileSignedUrl {
+    type Error = FileSignedUrlError;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         url::Url::parse(value)
-            .map_err(|_| NewsAttachmentSignedUrlError::InvalidUrl)
+            .map_err(|_| FileSignedUrlError::InvalidUrl)
             .map(Self)
     }
 }
 
 #[derive(Debug, Error)]
-pub enum NewsAttachmentObjectError {
+pub enum FileObjectError {
     #[error("Invalid UUID")]
     InvalidUuid,
 }
 
-impl NewsAttachmentObjectKey {
+impl FileObjectKey {
     pub fn generate(prefix: &str, filename: &str) -> Self {
         Self(format!("{}/{}/{}", prefix, uuid::Uuid::new_v4(), filename))
     }

@@ -1,9 +1,5 @@
 use crate::repository::{
-    firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
-    form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
-    news::MockNewsRepository, news_attachment_data::MockNewsAttachmentRepository,
-    news_attachment_object::MockNewsAttachmentObjectRepository, project::MockProjectRepository,
-    user::MockUserRepository, Repositories,
+    file_data::MockFileDataRepository, file_object::MockFileObjectRepository, firebase_user::MockFirebaseUserRepository, form::MockFormRepository, form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository, news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository, Repositories
 };
 
 #[derive(Default)]
@@ -13,8 +9,8 @@ pub struct MockRepositories {
     form_answer_repository: MockFormAnswerRepository,
     invitation_repository: MockInvitationRepository,
     news_repository: MockNewsRepository,
-    news_attachment_repository: MockNewsAttachmentRepository,
-    news_attachment_object_repository: MockNewsAttachmentObjectRepository,
+    file_data_repository: MockFileDataRepository,
+    file_object_repository: MockFileObjectRepository,
     project_repository: MockProjectRepository,
     user_repository: MockUserRepository,
 }
@@ -40,14 +36,14 @@ impl MockRepositories {
         &mut self.news_repository
     }
 
-    pub fn news_attachment_repository_mut(&mut self) -> &mut MockNewsAttachmentRepository {
-        &mut self.news_attachment_repository
+    pub fn file_data_repository_mut(&mut self) -> &mut MockFileDataRepository{
+        &mut self.file_data_repository
     }
 
-    pub fn news_attachment_object_repository_mut(
+    pub fn file_object_repository_mut(
         &mut self,
-    ) -> &mut MockNewsAttachmentObjectRepository {
-        &mut self.news_attachment_object_repository
+    ) -> &mut MockFileObjectRepository{
+        &mut self.file_object_repository
     }
 
     pub fn project_repository_mut(&mut self) -> &mut MockProjectRepository {
@@ -67,8 +63,8 @@ impl Repositories for MockRepositories {
     type NewsRepositoryImpl = MockNewsRepository;
     type ProjectRepositoryImpl = MockProjectRepository;
     type UserRepositoryImpl = MockUserRepository;
-    type NewsAttachmentRepositoryImpl = MockNewsAttachmentRepository;
-    type NewsAttachmentObjectRepositoryImpl = MockNewsAttachmentObjectRepository;
+    type FileDataRepositoryImpl = MockFileDataRepository;
+    type FileObjectRepositoryImpl = MockFileObjectRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -98,11 +94,11 @@ impl Repositories for MockRepositories {
         &self.user_repository
     }
 
-    fn news_attachment_repository(&self) -> &Self::NewsAttachmentRepositoryImpl {
-        &self.news_attachment_repository
+    fn file_data_repository(&self) -> &Self::FileDataRepositoryImpl {
+        &self.file_data_repository
     }
 
-    fn news_attachment_object_repository(&self) -> &Self::NewsAttachmentObjectRepositoryImpl {
-        &self.news_attachment_object_repository
+    fn file_object_repository(&self) -> &Self::FileObjectRepositoryImpl {
+        &self.file_object_repository
     }
 }

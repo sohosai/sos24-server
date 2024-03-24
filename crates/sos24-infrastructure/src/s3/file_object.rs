@@ -3,32 +3,32 @@ use std::{ops::Deref, time::Duration};
 use anyhow::Context;
 use aws_sdk_s3::{presigning::PresigningConfig, primitives::SdkBody};
 use sos24_domain::{
-    entity::news_attachment_object::{
-        NewsAttachmentObject, NewsAttachmentObjectKey, NewsAttachmentSignedUrl,
+    entity::file_object::{
+        FileObject, FileObjectKey, FileSignedUrl,
     },
-    repository::news_attachment_object::{
-        NewsAttachmentObjectRepository, NewsAttachmentObjectRepositoryError,
+    repository::file_object::{
+        FileObjectRepository, FileObjectRepositoryError,
     },
 };
 
 use super::S3;
 
-pub struct NewsAttachmentRepository {
+pub struct S3FileObjectRepository {
     s3: S3,
 }
 
-impl NewsAttachmentRepository {
+impl S3FileObjectRepository {
     pub fn new(s3: S3) -> Self {
         Self { s3 }
     }
 }
 
-impl NewsAttachmentObjectRepository for NewsAttachmentRepository {
+impl FileObjectRepository for S3FileObjectRepository {
     async fn create(
         &self,
         bucket: String,
-        object: NewsAttachmentObject,
-    ) -> Result<(), NewsAttachmentObjectRepositoryError> {
+        object: FileObject,
+    ) -> Result<(), FileObjectRepositoryError> {
         self.s3
             .put_object()
             .body(SdkBody::from(object.data().deref()).into())
@@ -43,8 +43,8 @@ impl NewsAttachmentObjectRepository for NewsAttachmentRepository {
     async fn generate_url(
         &self,
         bucket: String,
-        key: NewsAttachmentObjectKey,
-    ) -> Result<NewsAttachmentSignedUrl, NewsAttachmentObjectRepositoryError> {
+        key: FileObjectKey,
+    ) -> Result<FileSignedUrl, FileObjectRepositoryError> {
         let presign_config = PresigningConfig::builder()
             .expires_in(Duration::new(3000, 0))
             .build()
@@ -58,6 +58,6 @@ impl NewsAttachmentObjectRepository for NewsAttachmentRepository {
             .await
             .context("Failed to generate presign url")?;
         // 間違ってそう
-        Ok(NewsAttachmentSignedUrl::try_from(request.uri()).context("Failed to parse")?)
+        Ok(FileSignedUrl::try_from(request.uri()).context("Failed to parse")?)
     }
 }

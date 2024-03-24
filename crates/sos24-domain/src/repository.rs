@@ -3,8 +3,8 @@ pub mod form;
 pub mod form_answer;
 pub mod invitation;
 pub mod news;
-pub mod news_attachment_data;
-pub mod news_attachment_object;
+pub mod file_data;
+pub mod file_object;
 pub mod project;
 pub mod user;
 
@@ -15,8 +15,8 @@ pub trait Repositories: Send + Sync + 'static {
     type InvitationRepositoryImpl: invitation::InvitationRepository;
     type NewsRepositoryImpl: news::NewsRepository;
     type ProjectRepositoryImpl: project::ProjectRepository;
-    type NewsAttachmentRepositoryImpl: news_attachment_data::NewsAttachmentRepository;
-    type NewsAttachmentObjectRepositoryImpl: news_attachment_object::NewsAttachmentObjectRepository;
+    type FileDataRepositoryImpl: file_data::FileDataRepository;
+    type FileObjectRepositoryImpl: file_object::FileObjectRepository;
     type UserRepositoryImpl: user::UserRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl;
@@ -25,7 +25,7 @@ pub trait Repositories: Send + Sync + 'static {
     fn invitation_repository(&self) -> &Self::InvitationRepositoryImpl;
     fn news_repository(&self) -> &Self::NewsRepositoryImpl;
     fn project_repository(&self) -> &Self::ProjectRepositoryImpl;
-    fn news_attachment_repository(&self) -> &Self::NewsAttachmentRepositoryImpl;
-    fn news_attachment_object_repository(&self) -> &Self::NewsAttachmentObjectRepositoryImpl;
+    fn file_data_repository(&self) -> &Self::FileDataRepositoryImpl;
+    fn file_object_repository(&self) -> &Self::FileObjectRepositoryImpl;
     fn user_repository(&self) -> &Self::UserRepositoryImpl;
 }

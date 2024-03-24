@@ -15,7 +15,7 @@ pub mod form_answer;
 pub mod health;
 pub mod invitation;
 pub mod news;
-pub mod news_attachment;
+pub mod file;
 pub mod project;
 pub mod user;
 
@@ -29,13 +29,13 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:news_id", delete(news::handle_delete_id))
         .route("/:news_id", put(news::handle_put_id));
 
-    let news_attachment = Router::new()
-        .route("/", get(news_attachment::handle_get))
-        .route("/", post(news_attachment::handle_post))
-        .route("/:news_attachment_id", get(news_attachment::handle_get_id))
+    let file = Router::new()
+        .route("/", get(file::handle_get))
+        .route("/", post(file::handle_post))
+        .route("/:file_id", get(file::handle_get_id))
         .route(
-            "/:news_attachment_id",
-            delete(news_attachment::handle_delete_id),
+            "/:file_id",
+            delete(file::handle_delete_id),
         );
 
     let user = Router::new()
@@ -77,7 +77,7 @@ pub fn create_app(modules: Modules) -> Router {
 
     let private_routes = Router::new()
         .nest("/news", news)
-        .nest("/news_attachments", news_attachment)
+        .nest("/files", file)
         .nest("/users", user)
         .nest("/projects", project)
         .nest("/invitations", invitation)

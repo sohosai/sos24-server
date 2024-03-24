@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
-use sos24_use_case::interactor::news_attachment::NewsAttachmentUseCase;
+use sos24_use_case::interactor::file::FileUseCase;
 use sos24_use_case::interactor::{
     form::FormUseCase, form_answer::FormAnswerUseCase, invitation::InvitationUseCase,
     news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
@@ -26,7 +26,7 @@ pub struct Modules {
     form_answer_use_case: FormAnswerUseCase<Repositories>,
     invitation_use_case: InvitationUseCase<Repositories>,
     news_use_case: NewsUseCase<Repositories>,
-    news_attachment_use_case: NewsAttachmentUseCase<Repositories>,
+    file_use_case: FileUseCase<Repositories>,
     project_use_case: ProjectUseCase<Repositories>,
     user_use_case: UserUseCase<Repositories>,
 }
@@ -52,8 +52,8 @@ impl Modules {
         &self.news_use_case
     }
 
-    pub fn news_attachment_use_case(&self) -> &NewsAttachmentUseCase<Repositories> {
-        &self.news_attachment_use_case
+    pub fn file_use_case(&self) -> &FileUseCase<Repositories> {
+        &self.file_use_case
     }
 
     pub fn project_use_case(&self) -> &ProjectUseCase<Repositories> {
@@ -98,7 +98,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
             application_period.clone(),
         ),
         news_use_case: NewsUseCase::new(Arc::clone(&repository)),
-        news_attachment_use_case: NewsAttachmentUseCase::new(Arc::clone(&repository)),
+        file_use_case: FileUseCase::new(Arc::clone(&repository)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repository), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repository)),
     })
@@ -119,7 +119,7 @@ pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules>
             application_period.clone(),
         ),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories)),
-        news_attachment_use_case: NewsAttachmentUseCase::new(Arc::clone(&repositories)),
+        file_use_case: FileUseCase::new(Arc::clone(&repositories)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repositories), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })

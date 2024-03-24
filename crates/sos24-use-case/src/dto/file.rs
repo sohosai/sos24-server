@@ -1,21 +1,21 @@
-use sos24_domain::entity::{common::date::WithDate, news_attachment_data::NewsAttachmentData};
+use sos24_domain::entity::{common::date::WithDate, file_data::FileData};
 
 use super::FromEntity;
 
 #[derive(Debug)]
-pub struct CreateNewsAttachmentDto {
+pub struct CreateFileDto {
     pub filename: String,
     pub file: String,
 }
 
-impl CreateNewsAttachmentDto {
+impl CreateFileDto {
     pub fn new(filename: String, file: String) -> Self {
         Self { filename, file }
     }
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct NewsAttachmentDto {
+pub struct FileDto {
     pub id: String,
     pub name: String,
     pub url: String,
@@ -24,14 +24,14 @@ pub struct NewsAttachmentDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for NewsAttachmentDto {
+impl FromEntity for FileDto {
     // ToDo: 一つの型にまとめたい
-    type Entity = (WithDate<NewsAttachmentData>, String);
+    type Entity = (WithDate<FileData>, String);
     fn from_entity((data, url): Self::Entity) -> Self {
-        let attachment_data = data.value.destruct();
+        let file_data = data.value.destruct();
         Self {
-            id: attachment_data.id.value().to_string(),
-            name: attachment_data.name.value().to_string(),
+            id: file_data.id.value().to_string(),
+            name: file_data.name.value().to_string(),
             url,
             created_at: data.created_at,
             updated_at: data.updated_at,

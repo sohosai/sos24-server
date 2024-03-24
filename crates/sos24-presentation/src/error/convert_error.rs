@@ -1,30 +1,31 @@
 use axum::http::StatusCode;
 
 use sos24_domain::entity::common::datetime::DateTimeError;
+use sos24_domain::entity::file_data::FileIdError;
 use sos24_domain::entity::form::{FormIdError, FormItemIdError};
 use sos24_domain::entity::form_answer::FormAnswerIdError;
+use sos24_domain::repository::file_data::FileDataRepositoryError;
+use sos24_domain::repository::file_object::FileObjectRepositoryError;
 use sos24_domain::repository::form::FormRepositoryError;
 use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
-use sos24_domain::repository::news_attachment_object::NewsAttachmentObjectRepositoryError;
 use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
 use sos24_domain::{
     entity::{
         common::email::EmailError,
         invitation::{InvitationError, InvitationIdError},
         news::NewsIdError,
-        news_attachment_data::NewsAttachmentIdError,
         permission::PermissionDeniedError,
         project::{ProjectError, ProjectIdError},
     },
     repository::{
         firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
-        news::NewsRepositoryError, news_attachment_data::NewsAttachmentRepositoryError,
+        news::NewsRepositoryError,
         project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
+use sos24_use_case::interactor::file::FileUseCaseError;
 use sos24_use_case::interactor::form::FormUseCaseError;
 use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
-use sos24_use_case::interactor::news_attachment::NewsAttachmentUseCaseError;
 use sos24_use_case::{
     context::ContextError,
     interactor::{
@@ -134,30 +135,28 @@ impl From<InvitationUseCaseError> for AppError {
     }
 }
 
-impl From<NewsAttachmentUseCaseError> for AppError {
-    fn from(error: NewsAttachmentUseCaseError) -> AppError {
+impl From<FileUseCaseError> for AppError {
+    fn from(error: FileUseCaseError) -> AppError {
         let message = error.to_string();
         match error {
-            NewsAttachmentUseCaseError::NotFound(_) => AppError::new(
+            FileUseCaseError::NotFound(_) => AppError::new(
                 StatusCode::NOT_FOUND,
-                "news-attachment/not-found".to_string(),
+                "file/not-found".to_string(),
                 message,
             ),
-            NewsAttachmentUseCaseError::NewsAttachmentRepositoryError(e) => e.into(),
-            NewsAttachmentUseCaseError::NewsAttachmentIdError(e) => e.into(),
-            NewsAttachmentUseCaseError::PermissionDeniedError(e) => e.into(),
-            NewsAttachmentUseCaseError::InternalError(e) => e.into(),
-            NewsAttachmentUseCaseError::NewsAttachmentNewsIdError(e) => e.into(),
-            NewsAttachmentUseCaseError::NewsAttachmentUrlError(e) => e.into(),
-            NewsAttachmentUseCaseError::NewsAttachmentObjectRepositoryError(e) => e.into(),
+            FileUseCaseError::FileDataRepositoryError(e) => e.into(),
+            FileUseCaseError::FileIdError(e) => e.into(),
+            FileUseCaseError::PermissionDeniedError(e) => e.into(),
+            FileUseCaseError::InternalError(e) => e.into(),
+            FileUseCaseError::FileObjectRepositoryError(e) => e.into(),
         }
     }
 }
 
-impl From<NewsAttachmentObjectRepositoryError> for AppError {
-    fn from(error: NewsAttachmentObjectRepositoryError) -> AppError {
+impl From<FileObjectRepositoryError> for AppError {
+    fn from(error: FileObjectRepositoryError) -> AppError {
         match error {
-            NewsAttachmentObjectRepositoryError::InternalError(e) => e.into(),
+            FileObjectRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
@@ -180,19 +179,19 @@ impl From<NewsRepositoryError> for AppError {
     }
 }
 
-impl From<NewsAttachmentRepositoryError> for AppError {
-    fn from(value: NewsAttachmentRepositoryError) -> Self {
+impl From<FileDataRepositoryError> for AppError {
+    fn from(value: FileDataRepositoryError) -> Self {
         match value {
-            NewsAttachmentRepositoryError::InternalError(e) => e.into(),
+            FileDataRepositoryError::InternalError(e) => e.into(),
         }
     }
 }
 
-impl From<NewsAttachmentIdError> for AppError {
-    fn from(value: NewsAttachmentIdError) -> Self {
+impl From<FileIdError> for AppError {
+    fn from(value: FileIdError) -> Self {
         AppError::new(
             StatusCode::BAD_REQUEST,
-            "news-attachment/news-attachment-id".to_string(),
+            "file/file-id".to_string(),
             value.to_string(),
         )
     }

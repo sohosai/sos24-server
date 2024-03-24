@@ -5,7 +5,7 @@ use sqlx::PgPool;
 
 pub mod invitation;
 pub mod news;
-pub mod news_attachment;
+pub mod file_data;
 pub mod project;
 pub mod user;
 
