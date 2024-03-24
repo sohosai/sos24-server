@@ -3,7 +3,7 @@ pub mod form;
 pub mod form_answer;
 pub mod invitation;
 pub mod news;
-pub mod news_attachment;
+pub mod news_attachment_data;
 pub mod news_attachment_object;
 pub mod project;
 pub mod user;
@@ -15,7 +15,7 @@ pub trait Repositories: Send + Sync + 'static {
     type InvitationRepositoryImpl: invitation::InvitationRepository;
     type NewsRepositoryImpl: news::NewsRepository;
     type ProjectRepositoryImpl: project::ProjectRepository;
-    type NewsAttachmentRepositoryImpl: news_attachment::NewsAttachmentRepository;
+    type NewsAttachmentRepositoryImpl: news_attachment_data::NewsAttachmentRepository;
     type NewsAttachmentObjectRepositoryImpl: news_attachment_object::NewsAttachmentObjectRepository;
     type UserRepositoryImpl: user::UserRepository;
 

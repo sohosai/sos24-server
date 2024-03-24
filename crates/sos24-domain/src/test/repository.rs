@@ -1,8 +1,9 @@
 use crate::repository::{
     firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
     form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
-    news::MockNewsRepository, news_attachment::MockNewsAttachmentRepository,
-    project::MockProjectRepository, user::MockUserRepository, Repositories,
+    news::MockNewsRepository, news_attachment_data::MockNewsAttachmentRepository,
+    news_attachment_object::MockNewsAttachmentObjectRepository, project::MockProjectRepository,
+    user::MockUserRepository, Repositories,
 };
 
 #[derive(Default)]
@@ -13,6 +14,7 @@ pub struct MockRepositories {
     invitation_repository: MockInvitationRepository,
     news_repository: MockNewsRepository,
     news_attachment_repository: MockNewsAttachmentRepository,
+    news_attachment_object_repository: MockNewsAttachmentObjectRepository,
     project_repository: MockProjectRepository,
     user_repository: MockUserRepository,
 }
@@ -36,6 +38,16 @@ impl MockRepositories {
 
     pub fn news_repository_mut(&mut self) -> &mut MockNewsRepository {
         &mut self.news_repository
+    }
+
+    pub fn news_attachment_repository_mut(&mut self) -> &mut MockNewsAttachmentRepository {
+        &mut self.news_attachment_repository
+    }
+
+    pub fn news_attachment_object_repository_mut(
+        &mut self,
+    ) -> &mut MockNewsAttachmentObjectRepository {
+        &mut self.news_attachment_object_repository
     }
 
     pub fn project_repository_mut(&mut self) -> &mut MockProjectRepository {
