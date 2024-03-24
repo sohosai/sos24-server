@@ -1,49 +1,23 @@
-use std::str::FromStr;
+use sos24_domain::entity::{common::date::WithDate, news_attachment_data::NewsAttachmentData};
 
-use sos24_domain::entity::{
-    common::date::WithDate,
-    news::{NewsId, NewsIdError},
-    news_attachment::{NewsAttachment, NewsAttachmentUrl},
-};
-
-use crate::interactor::news_attachment::NewsAttachmentUseCaseError;
-
-use super::{FromEntity, ToEntity};
+use super::FromEntity;
 
 #[derive(Debug)]
 pub struct CreateNewsAttachmentDto {
-    pub news_id: String,
-    pub url: String,
+    pub filename: String,
+    pub file: String,
 }
 
 impl CreateNewsAttachmentDto {
-    pub fn new(news_id: String, url: String) -> Self {
-        Self { news_id, url }
-    }
-}
-
-impl ToEntity for CreateNewsAttachmentDto {
-    type Entity = NewsAttachment;
-    type Error = NewsAttachmentUseCaseError;
-
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        let news_id = uuid::Uuid::from_str(&self.news_id).map_err(|_| {
-            NewsAttachmentUseCaseError::NewsAttachmentNewsIdError(NewsIdError::InvalidUuid)
-        })?;
-        let url = url::Url::parse(&self.url)
-            .map_err(NewsAttachmentUseCaseError::NewsAttachmentUrlError)?;
-
-        Ok(NewsAttachment::create(
-            NewsId::new(news_id),
-            NewsAttachmentUrl::new(url),
-        ))
+    pub fn new(filename: String, file: String) -> Self {
+        Self { filename, file }
     }
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct NewsAttachmentDto {
     pub id: String,
-    pub news_id: String,
+    pub name: String,
     pub url: String,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
@@ -51,16 +25,17 @@ pub struct NewsAttachmentDto {
 }
 
 impl FromEntity for NewsAttachmentDto {
-    type Entity = WithDate<NewsAttachment>;
-    fn from_entity(entity: Self::Entity) -> Self {
-        let news_attachment = entity.value.destruct();
+    // ToDo: 一つの型にまとめたい
+    type Entity = (WithDate<NewsAttachmentData>, String);
+    fn from_entity((data, url): Self::Entity) -> Self {
+        let attachment_data = data.value.destruct();
         Self {
-            id: news_attachment.id.value().to_string(),
-            news_id: news_attachment.news_id.value().to_string(),
-            url: news_attachment.url.value().to_string(),
-            created_at: entity.created_at,
-            updated_at: entity.updated_at,
-            deleted_at: entity.deleted_at,
+            id: attachment_data.id.value().to_string(),
+            name: attachment_data.name.value().to_string(),
+            url,
+            created_at: data.created_at,
+            updated_at: data.updated_at,
+            deleted_at: data.deleted_at,
         }
     }
 }
