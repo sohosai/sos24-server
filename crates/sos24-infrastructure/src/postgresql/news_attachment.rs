@@ -3,10 +3,10 @@ use futures_util::{StreamExt, TryStreamExt};
 use sos24_domain::{
     entity::{
         common::date::WithDate,
-        news::NewsId,
-        news_attachment::{NewsAttachment, NewsAttachmentId, NewsAttachmentUrl},
+        news_attachment_data::{NewsAttachmentData, NewsAttachmentFilename, NewsAttachmentId},
+        news_attachment_object::NewsAttachmentObjectKey,
     },
-    repository::news_attachment::{NewsAttachmentRepository, NewsAttachmentRepositoryError},
+    repository::news_attachment_data::{NewsAttachmentRepository, NewsAttachmentRepositoryError},
 };
 use sqlx::prelude::*;
 
@@ -15,22 +15,22 @@ use crate::postgresql::Postgresql;
 #[derive(FromRow)]
 pub struct NewsAttachmentRow {
     id: uuid::Uuid,
-    news_id: uuid::Uuid,
+    name: String,
     url: String,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
     deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl TryFrom<NewsAttachmentRow> for WithDate<NewsAttachment> {
+impl TryFrom<NewsAttachmentRow> for WithDate<NewsAttachmentData> {
     type Error = anyhow::Error;
 
     fn try_from(value: NewsAttachmentRow) -> Result<Self, Self::Error> {
         Ok(WithDate::new(
-            NewsAttachment::new(
+            NewsAttachmentData::new(
                 NewsAttachmentId::new(value.id),
-                NewsId::new(value.news_id),
-                NewsAttachmentUrl::new(url::Url::parse(&value.url)?),
+                NewsAttachmentFilename::new(value.name),
+                NewsAttachmentObjectKey::new(value.url),
             ),
             value.created_at,
             value.updated_at,
@@ -50,10 +50,12 @@ impl PgNewsAttachmentRepository {
 }
 
 impl NewsAttachmentRepository for PgNewsAttachmentRepository {
-    async fn list(&self) -> Result<Vec<WithDate<NewsAttachment>>, NewsAttachmentRepositoryError> {
+    async fn list(
+        &self,
+    ) -> Result<Vec<WithDate<NewsAttachmentData>>, NewsAttachmentRepositoryError> {
         let news_attachment_list = sqlx::query_as!(
             NewsAttachmentRow,
-            r#"SELECT * FROM news_attachments WHERE deleted_at IS NULL"#
+            r#"SELECT * FROM files WHERE deleted_at IS NULL"#
         )
         .fetch(&*self.db)
         .map(|row| WithDate::try_from(row?))
@@ -66,14 +68,14 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
 
     async fn create(
         &self,
-        news_attachment: NewsAttachment,
+        news_attachment: NewsAttachmentData,
     ) -> Result<(), NewsAttachmentRepositoryError> {
         let news_attachment = news_attachment.destruct();
 
         sqlx::query!(
-            r#"INSERT INTO news_attachments (id, news_id, url) VALUES ($1, $2, $3)"#,
+            r#"INSERT INTO files (id, name, url) VALUES ($1, $2, $3)"#,
             news_attachment.id.value(),
-            news_attachment.news_id.value(),
+            news_attachment.name.value(),
             news_attachment.url.value().to_string(),
         )
         .execute(&*self.db)
@@ -86,10 +88,10 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
     async fn find_by_id(
         &self,
         id: NewsAttachmentId,
-    ) -> Result<Option<WithDate<NewsAttachment>>, NewsAttachmentRepositoryError> {
+    ) -> Result<Option<WithDate<NewsAttachmentData>>, NewsAttachmentRepositoryError> {
         let news_attachment_row = sqlx::query_as!(
             NewsAttachmentRow,
-            r#"SELECT * FROM news_attachments WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT * FROM files WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
         .fetch_optional(&*self.db)
@@ -104,7 +106,7 @@ impl NewsAttachmentRepository for PgNewsAttachmentRepository {
         id: NewsAttachmentId,
     ) -> Result<(), NewsAttachmentRepositoryError> {
         sqlx::query!(
-            r#"UPDATE news_attachments SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"UPDATE files SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
         .execute(&*self.db)

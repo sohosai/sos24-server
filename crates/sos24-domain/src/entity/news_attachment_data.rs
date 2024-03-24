@@ -3,27 +3,35 @@ use thiserror::Error;
 
 use crate::impl_value_object;
 
-use super::news::NewsId;
+use super::news_attachment_object::NewsAttachmentObjectKey;
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
-pub struct NewsAttachment {
+pub struct NewsAttachmentData {
     #[getset(get = "pub")]
     id: NewsAttachmentId,
     #[getset(get = "pub", set = "pub")]
-    news_id: NewsId,
+    filename: NewsAttachmentFilename,
     #[getset(get = "pub", set = "pub")]
-    url: NewsAttachmentUrl,
+    url: NewsAttachmentObjectKey,
 }
 
-impl NewsAttachment {
-    pub fn new(id: NewsAttachmentId, news_id: NewsId, url: NewsAttachmentUrl) -> Self {
-        Self { id, news_id, url }
+impl NewsAttachmentData {
+    pub fn new(
+        id: NewsAttachmentId,
+        name: NewsAttachmentFilename,
+        url: NewsAttachmentObjectKey,
+    ) -> Self {
+        Self {
+            id,
+            filename: name,
+            url,
+        }
     }
 
-    pub fn create(news_id: NewsId, url: NewsAttachmentUrl) -> Self {
+    pub fn create(filename: NewsAttachmentFilename, url: NewsAttachmentObjectKey) -> Self {
         Self {
             id: NewsAttachmentId::new(uuid::Uuid::new_v4()),
-            news_id,
+            filename,
             url,
         }
     }
@@ -31,7 +39,7 @@ impl NewsAttachment {
     pub fn destruct(self) -> DestructedNewsAttachment {
         DestructedNewsAttachment {
             id: self.id,
-            news_id: self.news_id,
+            name: self.filename,
             url: self.url,
         }
     }
@@ -40,12 +48,12 @@ impl NewsAttachment {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DestructedNewsAttachment {
     pub id: NewsAttachmentId,
-    pub news_id: NewsId,
-    pub url: NewsAttachmentUrl,
+    pub name: NewsAttachmentFilename,
+    pub url: NewsAttachmentObjectKey,
 }
 
 impl_value_object!(NewsAttachmentId(uuid::Uuid));
-impl_value_object!(NewsAttachmentUrl(url::Url));
+impl_value_object!(NewsAttachmentFilename(String));
 
 #[derive(Debug, Error)]
 pub enum NewsAttachmentIdError {
