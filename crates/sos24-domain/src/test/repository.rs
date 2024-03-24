@@ -56,6 +56,7 @@ impl Repositories for MockRepositories {
     type ProjectRepositoryImpl = MockProjectRepository;
     type UserRepositoryImpl = MockUserRepository;
     type NewsAttachmentRepositoryImpl = MockNewsAttachmentRepository;
+    type NewsAttachmentObjectRepositoryImpl = MockNewsAttachmentObjectRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -87,5 +88,9 @@ impl Repositories for MockRepositories {
 
     fn news_attachment_repository(&self) -> &Self::NewsAttachmentRepositoryImpl {
         &self.news_attachment_repository
+    }
+
+    fn news_attachment_object_repository(&self) -> &Self::NewsAttachmentObjectRepositoryImpl {
+        &self.news_attachment_object_repository
     }
 }
