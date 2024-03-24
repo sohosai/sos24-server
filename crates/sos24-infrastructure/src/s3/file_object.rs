@@ -3,12 +3,8 @@ use std::{ops::Deref, time::Duration};
 use anyhow::Context;
 use aws_sdk_s3::{presigning::PresigningConfig, primitives::SdkBody};
 use sos24_domain::{
-    entity::file_object::{
-        FileObject, FileObjectKey, FileSignedUrl,
-    },
-    repository::file_object::{
-        FileObjectRepository, FileObjectRepositoryError,
-    },
+    entity::file_object::{FileObject, FileObjectKey, FileSignedUrl},
+    repository::file_object::{FileObjectRepository, FileObjectRepositoryError},
 };
 
 use super::S3;

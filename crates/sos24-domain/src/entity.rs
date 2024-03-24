@@ -1,12 +1,12 @@
 pub mod actor;
 pub mod common;
+pub mod file_data;
+pub mod file_object;
 pub mod firebase_user;
 pub mod form;
 pub mod form_answer;
 pub mod invitation;
 pub mod news;
-pub mod file_data;
-pub mod file_object;
 pub mod permission;
 pub mod project;
 pub mod project_application_period;

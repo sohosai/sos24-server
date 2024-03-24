@@ -16,11 +16,7 @@ pub struct FileData {
 }
 
 impl FileData {
-    pub fn new(
-        id: FileId,
-        name: FileName,
-        url: FileObjectKey,
-    ) -> Self {
+    pub fn new(id: FileId, name: FileName, url: FileObjectKey) -> Self {
         Self {
             id,
             filename: name,

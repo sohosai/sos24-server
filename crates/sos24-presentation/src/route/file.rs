@@ -22,10 +22,7 @@ pub async fn handle_get(
         .await;
     raw_news_list
         .map(|raw_news_list| {
-            let news_list: Vec<File> = raw_news_list
-                .into_iter()
-                .map(File::from)
-                .collect();
+            let news_list: Vec<File> = raw_news_list.into_iter().map(File::from).collect();
             (StatusCode::OK, Json(news_list))
         })
         .map_err(|err| {
@@ -64,10 +61,7 @@ pub async fn handle_get_id(
         .find_by_id(&ctx, modules.config().s3_bucket_name.clone(), id)
         .await;
     match raw_file {
-        Ok(raw_file) => Ok((
-            StatusCode::OK,
-            Json(File::from(raw_file)),
-        )),
+        Ok(raw_file) => Ok((StatusCode::OK, Json(File::from(raw_file)))),
         Err(err) => {
             tracing::error!("Failed to find file: {err}");
             Err(err.into())
@@ -80,10 +74,7 @@ pub async fn handle_delete_id(
     State(modules): State<Arc<Modules>>,
     Extension(actor): Extension<Actor>,
 ) -> Result<impl IntoResponse, AppError> {
-    let res = modules
-        .file_use_case()
-        .delete_by_id(&actor, id)
-        .await;
+    let res = modules.file_use_case().delete_by_id(&actor, id).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to delete file: {err}");
         err.into()

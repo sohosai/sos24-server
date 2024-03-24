@@ -19,8 +19,7 @@ use sos24_domain::{
     },
     repository::{
         firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
-        news::NewsRepositoryError,
-        project::ProjectRepositoryError, user::UserRepositoryError,
+        news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
 use sos24_use_case::interactor::file::FileUseCaseError;
@@ -139,11 +138,9 @@ impl From<FileUseCaseError> for AppError {
     fn from(error: FileUseCaseError) -> AppError {
         let message = error.to_string();
         match error {
-            FileUseCaseError::NotFound(_) => AppError::new(
-                StatusCode::NOT_FOUND,
-                "file/not-found".to_string(),
-                message,
-            ),
+            FileUseCaseError::NotFound(_) => {
+                AppError::new(StatusCode::NOT_FOUND, "file/not-found".to_string(), message)
+            }
             FileUseCaseError::FileDataRepositoryError(e) => e.into(),
             FileUseCaseError::FileIdError(e) => e.into(),
             FileUseCaseError::PermissionDeniedError(e) => e.into(),

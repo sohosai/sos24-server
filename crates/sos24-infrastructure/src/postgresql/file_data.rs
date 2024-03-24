@@ -3,7 +3,7 @@ use futures_util::{StreamExt, TryStreamExt};
 use sos24_domain::{
     entity::{
         common::date::WithDate,
-        file_data::{FileData, FileName, FileId},
+        file_data::{FileData, FileId, FileName},
         file_object::FileObjectKey,
     },
     repository::file_data::{FileDataRepository, FileDataRepositoryError},
@@ -50,9 +50,7 @@ impl PgFileDataRepository {
 }
 
 impl FileDataRepository for PgFileDataRepository {
-    async fn list(
-        &self,
-    ) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError> {
+    async fn list(&self) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError> {
         let file_data_list = sqlx::query_as!(
             FileDataRow,
             r#"SELECT * FROM files WHERE deleted_at IS NULL"#
@@ -66,10 +64,7 @@ impl FileDataRepository for PgFileDataRepository {
         Ok(file_data_list)
     }
 
-    async fn create(
-        &self,
-        file_data: FileData,
-    ) -> Result<(), FileDataRepositoryError> {
+    async fn create(&self, file_data: FileData) -> Result<(), FileDataRepositoryError> {
         let file_data = file_data.destruct();
 
         sqlx::query!(
@@ -101,10 +96,7 @@ impl FileDataRepository for PgFileDataRepository {
         Ok(file_data_row.map(WithDate::try_from).transpose()?)
     }
 
-    async fn delete_by_id(
-        &self,
-        id: FileId,
-    ) -> Result<(), FileDataRepositoryError> {
+    async fn delete_by_id(&self, id: FileId) -> Result<(), FileDataRepositoryError> {
         sqlx::query!(
             r#"UPDATE files SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()

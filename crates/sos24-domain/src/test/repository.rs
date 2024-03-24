@@ -1,5 +1,9 @@
 use crate::repository::{
-    file_data::MockFileDataRepository, file_object::MockFileObjectRepository, firebase_user::MockFirebaseUserRepository, form::MockFormRepository, form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository, news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository, Repositories
+    file_data::MockFileDataRepository, file_object::MockFileObjectRepository,
+    firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
+    form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
+    news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
+    Repositories,
 };
 
 #[derive(Default)]
@@ -36,13 +40,11 @@ impl MockRepositories {
         &mut self.news_repository
     }
 
-    pub fn file_data_repository_mut(&mut self) -> &mut MockFileDataRepository{
+    pub fn file_data_repository_mut(&mut self) -> &mut MockFileDataRepository {
         &mut self.file_data_repository
     }
 
-    pub fn file_object_repository_mut(
-        &mut self,
-    ) -> &mut MockFileObjectRepository{
+    pub fn file_object_repository_mut(&mut self) -> &mut MockFileObjectRepository {
         &mut self.file_object_repository
     }
 

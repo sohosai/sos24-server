@@ -1,15 +1,9 @@
 use std::sync::Arc;
 
-use sos24_domain::entity::file_data::{
-    FileData, FileName, FileId, FileIdError,
-};
+use sos24_domain::entity::file_data::{FileData, FileId, FileIdError, FileName};
 use sos24_domain::entity::file_object::{FileObject, FileObjectKey};
-use sos24_domain::repository::file_data::{
-    FileDataRepository, FileDataRepositoryError,
-};
-use sos24_domain::repository::file_object::{
-    FileObjectRepository, FileObjectRepositoryError,
-};
+use sos24_domain::repository::file_data::{FileDataRepository, FileDataRepositoryError};
+use sos24_domain::repository::file_object::{FileObjectRepository, FileObjectRepositoryError};
 use sos24_domain::{
     ensure,
     entity::{
@@ -56,11 +50,7 @@ impl<R: Repositories> FileUseCase<R> {
     ) -> Result<Vec<FileDto>, FileUseCaseError> {
         // ToDo: 権限
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
-        let raw_file_data_list = self
-            .repositories
-            .file_data_repository()
-            .list()
-            .await?;
+        let raw_file_data_list = self.repositories.file_data_repository().list().await?;
         let mut file_list: Vec<FileDto> = vec![];
         for file_data in raw_file_data_list {
             let url = self
@@ -68,10 +58,7 @@ impl<R: Repositories> FileUseCase<R> {
                 .file_object_repository()
                 .generate_url(bucket.clone(), file_data.value.url().copy())
                 .await?;
-            file_list.push(FileDto::from_entity((
-                file_data,
-                url.value().into(),
-            )));
+            file_list.push(FileDto::from_entity((file_data, url.value().into())));
         }
         Ok(file_list)
     }
@@ -83,10 +70,7 @@ impl<R: Repositories> FileUseCase<R> {
         raw_file: CreateFileDto,
     ) -> Result<(), FileUseCaseError> {
         // ToDo: 権限・所有者設定
-        let key = FileObjectKey::generate(
-            key_prefix.as_str(),
-            raw_file.filename.as_str(),
-        );
+        let key = FileObjectKey::generate(key_prefix.as_str(), raw_file.filename.as_str());
 
         let object = FileObject::new(raw_file.file, key.clone());
         self.repositories
@@ -94,10 +78,7 @@ impl<R: Repositories> FileUseCase<R> {
             .create(bucket, object)
             .await?;
 
-        let data = FileData::create(
-            FileName::new(raw_file.filename),
-            key,
-        );
+        let data = FileData::create(FileName::new(raw_file.filename), key);
         self.repositories
             .file_data_repository()
             .create(data)
@@ -125,17 +106,10 @@ impl<R: Repositories> FileUseCase<R> {
             .await?
             .value()
             .into();
-        Ok(FileDto::from_entity((
-            raw_file_data,
-            signed_url,
-        )))
+        Ok(FileDto::from_entity((raw_file_data, signed_url)))
     }
 
-    pub async fn delete_by_id(
-        &self,
-        actor: &Actor,
-        id: String,
-    ) -> Result<(), FileUseCaseError> {
+    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), FileUseCaseError> {
         ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
 
         // ソフトデリートで実装している（オブジェクトストレージからは削除されない）

@@ -10,12 +10,12 @@ use tracing::Level;
 
 use crate::{middleware::auth, module::Modules};
 
+pub mod file;
 pub mod form;
 pub mod form_answer;
 pub mod health;
 pub mod invitation;
 pub mod news;
-pub mod file;
 pub mod project;
 pub mod user;
 
@@ -33,10 +33,7 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/", get(file::handle_get))
         .route("/", post(file::handle_post))
         .route("/:file_id", get(file::handle_get_id))
-        .route(
-            "/:file_id",
-            delete(file::handle_delete_id),
-        );
+        .route("/:file_id", delete(file::handle_delete_id));
 
     let user = Router::new()
         .route("/", get(user::handle_get))

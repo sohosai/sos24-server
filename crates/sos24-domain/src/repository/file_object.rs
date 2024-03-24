@@ -1,9 +1,7 @@
 use mockall::automock;
 use thiserror::Error;
 
-use crate::entity::file_object::{
-    FileObject, FileObjectKey, FileSignedUrl,
-};
+use crate::entity::file_object::{FileObject, FileObjectKey, FileSignedUrl};
 
 #[derive(Debug, Error)]
 pub enum FileObjectRepositoryError {
