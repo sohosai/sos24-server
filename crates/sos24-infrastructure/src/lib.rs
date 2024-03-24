@@ -7,6 +7,7 @@ use postgresql::invitation::PgInvitationRepository;
 use postgresql::news_attachment::PgNewsAttachmentRepository;
 use postgresql::project::PgProjectRepository;
 use postgresql::user::PgUserRepository;
+use s3::S3;
 use sos24_domain::repository::Repositories;
 
 use crate::postgresql::news::PgNewsRepository;
@@ -15,6 +16,7 @@ use crate::postgresql::Postgresql;
 pub mod firebase;
 pub mod mongodb;
 pub mod postgresql;
+pub mod s3;
 
 pub struct DefaultRepositories {
     firebase_user_repository: FirebaseUserRepositoryImpl,
@@ -28,7 +30,7 @@ pub struct DefaultRepositories {
 }
 
 impl DefaultRepositories {
-    pub fn new(postgresql: Postgresql, mongodb: MongoDb, auth: FirebaseAuth) -> Self {
+    pub fn new(postgresql: Postgresql, mongodb: MongoDb, auth: FirebaseAuth, s3: S3) -> Self {
         Self {
             firebase_user_repository: FirebaseUserRepositoryImpl::new(auth),
             form_repository: MongoFormRepository::new(mongodb.clone()),
@@ -38,6 +40,7 @@ impl DefaultRepositories {
             project_repository: PgProjectRepository::new(postgresql.clone()),
             news_attachment_repository: PgNewsAttachmentRepository::new(postgresql.clone()),
             user_repository: PgUserRepository::new(postgresql.clone()),
+            news_attachment_object_repository: NewsAttachmentRepository::new(s3.clone()),
         }
     }
 }

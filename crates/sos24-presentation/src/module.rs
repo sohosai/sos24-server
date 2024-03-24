@@ -68,12 +68,21 @@ impl Modules {
 #[cfg(not(test))]
 pub async fn new(config: Config) -> anyhow::Result<Modules> {
     use crate::env;
-    use sos24_infrastructure::{firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql};
+    use sos24_infrastructure::{
+        firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql, s3::S3,
+    };
 
     let db = Postgresql::new(&env::postgres_db_url()).await?;
     let mongo_db = MongoDb::new(&env::mongodb_db_url(), &env::mongodb_db_name()).await?;
     let auth = FirebaseAuth::new(&env::firebase_service_account_key()).await?;
-    let repository = Arc::new(DefaultRepositories::new(db, mongo_db, auth));
+    let object_storage = S3::new(
+        &env::s3_endpoint(),
+        &env::s3_region(),
+        &env::s3_access_key_id(),
+        &env::s3_secret_access_key(),
+    )
+    .await;
+    let repository = Arc::new(DefaultRepositories::new(db, mongo_db, auth, object_storage));
 
     let application_period = ProjectApplicationPeriod::new(
         config.project_application_start_at.clone(),

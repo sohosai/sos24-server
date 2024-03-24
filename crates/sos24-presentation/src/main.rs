@@ -15,6 +15,7 @@ async fn main() {
         require_email_verification: env::require_email_verification(),
         project_application_start_at: env::project_application_start_at(),
         project_application_end_at: env::project_application_end_at(),
+        s3_bucket_name: env::s3_bucket_name(),
     };
     let modules = module::new(config).await.unwrap();
     let app = create_app(modules);
