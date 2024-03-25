@@ -5,7 +5,6 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
 use sos24_domain::entity::actor::Actor;
-use sos24_use_case::context::Context;
 use sos24_use_case::dto::file::CreateFileDto;
 
 use crate::error::AppError;
@@ -14,11 +13,10 @@ use crate::module::Modules;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
-    Extension(actor): Extension<Actor>,
 ) -> Result<impl IntoResponse, AppError> {
     let raw_news_list = modules
         .file_use_case()
-        .list(modules.config().s3_bucket_name.clone(), &actor)
+        .list(modules.config().s3_bucket_name.clone())
         .await;
     raw_news_list
         .map(|raw_news_list| {
@@ -53,11 +51,10 @@ pub async fn handle_post(
 pub async fn handle_get_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, AppError> {
     let raw_file = modules
         .file_use_case()
-        .find_by_id(&ctx, modules.config().s3_bucket_name.clone(), id)
+        .find_by_id(modules.config().s3_bucket_name.clone(), id)
         .await;
     match raw_file {
         Ok(raw_file) => Ok((StatusCode::OK, Json(File::from(raw_file)))),

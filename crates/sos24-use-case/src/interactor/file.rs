@@ -14,7 +14,6 @@ use sos24_domain::{
 };
 use thiserror::Error;
 
-use crate::context::Context;
 use crate::dto::{
     file::{CreateFileDto, FileDto, FileEntity},
     FromEntity,
@@ -45,13 +44,8 @@ impl<R: Repositories> FileUseCase<R> {
         Self { repositories }
     }
 
-    pub async fn list(
-        &self,
-        bucket: String,
-        actor: &Actor,
-    ) -> Result<Vec<FileDto>, FileUseCaseError> {
+    pub async fn list(&self, bucket: String) -> Result<Vec<FileDto>, FileUseCaseError> {
         // ToDo: 権限
-        ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
         let raw_file_data_list = self.repositories.file_data_repository().list().await?;
         let mut file_list: Vec<FileDto> = vec![];
         for file_data in raw_file_data_list {
@@ -90,7 +84,6 @@ impl<R: Repositories> FileUseCase<R> {
 
     pub async fn find_by_id(
         &self,
-        ctx: &Context,
         backet: String,
         id: String,
     ) -> Result<FileDto, FileUseCaseError> {
