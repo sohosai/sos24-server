@@ -15,8 +15,10 @@ use sos24_domain::{
 use thiserror::Error;
 
 use crate::context::Context;
-use crate::dto::FromEntity;
-use crate::dto::{file::CreateFileDto, file::FileDto};
+use crate::dto::{
+    file::{CreateFileDto, FileDto, FileEntity},
+    FromEntity,
+};
 
 #[derive(Debug, Error)]
 pub enum FileUseCaseError {
@@ -58,7 +60,7 @@ impl<R: Repositories> FileUseCase<R> {
                 .file_object_repository()
                 .generate_url(bucket.clone(), file_data.value.url().copy())
                 .await?;
-            file_list.push(FileDto::from_entity((file_data, url.value().into())));
+            file_list.push(FileDto::from_entity(FileEntity::new(url, file_data)));
         }
         Ok(file_list)
     }
@@ -103,10 +105,11 @@ impl<R: Repositories> FileUseCase<R> {
             .repositories
             .file_object_repository()
             .generate_url(backet, raw_file_data.value.url().copy())
-            .await?
-            .value()
-            .into();
-        Ok(FileDto::from_entity((raw_file_data, signed_url)))
+            .await?;
+        Ok(FileDto::from_entity(FileEntity::new(
+            signed_url,
+            raw_file_data,
+        )))
     }
 
     pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), FileUseCaseError> {
