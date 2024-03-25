@@ -19,7 +19,7 @@ impl CreateFileDto {
 #[derive(Debug, PartialEq, Eq)]
 pub struct FileDto {
     pub id: String,
-    pub name: String,
+    pub filename: String,
     pub url: String,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
@@ -44,7 +44,7 @@ impl FromEntity for FileDto {
         let url = entity.url;
         Self {
             id: file_data.id.value().to_string(),
-            name: file_data.name.value().to_string(),
+            filename: file_data.name.value().to_string(),
             url: url.value().to_string(),
             created_at: entity.data.created_at,
             updated_at: entity.data.updated_at,

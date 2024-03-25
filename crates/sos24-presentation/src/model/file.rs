@@ -17,6 +17,7 @@ impl From<CreateFile> for CreateFileDto {
 pub struct File {
     pub id: String,
     pub url: String,
+    pub name: String,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,
@@ -27,6 +28,7 @@ impl From<FileDto> for File {
         File {
             id: file.id,
             url: file.url,
+            name: file.filename,
             created_at: file.created_at.to_rfc3339(),
             updated_at: file.updated_at.to_rfc3339(),
             deleted_at: file.deleted_at.map(|it| it.to_rfc3339()),

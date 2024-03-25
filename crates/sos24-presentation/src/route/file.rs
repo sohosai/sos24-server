@@ -14,14 +14,14 @@ use crate::module::Modules;
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, AppError> {
-    let raw_news_list = modules
+    let raw_file_list = modules
         .file_use_case()
         .list(modules.config().s3_bucket_name.clone())
         .await;
-    raw_news_list
-        .map(|raw_news_list| {
-            let news_list: Vec<File> = raw_news_list.into_iter().map(File::from).collect();
-            (StatusCode::OK, Json(news_list))
+    raw_file_list
+        .map(|raw_file_list| {
+            let file_list: Vec<File> = raw_file_list.into_iter().map(File::from).collect();
+            (StatusCode::OK, Json(file_list))
         })
         .map_err(|err| {
             tracing::error!("Failed to list files: {err}");
