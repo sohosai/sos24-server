@@ -1,4 +1,4 @@
-use std::{ops::Deref, time::Duration};
+use std::time::Duration;
 
 use anyhow::Context;
 use aws_sdk_s3::{presigning::PresigningConfig, primitives::SdkBody};
@@ -25,10 +25,15 @@ impl FileObjectRepository for S3FileObjectRepository {
         bucket: String,
         object: FileObject,
     ) -> Result<(), FileObjectRepositoryError> {
+        let raw_file_object = object.destruct();
         self.s3
             .put_object()
-            .body(SdkBody::from(object.data().deref()).into())
-            .key(object.key().copy().value())
+            .body(SdkBody::from(raw_file_object.data).into())
+            .key(raw_file_object.key.value())
+            // ToDo:テストを書きたい
+            // https://brutalgoblin.hatenablog.jp/entry/2023/01/05/190150
+            // そのためにはロジックとして分離してuse-caseに移動したい
+            .content_disposition(raw_file_object.content_disposition.value())
             .bucket(bucket)
             .send()
             .await

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use sos24_domain::entity::file_data::{FileData, FileId, FileIdError, FileName};
-use sos24_domain::entity::file_object::{FileObject, FileObjectKey};
+use sos24_domain::entity::file_object::{ContentDisposition, FileObject, FileObjectKey};
 use sos24_domain::repository::file_data::{FileDataRepository, FileDataRepositoryError};
 use sos24_domain::repository::file_object::{FileObjectRepository, FileObjectRepositoryError};
 use sos24_domain::{
@@ -66,15 +66,20 @@ impl<R: Repositories> FileUseCase<R> {
         raw_file: CreateFileDto,
     ) -> Result<(), FileUseCaseError> {
         // ToDo: 権限・所有者設定
-        let key = FileObjectKey::generate(key_prefix.as_str(), raw_file.filename.as_str());
+        let key = FileObjectKey::generate(key_prefix.as_str());
+        let filename = FileName::new(raw_file.filename);
 
-        let object = FileObject::new(raw_file.file, key.clone());
+        let object = FileObject::new(
+            raw_file.file,
+            key.clone(),
+            ContentDisposition::from(filename.clone()),
+        );
         self.repositories
             .file_object_repository()
             .create(bucket, object)
             .await?;
 
-        let data = FileData::create(FileName::new(raw_file.filename), key);
+        let data = FileData::create(filename, key);
         self.repositories
             .file_data_repository()
             .create(data)
