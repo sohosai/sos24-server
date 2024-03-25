@@ -48,7 +48,11 @@ pub enum FileObjectError {
 
 impl FileObjectKey {
     pub fn generate(prefix: &str, filename: &str) -> Self {
-        Self(format!("{}/{}/{}", prefix, uuid::Uuid::new_v4(), filename))
+        return match prefix.len() {
+            // /から始まるkeyは無効
+            0 => Self(format!("{}/{}", uuid::Uuid::new_v4(), filename)),
+            _ => Self(format!("{}/{}/{}", prefix, uuid::Uuid::new_v4(), filename)),
+        };
     }
     pub fn copy(&self) -> Self {
         Self(self.0.clone())

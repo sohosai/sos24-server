@@ -40,8 +40,7 @@ pub async fn handle_post(
         .file_use_case()
         .create(
             modules.config().s3_bucket_name.clone(),
-            // ToDo: そもそもkey_prefixは必要なのか？
-            "test".to_string(),
+            "user-upload".to_string(),
             file,
         )
         .await;
