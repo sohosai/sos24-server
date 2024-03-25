@@ -1,8 +1,11 @@
 use std::sync::Arc;
 
-use sos24_domain::{ensure, repository::{Repositories, user::UserRepository}};
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::user::UserId;
+use sos24_domain::{
+    ensure,
+    repository::{user::UserRepository, Repositories},
+};
 
 use crate::context::Context;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
@@ -58,7 +61,9 @@ mod tests {
             .await;
         assert!(matches!(
             res,
-            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+            Err(UserUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
         ));
     }
 

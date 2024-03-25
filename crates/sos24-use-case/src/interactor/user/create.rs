@@ -1,10 +1,10 @@
 use sos24_domain::{
     entity::firebase_user::{FirebaseUserEmail, FirebaseUserPassword, NewFirebaseUser},
-    repository::{firebase_user::FirebaseUserRepository, Repositories, user::UserRepository},
+    repository::{firebase_user::FirebaseUserRepository, user::UserRepository, Repositories},
 };
 
-use crate::dto::ToEntity;
 use crate::dto::user::CreateUserDto;
+use crate::dto::ToEntity;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
 impl<R: Repositories> UserUseCase<R> {
@@ -48,8 +48,8 @@ mod tests {
 
     use crate::{
         dto::{
-            FromEntity,
             user::{CreateUserDto, UserCategoryDto},
+            FromEntity,
         },
         interactor::user::{UserUseCase, UserUseCaseError},
     };

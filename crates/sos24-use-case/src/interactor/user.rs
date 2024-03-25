@@ -6,8 +6,8 @@ use sos24_domain::entity::common::email::EmailError;
 use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::firebase_user::FirebaseUserRepositoryError;
-use sos24_domain::repository::Repositories;
 use sos24_domain::repository::user::UserRepositoryError;
+use sos24_domain::repository::Repositories;
 
 use crate::context::ContextError;
 
@@ -31,7 +31,7 @@ pub enum UserUseCaseError {
     #[error(transparent)]
     EmailError(#[from] EmailError),
     #[error(transparent)]
-    PermissionDenied(#[from] PermissionDeniedError),
+    PermissionDeniedError(#[from] PermissionDeniedError),
     #[error(transparent)]
     InternalError(#[from] anyhow::Error),
 }
@@ -45,4 +45,3 @@ impl<R: Repositories> UserUseCase<R> {
         Self { repositories }
     }
 }
-

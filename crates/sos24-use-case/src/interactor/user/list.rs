@@ -3,12 +3,12 @@ use std::sync::Arc;
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
-    repository::{Repositories, user::UserRepository},
+    repository::{user::UserRepository, Repositories},
 };
 
 use crate::{
     context::Context,
-    dto::{FromEntity, user::UserDto},
+    dto::{user::UserDto, FromEntity},
     interactor::user::{UserUseCase, UserUseCaseError},
 };
 
@@ -46,7 +46,9 @@ mod tests {
         let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
-            Err(UserUseCaseError::PermissionDenied(PermissionDeniedError))
+            Err(UserUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
         ));
     }
 
