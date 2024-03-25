@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
+    extract::DefaultBodyLimit,
     routing::{delete, get, post, put},
     Router,
 };
@@ -32,6 +33,7 @@ pub fn create_app(modules: Modules) -> Router {
     let file = Router::new()
         .route("/", get(file::handle_get))
         .route("/", post(file::handle_post))
+        .layer(DefaultBodyLimit::max(modules.config().file_upload_limit))
         .route("/:file_id", get(file::handle_get_id))
         .route("/:file_id", delete(file::handle_delete_id));
 
