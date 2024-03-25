@@ -12,36 +12,27 @@ pub struct FileObject {
     data: String,
     #[getset(get = "pub", set = "pub")]
     key: FileObjectKey,
-    #[getset(get = "pub", set = "pub")]
-    content_disposition: ContentDisposition,
 }
 
 pub struct DestructedFileObject {
     pub data: String,
     pub key: FileObjectKey,
-    pub content_disposition: ContentDisposition,
 }
 
 impl FileObject {
-    pub fn new(data: String, key: FileObjectKey, content_disposition: ContentDisposition) -> Self {
-        Self {
-            data,
-            key,
-            content_disposition,
-        }
+    pub fn new(data: String, key: FileObjectKey) -> Self {
+        Self { data, key }
     }
-    pub fn create(data: String, prefix: &str, content_disposition: ContentDisposition) -> Self {
+    pub fn create(data: String, prefix: &str) -> Self {
         Self {
             data,
             key: FileObjectKey::generate(prefix),
-            content_disposition,
         }
     }
     pub fn destruct(self) -> DestructedFileObject {
         DestructedFileObject {
             data: self.data,
             key: self.key,
-            content_disposition: self.content_disposition,
         }
     }
 }

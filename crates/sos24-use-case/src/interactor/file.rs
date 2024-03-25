@@ -52,7 +52,11 @@ impl<R: Repositories> FileUseCase<R> {
             let url = self
                 .repositories
                 .file_object_repository()
-                .generate_url(bucket.clone(), file_data.value.url().copy())
+                .generate_url(
+                    bucket.clone(),
+                    file_data.value.url().copy(),
+                    Some(ContentDisposition::from(file_data.value.filename().clone())),
+                )
                 .await?;
             file_list.push(FileDto::from_entity(FileEntity::new(url, file_data)));
         }
@@ -69,11 +73,7 @@ impl<R: Repositories> FileUseCase<R> {
         let key = FileObjectKey::generate(key_prefix.as_str());
         let filename = FileName::new(raw_file.filename);
 
-        let object = FileObject::new(
-            raw_file.file,
-            key.clone(),
-            ContentDisposition::from(filename.clone()),
-        );
+        let object = FileObject::new(raw_file.file, key.clone());
         self.repositories
             .file_object_repository()
             .create(bucket, object)
@@ -102,7 +102,13 @@ impl<R: Repositories> FileUseCase<R> {
         let signed_url = self
             .repositories
             .file_object_repository()
-            .generate_url(backet, raw_file_data.value.url().copy())
+            .generate_url(
+                backet,
+                raw_file_data.value.url().copy(),
+                Some(ContentDisposition::from(
+                    raw_file_data.value.filename().clone(),
+                )),
+            )
             .await?;
         Ok(FileDto::from_entity(FileEntity::new(
             signed_url,

@@ -1,7 +1,7 @@
 use mockall::automock;
 use thiserror::Error;
 
-use crate::entity::file_object::{FileObject, FileObjectKey, FileSignedUrl};
+use crate::entity::file_object::{ContentDisposition, FileObject, FileObjectKey, FileSignedUrl};
 
 #[derive(Debug, Error)]
 pub enum FileObjectRepositoryError {
@@ -21,5 +21,6 @@ pub trait FileObjectRepository: Send + Sync + 'static {
         &self,
         bucket: String,
         key: FileObjectKey,
+        content_disposition: Option<ContentDisposition>,
     ) -> Result<FileSignedUrl, FileObjectRepositoryError>;
 }

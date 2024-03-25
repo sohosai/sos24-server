@@ -3,7 +3,7 @@ use std::time::Duration;
 use anyhow::Context;
 use aws_sdk_s3::{presigning::PresigningConfig, primitives::SdkBody};
 use sos24_domain::{
-    entity::file_object::{FileObject, FileObjectKey, FileSignedUrl},
+    entity::file_object::{ContentDisposition, FileObject, FileObjectKey, FileSignedUrl},
     repository::file_object::{FileObjectRepository, FileObjectRepositoryError},
 };
 
@@ -30,10 +30,6 @@ impl FileObjectRepository for S3FileObjectRepository {
             .put_object()
             .body(SdkBody::from(raw_file_object.data).into())
             .key(raw_file_object.key.value())
-            // ToDo:テストを書きたい
-            // https://brutalgoblin.hatenablog.jp/entry/2023/01/05/190150
-            // そのためにはロジックとして分離してuse-caseに移動したい
-            .content_disposition(raw_file_object.content_disposition.value())
             .bucket(bucket)
             .send()
             .await
@@ -45,6 +41,7 @@ impl FileObjectRepository for S3FileObjectRepository {
         &self,
         bucket: String,
         key: FileObjectKey,
+        content_disposition: Option<ContentDisposition>,
     ) -> Result<FileSignedUrl, FileObjectRepositoryError> {
         let presign_config = PresigningConfig::builder()
             .expires_in(Duration::new(3000, 0))
@@ -55,6 +52,7 @@ impl FileObjectRepository for S3FileObjectRepository {
             .get_object()
             .bucket(bucket)
             .key(key.value())
+            .set_response_content_disposition(content_disposition.map(|value| value.value()))
             .presigned(presign_config)
             .await
             .context("Failed to generate presign url")?;
