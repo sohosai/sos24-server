@@ -8,7 +8,7 @@ use sos24_domain::entity::actor::Actor;
 use sos24_use_case::dto::file::CreateFileDto;
 
 use crate::error::AppError;
-use crate::model::file::File;
+use crate::model::file::{File, FileInfo};
 use crate::module::Modules;
 
 pub async fn handle_get(
@@ -16,11 +16,11 @@ pub async fn handle_get(
 ) -> Result<impl IntoResponse, AppError> {
     let raw_file_list = modules
         .file_use_case()
-        .list(modules.config().s3_bucket_name.clone())
+        .list()
         .await;
     raw_file_list
         .map(|raw_file_list| {
-            let file_list: Vec<File> = raw_file_list.into_iter().map(File::from).collect();
+            let file_list: Vec<FileInfo> = raw_file_list.into_iter().map(FileInfo::from).collect();
             (StatusCode::OK, Json(file_list))
         })
         .map_err(|err| {

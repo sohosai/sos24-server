@@ -14,6 +14,7 @@ use sos24_domain::{
 };
 use thiserror::Error;
 
+use crate::dto::file::FileInfoDto;
 use crate::dto::{
     file::{CreateFileDto, FileDto, FileEntity},
     FromEntity,
@@ -44,23 +45,10 @@ impl<R: Repositories> FileUseCase<R> {
         Self { repositories }
     }
 
-    pub async fn list(&self, bucket: String) -> Result<Vec<FileDto>, FileUseCaseError> {
+    pub async fn list(&self) -> Result<Vec<FileInfoDto>, FileUseCaseError> {
         // ToDo: 権限
         let raw_file_data_list = self.repositories.file_data_repository().list().await?;
-        let mut file_list: Vec<FileDto> = vec![];
-        for file_data in raw_file_data_list {
-            let url = self
-                .repositories
-                .file_object_repository()
-                .generate_url(
-                    bucket.clone(),
-                    file_data.value.url().copy(),
-                    Some(ContentDisposition::from(file_data.value.filename().clone())),
-                )
-                .await?;
-            file_list.push(FileDto::from_entity(FileEntity::new(url, file_data)));
-        }
-        Ok(file_list)
+        Ok(raw_file_data_list.into_iter().map(FileInfoDto::from_entity).collect())
     }
 
     pub async fn create(

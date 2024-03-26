@@ -1,5 +1,7 @@
 use sos24_domain::entity::{
-    common::date::WithDate, file_data::FileData, file_object::FileSignedUrl,
+    common::date::WithDate,
+    file_data::FileData,
+    file_object::FileSignedUrl,
 };
 
 use super::FromEntity;
@@ -24,6 +26,28 @@ pub struct FileDto {
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+pub struct FileInfoDto {
+    pub id: String,
+    pub filename: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl FromEntity for FileInfoDto {
+    type Entity = WithDate<FileData>;
+    fn from_entity(entity: Self::Entity) -> Self {
+        let filedata = entity.value.destruct();
+        Self {
+            id: filedata.id.value().to_string(),
+            filename: filedata.name.value(),
+            created_at: entity.created_at,
+            updated_at: entity.updated_at,
+            deleted_at: entity.deleted_at,
+        }
+    }
 }
 
 pub struct FileEntity {
