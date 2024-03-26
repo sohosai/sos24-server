@@ -38,7 +38,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn 一般ユーザーはユーザー一覧を取得できない() {
+    async fn list_general_fail() {
         let repositories = MockRepositories::default();
         let use_case = UserUseCase::new(Arc::new(repositories));
 
@@ -53,7 +53,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 実委人はユーザー一覧を取得できる() {
+    async fn list_committee_success() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()

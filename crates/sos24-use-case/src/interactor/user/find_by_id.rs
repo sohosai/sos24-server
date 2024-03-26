@@ -43,7 +43,7 @@ mod tests {
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
-    async fn 一般ユーザーは自分のユーザーを取得できる() {
+    async fn find_by_id_general_success() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -63,7 +63,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 一般ユーザーは他のユーザーを取得できない() {
+    async fn find_by_id_general_fail() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -88,7 +88,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 実委人は他のユーザーを取得できる() {
+    async fn find_by_id_committee_success() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()

@@ -55,7 +55,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn 誰でもユーザーを作成できる() {
+    async fn create_success() {
         let mut repositories = MockRepositories::default();
         repositories
             .firebase_user_repository_mut()
@@ -81,7 +81,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn ユーザー作成が失敗した場合にfirebaseのユーザーが削除される() {
+    async fn create_fail() {
         let mut repositories = MockRepositories::default();
         repositories
             .firebase_user_repository_mut()
