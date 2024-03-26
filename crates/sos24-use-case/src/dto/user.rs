@@ -1,8 +1,6 @@
 use sos24_domain::entity::{
     common::date::WithDate,
-    user::{
-        User, UserCategory, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
-    },
+    user::{User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole},
 };
 
 use crate::interactor::user::UserUseCaseError;
@@ -16,7 +14,6 @@ pub struct CreateUserDto {
     pub email: String,
     pub password: String,
     pub phone_number: String,
-    pub category: UserCategoryDto,
 }
 
 impl CreateUserDto {
@@ -26,7 +23,6 @@ impl CreateUserDto {
         email: String,
         password: String,
         phone_number: String,
-        category: UserCategoryDto,
     ) -> Self {
         Self {
             name,
@@ -34,7 +30,6 @@ impl CreateUserDto {
             email,
             password,
             phone_number,
-            category,
         }
     }
 }
@@ -50,7 +45,6 @@ impl ToEntity for (String, CreateUserDto) {
             UserKanaName::new(user.kana_name),
             UserEmail::try_from(user.email)?,
             UserPhoneNumber::new(user.phone_number),
-            user.category.into_entity()?,
         ))
     }
 }
@@ -63,7 +57,6 @@ pub struct UpdateUserDto {
     pub email: String,
     pub phone_number: String,
     pub role: UserRoleDto,
-    pub category: UserCategoryDto,
 }
 
 impl UpdateUserDto {
@@ -74,7 +67,6 @@ impl UpdateUserDto {
         email: String,
         phone_number: String,
         role: UserRoleDto,
-        category: UserCategoryDto,
     ) -> Self {
         Self {
             id,
@@ -83,7 +75,6 @@ impl UpdateUserDto {
             email,
             phone_number,
             role,
-            category,
         }
     }
 }
@@ -96,7 +87,6 @@ pub struct UserDto {
     pub email: String,
     pub phone_number: String,
     pub role: UserRoleDto,
-    pub category: UserCategoryDto,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -113,7 +103,6 @@ impl FromEntity for UserDto {
             email: user.email.value(),
             phone_number: user.phone_number.value(),
             role: UserRoleDto::from_entity(user.role),
-            category: UserCategoryDto::from_entity(user.category),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,
@@ -160,35 +149,6 @@ impl std::fmt::Display for UserRoleDto {
             UserRoleDto::CommitteeOperator => write!(f, "実委人(管理者)"),
             UserRoleDto::Committee => write!(f, "実委人"),
             UserRoleDto::General => write!(f, "一般"),
-        }
-    }
-}
-#[derive(Debug)]
-pub enum UserCategoryDto {
-    UndergraduateStudent,
-    GraduateStudent,
-    AcademicStaff,
-}
-
-impl ToEntity for UserCategoryDto {
-    type Entity = UserCategory;
-    type Error = UserUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(match self {
-            UserCategoryDto::UndergraduateStudent => UserCategory::UndergraduateStudent,
-            UserCategoryDto::GraduateStudent => UserCategory::GraduateStudent,
-            UserCategoryDto::AcademicStaff => UserCategory::AcademicStaff,
-        })
-    }
-}
-
-impl FromEntity for UserCategoryDto {
-    type Entity = UserCategory;
-    fn from_entity(entity: Self::Entity) -> Self {
-        match entity {
-            UserCategory::UndergraduateStudent => UserCategoryDto::UndergraduateStudent,
-            UserCategory::GraduateStudent => UserCategoryDto::GraduateStudent,
-            UserCategory::AcademicStaff => UserCategoryDto::AcademicStaff,
         }
     }
 }

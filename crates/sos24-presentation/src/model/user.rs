@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
-use sos24_use_case::dto::user::{
-    CreateUserDto, UpdateUserDto, UserCategoryDto, UserDto, UserRoleDto,
-};
+use sos24_use_case::dto::user::{CreateUserDto, UpdateUserDto, UserDto, UserRoleDto};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateUser {
@@ -10,7 +8,6 @@ pub struct CreateUser {
     pub email: String,
     pub password: String,
     pub phone_number: String,
-    pub category: UserCategory,
 }
 
 impl From<CreateUser> for CreateUserDto {
@@ -21,7 +18,6 @@ impl From<CreateUser> for CreateUserDto {
             value.email,
             value.password,
             value.phone_number,
-            UserCategoryDto::from(value.category),
         )
     }
 }
@@ -33,7 +29,6 @@ pub struct UpdateUser {
     pub email: String,
     pub phone_number: String,
     pub role: UserRole,
-    pub category: UserCategory,
 }
 
 pub trait ConvertToUpdateUserDto {
@@ -50,7 +45,6 @@ impl ConvertToUpdateUserDto for (String, UpdateUser) {
             user.email,
             user.phone_number,
             UserRoleDto::from(user.role),
-            UserCategoryDto::from(user.category),
         )
     }
 }
@@ -63,7 +57,6 @@ pub struct User {
     pub email: String,
     pub phone_number: String,
     pub role: UserRole,
-    pub category: UserCategory,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,
@@ -78,7 +71,6 @@ impl From<UserDto> for User {
             email: value.email,
             phone_number: value.phone_number,
             role: value.role.into(),
-            category: value.category.into(),
             created_at: value.created_at.to_rfc3339(),
             updated_at: value.updated_at.to_rfc3339(),
             deleted_at: value.deleted_at.map(|it| it.to_rfc3339()),
@@ -161,34 +153,6 @@ impl From<UserRoleDto> for UserRole {
             UserRoleDto::CommitteeOperator => UserRole::CommitteeOperator,
             UserRoleDto::Committee => UserRole::Committee,
             UserRoleDto::General => UserRole::General,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum UserCategory {
-    UndergraduateStudent,
-    GraduateStudent,
-    AcademicStaff,
-}
-
-impl From<UserCategory> for UserCategoryDto {
-    fn from(value: UserCategory) -> Self {
-        match value {
-            UserCategory::UndergraduateStudent => UserCategoryDto::UndergraduateStudent,
-            UserCategory::GraduateStudent => UserCategoryDto::GraduateStudent,
-            UserCategory::AcademicStaff => UserCategoryDto::AcademicStaff,
-        }
-    }
-}
-
-impl From<UserCategoryDto> for UserCategory {
-    fn from(value: UserCategoryDto) -> Self {
-        match value {
-            UserCategoryDto::UndergraduateStudent => UserCategory::UndergraduateStudent,
-            UserCategoryDto::GraduateStudent => UserCategory::GraduateStudent,
-            UserCategoryDto::AcademicStaff => UserCategory::AcademicStaff,
         }
     }
 }

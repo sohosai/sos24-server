@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE users SET name = $2, kana_name = $3, email = $4, phone_number = $5, category = $6, role = $7 WHERE id = $1 AND deleted_at IS NULL",
+  "query": "UPDATE users SET name = $2, kana_name = $3, email = $4, phone_number = $5, role = $6 WHERE id = $1 AND deleted_at IS NULL",
   "describe": {
     "columns": [],
     "parameters": {
@@ -10,18 +10,6 @@
         "Text",
         "Text",
         "Text",
-        {
-          "Custom": {
-            "name": "user_category",
-            "kind": {
-              "Enum": [
-                "undergraduate_student",
-                "graduate_student",
-                "academic_staff"
-              ]
-            }
-          }
-        },
         {
           "Custom": {
             "name": "user_role",
@@ -39,5 +27,5 @@
     },
     "nullable": []
   },
-  "hash": "ffb1e3a3e5e752d102a66044e9ad9f747b91349e5c5c83c4403f6750b55d3b74"
+  "hash": "2f8e8b83979cd80fb6ffc29fefb523416fca6786f11456926f96fe831e0b1cc6"
 }

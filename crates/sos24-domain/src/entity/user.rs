@@ -22,8 +22,6 @@ pub struct User {
     phone_number: UserPhoneNumber,
     #[getset(get = "pub")]
     role: UserRole,
-    #[getset(get = "pub")]
-    category: UserCategory,
 }
 
 impl User {
@@ -34,7 +32,6 @@ impl User {
         email: UserEmail,
         phone_number: UserPhoneNumber,
         role: UserRole,
-        category: UserCategory,
     ) -> Self {
         Self {
             id,
@@ -43,7 +40,6 @@ impl User {
             email,
             phone_number,
             role,
-            category,
         }
     }
 
@@ -53,7 +49,6 @@ impl User {
         kana_name: UserKanaName,
         email: UserEmail,
         phone_number: UserPhoneNumber,
-        category: UserCategory,
     ) -> Self {
         Self {
             id,
@@ -62,7 +57,6 @@ impl User {
             email,
             phone_number,
             role: UserRole::General,
-            category,
         }
     }
 
@@ -74,7 +68,6 @@ impl User {
             email: self.email,
             phone_number: self.phone_number,
             role: self.role,
-            category: self.category,
         }
     }
 }
@@ -87,7 +80,6 @@ pub struct DestructuredUser {
     pub email: UserEmail,
     pub phone_number: UserPhoneNumber,
     pub role: UserRole,
-    pub category: UserCategory,
 }
 
 impl User {
@@ -144,16 +136,6 @@ impl User {
         self.role = role;
         Ok(())
     }
-
-    pub fn set_category(
-        &mut self,
-        actor: &Actor,
-        category: UserCategory,
-    ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
-        self.category = category;
-        Ok(())
-    }
 }
 
 impl_value_object!(UserId(String));
@@ -167,13 +149,6 @@ pub enum UserRole {
     CommitteeOperator,
     Committee,
     General,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UserCategory {
-    UndergraduateStudent,
-    GraduateStudent,
-    AcademicStaff,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -59,11 +59,6 @@ impl<R: Repositories> UserUseCase<R> {
             new_user.set_role(&actor, new_role)?;
         }
 
-        let new_category = user_data.category.into_entity()?;
-        if new_user.category() != &new_category {
-            new_user.set_category(&actor, new_category)?;
-        }
-
         self.repositories.user_repository().update(new_user).await?;
         Ok(())
     }
@@ -78,7 +73,7 @@ mod tests {
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
     use crate::context::Context;
-    use crate::dto::user::{UpdateUserDto, UserCategoryDto, UserRoleDto};
+    use crate::dto::user::{UpdateUserDto, UserRoleDto};
     use crate::dto::FromEntity;
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
@@ -110,7 +105,6 @@ mod tests {
                     fixture::user::email2().value(),
                     fixture::user::phone_number2().value(),
                     UserRoleDto::from_entity(UserRole::General),
-                    UserCategoryDto::from_entity(fixture::user::category2()),
                 ),
             )
             .await;
@@ -145,7 +139,6 @@ mod tests {
                     fixture::user::email1().value(),
                     fixture::user::phone_number1().value(),
                     UserRoleDto::from_entity(UserRole::Administrator),
-                    UserCategoryDto::from_entity(fixture::user::category1()),
                 ),
             )
             .await;
@@ -185,7 +178,6 @@ mod tests {
                     fixture::user::email2().value(),
                     fixture::user::phone_number2().value(),
                     UserRoleDto::from_entity(UserRole::General),
-                    UserCategoryDto::from_entity(fixture::user::category2()),
                 ),
             )
             .await;
@@ -225,7 +217,6 @@ mod tests {
                     fixture::user::email2().value(),
                     fixture::user::phone_number2().value(),
                     UserRoleDto::from_entity(UserRole::Administrator),
-                    UserCategoryDto::from_entity(fixture::user::category2()),
                 ),
             )
             .await;

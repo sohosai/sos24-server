@@ -1,5 +1,5 @@
 use crate::entity::user::{
-    User, UserCategory, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
+    User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
 };
 
 pub fn id1() -> UserId {
@@ -22,10 +22,6 @@ pub fn phone_number1() -> UserPhoneNumber {
     UserPhoneNumber::new("0900-000-0001".to_string())
 }
 
-pub fn category1() -> UserCategory {
-    UserCategory::UndergraduateStudent
-}
-
 pub fn id2() -> UserId {
     UserId::new("user_id2".to_string())
 }
@@ -46,10 +42,6 @@ pub fn phone_number2() -> UserPhoneNumber {
     UserPhoneNumber::new("0900-000-0002".to_string())
 }
 
-pub fn category2() -> UserCategory {
-    UserCategory::GraduateStudent
-}
-
 pub fn user1(role: UserRole) -> User {
     User::new(
         id1(),
@@ -58,7 +50,6 @@ pub fn user1(role: UserRole) -> User {
         email1(),
         phone_number1(),
         role,
-        category1(),
     )
 }
 
@@ -70,6 +61,5 @@ pub fn user2(role: UserRole) -> User {
         email2(),
         phone_number2(),
         role,
-        category2(),
     )
 }
