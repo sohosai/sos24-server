@@ -3,31 +3,29 @@ use std::sync::Arc;
 use thiserror::Error;
 
 use sos24_domain::{
-    ensure,
     entity::{
         form::{FormId, FormIdError},
         form_answer::{FormAnswerId, FormAnswerIdError},
-        permission::{PermissionDeniedError, Permissions},
+        permission::PermissionDeniedError,
         project::{ProjectId, ProjectIdError},
     },
     repository::{
-        form::{FormRepository, FormRepositoryError},
-        form_answer::{FormAnswerRepository, FormAnswerRepositoryError},
-        project::{ProjectRepository, ProjectRepositoryError},
-        Repositories,
+        form::FormRepositoryError, form_answer::FormAnswerRepositoryError,
+        project::ProjectRepositoryError, Repositories,
     },
-    service::verify_form_answer::{self, VerifyFormAnswerError},
+    service::verify_form_answer::VerifyFormAnswerError,
 };
 
-use crate::{
-    context::{Context, ContextError},
-    dto::{
-        form_answer::{CreateFormAnswerDto, FormAnswerDto, UpdateFormAnswerDto},
-        FromEntity, ToEntity,
-    },
-};
+use crate::context::ContextError;
 
 use super::form::FormUseCaseError;
+
+pub mod create;
+pub mod find_by_form_id;
+pub mod find_by_id;
+pub mod find_by_project_id;
+pub mod list;
+pub mod update;
 
 #[derive(Debug, Error)]
 pub enum FormAnswerUseCaseError {
@@ -71,189 +69,5 @@ pub struct FormAnswerUseCase<R: Repositories> {
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub fn new(repositories: Arc<R>) -> Self {
         Self { repositories }
-    }
-
-    pub async fn list(&self, ctx: &Context) -> Result<Vec<FormAnswerDto>, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-        ensure!(actor.has_permission(Permissions::READ_FORM_ANSWER_ALL));
-
-        let raw_form_answer_list = self.repositories.form_answer_repository().list().await?;
-        let form_answer_list = raw_form_answer_list
-            .into_iter()
-            .map(FormAnswerDto::from_entity);
-        Ok(form_answer_list.collect())
-    }
-
-    pub async fn create(
-        &self,
-        ctx: &Context,
-        form_answer: CreateFormAnswerDto,
-    ) -> Result<(), FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-        ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
-
-        let form_answer = form_answer.into_entity()?;
-
-        let prev_form_answer = self
-            .repositories
-            .form_answer_repository()
-            .find_by_project_id_and_form_id(
-                form_answer.project_id().clone(),
-                form_answer.form_id().clone(),
-            )
-            .await?;
-        if let Some(_) = prev_form_answer {
-            return Err(FormAnswerUseCaseError::AlreadyAnswered);
-        }
-
-        let project = self
-            .repositories
-            .project_repository()
-            .find_by_id(form_answer.project_id().clone())
-            .await?
-            .ok_or(FormAnswerUseCaseError::ProjectNotFound(
-                form_answer.project_id().clone(),
-            ))?;
-
-        ensure!(project.value.is_visible_to(&actor));
-
-        let form = self
-            .repositories
-            .form_repository()
-            .find_by_id(form_answer.form_id().clone())
-            .await?
-            .ok_or(FormAnswerUseCaseError::ProjectNotFound(
-                form_answer.project_id().clone(),
-            ))?;
-
-        // TODO: 申請がその企画向けのものかどうかのチェックするとよいかもしれない
-
-        verify_form_answer::verify(&form.value, &form_answer)?;
-
-        self.repositories
-            .form_answer_repository()
-            .create(form_answer)
-            .await?;
-
-        Ok(())
-    }
-
-    pub async fn find_by_id(
-        &self,
-        ctx: &Context,
-        id: String,
-    ) -> Result<FormAnswerDto, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-
-        let id = FormAnswerId::try_from(id)?;
-        let form_answer = self
-            .repositories
-            .form_answer_repository()
-            .find_by_id(id.clone())
-            .await?
-            .ok_or(FormAnswerUseCaseError::NotFound(id))?;
-
-        let project_id = form_answer.value.project_id();
-        let project = self
-            .repositories
-            .project_repository()
-            .find_by_id(project_id.clone())
-            .await?
-            .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
-        ensure!(project.value.is_visible_to(&actor));
-
-        Ok(FormAnswerDto::from_entity(form_answer))
-    }
-
-    pub async fn find_by_project_id(
-        &self,
-        ctx: &Context,
-        project_id: String,
-    ) -> Result<Vec<FormAnswerDto>, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-
-        let project_id = ProjectId::try_from(project_id)?;
-        let project = self
-            .repositories
-            .project_repository()
-            .find_by_id(project_id.clone())
-            .await?
-            .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
-        ensure!(project.value.is_visible_to(&actor));
-
-        let raw_form_answer_list = self
-            .repositories
-            .form_answer_repository()
-            .find_by_project_id(project_id.clone())
-            .await?;
-
-        let form_answer_list = raw_form_answer_list
-            .into_iter()
-            .map(FormAnswerDto::from_entity);
-        Ok(form_answer_list.collect())
-    }
-
-    pub async fn find_by_form_id(
-        &self,
-        ctx: &Context,
-        form_id: String,
-    ) -> Result<Vec<FormAnswerDto>, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-        ensure!(actor.has_permission(Permissions::READ_FORM_ANSWER_ALL));
-
-        let form_id = FormId::try_from(form_id)?;
-        let _form = self
-            .repositories
-            .form_repository()
-            .find_by_id(form_id.clone())
-            .await?
-            .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
-        // TODO: ensure!(form.value.is_visible_to(&actor));
-
-        let raw_form_answer_list = self
-            .repositories
-            .form_answer_repository()
-            .find_by_form_id(form_id.clone())
-            .await?;
-
-        let form_answer_list = raw_form_answer_list
-            .into_iter()
-            .map(FormAnswerDto::from_entity);
-        Ok(form_answer_list.collect())
-    }
-
-    pub async fn update(
-        &self,
-        ctx: &Context,
-        form_answer_data: UpdateFormAnswerDto,
-    ) -> Result<(), FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-
-        let id = FormAnswerId::try_from(form_answer_data.id)?;
-        let form_answer = self
-            .repositories
-            .form_answer_repository()
-            .find_by_id(id.clone())
-            .await?
-            .ok_or(FormAnswerUseCaseError::NotFound(id))?;
-
-        ensure!(form_answer.value.is_updatable_by(&actor));
-
-        let mut new_form_answer = form_answer.value;
-        new_form_answer
-            .set_project_id(&actor, ProjectId::try_from(form_answer_data.project_id)?)?;
-        new_form_answer.set_form_id(&actor, FormId::try_from(form_answer_data.form_id)?)?;
-        let new_items = form_answer_data
-            .items
-            .into_iter()
-            .map(|item| item.into_entity())
-            .collect::<Result<_, _>>()?;
-        new_form_answer.set_items(&actor, new_items)?;
-
-        self.repositories
-            .form_answer_repository()
-            .update(new_form_answer)
-            .await?;
-        Ok(())
     }
 }

@@ -240,7 +240,7 @@ impl From<UserUseCaseError> for AppError {
             UserUseCaseError::UserRepositoryError(e) => e.into(),
             UserUseCaseError::FirebaseUserRepositoryError(e) => e.into(),
             UserUseCaseError::EmailError(e) => e.into(),
-            UserUseCaseError::PermissionDenied(e) => e.into(),
+            UserUseCaseError::PermissionDeniedError(e) => e.into(),
             UserUseCaseError::InternalError(e) => e.into(),
         }
     }
