@@ -15,7 +15,7 @@ pub fn index1() -> ProjectIndex {
 }
 
 pub fn title1() -> ProjectTitle {
-    ProjectTitle::new("そぽたん焼き".to_string())
+    ProjectTitle::try_from("そぽたん焼き".to_string()).unwrap()
 }
 
 pub fn kana_title1() -> ProjectKanaTitle {
@@ -23,7 +23,7 @@ pub fn kana_title1() -> ProjectKanaTitle {
 }
 
 pub fn group_name1() -> ProjectGroupName {
-    ProjectGroupName::new("そぽたん愛好会".to_string())
+    ProjectGroupName::try_from("そぽたん愛好会".to_string()).unwrap()
 }
 
 pub fn kana_group_name1() -> ProjectKanaGroupName {
@@ -63,7 +63,7 @@ pub fn index2() -> ProjectIndex {
 }
 
 pub fn title2() -> ProjectTitle {
-    ProjectTitle::new("そぽたん煮".to_string())
+    ProjectTitle::try_from("そぽたん煮".to_string()).unwrap()
 }
 
 pub fn kana_title2() -> ProjectKanaTitle {
@@ -71,7 +71,7 @@ pub fn kana_title2() -> ProjectKanaTitle {
 }
 
 pub fn group_name2() -> ProjectGroupName {
-    ProjectGroupName::new("そぽたん連盟".to_string())
+    ProjectGroupName::try_from("そぽたん連盟".to_string()).unwrap()
 }
 
 pub fn kana_group_name2() -> ProjectKanaGroupName {

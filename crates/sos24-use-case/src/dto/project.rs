@@ -52,9 +52,9 @@ impl ToEntity for CreateProjectDto {
     type Error = ProjectUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(Project::create(
-            ProjectTitle::new(self.title),
+            ProjectTitle::try_from(self.title)?,
             ProjectKanaTitle::new(self.kana_title),
-            ProjectGroupName::new(self.group_name),
+            ProjectGroupName::try_from(self.group_name)?,
             ProjectKanaGroupName::new(self.kana_group_name),
             self.category.into_entity()?,
             self.attributes.into_entity()?,
