@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sos24_use_case::dto::file::{FileDto, FileInfoDto};
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct File {
     pub id: String,
@@ -30,7 +29,7 @@ pub struct FileInfo {
     pub filename: String,
     pub created_at: String,
     pub updated_at: String,
-    pub deleted_at: Option<String>
+    pub deleted_at: Option<String>,
 }
 
 impl From<FileInfoDto> for FileInfo {
@@ -40,7 +39,7 @@ impl From<FileInfoDto> for FileInfo {
             filename: file.filename,
             created_at: file.created_at.to_rfc3339(),
             updated_at: file.updated_at.to_rfc3339(),
-            deleted_at: file.deleted_at.map(|it| it.to_rfc3339())
+            deleted_at: file.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

@@ -157,7 +157,6 @@ impl From<FileObjectRepositoryError> for AppError {
     }
 }
 
-
 impl From<NewsRepositoryError> for AppError {
     fn from(error: NewsRepositoryError) -> AppError {
         match error {

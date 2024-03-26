@@ -1,7 +1,5 @@
 use sos24_domain::entity::{
-    common::date::WithDate,
-    file_data::FileData,
-    file_object::FileSignedUrl,
+    common::date::WithDate, file_data::FileData, file_object::FileSignedUrl,
 };
 
 use super::FromEntity;
