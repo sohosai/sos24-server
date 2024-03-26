@@ -31,9 +31,9 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:news_id", put(news::handle_put_id));
 
     let file = Router::new()
-        .route("/", get(file::handle_get))
         .route("/", post(file::handle_post))
         .layer(DefaultBodyLimit::max(modules.config().file_upload_limit))
+        .route("/", get(file::handle_get))
         .route("/:file_id", get(file::handle_get_id))
         .route("/:file_id", delete(file::handle_delete_id));
 

@@ -1,17 +1,6 @@
 use serde::{Deserialize, Serialize};
-use sos24_use_case::dto::file::{CreateFileDto, FileDto};
+use sos24_use_case::dto::file::FileDto;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CreateFile {
-    filename: String,
-    file: Vec<u8>,
-}
-
-impl From<CreateFile> for CreateFileDto {
-    fn from(file: CreateFile) -> Self {
-        CreateFileDto::new(file.filename, file.file)
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct File {

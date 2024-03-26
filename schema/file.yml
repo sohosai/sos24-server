@@ -3,7 +3,7 @@ paths:
     get:
       summary: ニュースの添付ファイル一覧の取得
       tags:
-        -files 
+        - files 
         - committee
       responses:
         200:
@@ -99,9 +99,9 @@ schemas:
       id:
         type: string
         format: uuid
-      filename:
+      name:
         type: string
-      file_url:
+      url:
         type: string
       created_at:
         type: string
