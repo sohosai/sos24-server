@@ -88,8 +88,6 @@ schemas:
   CreateFile:
     type: object
     properties:
-      filename:
-        type: string
       file:
         type: string
         format: binary

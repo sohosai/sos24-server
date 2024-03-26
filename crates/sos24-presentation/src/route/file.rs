@@ -30,6 +30,7 @@ pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
+    let mut filedto: Option<CreateFileDto>;
     while let Some(file) = multipart.next_field().await.map_err(|_| {
         AppError::new(
             StatusCode::BAD_REQUEST,
@@ -37,29 +38,42 @@ pub async fn handle_post(
             "No file was found".to_string(),
         )
     })? {
-        let filename = match file.file_name() {
-            Some(name) => name.to_string(),
-            None => Err(AppError::new(
-                StatusCode::BAD_REQUEST,
-                "file/no-file-name".to_string(),
-                "File name was not provided".to_string(),
-            ))?,
-        };
-        let filebytes = match file.bytes().await {
-            Ok(v) => v,
-            Err(e) => Err(AppError::new(
-                StatusCode::BAD_REQUEST,
-                "file/bad-file-bytes".to_string(),
-                e.body_text(),
-            ))?,
-        };
-        let file = CreateFileDto::new(filename, filebytes.into());
+        match file.name().ok_or(AppError::new(
+            StatusCode::BAD_REQUEST,
+            "file/no-name".to_string(),
+            "No name was found".to_string(),
+        ))? {
+            "file" => {
+                let filename = match file.file_name() {
+                    Some(name) => name.to_string(),
+                    None => Err(AppError::new(
+                        StatusCode::BAD_REQUEST,
+                        "file/no-file-name".to_string(),
+                        "File name was not provided".to_string(),
+                    ))?,
+                };
+                let filebytes = match file.bytes().await {
+                    Ok(v) => v,
+                    Err(e) => Err(AppError::new(
+                        StatusCode::BAD_REQUEST,
+                        "file/bad-file-bytes".to_string(),
+                        e.body_text(),
+                    ))?,
+                };
+                filedto = Some(CreateFileDto::new(filename, filebytes.into()));
+            }
+            _ => continue,
+        }
         modules
             .file_use_case()
             .create(
                 modules.config().s3_bucket_name.clone(),
                 "user-upload".to_string(),
-                file,
+                filedto.ok_or(AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "file/no-file".to_string(),
+                    "No file was found".to_string(),
+                ))?,
             )
             .await?;
     }
