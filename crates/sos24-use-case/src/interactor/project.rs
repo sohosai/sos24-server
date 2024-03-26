@@ -5,7 +5,7 @@ use thiserror::Error;
 use sos24_domain::{
     entity::{
         permission::PermissionDeniedError,
-        project::{ProjectId, ProjectIdError},
+        project::{BoundedStringError, ProjectId, ProjectIdError},
         project_application_period::ProjectApplicationPeriod,
     },
     repository::{project::ProjectRepositoryError, Repositories},
@@ -29,6 +29,8 @@ pub enum ProjectUseCaseError {
     #[error("Project applications are not being accepted")]
     ApplicationsNotAccepted,
 
+    #[error(transparent)]
+    BoundedStringError(#[from] BoundedStringError),
     #[error(transparent)]
     ContextError(#[from] ContextError),
     #[error(transparent)]

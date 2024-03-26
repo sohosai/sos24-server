@@ -40,9 +40,9 @@ impl<R: Repositories> ProjectUseCase<R> {
         }
 
         let mut new_project = project.value;
-        new_project.set_title(&actor, ProjectTitle::new(project_data.title))?;
+        new_project.set_title(&actor, ProjectTitle::try_from(project_data.title)?)?;
         new_project.set_kana_title(&actor, ProjectKanaTitle::new(project_data.kana_title))?;
-        new_project.set_group_name(&actor, ProjectGroupName::new(project_data.group_name))?;
+        new_project.set_group_name(&actor, ProjectGroupName::try_from(project_data.group_name)?)?;
         new_project.set_kana_group_name(
             &actor,
             ProjectKanaGroupName::new(project_data.kana_group_name),

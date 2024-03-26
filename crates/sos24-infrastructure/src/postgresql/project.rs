@@ -42,9 +42,9 @@ impl TryFrom<ProjectRow> for WithDate<Project> {
             Project::new(
                 ProjectId::new(value.id),
                 ProjectIndex::new(value.index),
-                ProjectTitle::new(value.title),
+                ProjectTitle::try_from(value.title)?,
                 ProjectKanaTitle::new(value.kana_title),
-                ProjectGroupName::new(value.group_name),
+                ProjectGroupName::try_from(value.group_name)?,
                 ProjectKanaGroupName::new(value.kana_group_name),
                 value.category.into(),
                 ProjectAttributes::from_bits(value.attributes as u32)

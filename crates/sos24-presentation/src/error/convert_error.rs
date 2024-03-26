@@ -4,6 +4,7 @@ use sos24_domain::entity::common::datetime::DateTimeError;
 use sos24_domain::entity::file_data::FileIdError;
 use sos24_domain::entity::form::{FormIdError, FormItemIdError};
 use sos24_domain::entity::form_answer::FormAnswerIdError;
+use sos24_domain::entity::project::BoundedStringError;
 use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::repository::file_object::FileObjectRepositoryError;
 use sos24_domain::repository::form::FormRepositoryError;
@@ -224,6 +225,7 @@ impl From<ProjectUseCaseError> for AppError {
             ProjectUseCaseError::ProjectIdError(e) => e.into(),
             ProjectUseCaseError::PermissionDeniedError(e) => e.into(),
             ProjectUseCaseError::InternalError(e) => e.into(),
+            ProjectUseCaseError::BoundedStringError(e) => e.into(),
         }
     }
 }
@@ -512,6 +514,28 @@ impl From<DateTimeError> for AppError {
             DateTimeError::InvalidFormat => AppError::new(
                 StatusCode::BAD_REQUEST,
                 "datetime/invalid-format".to_string(),
+                error.to_string(),
+            ),
+        }
+    }
+}
+
+impl From<BoundedStringError> for AppError {
+    fn from(error: BoundedStringError) -> AppError {
+        match error {
+            BoundedStringError::InvalidCharacter(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "bounded-string/invalid-character".to_string(),
+                error.to_string(),
+            ),
+            BoundedStringError::Empty => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "bounded-string/empty".to_string(),
+                error.to_string(),
+            ),
+            BoundedStringError::TooLong(_) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "bounded-string/too-long".to_string(),
                 error.to_string(),
             ),
         }

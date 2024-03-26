@@ -263,9 +263,93 @@ impl TryFrom<String> for ProjectId {
 }
 
 impl_value_object!(ProjectIndex(i32));
-impl_value_object!(ProjectTitle(String));
+
+// 最大`MAXLEN`文字の文字列を持つ
+// 半角・全角英数字及び半角記号は3文字で仮名2文字としてカウントする
+// 絵文字は含めることができない
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BoundedString<const MAXLEN: usize>(String);
+
+impl<const MAXLEN: usize> BoundedString<MAXLEN> {
+    pub fn value(self) -> String {
+        self.0
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum BoundedStringError {
+    #[error("Invalid character: `{0}`")]
+    InvalidCharacter(char),
+    #[error("Empty string is not allowed")]
+    Empty,
+    #[error("Too long (max: {0})")]
+    TooLong(usize),
+}
+
+impl<const MAXLEN: usize> TryFrom<String> for BoundedString<MAXLEN> {
+    type Error = BoundedStringError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let mut length = 0; // 文字列長を3倍してカウントする
+
+        for c in value.chars() {
+            if emojis::get(&c.to_string()).is_some() {
+                return Err(BoundedStringError::InvalidCharacter(c));
+            }
+
+            let char_length = match c {
+                '\u{0021}'..='\u{007E}' // 半角英数字・記号
+                | '\u{FF10}'..='\u{FF19}' // 全角数字
+                | '\u{FF21}'..='\u{FF3A}' // 全角英語（大文字）
+                | '\u{FF41}'..='\u{FF5A}' // 全角英語（小文字）
+                  => 2,
+                _ => 3,
+            };
+
+            length += char_length;
+        }
+
+        if length == 0 {
+            return Err(BoundedStringError::Empty);
+        }
+        if length > MAXLEN * 3 {
+            return Err(BoundedStringError::TooLong(MAXLEN));
+        }
+
+        Ok(Self(value))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProjectTitle(BoundedString<20>);
+impl ProjectTitle {
+    pub fn value(self) -> String {
+        self.0.value()
+    }
+}
+impl TryFrom<String> for ProjectTitle {
+    type Error = BoundedStringError;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        BoundedString::try_from(value).map(Self)
+    }
+}
+
 impl_value_object!(ProjectKanaTitle(String));
-impl_value_object!(ProjectGroupName(String));
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProjectGroupName(BoundedString<20>);
+impl ProjectGroupName {
+    pub fn value(self) -> String {
+        self.0.value()
+    }
+}
+impl TryFrom<String> for ProjectGroupName {
+    type Error = BoundedStringError;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        BoundedString::try_from(value).map(Self)
+    }
+}
+
 impl_value_object!(ProjectKanaGroupName(String));
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -306,5 +390,32 @@ bitflags! {
         const STAGE_1A = 1 << 4;
         const STAGE_UNIVERSITY_HALL = 1 << 5;
         const STAGE_UNITED = 1 << 6;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::entity::project::ProjectTitle;
+
+    #[test]
+    fn valid_project_title() {
+        let kana20 = "あ".repeat(20);
+        assert!(ProjectTitle::try_from(kana20).is_ok());
+
+        let kana18 = "あ".repeat(18);
+        assert!(ProjectTitle::try_from(format!("{kana18}AAA")).is_ok());
+    }
+
+    #[test]
+    fn invalid_project_title() {
+        assert!(ProjectTitle::try_from("".to_string()).is_err());
+
+        let kana21 = "あ".repeat(21);
+        assert!(ProjectTitle::try_from(kana21).is_err());
+
+        let kana18 = "あ".repeat(18);
+        assert!(ProjectTitle::try_from(format!("{kana18}AAAA")).is_err());
+
+        assert!(ProjectTitle::try_from("🙂".to_string()).is_err());
     }
 }
