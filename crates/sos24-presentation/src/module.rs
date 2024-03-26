@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
+use sos24_use_case::interactor::file::FileUseCase;
 use sos24_use_case::interactor::{
     form::FormUseCase, form_answer::FormAnswerUseCase, invitation::InvitationUseCase,
     news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
@@ -25,6 +26,7 @@ pub struct Modules {
     form_answer_use_case: FormAnswerUseCase<Repositories>,
     invitation_use_case: InvitationUseCase<Repositories>,
     news_use_case: NewsUseCase<Repositories>,
+    file_use_case: FileUseCase<Repositories>,
     project_use_case: ProjectUseCase<Repositories>,
     user_use_case: UserUseCase<Repositories>,
 }
@@ -50,6 +52,10 @@ impl Modules {
         &self.news_use_case
     }
 
+    pub fn file_use_case(&self) -> &FileUseCase<Repositories> {
+        &self.file_use_case
+    }
+
     pub fn project_use_case(&self) -> &ProjectUseCase<Repositories> {
         &self.project_use_case
     }
@@ -62,12 +68,21 @@ impl Modules {
 #[cfg(not(test))]
 pub async fn new(config: Config) -> anyhow::Result<Modules> {
     use crate::env;
-    use sos24_infrastructure::{firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql};
+    use sos24_infrastructure::{
+        firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql, s3::S3,
+    };
 
     let db = Postgresql::new(&env::postgres_db_url()).await?;
     let mongo_db = MongoDb::new(&env::mongodb_db_url(), &env::mongodb_db_name()).await?;
     let auth = FirebaseAuth::new(&env::firebase_service_account_key()).await?;
-    let repository = Arc::new(DefaultRepositories::new(db, mongo_db, auth));
+    let object_storage = S3::new(
+        &env::s3_endpoint(),
+        &env::s3_region(),
+        &env::s3_access_key_id(),
+        &env::s3_secret_access_key(),
+    )
+    .await;
+    let repository = Arc::new(DefaultRepositories::new(db, mongo_db, auth, object_storage));
 
     let application_period = ProjectApplicationPeriod::new(
         config.project_application_start_at.clone(),
@@ -83,6 +98,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
             application_period.clone(),
         ),
         news_use_case: NewsUseCase::new(Arc::clone(&repository)),
+        file_use_case: FileUseCase::new(Arc::clone(&repository)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repository), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repository)),
     })
@@ -103,6 +119,7 @@ pub async fn new_test(repositories: MockRepositories) -> anyhow::Result<Modules>
             application_period.clone(),
         ),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories)),
+        file_use_case: FileUseCase::new(Arc::clone(&repositories)),
         project_use_case: ProjectUseCase::new(Arc::clone(&repositories), application_period),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })

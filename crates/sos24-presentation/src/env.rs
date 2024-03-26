@@ -54,3 +54,23 @@ pub fn mongodb_db_url() -> String {
 pub fn mongodb_db_name() -> String {
     env::var("MONGO_DB").expect("Env `MONGODB_DB_NAME` must be set")
 }
+
+pub fn s3_endpoint() -> String {
+    env::var("S3_ENDPOINT").expect("Env `S3_ENDPOINT` must be set")
+}
+
+pub fn s3_region() -> String {
+    env::var("S3_REGION").expect("Env `S3_REGION` must be set")
+}
+
+pub fn s3_bucket_name() -> String {
+    env::var("S3_BUCKET").expect("Env `S3_BUCKET` must be set")
+}
+
+pub fn s3_access_key_id() -> String {
+    env::var("S3_ACCESS_KEY_ID").expect("Env `S3_ACCESS_KEY_ID` must be set")
+}
+
+pub fn s3_secret_access_key() -> String {
+    env::var("S3_SECRET_ACCESS_KEY").expect("Env `S3_SECRET_ACCESS_KEY` must be set")
+}

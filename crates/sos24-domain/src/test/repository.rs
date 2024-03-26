@@ -1,4 +1,5 @@
 use crate::repository::{
+    file_data::MockFileDataRepository, file_object::MockFileObjectRepository,
     firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
     form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
     news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
@@ -12,6 +13,8 @@ pub struct MockRepositories {
     form_answer_repository: MockFormAnswerRepository,
     invitation_repository: MockInvitationRepository,
     news_repository: MockNewsRepository,
+    file_data_repository: MockFileDataRepository,
+    file_object_repository: MockFileObjectRepository,
     project_repository: MockProjectRepository,
     user_repository: MockUserRepository,
 }
@@ -37,6 +40,14 @@ impl MockRepositories {
         &mut self.news_repository
     }
 
+    pub fn file_data_repository_mut(&mut self) -> &mut MockFileDataRepository {
+        &mut self.file_data_repository
+    }
+
+    pub fn file_object_repository_mut(&mut self) -> &mut MockFileObjectRepository {
+        &mut self.file_object_repository
+    }
+
     pub fn project_repository_mut(&mut self) -> &mut MockProjectRepository {
         &mut self.project_repository
     }
@@ -54,6 +65,8 @@ impl Repositories for MockRepositories {
     type NewsRepositoryImpl = MockNewsRepository;
     type ProjectRepositoryImpl = MockProjectRepository;
     type UserRepositoryImpl = MockUserRepository;
+    type FileDataRepositoryImpl = MockFileDataRepository;
+    type FileObjectRepositoryImpl = MockFileObjectRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -81,5 +94,13 @@ impl Repositories for MockRepositories {
 
     fn user_repository(&self) -> &Self::UserRepositoryImpl {
         &self.user_repository
+    }
+
+    fn file_data_repository(&self) -> &Self::FileDataRepositoryImpl {
+        &self.file_data_repository
+    }
+
+    fn file_object_repository(&self) -> &Self::FileObjectRepositoryImpl {
+        &self.file_object_repository
     }
 }

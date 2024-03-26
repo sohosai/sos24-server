@@ -3,9 +3,12 @@ use firebase::FirebaseAuth;
 use mongodb::form::MongoFormRepository;
 use mongodb::form_answer::MongoFormAnswerRepository;
 use mongodb::MongoDb;
+use postgresql::file_data::PgFileDataRepository;
 use postgresql::invitation::PgInvitationRepository;
 use postgresql::project::PgProjectRepository;
 use postgresql::user::PgUserRepository;
+use s3::file_object::S3FileObjectRepository;
+use s3::S3;
 use sos24_domain::repository::Repositories;
 
 use crate::postgresql::news::PgNewsRepository;
@@ -14,6 +17,7 @@ use crate::postgresql::Postgresql;
 pub mod firebase;
 pub mod mongodb;
 pub mod postgresql;
+pub mod s3;
 
 pub struct DefaultRepositories {
     firebase_user_repository: FirebaseUserRepositoryImpl,
@@ -22,11 +26,13 @@ pub struct DefaultRepositories {
     invitation_repository: PgInvitationRepository,
     news_repository: PgNewsRepository,
     project_repository: PgProjectRepository,
+    file_data_repository: PgFileDataRepository,
     user_repository: PgUserRepository,
+    file_object_repository: S3FileObjectRepository,
 }
 
 impl DefaultRepositories {
-    pub fn new(postgresql: Postgresql, mongodb: MongoDb, auth: FirebaseAuth) -> Self {
+    pub fn new(postgresql: Postgresql, mongodb: MongoDb, auth: FirebaseAuth, s3: S3) -> Self {
         Self {
             firebase_user_repository: FirebaseUserRepositoryImpl::new(auth),
             form_repository: MongoFormRepository::new(mongodb.clone()),
@@ -34,7 +40,9 @@ impl DefaultRepositories {
             invitation_repository: PgInvitationRepository::new(postgresql.clone()),
             news_repository: PgNewsRepository::new(postgresql.clone()),
             project_repository: PgProjectRepository::new(postgresql.clone()),
+            file_data_repository: PgFileDataRepository::new(postgresql.clone()),
             user_repository: PgUserRepository::new(postgresql.clone()),
+            file_object_repository: S3FileObjectRepository::new(s3.clone()),
         }
     }
 }
@@ -47,6 +55,8 @@ impl Repositories for DefaultRepositories {
     type NewsRepositoryImpl = PgNewsRepository;
     type ProjectRepositoryImpl = PgProjectRepository;
     type UserRepositoryImpl = PgUserRepository;
+    type FileDataRepositoryImpl = PgFileDataRepository;
+    type FileObjectRepositoryImpl = S3FileObjectRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -72,7 +82,15 @@ impl Repositories for DefaultRepositories {
         &self.project_repository
     }
 
+    fn file_data_repository(&self) -> &Self::FileDataRepositoryImpl {
+        &self.file_data_repository
+    }
+
     fn user_repository(&self) -> &Self::UserRepositoryImpl {
         &self.user_repository
+    }
+
+    fn file_object_repository(&self) -> &Self::FileObjectRepositoryImpl {
+        &self.file_object_repository
     }
 }

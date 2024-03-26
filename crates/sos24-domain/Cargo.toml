@@ -12,3 +12,5 @@ mockall.workspace = true
 regex.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
+url.workspace = true
+percent-encoding.workspace = true

@@ -3,6 +3,7 @@ use std::ops::Deref;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
+pub mod file_data;
 pub mod invitation;
 pub mod news;
 pub mod project;

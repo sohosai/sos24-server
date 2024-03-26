@@ -6,6 +6,7 @@ edition.workspace = true
 [dependencies]
 sos24-domain = { path = "../sos24-domain" }
 anyhow.workspace = true
+aws-sdk-s3.workspace = true
 chrono.workspace = true
 futures-util.workspace = true
 mongodb.workspace = true
@@ -14,3 +15,4 @@ serde.workspace = true
 serde_json.workspace = true
 sqlx.workspace = true
 uuid.workspace = true
+url.workspace = true

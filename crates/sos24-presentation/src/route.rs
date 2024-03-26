@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
+    extract::DefaultBodyLimit,
     routing::{delete, get, post, put},
     Router,
 };
@@ -10,6 +11,7 @@ use tracing::Level;
 
 use crate::{middleware::auth, module::Modules};
 
+pub mod file;
 pub mod form;
 pub mod form_answer;
 pub mod health;
@@ -27,6 +29,13 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:news_id", get(news::handle_get_id))
         .route("/:news_id", delete(news::handle_delete_id))
         .route("/:news_id", put(news::handle_put_id));
+
+    let file = Router::new()
+        .route("/", post(file::handle_post))
+        .layer(DefaultBodyLimit::max(modules.config().file_upload_limit))
+        .route("/", get(file::handle_get))
+        .route("/:file_id", get(file::handle_get_id))
+        .route("/:file_id", delete(file::handle_delete_id));
 
     let user = Router::new()
         .route("/", get(user::handle_get))
@@ -67,6 +76,7 @@ pub fn create_app(modules: Modules) -> Router {
 
     let private_routes = Router::new()
         .nest("/news", news)
+        .nest("/files", file)
         .nest("/users", user)
         .nest("/projects", project)
         .nest("/invitations", invitation)

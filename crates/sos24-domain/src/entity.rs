@@ -1,5 +1,7 @@
 pub mod actor;
 pub mod common;
+pub mod file_data;
+pub mod file_object;
 pub mod firebase_user;
 pub mod form;
 pub mod form_answer;

@@ -1,8 +1,11 @@
 use axum::http::StatusCode;
 
 use sos24_domain::entity::common::datetime::DateTimeError;
+use sos24_domain::entity::file_data::FileIdError;
 use sos24_domain::entity::form::{FormIdError, FormItemIdError};
 use sos24_domain::entity::form_answer::FormAnswerIdError;
+use sos24_domain::repository::file_data::FileDataRepositoryError;
+use sos24_domain::repository::file_object::FileObjectRepositoryError;
 use sos24_domain::repository::form::FormRepositoryError;
 use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
 use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
@@ -19,6 +22,7 @@ use sos24_domain::{
         news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
+use sos24_use_case::interactor::file::FileUseCaseError;
 use sos24_use_case::interactor::form::FormUseCaseError;
 use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
 use sos24_use_case::{
@@ -129,6 +133,56 @@ impl From<InvitationUseCaseError> for AppError {
     }
 }
 
+impl From<FileUseCaseError> for AppError {
+    fn from(error: FileUseCaseError) -> AppError {
+        let message = error.to_string();
+        match error {
+            FileUseCaseError::NotFound(_) => {
+                AppError::new(StatusCode::NOT_FOUND, "file/not-found".to_string(), message)
+            }
+            FileUseCaseError::FileDataRepositoryError(e) => e.into(),
+            FileUseCaseError::FileIdError(e) => e.into(),
+            FileUseCaseError::PermissionDeniedError(e) => e.into(),
+            FileUseCaseError::InternalError(e) => e.into(),
+            FileUseCaseError::FileObjectRepositoryError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FileObjectRepositoryError> for AppError {
+    fn from(error: FileObjectRepositoryError) -> AppError {
+        match error {
+            FileObjectRepositoryError::InternalError(e) => e.into(),
+        }
+    }
+}
+
+impl From<NewsRepositoryError> for AppError {
+    fn from(error: NewsRepositoryError) -> AppError {
+        match error {
+            NewsRepositoryError::InternalError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FileDataRepositoryError> for AppError {
+    fn from(value: FileDataRepositoryError) -> Self {
+        match value {
+            FileDataRepositoryError::InternalError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FileIdError> for AppError {
+    fn from(value: FileIdError) -> Self {
+        AppError::new(
+            StatusCode::BAD_REQUEST,
+            "file/file-id".to_string(),
+            value.to_string(),
+        )
+    }
+}
+
 impl From<NewsUseCaseError> for AppError {
     fn from(error: NewsUseCaseError) -> AppError {
         let message = error.to_string();
@@ -226,14 +280,6 @@ impl From<InvitationRepositoryError> for AppError {
     fn from(error: InvitationRepositoryError) -> AppError {
         match error {
             InvitationRepositoryError::InternalError(e) => e.into(),
-        }
-    }
-}
-
-impl From<NewsRepositoryError> for AppError {
-    fn from(error: NewsRepositoryError) -> AppError {
-        match error {
-            NewsRepositoryError::InternalError(e) => e.into(),
         }
     }
 }

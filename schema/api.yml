@@ -11,8 +11,8 @@ tags:
     description: ユーザー関連の操作
   - name: news
     description: ニュース関連の操作
-  - name: news-attachments
-    description: ニュースの添付ファイル関連の操作
+  - name: files 
+    description: ファイル関連の操作
   - name: forms
     description: 申請関連の操作
   - name: form-answers
@@ -46,10 +46,10 @@ paths:
   /news/{news_id}:
     $ref: "./schema/news.yml#/paths/~1news~1{news_id}"
 
-  /news-attachments:
-    $ref: "./schema/news-attachment.yml#/paths/~1news-attachments"
-  /news-attachments/{news_attachment_id}:
-    $ref: "./schema/news-attachment.yml#/paths/~1news-attachments~1{news_attachment_id}"
+  /files:
+    $ref: "./schema/file.yml#/paths/~1files"
+  /files/{file_id}:
+    $ref: "./schema/file.yml#/paths/~1files~1{file_id}"
 
   /invitations:
     $ref: "./schema/invitation.yml#/paths/~1invitations"
