@@ -3,10 +3,7 @@ use futures_util::{StreamExt, TryStreamExt};
 use sos24_domain::{
     entity::{
         common::date::WithDate,
-        user::{
-            User, UserCategory, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber,
-            UserRole,
-        },
+        user::{User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole},
     },
     repository::user::{UserRepository, UserRepositoryError},
 };
@@ -24,7 +21,6 @@ pub struct UserRow {
     email: String,
     phone_number: String,
     role: UserRoleRow,
-    category: UserCategoryRow,
 
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
@@ -42,7 +38,6 @@ impl TryFrom<UserRow> for WithDate<User> {
                 UserEmail::try_from(value.email)?,
                 UserPhoneNumber::new(value.phone_number),
                 UserRole::from(value.role),
-                UserCategory::from(value.category),
             ),
             value.created_at,
             value.updated_at,
@@ -82,34 +77,6 @@ impl From<UserRole> for UserRoleRow {
     }
 }
 
-#[derive(Type)]
-#[sqlx(type_name = "user_category", rename_all = "snake_case")]
-pub enum UserCategoryRow {
-    UndergraduateStudent,
-    GraduateStudent,
-    AcademicStaff,
-}
-
-impl From<UserCategoryRow> for UserCategory {
-    fn from(value: UserCategoryRow) -> Self {
-        match value {
-            UserCategoryRow::UndergraduateStudent => UserCategory::UndergraduateStudent,
-            UserCategoryRow::GraduateStudent => UserCategory::GraduateStudent,
-            UserCategoryRow::AcademicStaff => UserCategory::AcademicStaff,
-        }
-    }
-}
-
-impl From<UserCategory> for UserCategoryRow {
-    fn from(value: UserCategory) -> Self {
-        match value {
-            UserCategory::UndergraduateStudent => UserCategoryRow::UndergraduateStudent,
-            UserCategory::GraduateStudent => UserCategoryRow::GraduateStudent,
-            UserCategory::AcademicStaff => UserCategoryRow::AcademicStaff,
-        }
-    }
-}
-
 #[derive(Clone)]
 pub struct PgUserRepository {
     db: Postgresql,
@@ -123,7 +90,7 @@ impl PgUserRepository {
 
 impl UserRepository for PgUserRepository {
     async fn list(&self) -> Result<Vec<WithDate<User>>, UserRepositoryError> {
-        let user_list = sqlx::query_as!(UserRow, r#"SELECT id, name, kana_name, email, phone_number, category AS "category: UserCategoryRow", role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE deleted_at IS NULL"#)
+        let user_list = sqlx::query_as!(UserRow, r#"SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE deleted_at IS NULL"#)
             .fetch(&*self.db)
             .map(|row| WithDate::try_from(row.context("Failed to fetch user list")?))
             .try_collect()
@@ -134,13 +101,12 @@ impl UserRepository for PgUserRepository {
     async fn create(&self, user: User) -> Result<(), UserRepositoryError> {
         let user = user.destruct();
         let res = sqlx::query!(
-          r#"INSERT INTO users (id, name, kana_name, email, phone_number, category) VALUES ($1, $2, $3, $4, $5, $6)"#,
+          r#"INSERT INTO users (id, name, kana_name, email, phone_number) VALUES ($1, $2, $3, $4, $5)"#,
           user.id.value(),
           user.name.value(),
           user.kana_name.value(),
           user.email.clone().value(),
           user.phone_number.clone().value(),
-          UserCategoryRow::from(user.category) as UserCategoryRow,
         )
         .execute(&*self.db)
         .await;
@@ -162,7 +128,7 @@ impl UserRepository for PgUserRepository {
     async fn find_by_id(&self, id: UserId) -> Result<Option<WithDate<User>>, UserRepositoryError> {
         let user_row = sqlx::query_as!(
             UserRow,
-            r#"SELECT id, name, kana_name, email, phone_number, category AS "category: UserCategoryRow", role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at FROM users WHERE id = $1 AND deleted_at IS NULL"#,
             id.value(),
         )
         .fetch_optional(&*self.db)
@@ -174,13 +140,12 @@ impl UserRepository for PgUserRepository {
     async fn update(&self, user: User) -> Result<(), UserRepositoryError> {
         let user = user.destruct();
         sqlx::query!(
-            r#"UPDATE users SET name = $2, kana_name = $3, email = $4, phone_number = $5, category = $6, role = $7 WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"UPDATE users SET name = $2, kana_name = $3, email = $4, phone_number = $5, role = $6 WHERE id = $1 AND deleted_at IS NULL"#,
             user.id.value(),
             user.name.value(),
             user.kana_name.value(),
             user.email.value(),
             user.phone_number.value(),
-            UserCategoryRow::from(user.category) as UserCategoryRow,
             UserRoleRow::from(user.role) as UserRoleRow,
         )
         .execute(&*self.db)

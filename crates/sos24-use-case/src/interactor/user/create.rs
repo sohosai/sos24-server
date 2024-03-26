@@ -47,10 +47,7 @@ mod tests {
     };
 
     use crate::{
-        dto::{
-            user::{CreateUserDto, UserCategoryDto},
-            FromEntity,
-        },
+        dto::user::CreateUserDto,
         interactor::user::{UserUseCase, UserUseCaseError},
     };
 
@@ -74,7 +71,6 @@ mod tests {
                 fixture::user::email1().value(),
                 fixture::firebase_user::password1().value(),
                 fixture::user::phone_number1().value(),
-                UserCategoryDto::from_entity(fixture::user::category1()),
             ))
             .await;
         assert!(matches!(res, Ok(())));
@@ -105,7 +101,6 @@ mod tests {
                 fixture::user::email1().value(),
                 fixture::firebase_user::password1().value(),
                 fixture::user::phone_number1().value(),
-                UserCategoryDto::from_entity(fixture::user::category1()),
             ))
             .await;
         assert!(matches!(
