@@ -4,7 +4,7 @@ use sos24_use_case::dto::file::{CreateFileDto, FileDto};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateFile {
     filename: String,
-    file: String,
+    file: Vec<u8>,
 }
 
 impl From<CreateFile> for CreateFileDto {

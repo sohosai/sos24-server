@@ -9,21 +9,21 @@ use super::file_data::FileName;
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct FileObject {
     #[getset(get = "pub", set = "pub")]
-    data: String,
+    data: Vec<u8>,
     #[getset(get = "pub", set = "pub")]
     key: FileObjectKey,
 }
 
 pub struct DestructedFileObject {
-    pub data: String,
+    pub data: Vec<u8>,
     pub key: FileObjectKey,
 }
 
 impl FileObject {
-    pub fn new(data: String, key: FileObjectKey) -> Self {
+    pub fn new(data: Vec<u8>, key: FileObjectKey) -> Self {
         Self { data, key }
     }
-    pub fn create(data: String, prefix: &str) -> Self {
+    pub fn create(data: Vec<u8>, prefix: &str) -> Self {
         Self {
             data,
             key: FileObjectKey::generate(prefix),

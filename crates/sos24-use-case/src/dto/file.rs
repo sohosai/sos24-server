@@ -7,11 +7,11 @@ use super::FromEntity;
 #[derive(Debug)]
 pub struct CreateFileDto {
     pub filename: String,
-    pub file: String,
+    pub file: Vec<u8>,
 }
 
 impl CreateFileDto {
-    pub fn new(filename: String, file: String) -> Self {
+    pub fn new(filename: String, file: Vec<u8>) -> Self {
         Self { filename, file }
     }
 }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::extract::{Path, State};
+use axum::extract::{Multipart, Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
@@ -8,7 +8,7 @@ use sos24_domain::entity::actor::Actor;
 use sos24_use_case::dto::file::CreateFileDto;
 
 use crate::error::AppError;
-use crate::model::file::{CreateFile, File};
+use crate::model::file::File;
 use crate::module::Modules;
 
 pub async fn handle_get(
@@ -31,21 +31,42 @@ pub async fn handle_get(
 
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
-    Json(raw_file): Json<CreateFile>,
+    mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
-    let file = CreateFileDto::from(raw_file);
-    let res = modules
-        .file_use_case()
-        .create(
-            modules.config().s3_bucket_name.clone(),
-            "user-upload".to_string(),
-            file,
+    while let Some(file) = multipart.next_field().await.map_err(|_| {
+        AppError::new(
+            StatusCode::BAD_REQUEST,
+            "file/not-found".to_string(),
+            "No file was found".to_string(),
         )
-        .await;
-    res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create file: {err}");
-        err.into()
-    })
+    })? {
+        let filename = match file.file_name() {
+            Some(name) => name.to_string(),
+            None => Err(AppError::new(
+                StatusCode::BAD_REQUEST,
+                "file/no-file-name".to_string(),
+                "File name was not provided".to_string(),
+            ))?,
+        };
+        let filebytes = match file.bytes().await {
+            Ok(v) => v,
+            Err(e) => Err(AppError::new(
+                StatusCode::BAD_REQUEST,
+                "file/bad-file-bytes".to_string(),
+                e.body_text(),
+            ))?,
+        };
+        let file = CreateFileDto::new(filename, filebytes.into());
+        modules
+            .file_use_case()
+            .create(
+                modules.config().s3_bucket_name.clone(),
+                "user-upload".to_string(),
+                file,
+            )
+            .await?;
+    }
+    Ok(StatusCode::CREATED)
 }
 
 pub async fn handle_get_id(
