@@ -56,7 +56,6 @@ impl FileObjectRepository for S3FileObjectRepository {
             .presigned(presign_config)
             .await
             .context("Failed to generate presign url")?;
-        // 間違ってそう
         Ok(FileSignedUrl::try_from(request.uri()).context("Failed to parse")?)
     }
 }

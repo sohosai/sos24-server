@@ -32,7 +32,6 @@ use sos24_use_case::{
         user::UserUseCaseError,
     },
 };
-use url::ParseError;
 
 use super::AppError;
 
@@ -158,15 +157,6 @@ impl From<FileObjectRepositoryError> for AppError {
     }
 }
 
-impl From<ParseError> for AppError {
-    fn from(error: ParseError) -> AppError {
-        AppError::new(
-            StatusCode::BAD_REQUEST,
-            "parse-error".to_string(),
-            error.to_string(),
-        )
-    }
-}
 
 impl From<NewsRepositoryError> for AppError {
     fn from(error: NewsRepositoryError) -> AppError {
