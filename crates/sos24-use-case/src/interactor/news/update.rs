@@ -81,7 +81,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn update_committee_fail() {
+    async fn 実委人はお知らせを更新できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .news_repository_mut()
@@ -115,7 +115,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_operator_success() {
+    async fn 実委人管理者はお知らせを更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .news_repository_mut()

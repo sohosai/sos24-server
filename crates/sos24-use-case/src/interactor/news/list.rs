@@ -36,7 +36,7 @@ mod tests {
     use crate::{context::Context, interactor::news::NewsUseCase};
 
     #[tokio::test]
-    async fn list_general_success() {
+    async fn 一般ユーザーはお知らせ一覧を取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .news_repository_mut()

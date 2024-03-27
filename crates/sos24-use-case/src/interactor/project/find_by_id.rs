@@ -49,7 +49,7 @@ mod tests {
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
-    async fn find_by_id_general_success() {
+    async fn 一般ユーザーは自分の企画を取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
@@ -69,7 +69,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn find_by_id_general_fail() {
+    async fn 一般ユーザーは他人の企画を取得できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
@@ -94,7 +94,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn find_by_id_committee_success() {
+    async fn 実委人は他人の企画を取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()

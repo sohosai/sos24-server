@@ -52,7 +52,7 @@ mod tests {
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
-    async fn create_success() {
+    async fn 一般ユーザーは企画を作成できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
@@ -87,7 +87,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_fail() {
+    async fn 企画責任者の一般ユーザーは企画を作成できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()

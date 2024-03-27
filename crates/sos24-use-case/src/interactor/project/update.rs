@@ -74,7 +74,7 @@ mod tests {
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
-    async fn update_committee_success() {
+    async fn 実委人は自分の企画を更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
@@ -110,7 +110,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_committee_fail() {
+    async fn 実委人は他人の企画を更新できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
@@ -151,7 +151,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_operator_success() {
+    async fn 実委人管理者は他人の企画を更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()

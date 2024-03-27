@@ -39,7 +39,7 @@ mod tests {
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
-    async fn delete_by_id_committee_fail1() {
+    async fn 実委人は自分のユーザーを削除できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_by_id_committee_fail2() {
+    async fn 実委人管理者は他人のユーザーを削除できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()

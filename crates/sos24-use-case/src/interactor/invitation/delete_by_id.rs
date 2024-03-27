@@ -49,7 +49,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn delete_by_id_committee_fail() {
+    async fn 実委人は招待を削除できない() {
         let repositories = MockRepositories::default();
         let use_case = InvitationUseCase::new_for_test(repositories);
 
@@ -66,7 +66,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_by_id_operator_success() {
+    async fn 実委人管理者は招待を削除できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .invitation_repository_mut()

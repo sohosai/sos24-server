@@ -32,7 +32,7 @@ mod tests {
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
-    async fn list_general_fail() {
+    async fn 一般ユーザーは企画一覧を取得できない() {
         let repositories = MockRepositories::default();
         let use_case = ProjectUseCase::new_for_test(repositories);
 
@@ -47,7 +47,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn list_committee_success() {
+    async fn 実委人は企画一覧を取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
