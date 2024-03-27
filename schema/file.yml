@@ -19,6 +19,11 @@ paths:
       tags:
         - files
         - committee
+      parameters:
+        - in: query 
+          name: visibility
+          schema:
+            type: boolean
       requestBody:
         required: true
         content:
@@ -91,11 +96,6 @@ schemas:
       file:
         type: string
         format: binary
-      visibility:
-        type: string
-        enum:
-          - public
-          - private
   File:
     type: object
     properties:

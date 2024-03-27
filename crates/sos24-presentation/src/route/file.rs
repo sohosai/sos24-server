@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::extract::{Multipart, Path, State};
+use axum::extract::{Multipart, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
@@ -8,7 +8,7 @@ use sos24_domain::entity::actor::Actor;
 use sos24_use_case::dto::file::CreateFileDto;
 
 use crate::error::AppError;
-use crate::model::file::{File, FileInfo};
+use crate::model::file::{CreateFileQuery, File, FileInfo};
 use crate::module::Modules;
 
 pub async fn handle_get(
@@ -27,6 +27,7 @@ pub async fn handle_get(
 }
 
 pub async fn handle_post(
+    Query(query): Query<CreateFileQuery>,
     State(modules): State<Arc<Modules>>,
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
@@ -60,7 +61,7 @@ pub async fn handle_post(
                         e.body_text(),
                     ))?,
                 };
-                filelist.push(CreateFileDto::new(filename, filebytes.into()));
+                filelist.push(CreateFileDto::new(filename, filebytes.into(), query.visibility));
             }
             _ => continue,
         }

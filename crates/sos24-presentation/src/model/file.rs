@@ -23,6 +23,12 @@ impl From<FileDto> for File {
         }
     }
 }
+
+#[derive(Debug, Deserialize)]
+pub struct CreateFileQuery {
+   pub visibility: bool
+}
+
 #[derive(Debug, Serialize)]
 pub struct FileInfo {
     pub id: String,
