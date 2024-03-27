@@ -22,6 +22,15 @@ impl<R: Repositories> FormUseCase<R> {
             .await?
             .ok_or(FormUseCaseError::NotFound(id.clone()))?;
 
+        let answers = self
+            .repositories
+            .form_answer_repository()
+            .find_by_form_id(id.clone())
+            .await?;
+        if !answers.is_empty() {
+            return Err(FormUseCaseError::HasAnswers);
+        }
+
         self.repositories.form_repository().delete_by_id(id).await?;
         Ok(())
     }
