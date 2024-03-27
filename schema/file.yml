@@ -3,7 +3,7 @@ paths:
     get:
       summary: ニュースの添付ファイル一覧の取得
       tags:
-        - files 
+        - files
         - committee
       responses:
         200:
@@ -17,7 +17,7 @@ paths:
     post:
       summary: ファイルの作成
       tags:
-        - files 
+        - files
         - committee
       requestBody:
         required: true
@@ -43,9 +43,9 @@ paths:
     get:
       summary: 特定のIDのファイルの取得
       tags:
-        - files 
+        - files
       parameters:
-        - name: file_id 
+        - name: file_id
           in: path
           required: true
           schema:
@@ -66,10 +66,10 @@ paths:
     delete:
       summary: 特定のIDのファイルの削除
       tags:
-        - files 
+        - files
         - committee
       parameters:
-        - name: file_id 
+        - name: file_id
           in: path
           required: true
           schema:
@@ -91,6 +91,11 @@ schemas:
       file:
         type: string
         format: binary
+      visibility:
+        type: string
+        enum:
+          - public
+          - private
   File:
     type: object
     properties:
