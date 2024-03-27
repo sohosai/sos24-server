@@ -62,7 +62,7 @@ impl ToEntity for CreateFormDto {
                 .into_iter()
                 .map(NewFormItemDto::into_entity)
                 .collect::<Result<Vec<_>, _>>()?,
-        ))
+        )?)
     }
 }
 
