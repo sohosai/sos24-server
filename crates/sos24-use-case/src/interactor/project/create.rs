@@ -127,4 +127,7 @@ mod tests {
             Err(ProjectUseCaseError::AlreadyOwnedProject(_))
         ));
     }
+
+    // TODO: 一般ユーザーは応募期間外に企画を作成できない
+    // TODO: 副企画責任者の一般ユーザーは企画を作成できない
 }

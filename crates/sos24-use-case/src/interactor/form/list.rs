@@ -23,3 +23,8 @@ impl<R: Repositories> FormUseCase<R> {
         Ok(form_list.collect())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: 一般ユーザーは申請一覧を取得できる
+}

@@ -29,3 +29,8 @@ impl<R: Repositories> FormUseCase<R> {
         Ok(FormDto::from_entity(form))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: 一般ユーザーは申請を取得できる
+}

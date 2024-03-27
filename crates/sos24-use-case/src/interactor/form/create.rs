@@ -27,3 +27,10 @@ impl<R: Repositories> FormUseCase<R> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: 実委人は申請を作成できない
+    // TODO: 実委人管理者は申請を作成できる
+    // TODO: 申請の開始時刻よりも終了時刻が早い場合はエラー
+}

@@ -185,4 +185,7 @@ mod tests {
             .await;
         assert!(matches!(res, Ok(())));
     }
+
+    // TODO: 実委人は自分の企画の備考を更新できない
+    // TODO: 一般ユーザーは応募期間外に企画を更新できない
 }
