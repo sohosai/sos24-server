@@ -111,4 +111,6 @@ mod tests {
         println!("{res:?}");
         assert!(matches!(res, Ok(())));
     }
+
+    // TODO: 一般ユーザーは自分の企画への招待を受けられない
 }

@@ -112,4 +112,7 @@ mod tests {
             .await;
         assert!(matches!(res, Ok(_)));
     }
+
+    // TODO: 一般ユーザーは備考を取得できない
+    // TODO: 実委人は備考を取得できる
 }

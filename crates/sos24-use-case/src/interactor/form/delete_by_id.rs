@@ -26,3 +26,9 @@ impl<R: Repositories> FormUseCase<R> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    // TODO: 実委人は申請を削除できない
+    // TODO: 実委人管理者は申請を削除できる
+}

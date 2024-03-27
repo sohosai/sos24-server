@@ -35,4 +35,7 @@ impl<R: Repositories> ProjectUseCase<R> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    // TODO: 一般ユーザーは備考を取得できない
+    // TODO: 実委人は備考を取得できる
+}
