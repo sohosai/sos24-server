@@ -40,7 +40,7 @@ mod tests {
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
-    async fn delete_by_id_committee_fail() {
+    async fn 実委人は企画を削除できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
@@ -65,7 +65,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_by_id_operator_success() {
+    async fn 実委人管理者は企画を削除できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()

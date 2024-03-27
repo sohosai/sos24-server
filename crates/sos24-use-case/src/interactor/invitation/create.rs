@@ -74,7 +74,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn create_general_success() {
+    async fn 一般ユーザーは自分の企画への招待を作成できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -113,7 +113,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_general_fail() {
+    async fn 一般ユーザーは他人の企画への招待を作成できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()

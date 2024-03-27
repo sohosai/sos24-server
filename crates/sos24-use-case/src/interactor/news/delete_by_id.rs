@@ -42,7 +42,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn delete_by_id_committee_fail() {
+    async fn 実委人はお知らせを削除できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .news_repository_mut()
@@ -67,7 +67,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delete_by_id_operator_success() {
+    async fn 実委人管理者はお知らせを削除できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .news_repository_mut()

@@ -78,7 +78,7 @@ mod tests {
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
-    async fn update_committee_success() {
+    async fn 実委人は自分のユーザーを更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -112,7 +112,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_committee_fail1() {
+    async fn 実委人は自分のロールを更新できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -151,7 +151,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_committee_fail2() {
+    async fn 実委人は他人のユーザーを更新できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -190,7 +190,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn update_operator_success() {
+    async fn 実委人管理者はロールを含む自分のユーザーを更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()

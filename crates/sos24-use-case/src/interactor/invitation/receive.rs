@@ -66,7 +66,7 @@ mod tests {
     use crate::{context::Context, interactor::invitation::InvitationUseCase};
 
     #[tokio::test]
-    async fn receive_general_sucess() {
+    async fn 一般ユーザーは招待を受けられる() {
         let mut repositories = MockRepositories::default();
         repositories
             .invitation_repository_mut()
