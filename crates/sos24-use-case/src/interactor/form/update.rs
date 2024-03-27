@@ -32,7 +32,16 @@ impl<R: Repositories> FormUseCase<R> {
             .form_repository()
             .find_by_id(id.clone())
             .await?
-            .ok_or(FormUseCaseError::NotFound(id))?;
+            .ok_or(FormUseCaseError::NotFound(id.clone()))?;
+
+        let answers = self
+            .repositories
+            .form_answer_repository()
+            .find_by_form_id(id.clone())
+            .await?;
+        if !answers.is_empty() {
+            return Err(FormUseCaseError::HasAnswers);
+        }
 
         let mut new_form = form.value;
         new_form.set_title(&actor, FormTitle::new(form_data.title))?;

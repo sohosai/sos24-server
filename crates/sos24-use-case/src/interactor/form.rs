@@ -25,6 +25,8 @@ pub mod update;
 pub enum FormUseCaseError {
     #[error("Form not found: {0:?}")]
     NotFound(FormId),
+    #[error("Form has answers")]
+    HasAnswers,
 
     #[error(transparent)]
     ProjectUseCaseError(#[from] ProjectUseCaseError),

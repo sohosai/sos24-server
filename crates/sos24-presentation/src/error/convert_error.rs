@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 
 use sos24_domain::entity::common::datetime::DateTimeError;
 use sos24_domain::entity::file_data::FileIdError;
-use sos24_domain::entity::form::{FormIdError, FormItemIdError};
+use sos24_domain::entity::form::{FormError, FormIdError, FormItemIdError};
 use sos24_domain::entity::form_answer::FormAnswerIdError;
 use sos24_domain::entity::project::BoundedStringError;
 use sos24_domain::repository::file_data::FileDataRepositoryError;
@@ -43,6 +43,11 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::NotFound(_) => {
                 AppError::new(StatusCode::NOT_FOUND, "form/not-found".to_string(), message)
             }
+            FormUseCaseError::HasAnswers => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/has-answers".to_string(),
+                message,
+            ),
             FormUseCaseError::ProjectUseCaseError(e) => e.into(),
             FormUseCaseError::DateTimeError(e) => e.into(),
             FormUseCaseError::FormRepositoryError(e) => e.into(),
@@ -53,6 +58,7 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::ProjectIdError(e) => e.into(),
             FormUseCaseError::FormItemIdError(e) => e.into(),
             FormUseCaseError::FormError(e) => e.into(),
+            FormUseCaseError::FormAnswerRepositoryError(e) => e.into(),
         }
     }
 }
