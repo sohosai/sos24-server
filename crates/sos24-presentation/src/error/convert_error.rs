@@ -52,6 +52,7 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::FormIdError(e) => e.into(),
             FormUseCaseError::ProjectIdError(e) => e.into(),
             FormUseCaseError::FormItemIdError(e) => e.into(),
+            FormUseCaseError::FormError(e) => e.into(),
         }
     }
 }
@@ -324,6 +325,18 @@ impl From<FirebaseUserRepositoryError> for AppError {
                 "Bad credential".to_string(),
             ),
             FirebaseUserRepositoryError::InternalError(e) => e.into(),
+        }
+    }
+}
+
+impl From<FormError> for AppError {
+    fn from(error: FormError) -> AppError {
+        match error {
+            FormError::EndTimeEarlierThanStartTime => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/end-time-earlier-than-start-time".to_string(),
+                error.to_string(),
+            ),
         }
     }
 }
