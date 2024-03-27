@@ -30,7 +30,7 @@ pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
-    let mut filedto: Option<CreateFileDto>;
+    let mut filelist: Vec<CreateFileDto> = vec![];
     while let Some(file) = multipart.next_field().await.map_err(|_| {
         AppError::new(
             StatusCode::BAD_REQUEST,
@@ -60,20 +60,18 @@ pub async fn handle_post(
                         e.body_text(),
                     ))?,
                 };
-                filedto = Some(CreateFileDto::new(filename, filebytes.into()));
+                filelist.push(CreateFileDto::new(filename, filebytes.into()));
             }
             _ => continue,
         }
+    }
+    for file in filelist.into_iter() {
         modules
             .file_use_case()
             .create(
                 modules.config().s3_bucket_name.clone(),
                 "user-upload".to_string(),
-                filedto.ok_or(AppError::new(
-                    StatusCode::BAD_REQUEST,
-                    "file/no-file".to_string(),
-                    "No file was found".to_string(),
-                ))?,
+                file,
             )
             .await?;
     }
