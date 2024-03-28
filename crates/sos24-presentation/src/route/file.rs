@@ -102,6 +102,7 @@ pub async fn handle_post(
         modules
             .file_use_case()
             .create(
+                &ctx,
                 modules.config().s3_bucket_name.clone(),
                 "user-upload".to_string(),
                 file,
