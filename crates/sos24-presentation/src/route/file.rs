@@ -87,7 +87,11 @@ pub async fn handle_post(
                     owner.clone(),
                 ));
             }
-            _ => continue,
+            _ => return Err(AppError::new(
+                StatusCode::BAD_REQUEST,
+                "file/invalid-name-field".to_string(),
+                "Invalid name was provided".to_string(),
+            )),
         }
     }
 
