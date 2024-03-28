@@ -5,6 +5,7 @@ use sos24_domain::{
         common::date::WithDate,
         file_data::{FileData, FileId, FileName},
         file_object::FileObjectKey,
+        project::ProjectId,
     },
     repository::file_data::{FileDataRepository, FileDataRepositoryError},
 };
@@ -17,6 +18,7 @@ pub struct FileDataRow {
     id: uuid::Uuid,
     name: String,
     url: String,
+    owner_project: Option<uuid::Uuid>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
     deleted_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -31,6 +33,7 @@ impl TryFrom<FileDataRow> for WithDate<FileData> {
                 FileId::new(value.id),
                 FileName::new(value.name),
                 FileObjectKey::new(value.url),
+                value.owner_project.map(ProjectId::new),
             ),
             value.created_at,
             value.updated_at,
@@ -68,10 +71,11 @@ impl FileDataRepository for PgFileDataRepository {
         let file_data = file_data.destruct();
 
         sqlx::query!(
-            r#"INSERT INTO files (id, name, url) VALUES ($1, $2, $3)"#,
+            r#"INSERT INTO files (id, name, url, owner_project) VALUES ($1, $2, $3, $4)"#,
             file_data.id.value(),
             file_data.name.value(),
             file_data.url.value().to_string(),
+            file_data.owner.map(|it| it.value())
         )
         .execute(&*self.db)
         .await

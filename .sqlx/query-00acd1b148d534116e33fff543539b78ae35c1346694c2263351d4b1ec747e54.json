@@ -32,6 +32,11 @@
         "ordinal": 5,
         "name": "name",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "owner_project",
+        "type_info": "Uuid"
       }
     ],
     "parameters": {
@@ -45,7 +50,8 @@
       false,
       false,
       true,
-      false
+      false,
+      true
     ]
   },
   "hash": "00acd1b148d534116e33fff543539b78ae35c1346694c2263351d4b1ec747e54"
