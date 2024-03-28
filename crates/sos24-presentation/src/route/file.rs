@@ -14,8 +14,9 @@ use crate::module::Modules;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, AppError> {
-    let raw_file_list = modules.file_use_case().list().await;
+    let raw_file_list = modules.file_use_case().list(&ctx).await;
     raw_file_list
         .map(|raw_file_list| {
             let file_list: Vec<FileInfo> = raw_file_list.into_iter().map(FileInfo::from).collect();
