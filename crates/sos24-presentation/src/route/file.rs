@@ -5,10 +5,11 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
 use sos24_domain::entity::actor::Actor;
+use sos24_use_case::context::Context;
 use sos24_use_case::dto::file::CreateFileDto;
 
 use crate::error::AppError;
-use crate::model::file::{CreateFileQuery, File, FileInfo};
+use crate::model::file::{CreateFileQuery, File, FileInfo, Visitbility};
 use crate::module::Modules;
 
 pub async fn handle_get(
@@ -29,9 +30,27 @@ pub async fn handle_get(
 pub async fn handle_post(
     Query(query): Query<CreateFileQuery>,
     State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
     let mut filelist: Vec<CreateFileDto> = vec![];
+
+    let owner: Option<String> = match query.visibility {
+        Visitbility::Private => Some(
+            modules
+                .project_use_case()
+                .find_owned(&ctx)
+                .await?
+                .ok_or(AppError::new(
+                    StatusCode::NOT_FOUND,
+                    "file/project-not-found".to_string(),
+                    "Project not found".to_string(),
+                ))?
+                .id,
+        ),
+        Visitbility::Public => None,
+    };
+
     while let Some(file) = multipart.next_field().await.map_err(|_| {
         AppError::new(
             StatusCode::BAD_REQUEST,
@@ -61,11 +80,24 @@ pub async fn handle_post(
                         e.body_text(),
                     ))?,
                 };
-                filelist.push(CreateFileDto::new(filename, filebytes.into(), query.visibility));
+                filelist.push(CreateFileDto::new(
+                    filename,
+                    filebytes.into(),
+                    owner.clone(),
+                ));
             }
             _ => continue,
         }
     }
+
+    if filelist.len() == 0 {
+        return Err(AppError::new(
+            StatusCode::BAD_REQUEST,
+            "file/no-file-found".to_string(),
+            "No content was provided".to_string(),
+        ));
+    }
+
     for file in filelist.into_iter() {
         modules
             .file_use_case()

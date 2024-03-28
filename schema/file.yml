@@ -23,7 +23,8 @@ paths:
         - in: query 
           name: visibility
           schema:
-            type: boolean
+            type: string
+            enum: ["private", "public"]
       requestBody:
         required: true
         content:

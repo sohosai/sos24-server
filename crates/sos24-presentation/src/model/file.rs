@@ -26,7 +26,14 @@ impl From<FileDto> for File {
 
 #[derive(Debug, Deserialize)]
 pub struct CreateFileQuery {
-   pub visibility: bool
+    pub visibility: Visitbility,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Visitbility {
+    Private,
+    Public,
 }
 
 #[derive(Debug, Serialize)]
