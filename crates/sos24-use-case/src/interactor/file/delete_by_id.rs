@@ -1,16 +1,17 @@
+use std::sync::Arc;
+
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::file_data::FileDataRepository;
-use sos24_domain::{
-    ensure,
-    entity::{actor::Actor, file_data::FileId},
-    repository::Repositories,
-};
+use sos24_domain::{ensure, entity::file_data::FileId, repository::Repositories};
+
+use crate::context::Context;
 
 use super::{FileUseCase, FileUseCaseError};
 
 impl<R: Repositories> FileUseCase<R> {
-    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), FileUseCaseError> {
-        ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
+    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), FileUseCaseError> {
+        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        ensure!(actor.has_permission(Permissions::DELETE_FILE_ALL));
 
         // ソフトデリートで実装している（オブジェクトストレージからは削除されない）
         let id = FileId::try_from(id)?;

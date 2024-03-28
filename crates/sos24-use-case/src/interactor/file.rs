@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use sos24_domain::entity::file_data::{FileId, FileIdError};
-use sos24_domain::entity::project::{ProjectId, ProjectIdError};
+use sos24_domain::entity::project::ProjectIdError;
 use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::repository::file_object::FileObjectRepositoryError;
 use sos24_domain::repository::project::ProjectRepositoryError;
@@ -31,8 +31,8 @@ pub enum FileUseCaseError {
     ContextError(#[from] ContextError),
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
-    #[error("Project not found: {0:?}")]
-    ProjectNotFound(ProjectId),
+    #[error("Owner not found")]
+    OwnerNotFound(),
     #[error(transparent)]
     ProjectIdError(#[from] ProjectIdError),
     #[error(transparent)]

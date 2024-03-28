@@ -147,9 +147,9 @@ impl From<FileUseCaseError> for AppError {
             FileUseCaseError::FileObjectRepositoryError(e) => e.into(),
             FileUseCaseError::ContextError(e) => e.into(),
             FileUseCaseError::ProjectRepositoryError(e) => e.into(),
-            FileUseCaseError::ProjectNotFound(_) => AppError::new(
+            FileUseCaseError::OwnerNotFound() => AppError::new(
                 StatusCode::NOT_FOUND,
-                "file/project-not-found".to_string(),
+                "file/owner-not-found".to_string(),
                 message,
             ),
             FileUseCaseError::ProjectIdError(e) => e.into(),
