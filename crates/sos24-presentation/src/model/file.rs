@@ -23,6 +23,19 @@ impl From<FileDto> for File {
         }
     }
 }
+
+#[derive(Debug, Deserialize)]
+pub struct CreateFileQuery {
+    pub visibility: Visibility,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Visibility {
+    Private,
+    Public,
+}
+
 #[derive(Debug, Serialize)]
 pub struct FileInfo {
     pub id: String,

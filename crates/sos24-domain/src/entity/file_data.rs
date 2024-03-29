@@ -3,7 +3,7 @@ use thiserror::Error;
 
 use crate::impl_value_object;
 
-use super::file_object::FileObjectKey;
+use super::{file_object::FileObjectKey, project::ProjectId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct FileData {
@@ -13,22 +13,26 @@ pub struct FileData {
     filename: FileName,
     #[getset(get = "pub", set = "pub")]
     url: FileObjectKey,
+    #[getset(get = "pub", set = "pub")]
+    owner: Option<ProjectId>,
 }
 
 impl FileData {
-    pub fn new(id: FileId, name: FileName, url: FileObjectKey) -> Self {
+    pub fn new(id: FileId, name: FileName, url: FileObjectKey, owner: Option<ProjectId>) -> Self {
         Self {
             id,
             filename: name,
             url,
+            owner,
         }
     }
 
-    pub fn create(filename: FileName, url: FileObjectKey) -> Self {
+    pub fn create(filename: FileName, url: FileObjectKey, owner: Option<ProjectId>) -> Self {
         Self {
             id: FileId::new(uuid::Uuid::new_v4()),
             filename,
             url,
+            owner,
         }
     }
 
@@ -37,6 +41,7 @@ impl FileData {
             id: self.id,
             name: self.filename,
             url: self.url,
+            owner: self.owner
         }
     }
 }
@@ -46,6 +51,7 @@ pub struct DestructedFileData {
     pub id: FileId,
     pub name: FileName,
     pub url: FileObjectKey,
+    pub owner: Option<ProjectId>
 }
 
 impl_value_object!(FileId(uuid::Uuid));

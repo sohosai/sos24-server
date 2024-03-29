@@ -8,11 +8,16 @@ use super::FromEntity;
 pub struct CreateFileDto {
     pub filename: String,
     pub file: Vec<u8>,
+    pub owner: Option<String>,
 }
 
 impl CreateFileDto {
-    pub fn new(filename: String, file: Vec<u8>) -> Self {
-        Self { filename, file }
+    pub fn new(filename: String, file: Vec<u8>, owner: Option<String>) -> Self {
+        Self {
+            filename,
+            file,
+            owner,
+        }
     }
 }
 

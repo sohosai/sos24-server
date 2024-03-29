@@ -13,7 +13,7 @@ edition = "2021"
 
 [workspace.dependencies]
 anyhow = "1.0.79"
-axum = { version = "0.7.4", features = ["macros", "multipart"] }
+axum = { version = "0.7.4", features = ["macros", "multipart", "query"] }
 aws-sdk-s3 = "1.20.0"
 bitflags = "2.4.2"
 chrono = { version = "0.4.32", features = ["serde"] }

@@ -1,24 +1,19 @@
 use std::sync::Arc;
 
-use sos24_domain::entity::file_data::{FileData, FileId, FileIdError, FileName};
-use sos24_domain::entity::file_object::{ContentDisposition, FileObject, FileObjectKey};
-use sos24_domain::repository::file_data::{FileDataRepository, FileDataRepositoryError};
-use sos24_domain::repository::file_object::{FileObjectRepository, FileObjectRepositoryError};
-use sos24_domain::{
-    ensure,
-    entity::{
-        actor::Actor,
-        permission::{PermissionDeniedError, Permissions},
-    },
-    repository::Repositories,
-};
+use sos24_domain::entity::file_data::{FileId, FileIdError};
+use sos24_domain::entity::project::ProjectIdError;
+use sos24_domain::repository::file_data::FileDataRepositoryError;
+use sos24_domain::repository::file_object::FileObjectRepositoryError;
+use sos24_domain::repository::project::ProjectRepositoryError;
+use sos24_domain::{entity::permission::PermissionDeniedError, repository::Repositories};
 use thiserror::Error;
 
-use crate::dto::file::FileInfoDto;
-use crate::dto::{
-    file::{CreateFileDto, FileDto, FileEntity},
-    FromEntity,
-};
+use crate::context::ContextError;
+
+pub mod create;
+pub mod delete_by_id;
+pub mod find_by_id;
+pub mod list;
 
 #[derive(Debug, Error)]
 pub enum FileUseCaseError {
@@ -33,6 +28,14 @@ pub enum FileUseCaseError {
     #[error(transparent)]
     PermissionDeniedError(#[from] PermissionDeniedError),
     #[error(transparent)]
+    ContextError(#[from] ContextError),
+    #[error(transparent)]
+    ProjectRepositoryError(#[from] ProjectRepositoryError),
+    #[error("Owner not found")]
+    OwnerNotFound(),
+    #[error(transparent)]
+    ProjectIdError(#[from] ProjectIdError),
+    #[error(transparent)]
     InternalError(#[from] anyhow::Error),
 }
 
@@ -43,85 +46,5 @@ pub struct FileUseCase<R: Repositories> {
 impl<R: Repositories> FileUseCase<R> {
     pub fn new(repositories: Arc<R>) -> Self {
         Self { repositories }
-    }
-
-    pub async fn list(&self) -> Result<Vec<FileInfoDto>, FileUseCaseError> {
-        // ToDo: 権限
-        let raw_file_data_list = self.repositories.file_data_repository().list().await?;
-        Ok(raw_file_data_list
-            .into_iter()
-            .map(FileInfoDto::from_entity)
-            .collect())
-    }
-
-    pub async fn create(
-        &self,
-        bucket: String,
-        key_prefix: String,
-        raw_file: CreateFileDto,
-    ) -> Result<(), FileUseCaseError> {
-        // ToDo: 権限・所有者設定
-        let key = FileObjectKey::generate(key_prefix.as_str());
-        let filename = FileName::new(raw_file.filename);
-
-        let object = FileObject::new(raw_file.file, key.clone());
-        self.repositories
-            .file_object_repository()
-            .create(bucket, object)
-            .await?;
-
-        let data = FileData::create(filename, key);
-        self.repositories
-            .file_data_repository()
-            .create(data)
-            .await?;
-        Ok(())
-    }
-
-    pub async fn find_by_id(
-        &self,
-        backet: String,
-        id: String,
-    ) -> Result<FileDto, FileUseCaseError> {
-        let id = FileId::try_from(id)?;
-        let raw_file_data = self
-            .repositories
-            .file_data_repository()
-            .find_by_id(id.clone())
-            .await?
-            .ok_or(FileUseCaseError::NotFound(id))?;
-        let signed_url = self
-            .repositories
-            .file_object_repository()
-            .generate_url(
-                backet,
-                raw_file_data.value.url().copy(),
-                Some(ContentDisposition::from(
-                    raw_file_data.value.filename().clone(),
-                )),
-            )
-            .await?;
-        Ok(FileDto::from_entity(FileEntity::new(
-            signed_url,
-            raw_file_data,
-        )))
-    }
-
-    pub async fn delete_by_id(&self, actor: &Actor, id: String) -> Result<(), FileUseCaseError> {
-        ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
-
-        // ソフトデリートで実装している（オブジェクトストレージからは削除されない）
-        let id = FileId::try_from(id)?;
-        self.repositories
-            .file_data_repository()
-            .find_by_id(id.clone())
-            .await?
-            .ok_or(FileUseCaseError::NotFound(id.clone()))?;
-
-        self.repositories
-            .file_data_repository()
-            .delete_by_id(id)
-            .await?;
-        Ok(())
     }
 }
