@@ -8,7 +8,7 @@ use sos24_use_case::{context::Context, dto::file::CreateFileDto};
 
 use crate::{
     error::AppError,
-    model::file::{CreateFileQuery, File, FileInfo, Visitbility},
+    model::file::{CreateFileQuery, File, FileInfo, Visibility},
     module::Modules,
 };
 
@@ -37,7 +37,7 @@ pub async fn handle_post(
     let mut filelist: Vec<CreateFileDto> = vec![];
 
     let owner: Option<String> = match query.visibility {
-        Visitbility::Private => Some(
+        Visibility::Private => Some(
             modules
                 .project_use_case()
                 .find_owned(&ctx)
@@ -49,7 +49,7 @@ pub async fn handle_post(
                 ))?
                 .id,
         ),
-        Visitbility::Public => None,
+        Visibility::Public => None,
     };
 
     while let Some(file) = multipart.next_field().await.map_err(|_| {
