@@ -8,6 +8,7 @@ use sos24_domain::entity::{
     },
 };
 use sos24_domain::entity::form::FormItemExtension;
+use sos24_domain::entity::form_answer::FormAnswer;
 
 use crate::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::interactor::form::FormUseCaseError;
@@ -170,6 +171,56 @@ impl FromEntity for FormDto {
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct FormWithAnswerDto {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: chrono::DateTime<chrono::Utc>,
+    pub ends_at: chrono::DateTime<chrono::Utc>,
+    pub categories: Vec<ProjectCategoryDto>,
+    pub attributes: Vec<ProjectAttributeDto>,
+    pub items: Vec<FormItemDto>,
+    pub answer_id: Option<String>,
+    pub answered_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl FromEntity for FormWithAnswerDto {
+    type Entity = (WithDate<Form>, Option<WithDate<FormAnswer>>);
+    fn from_entity((form_entity, form_answer_entity): Self::Entity) -> Self {
+        let form = form_entity.value.destruct();
+        let (answer_id, answered_at) = form_answer_entity
+            .map(|form_answer_entity| {
+                let answer = form_answer_entity.value.destruct();
+                (Some(answer.id), Some(form_answer_entity.updated_at))
+            })
+            .unwrap_or((None, None));
+
+        Self {
+            id: form.id.value().to_string(),
+            title: form.title.value(),
+            description: form.description.value(),
+            starts_at: form.starts_at.value(),
+            ends_at: form.ends_at.value(),
+            categories: Vec::from_entity(form.categories),
+            attributes: Vec::from_entity(form.attributes),
+            items: form
+                .items
+                .into_iter()
+                .map(FormItemDto::from_entity)
+                .collect(),
+            answer_id: answer_id.map(|it| it.value().to_string()),
+            answered_at,
+            created_at: form_entity.created_at,
+            updated_at: form_entity.updated_at,
+            deleted_at: form_entity.deleted_at,
         }
     }
 }

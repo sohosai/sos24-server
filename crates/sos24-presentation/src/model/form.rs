@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::form::{
-    CreateFormDto, FormDto, FormItemDto, FormItemKindDto, NewFormItemDto, UpdateFormDto,
-};
+use sos24_use_case::dto::form::{CreateFormDto, FormDto, FormItemDto, FormItemKindDto, FormWithAnswerDto, NewFormItemDto, UpdateFormDto};
 use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 
 use crate::model::project::{ProjectAttribute, ProjectCategory};
@@ -141,6 +139,56 @@ impl From<FormDto> for Form {
             deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FormWithAnswer {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub categories: Vec<ProjectCategory>,
+    pub attributes: Vec<ProjectAttribute>,
+    pub items: Vec<FormItem>,
+    pub answer_id: Option<String>,
+    pub answered_at: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
+}
+
+impl From<FormWithAnswerDto> for FormWithAnswer {
+    fn from(form: FormWithAnswerDto) -> Self {
+        FormWithAnswer {
+            id: form.id.to_string(),
+            title: form.title,
+            description: form.description,
+            starts_at: form.starts_at.to_rfc3339(),
+            ends_at: form.ends_at.to_rfc3339(),
+            categories: form
+                .categories
+                .into_iter()
+                .map(ProjectCategory::from)
+                .collect(),
+            attributes: form
+                .attributes
+                .into_iter()
+                .map(ProjectAttribute::from)
+                .collect(),
+            items: form.items.into_iter().map(FormItem::from).collect(),
+            answer_id: form.answer_id.map(|it| it.to_string()),
+            answered_at: form.answered_at.map(|it| it.to_rfc3339()),
+            created_at: form.created_at.to_rfc3339(),
+            updated_at: form.updated_at.to_rfc3339(),
+            deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FormQuery {
+    pub project_id: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

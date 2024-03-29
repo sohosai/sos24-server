@@ -12,6 +12,8 @@ use sos24_domain::{
     repository::{form::FormRepositoryError, form_answer::FormAnswerRepositoryError, Repositories},
 };
 use sos24_domain::entity::file_data::FileIdError;
+use sos24_domain::entity::project::ProjectId;
+use sos24_domain::repository::project::ProjectRepositoryError;
 
 use crate::context::ContextError;
 use crate::interactor::project::ProjectUseCaseError;
@@ -19,6 +21,7 @@ use crate::interactor::project::ProjectUseCaseError;
 pub mod create;
 pub mod delete_by_id;
 pub mod find_by_id;
+pub mod find_by_project_id;
 pub mod list;
 pub mod update;
 
@@ -26,9 +29,13 @@ pub mod update;
 pub enum FormUseCaseError {
     #[error("Form not found: {0:?}")]
     NotFound(FormId),
+    #[error("Project not found: {0:?}")]
+    ProjectNotFound(ProjectId),
     #[error("Form has answers")]
     HasAnswers,
 
+    #[error(transparent)]
+    ProjectRepositoryError(#[from] ProjectRepositoryError),
     #[error(transparent)]
     FormError(#[from] FormError),
     #[error(transparent)]

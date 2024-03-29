@@ -1,35 +1,59 @@
 use std::sync::Arc;
 
 use axum::{
+    Extension,
     extract::{Path, State},
     http::StatusCode,
-    response::IntoResponse,
-    Extension, Json,
+    Json, response::IntoResponse,
 };
+use axum::extract::Query;
 
 use sos24_use_case::{context::Context, dto::form::CreateFormDto};
 
-use crate::model::form::Form;
 use crate::{
     error::AppError,
     model::form::{ConvertToUpdateFormDto, UpdateForm},
 };
 use crate::{model::form::CreateForm, module::Modules};
+use crate::model::form::{Form, FormQuery, FormWithAnswer};
 
 pub async fn handle_get(
+    Query(query): Query<FormQuery>,
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, AppError> {
-    let raw_form_list = modules.form_use_case().list(&ctx).await;
-    raw_form_list
-        .map(|raw_form_list| {
-            let form_list: Vec<Form> = raw_form_list.into_iter().map(Form::from).collect();
-            (StatusCode::OK, Json(form_list))
-        })
-        .map_err(|err| {
-            tracing::error!("Failed to list form: {err:?}");
-            err.into()
-        })
+    match query.project_id {
+        Some(project_id) => {
+            let raw_form_list = modules
+                .form_use_case()
+                .find_by_project_id(&ctx, project_id)
+                .await;
+            raw_form_list
+                .map(|raw_form_list| {
+                    let form_list: Vec<FormWithAnswer> = raw_form_list
+                        .into_iter()
+                        .map(FormWithAnswer::from)
+                        .collect();
+                    (StatusCode::OK, Json(form_list)).into_response()
+                })
+                .map_err(|err| {
+                    tracing::error!("Failed to find form by project id: {err:?}");
+                    err.into()
+                })
+        }
+        None => {
+            let raw_form_list = modules.form_use_case().list(&ctx).await;
+            raw_form_list
+                .map(|raw_form_list| {
+                    let form_list: Vec<Form> = raw_form_list.into_iter().map(Form::from).collect();
+                    (StatusCode::OK, Json(form_list)).into_response()
+                })
+                .map_err(|err| {
+                    tracing::error!("Failed to list form: {err:?}");
+                    err.into()
+                })
+        }
+    }
 }
 
 pub async fn handle_post(
