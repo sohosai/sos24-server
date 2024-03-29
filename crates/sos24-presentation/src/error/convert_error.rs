@@ -1,15 +1,5 @@
 use axum::http::StatusCode;
 
-use sos24_domain::entity::common::datetime::DateTimeError;
-use sos24_domain::entity::file_data::FileIdError;
-use sos24_domain::entity::form::{FormError, FormIdError, FormItemIdError};
-use sos24_domain::entity::form_answer::FormAnswerIdError;
-use sos24_domain::entity::project::BoundedStringError;
-use sos24_domain::repository::file_data::FileDataRepositoryError;
-use sos24_domain::repository::file_object::FileObjectRepositoryError;
-use sos24_domain::repository::form::FormRepositoryError;
-use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
-use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
 use sos24_domain::{
     entity::{
         common::email::EmailError,
@@ -23,9 +13,16 @@ use sos24_domain::{
         news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
-use sos24_use_case::interactor::file::FileUseCaseError;
-use sos24_use_case::interactor::form::FormUseCaseError;
-use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
+use sos24_domain::entity::common::datetime::DateTimeError;
+use sos24_domain::entity::file_data::FileIdError;
+use sos24_domain::entity::form::{FormError, FormIdError, FormItemIdError};
+use sos24_domain::entity::form_answer::FormAnswerIdError;
+use sos24_domain::entity::project::BoundedStringError;
+use sos24_domain::repository::file_data::FileDataRepositoryError;
+use sos24_domain::repository::file_object::FileObjectRepositoryError;
+use sos24_domain::repository::form::FormRepositoryError;
+use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
+use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
 use sos24_use_case::{
     context::ContextError,
     interactor::{
@@ -33,6 +30,9 @@ use sos24_use_case::{
         user::UserUseCaseError,
     },
 };
+use sos24_use_case::interactor::file::FileUseCaseError;
+use sos24_use_case::interactor::form::FormUseCaseError;
+use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
 
 use super::AppError;
 
@@ -91,6 +91,11 @@ impl From<FormAnswerUseCaseError> for AppError {
             FormAnswerUseCaseError::FileNotFound(_) => AppError::new(
                 StatusCode::NOT_FOUND,
                 "form-answer/file-not-found".to_string(),
+                message,
+            ),
+            FormAnswerUseCaseError::NotProjectOwner => AppError::new(
+                StatusCode::FORBIDDEN,
+                "form-answer/not-project-owner".to_string(),
                 message,
             ),
             FormAnswerUseCaseError::FormIdError(e) => e.into(),

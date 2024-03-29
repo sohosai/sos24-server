@@ -6,7 +6,6 @@ use sos24_use_case::dto::form_answer::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateFormAnswer {
-    project_id: String,
     form_id: String,
     items: Vec<FormAnswerItem>,
 }
@@ -14,7 +13,6 @@ pub struct CreateFormAnswer {
 impl From<CreateFormAnswer> for CreateFormAnswerDto {
     fn from(create_form_answer: CreateFormAnswer) -> Self {
         CreateFormAnswerDto::new(
-            create_form_answer.project_id,
             create_form_answer.form_id,
             create_form_answer
                 .items
