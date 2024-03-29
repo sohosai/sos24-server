@@ -45,7 +45,92 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
 #[cfg(test)]
 mod tests {
-    // TODO: 一般ユーザーは自分の企画の回答を取得できる
-    // TODO: 一般ユーザーは他人の企画の回答を取得できない
-    // TODO: 実委人は他人の企画の回答を取得できる
+    use std::sync::Arc;
+
+    use sos24_domain::{
+        entity::{permission::PermissionDeniedError, user::UserRole},
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{
+        context::Context,
+        interactor::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError},
+    };
+
+    #[tokio::test]
+    async fn 一般ユーザーは自分の企画の回答一覧を取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
+                ))))
+            });
+        repositories
+            .form_answer_repository_mut()
+            .expect_find_by_project_id()
+            .returning(|_| Ok(vec![]));
+        let use_case = FormAnswerUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+
+    #[tokio::test]
+    async fn 一般ユーザーは他人の企画の回答を取得できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .form_answer_repository_mut()
+            .expect_find_by_project_id()
+            .returning(|_| Ok(vec![]));
+        let use_case = FormAnswerUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
+            .await;
+        assert!(matches!(
+            res,
+            Err(FormAnswerUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人は他人の企画の回答を取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .form_answer_repository_mut()
+            .expect_find_by_project_id()
+            .returning(|_| Ok(vec![]));
+        let use_case = FormAnswerUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case
+            .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
 }

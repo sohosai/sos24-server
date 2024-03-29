@@ -30,7 +30,88 @@ impl<R: Repositories> FormUseCase<R> {
 
 #[cfg(test)]
 mod tests {
-    // TODO: 実委人は申請を作成できない
-    // TODO: 実委人管理者は申請を作成できる
-    // TODO: 申請の開始時刻よりも終了時刻が早い場合はエラー
+    use std::sync::Arc;
+
+    use sos24_domain::{
+        entity::{permission::PermissionDeniedError, user::UserRole},
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{
+        context::Context,
+        dto::{
+            form::{CreateFormDto, FormItemKindDto, NewFormItemDto},
+            FromEntity,
+        },
+        interactor::form::{FormUseCase, FormUseCaseError},
+    };
+
+    #[tokio::test]
+    async fn 実委人は申請を作成できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .form_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = FormUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateFormDto::new(
+                    fixture::form::title1().value(),
+                    fixture::form::description1().value(),
+                    fixture::form::starts_at1().value().to_rfc3339(),
+                    fixture::form::ends_at1().value().to_rfc3339(),
+                    Vec::from_entity(fixture::form::categories1()),
+                    Vec::from_entity(fixture::form::attributes1()),
+                    vec![NewFormItemDto::new(
+                        fixture::form::formitem_name1().value(),
+                        fixture::form::description1().value(),
+                        fixture::form::formitem_required1().value(),
+                        FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
+                    )],
+                ),
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(FormUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            )),
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人管理者は申請を作成できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .form_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = FormUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateFormDto::new(
+                    fixture::form::title1().value(),
+                    fixture::form::description1().value(),
+                    fixture::form::starts_at1().value().to_rfc3339(),
+                    fixture::form::ends_at1().value().to_rfc3339(),
+                    Vec::from_entity(fixture::form::categories1()),
+                    Vec::from_entity(fixture::form::attributes1()),
+                    vec![NewFormItemDto::new(
+                        fixture::form::formitem_name1().value(),
+                        fixture::form::description1().value(),
+                        fixture::form::formitem_required1().value(),
+                        FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
+                    )],
+                ),
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
 }
