@@ -66,6 +66,6 @@ mod tests {
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

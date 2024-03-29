@@ -48,7 +48,7 @@ mod tests {
 
     use crate::{
         context::Context,
-        dto::{news::CreateNewsDto, FromEntity},
+        dto::{FromEntity, news::CreateNewsDto},
         interactor::news::{NewsUseCase, NewsUseCaseError},
     };
 
@@ -110,6 +110,6 @@ mod tests {
                 ),
             )
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

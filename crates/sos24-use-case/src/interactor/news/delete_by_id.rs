@@ -83,6 +83,6 @@ mod tests {
         let res = use_case
             .delete_by_id(&ctx, fixture::news::id1().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

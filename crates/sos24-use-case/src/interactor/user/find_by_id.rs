@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::user::UserId;
-use sos24_domain::repository::{user::UserRepository, Repositories};
+use sos24_domain::repository::{Repositories, user::UserRepository};
 
 use crate::context::Context;
-use crate::dto::user::UserDto;
 use crate::dto::FromEntity;
+use crate::dto::user::UserDto;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
 impl<R: Repositories> UserUseCase<R> {
@@ -59,7 +59,7 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::user::id1().value())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
@@ -104,6 +104,6 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::user::id2().value())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

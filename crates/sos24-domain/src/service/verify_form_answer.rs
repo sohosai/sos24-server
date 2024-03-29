@@ -108,10 +108,8 @@ fn verify_item_string(
         }
     }
 
-    if !form_string.allow_newline().clone().value() {
-        if value.contains('\n') {
-            return Err(VerifyFormAnswerError::NewlineNotAllowed(item_id));
-        }
+    if !form_string.allow_newline().clone().value() && value.contains('\n') {
+        return Err(VerifyFormAnswerError::NewlineNotAllowed(item_id));
     }
 
     Ok(())

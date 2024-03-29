@@ -36,7 +36,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 form_answer.form_id().clone(),
             )
             .await?;
-        if let Some(_) = prev_form_answer {
+        if prev_form_answer.is_some() {
             return Err(FormAnswerUseCaseError::AlreadyAnswered);
         }
 

@@ -7,8 +7,8 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::context::Context;
-use crate::dto::project::ProjectDto;
 use crate::dto::FromEntity;
+use crate::dto::project::ProjectDto;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
 impl<R: Repositories> ProjectUseCase<R> {
@@ -65,7 +65,7 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
@@ -110,7 +110,7 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 
     // TODO: 一般ユーザーは備考を取得できない

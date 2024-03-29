@@ -1,21 +1,22 @@
 use std::sync::Arc;
 
-use axum::response::Response;
 use axum::{
+    Extension,
     extract::{Path, State},
     http::StatusCode,
-    response::IntoResponse,
-    Extension, Json,
+    Json, response::IntoResponse,
 };
+use axum::response::Response;
+
 use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
-use crate::error::AppError;
 use crate::{
     model::user::{
         ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserSummary, UserTobeExported,
     },
     module::Modules,
 };
+use crate::error::AppError;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
@@ -93,7 +94,6 @@ pub async fn handle_export(
         .header("Content-Type", "text/csv")
         .header("Content-Disposition", "attachment; filename=users.csv")
         .body(data)
-        .map(|response| response)
         .map_err(|err| {
             tracing::error!("Failed to create response: {err:?}");
             AppError::new(
