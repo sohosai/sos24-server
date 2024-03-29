@@ -19,7 +19,7 @@ impl TryFrom<String> for Email {
         if !is_valid_email_format(&value) {
             return Err(EmailError::InvalidFormat);
         }
-        if !value.ends_with("u.tsukuba.ac.jp") {
+        if !value.ends_with("tsukuba.ac.jp") {
             return Err(EmailError::InvalidDomain);
         }
         Ok(Self(value))
