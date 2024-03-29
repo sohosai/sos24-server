@@ -5,11 +5,11 @@ use thiserror::Error;
 use sos24_domain::{
     entity::{
         common::datetime::DateTimeError,
-        form::{FormId, FormIdError, FormItemIdError},
+        form::{FormError, FormId, FormIdError, FormItemIdError},
         permission::PermissionDeniedError,
         project::ProjectIdError,
     },
-    repository::{form::FormRepositoryError, Repositories},
+    repository::{form::FormRepositoryError, form_answer::FormAnswerRepositoryError, Repositories},
 };
 
 use crate::context::ContextError;
@@ -28,6 +28,10 @@ pub enum FormUseCaseError {
     #[error("Form has answers")]
     HasAnswers,
 
+    #[error(transparent)]
+    FormError(#[from] FormError),
+    #[error(transparent)]
+    FormAnswerRepositoryError(#[from] FormAnswerRepositoryError),
     #[error(transparent)]
     ProjectUseCaseError(#[from] ProjectUseCaseError),
     #[error(transparent)]
