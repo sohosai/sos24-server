@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::file_data::FileId;
+use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     entity::{
         news::{NewsBody, NewsId, NewsTitle},
@@ -48,6 +50,24 @@ impl<R: Repositories> NewsUseCase<R> {
         let new_body = NewsBody::new(news_data.body);
         if new_news.body() != &new_body {
             new_news.set_body(&actor, new_body)?;
+        }
+
+        let new_attachments = news_data
+            .attachments
+            .into_iter()
+            .map(FileId::try_from)
+            .collect::<Result<Vec<_>, _>>()?;
+        if new_news.attachments() != &new_attachments {
+            for file_id in &new_attachments {
+                let _ = self
+                    .repositories
+                    .file_data_repository()
+                    .find_by_id(file_id.clone())
+                    .await?
+                    .ok_or(NewsUseCaseError::FileNotFound(file_id.clone()))?;
+            }
+
+            new_news.set_attachments(&actor, new_attachments)?;
         }
 
         let new_categories = news_data.categories.into_entity()?;
@@ -101,6 +121,10 @@ mod tests {
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),
+                    fixture::news::attachments2()
+                        .into_iter()
+                        .map(|id| id.value().to_string())
+                        .collect(),
                     Vec::from_entity(fixture::news::categories2()),
                     Vec::from_entity(fixture::news::attributes2()),
                 ),
@@ -135,6 +159,10 @@ mod tests {
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),
+                    fixture::news::attachments2()
+                        .into_iter()
+                        .map(|id| id.value().to_string())
+                        .collect(),
                     Vec::from_entity(fixture::news::categories2()),
                     Vec::from_entity(fixture::news::attributes2()),
                 ),

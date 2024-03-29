@@ -3,6 +3,7 @@ use futures_util::{StreamExt, TryStreamExt};
 use sqlx::prelude::*;
 
 use sos24_domain::entity::common::date::WithDate;
+use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::news::{News, NewsBody, NewsId, NewsTitle};
 use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::repository::news::{NewsRepository, NewsRepositoryError};
@@ -14,6 +15,7 @@ pub struct NewsRow {
     id: uuid::Uuid,
     title: String,
     body: String,
+    attachments: Vec<uuid::Uuid>,
     categories: i32,
     attributes: i32,
     created_at: chrono::DateTime<chrono::Utc>,
@@ -29,6 +31,7 @@ impl TryFrom<NewsRow> for WithDate<News> {
                 NewsId::new(value.id),
                 NewsTitle::new(value.title),
                 NewsBody::new(value.body),
+                value.attachments.into_iter().map(FileId::new).collect(),
                 ProjectCategories::from_bits(value.categories as u32)
                     .ok_or(anyhow!("cannot convert project categories"))?,
                 ProjectAttributes::from_bits(value.attributes as u32)

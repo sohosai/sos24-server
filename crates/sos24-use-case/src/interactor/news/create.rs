@@ -3,7 +3,7 @@ use std::sync::Arc;
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
-    repository::{news::NewsRepository, Repositories},
+    repository::{file_data::FileDataRepository, news::NewsRepository, Repositories},
 };
 
 use crate::{
@@ -23,6 +23,15 @@ impl<R: Repositories> NewsUseCase<R> {
         ensure!(actor.has_permission(Permissions::CREATE_NEWS));
 
         let news = raw_news.into_entity()?;
+        for file_id in news.attachments() {
+            let _ = self
+                .repositories
+                .file_data_repository()
+                .find_by_id(file_id.clone())
+                .await?
+                .ok_or(NewsUseCaseError::FileNotFound(file_id.clone()))?;
+        }
+
         self.repositories.news_repository().create(news).await?;
         Ok(())
     }
@@ -59,6 +68,10 @@ mod tests {
                 CreateNewsDto::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
+                    fixture::news::attachments1()
+                        .into_iter()
+                        .map(|id| id.value().to_string())
+                        .collect(),
                     Vec::from_entity(fixture::news::categories1()),
                     Vec::from_entity(fixture::news::attributes1()),
                 ),
@@ -88,6 +101,10 @@ mod tests {
                 CreateNewsDto::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
+                    fixture::news::attachments1()
+                        .into_iter()
+                        .map(|id| id.value().to_string())
+                        .collect(),
                     Vec::from_entity(fixture::news::categories1()),
                     Vec::from_entity(fixture::news::attributes1()),
                 ),

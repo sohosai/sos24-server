@@ -9,6 +9,7 @@ use crate::model::project::{ProjectAttribute, ProjectCategory};
 pub struct CreateNews {
     title: String,
     body: String,
+    attachments: Vec<String>,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
 }
@@ -18,6 +19,7 @@ impl From<CreateNews> for CreateNewsDto {
         CreateNewsDto::new(
             news.title,
             news.body,
+            news.attachments,
             news.categories
                 .into_iter()
                 .map(ProjectCategoryDto::from)
@@ -34,6 +36,7 @@ impl From<CreateNews> for CreateNewsDto {
 pub struct UpdateNews {
     title: String,
     body: String,
+    attachments: Vec<String>,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
 }
@@ -49,6 +52,7 @@ impl ConvertToUpdateNewsDto for (String, UpdateNews) {
             id,
             news.title,
             news.body,
+            news.attachments,
             news.categories
                 .into_iter()
                 .map(ProjectCategoryDto::from)
@@ -66,6 +70,7 @@ pub struct News {
     pub id: String,
     pub title: String,
     pub body: String,
+    pub attachments: Vec<String>,
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
     pub created_at: String,
@@ -79,6 +84,7 @@ impl From<NewsDto> for News {
             id: news.id,
             title: news.title,
             body: news.body,
+            attachments: news.attachments,
             categories: news
                 .categories
                 .into_iter()
