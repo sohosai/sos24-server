@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
+use sos24_domain::entity::file_data::{FileId, FileIdError};
+use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::{
     entity::{
         news::{NewsId, NewsIdError},
@@ -23,7 +25,13 @@ pub mod update;
 pub enum NewsUseCaseError {
     #[error("News not found: {0:?}")]
     NotFound(NewsId),
+    #[error("File not found: {0:?}")]
+    FileNotFound(FileId),
 
+    #[error(transparent)]
+    FileDataRepositoryError(#[from] FileDataRepositoryError),
+    #[error(transparent)]
+    FileIdError(#[from] FileIdError),
     #[error(transparent)]
     ProjectUseCaseError(#[from] ProjectUseCaseError),
     #[error(transparent)]

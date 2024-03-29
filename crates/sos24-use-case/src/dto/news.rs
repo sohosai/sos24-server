@@ -1,3 +1,4 @@
+use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::project::ProjectCategories;
 use sos24_domain::entity::{
     common::date::WithDate,
@@ -14,6 +15,7 @@ use super::{FromEntity, ToEntity};
 pub struct CreateNewsDto {
     pub title: String,
     pub body: String,
+    pub attachments: Vec<String>,
     pub categories: Vec<ProjectCategoryDto>,
     pub attributes: Vec<ProjectAttributeDto>,
 }
@@ -22,12 +24,14 @@ impl CreateNewsDto {
     pub fn new(
         title: String,
         body: String,
+        attachments: Vec<String>,
         categories: Vec<ProjectCategoryDto>,
         attributes: Vec<ProjectAttributeDto>,
     ) -> Self {
         Self {
             title,
             body,
+            attachments,
             categories,
             attributes,
         }
@@ -41,6 +45,10 @@ impl ToEntity for CreateNewsDto {
         Ok(News::create(
             NewsTitle::new(self.title),
             NewsBody::new(self.body),
+            self.attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<_, _>>()?,
             self.categories.into_entity()?,
             self.attributes.into_entity()?,
         ))
@@ -52,6 +60,7 @@ pub struct UpdateNewsDto {
     pub id: String,
     pub title: String,
     pub body: String,
+    pub attachments: Vec<String>,
     pub categories: Vec<ProjectCategoryDto>,
     pub attributes: Vec<ProjectAttributeDto>,
 }
@@ -61,6 +70,7 @@ impl UpdateNewsDto {
         id: String,
         title: String,
         body: String,
+        attachments: Vec<String>,
         categories: Vec<ProjectCategoryDto>,
         attributes: Vec<ProjectAttributeDto>,
     ) -> Self {
@@ -68,6 +78,7 @@ impl UpdateNewsDto {
             id,
             title,
             body,
+            attachments,
             categories,
             attributes,
         }
@@ -82,6 +93,10 @@ impl ToEntity for UpdateNewsDto {
             NewsId::try_from(self.id)?,
             NewsTitle::new(self.title),
             NewsBody::new(self.body),
+            self.attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<_, _>>()?,
             self.categories.into_entity()?,
             self.attributes.into_entity()?,
         ))
@@ -93,6 +108,7 @@ pub struct NewsDto {
     pub id: String,
     pub title: String,
     pub body: String,
+    pub attachments: Vec<String>,
     pub categories: Vec<ProjectCategoryDto>,
     pub attributes: Vec<ProjectAttributeDto>,
     pub created_at: chrono::DateTime<chrono::Utc>,
@@ -108,6 +124,11 @@ impl FromEntity for NewsDto {
             id: news.id.value().to_string(),
             title: news.title.value(),
             body: news.body.value(),
+            attachments: news
+                .attachments
+                .into_iter()
+                .map(|file_id| file_id.value().to_string())
+                .collect(),
             categories: Vec::from_entity(news.categories),
             attributes: Vec::from_entity(news.attributes),
             created_at: entity.created_at,

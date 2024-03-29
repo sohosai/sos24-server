@@ -1,6 +1,7 @@
 use getset::Getters;
 use thiserror::Error;
 
+use crate::entity::file_data::FileId;
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
 use crate::{ensure, impl_value_object};
 
@@ -18,6 +19,8 @@ pub struct News {
     #[getset(get = "pub")]
     body: NewsBody,
     #[getset(get = "pub")]
+    attachments: Vec<FileId>,
+    #[getset(get = "pub")]
     categories: ProjectCategories,
     #[getset(get = "pub")]
     attributes: ProjectAttributes,
@@ -28,6 +31,7 @@ impl News {
         id: NewsId,
         title: NewsTitle,
         body: NewsBody,
+        attachments: Vec<FileId>,
         categories: ProjectCategories,
         attributes: ProjectAttributes,
     ) -> Self {
@@ -35,6 +39,7 @@ impl News {
             id,
             title,
             body,
+            attachments,
             categories,
             attributes,
         }
@@ -43,6 +48,7 @@ impl News {
     pub fn create(
         title: NewsTitle,
         body: NewsBody,
+        attachments: Vec<FileId>,
         categories: ProjectCategories,
         attributes: ProjectAttributes,
     ) -> Self {
@@ -50,6 +56,7 @@ impl News {
             id: NewsId::new(uuid::Uuid::new_v4()),
             title,
             body,
+            attachments,
             categories,
             attributes,
         }
@@ -60,6 +67,7 @@ impl News {
             id: self.id,
             title: self.title,
             body: self.body,
+            attachments: self.attachments,
             categories: self.categories,
             attributes: self.attributes,
         }
@@ -71,6 +79,7 @@ pub struct DestructedNews {
     pub id: NewsId,
     pub title: NewsTitle,
     pub body: NewsBody,
+    pub attachments: Vec<FileId>,
     pub categories: ProjectCategories,
     pub attributes: ProjectAttributes,
 }
@@ -97,6 +106,16 @@ impl News {
     pub fn set_body(&mut self, actor: &Actor, body: NewsBody) -> Result<(), PermissionDeniedError> {
         ensure!(self.is_updatable_by(actor));
         self.body = body;
+        Ok(())
+    }
+
+    pub fn set_attachments(
+        &mut self,
+        actor: &Actor,
+        attachments: Vec<FileId>,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.attachments = attachments;
         Ok(())
     }
 

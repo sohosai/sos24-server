@@ -206,12 +206,19 @@ impl From<NewsUseCaseError> for AppError {
             NewsUseCaseError::NotFound(_) => {
                 AppError::new(StatusCode::NOT_FOUND, "news/not-found".to_string(), message)
             }
+            NewsUseCaseError::FileNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "news/file-not-found".to_string(),
+                message,
+            ),
             NewsUseCaseError::ProjectUseCaseError(e) => e.into(),
             NewsUseCaseError::ContextError(e) => e.into(),
             NewsUseCaseError::NewsRepositoryError(e) => e.into(),
             NewsUseCaseError::NewsIdError(e) => e.into(),
             NewsUseCaseError::PermissionDeniedError(e) => e.into(),
             NewsUseCaseError::InternalError(e) => e.into(),
+            NewsUseCaseError::FileIdError(e) => e.into(),
+            NewsUseCaseError::FileDataRepositoryError(e) => e.into(),
         }
     }
 }
