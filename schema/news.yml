@@ -152,6 +152,11 @@ schemas:
         type: string
       body:
         type: string
+      attachments:
+        type: array
+        items:
+          type: string
+          format: uuid
       categories:
         type: array
         items:
@@ -177,6 +182,11 @@ schemas:
         type: string
       body:
         type: string
+      attachments:
+        type: array
+        items:
+          type: string
+          format: uuid
       categories:
         type: array
         items:
@@ -192,6 +202,11 @@ schemas:
         type: string
       body:
         type: string
+      attachments:
+        type: array
+        items:
+          type: string
+          format: uuid
       categories:
         type: array
         items:
