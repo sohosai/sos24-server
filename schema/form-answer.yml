@@ -123,8 +123,7 @@ schemas:
         format: uuid
       type:
         $ref: "./form.yml#/schemas/FormItemType"
-      value:
-        type: string
+      value: { }
   FormAnswerSummary:
     type: object
     properties:

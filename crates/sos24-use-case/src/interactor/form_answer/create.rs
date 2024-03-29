@@ -9,6 +9,8 @@ use sos24_domain::{
     },
     service::verify_form_answer,
 };
+use sos24_domain::entity::form_answer::FormAnswerItemKind;
+use sos24_domain::repository::file_data::FileDataRepository;
 
 use crate::{
     context::Context,
@@ -59,6 +61,14 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .ok_or(FormAnswerUseCaseError::FormNotFound(
                 form_answer.form_id().clone(),
             ))?;
+
+        for item in form_answer.items() {
+            if let FormAnswerItemKind::File(value) = item.kind() {
+                for file_id in value.clone().value() {
+                    let _ = self.repositories.file_data_repository().find_by_id(file_id.clone()).await?.ok_or(FormAnswerUseCaseError::FileNotFound(file_id))?;
+                }
+            }
+        }
 
         verify_form_answer::verify(&form.value, &form_answer)?;
 

@@ -6,6 +6,7 @@ use thiserror::Error;
 use crate::entity::form::{FormId, FormItemId};
 use crate::entity::project::ProjectId;
 use crate::{ensure, impl_value_object};
+use crate::entity::file_data::FileId;
 
 use super::actor::Actor;
 use super::permission::{PermissionDeniedError, Permissions};
@@ -139,4 +140,4 @@ impl_value_object!(FormAnswerItemString(String));
 impl_value_object!(FormAnswerItemInt(i32));
 impl_value_object!(FormAnswerItemChooseOne(String));
 impl_value_object!(FormAnswerItemChooseMany(Vec<String>));
-impl_value_object!(FormAnswerItemFile(String));
+impl_value_object!(FormAnswerItemFile(Vec<FileId>));

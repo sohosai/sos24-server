@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 use sos24_use_case::dto::form_answer::{
     CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
 };
@@ -66,7 +67,7 @@ pub enum FormAnswerItem {
     Int { item_id: String, value: i32 },
     ChooseOne { item_id: String, value: String },
     ChooseMany { item_id: String, value: Vec<String> },
-    File { item_id: String, value: String },
+    File { item_id: String, value: Vec<String> },
 }
 
 impl From<FormAnswerItem> for FormAnswerItemDto {
