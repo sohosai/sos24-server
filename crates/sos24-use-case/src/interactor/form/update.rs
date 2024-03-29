@@ -9,6 +9,7 @@ use sos24_domain::{
     },
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
+use sos24_domain::entity::file_data::FileId;
 
 use crate::{
     context::Context,
@@ -56,6 +57,12 @@ impl<R: Repositories> FormUseCase<R> {
             .map(|item| item.into_entity())
             .collect::<Result<_, _>>()?;
         new_form.set_items(&actor, new_items)?;
+        let new_attachments = form_data
+            .attachments
+            .into_iter()
+            .map(FileId::try_from)
+            .collect::<Result<_, _>>()?;
+        new_form.set_attachments(&actor, new_attachments)?;
 
         self.repositories.form_repository().update(new_form).await?;
         Ok(())
@@ -103,6 +110,7 @@ mod tests {
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
+                    fixture::form::attachments2().into_iter().map(|it| it.value().to_string()).collect(),
                 ),
             )
             .await;
@@ -149,6 +157,7 @@ mod tests {
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
+                    fixture::form::attachments2().into_iter().map(|it| it.value().to_string()).collect(),
                 ),
             )
             .await;
@@ -190,6 +199,7 @@ mod tests {
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
+                    fixture::form::attachments2().into_iter().map(|it| it.value().to_string()).collect(),
                 ),
             )
             .await;

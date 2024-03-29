@@ -7,6 +7,7 @@ use sos24_domain::entity::{
         FormTitle,
     },
 };
+use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::form::FormItemExtension;
 
 use crate::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
@@ -23,6 +24,7 @@ pub struct CreateFormDto {
     categories: Vec<ProjectCategoryDto>,
     attributes: Vec<ProjectAttributeDto>,
     items: Vec<NewFormItemDto>,
+    attachments: Vec<String>,
 }
 
 impl CreateFormDto {
@@ -34,6 +36,7 @@ impl CreateFormDto {
         categories: Vec<ProjectCategoryDto>,
         attributes: Vec<ProjectAttributeDto>,
         items: Vec<NewFormItemDto>,
+        attachments: Vec<String>,
     ) -> Self {
         Self {
             title,
@@ -43,6 +46,7 @@ impl CreateFormDto {
             categories,
             attributes,
             items,
+            attachments,
         }
     }
 }
@@ -62,6 +66,7 @@ impl ToEntity for CreateFormDto {
                 .into_iter()
                 .map(NewFormItemDto::into_entity)
                 .collect::<Result<Vec<_>, _>>()?,
+            self.attachments.into_iter().map(FileId::try_from).collect::<Result<Vec<_>, _>>()?,
         )?)
     }
 }
@@ -108,6 +113,7 @@ pub struct UpdateFormDto {
     pub categories: Vec<ProjectCategoryDto>,
     pub attributes: Vec<ProjectAttributeDto>,
     pub items: Vec<NewFormItemDto>,
+    pub attachments: Vec<String>,
 }
 
 impl UpdateFormDto {
@@ -121,6 +127,7 @@ impl UpdateFormDto {
         categories: Vec<ProjectCategoryDto>,
         attributes: Vec<ProjectAttributeDto>,
         items: Vec<NewFormItemDto>,
+        attachments: Vec<String>,
     ) -> Self {
         Self {
             id,
@@ -131,6 +138,7 @@ impl UpdateFormDto {
             categories,
             attributes,
             items,
+            attachments,
         }
     }
 }
@@ -145,6 +153,7 @@ pub struct FormDto {
     pub categories: Vec<ProjectCategoryDto>,
     pub attributes: Vec<ProjectAttributeDto>,
     pub items: Vec<FormItemDto>,
+    pub attachments: Vec<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -167,6 +176,7 @@ impl FromEntity for FormDto {
                 .into_iter()
                 .map(FormItemDto::from_entity)
                 .collect(),
+            attachments: form.attachments.into_iter().map(|it| it.value().to_string()).collect(),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,
