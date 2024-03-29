@@ -34,6 +34,10 @@ paths:
       responses:
         201:
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/CreatedFileInfo"
         400:
           description: Bad Request
         401:
@@ -117,3 +121,11 @@ schemas:
         type: string
         format: date-time
         nullable: true
+  CreatedFileInfo:
+    type: object
+    properties:
+      ids:
+        type: array
+        items:
+          type: string
+          format: uuid

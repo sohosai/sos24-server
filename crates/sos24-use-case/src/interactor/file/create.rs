@@ -22,7 +22,7 @@ impl<R: Repositories> FileUseCase<R> {
         bucket: String,
         key_prefix: String,
         raw_file: CreateFileDto,
-    ) -> Result<(), FileUseCaseError> {
+    ) -> Result<String, FileUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         let key = FileObjectKey::generate(key_prefix.as_str());
         let filename = FileName::new(raw_file.filename);
@@ -45,10 +45,12 @@ impl<R: Repositories> FileUseCase<R> {
             .await?;
 
         let data = FileData::create(filename, key, owner);
+        let id = data.id().clone();
         self.repositories
             .file_data_repository()
             .create(data)
             .await?;
-        Ok(())
+        
+        Ok(id.value().to_string())
     }
 }
