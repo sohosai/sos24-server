@@ -15,29 +15,28 @@ use super::{FromEntity, ToEntity};
 
 #[derive(Debug)]
 pub struct CreateFormAnswerDto {
-    project_id: String,
     form_id: String,
     items: Vec<FormAnswerItemDto>,
 }
 
 impl CreateFormAnswerDto {
-    pub fn new(project_id: String, form_id: String, items: Vec<FormAnswerItemDto>) -> Self {
+    pub fn new(form_id: String, items: Vec<FormAnswerItemDto>) -> Self {
         Self {
-            project_id,
             form_id,
             items,
         }
     }
 }
 
-impl ToEntity for CreateFormAnswerDto {
+impl ToEntity for (String, CreateFormAnswerDto) {
     type Entity = FormAnswer;
     type Error = FormUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        let (project_id, form_answer) = self;
         Ok(FormAnswer::create(
-            ProjectId::try_from(self.project_id)?,
-            FormId::try_from(self.form_id)?,
-            self.items
+            ProjectId::try_from(project_id)?,
+            FormId::try_from(form_answer.form_id)?,
+            form_answer.items
                 .into_iter()
                 .map(FormAnswerItemDto::into_entity)
                 .collect::<Result<_, _>>()?,

@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::form_answer::{
-    CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
-};
+use sos24_use_case::dto::form_answer::{CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto, UpdateFormAnswerDto};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateFormAnswer {
@@ -15,6 +13,29 @@ impl From<CreateFormAnswer> for CreateFormAnswerDto {
         CreateFormAnswerDto::new(
             create_form_answer.form_id,
             create_form_answer
+                .items
+                .into_iter()
+                .map(FormAnswerItemDto::from)
+                .collect(),
+        )
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateFormAnswer {
+    items: Vec<FormAnswerItem>,
+}
+
+pub trait ConvertToUpdateFormAnswerDto {
+    fn to_update_form_answer_dto(self) -> UpdateFormAnswerDto;
+}
+
+impl ConvertToUpdateFormAnswerDto for (UpdateFormAnswer, String) {
+    fn to_update_form_answer_dto(self) -> UpdateFormAnswerDto {
+        let (update_form_answer, id) = self;
+        UpdateFormAnswerDto::new(
+            id,
+            update_form_answer
                 .items
                 .into_iter()
                 .map(FormAnswerItemDto::from)

@@ -1,21 +1,20 @@
 use std::sync::Arc;
 
 use axum::{
+    Extension,
     extract::{Path, Query, State},
     http::StatusCode,
-    response::IntoResponse,
-    Extension, Json,
+    Json, response::IntoResponse,
 };
+
 use sos24_use_case::{context::Context, dto::form_answer::CreateFormAnswerDto};
 
 use crate::{
     error::AppError,
-    model::{
-        form::{ConvertToUpdateFormDto, UpdateForm},
-        form_answer::{CreateFormAnswer, FormAnswer, FormAnswerQuery},
-    },
+    model::form_answer::{ConvertToUpdateFormAnswerDto, CreateFormAnswer, FormAnswer, FormAnswerQuery},
     module::Modules,
 };
+use crate::model::form_answer::UpdateFormAnswer;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
@@ -41,7 +40,7 @@ pub async fn handle_get(
                 StatusCode::BAD_REQUEST,
                 "form-answer/invalid-query".to_string(),
                 "Invalid query".to_string(),
-            ))
+            ));
         }
     };
 
@@ -94,10 +93,10 @@ pub async fn handle_put_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
-    Json(raw_form): Json<UpdateForm>,
+    Json(raw_form_answer): Json<UpdateFormAnswer>,
 ) -> Result<impl IntoResponse, AppError> {
-    let form = (id, raw_form).to_update_form_dto();
-    let res = modules.form_use_case().update(&ctx, form).await;
+    let form = (raw_form_answer, id).to_update_form_answer_dto();
+    let res = modules.form_answer_use_case().update(&ctx, form).await;
     res.map(|_| StatusCode::OK).map_err(|err| {
         tracing::error!("Failed to update form: {err:?}");
         err.into()
