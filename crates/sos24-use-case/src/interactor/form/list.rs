@@ -23,3 +23,29 @@ impl<R: Repositories> FormUseCase<R> {
         Ok(form_list.collect())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use sos24_domain::{
+        entity::user::UserRole,
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{context::Context, interactor::form::FormUseCase};
+
+    #[tokio::test]
+    async fn 一般ユーザーは申請一覧を取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .form_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let use_case = FormUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case.list(&ctx).await;
+        assert!(matches!(res, Ok(_)));
+    }
+}

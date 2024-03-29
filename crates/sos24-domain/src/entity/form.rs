@@ -10,6 +10,12 @@ use super::actor::Actor;
 use super::common::datetime::DateTime;
 use super::permission::{PermissionDeniedError, Permissions};
 
+#[derive(Debug, Error)]
+pub enum FormError {
+    #[error("The end time is earlier than the start time")]
+    EndTimeEarlierThanStartTime,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct Form {
     #[getset(get = "pub")]
@@ -39,8 +45,12 @@ impl Form {
         categories: ProjectCategories,
         attributes: ProjectAttributes,
         items: Vec<FormItem>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, FormError> {
+        if starts_at.clone().value() > ends_at.clone().value() {
+            return Err(FormError::EndTimeEarlierThanStartTime);
+        }
+
+        Ok(Self {
             id: FormId::new(uuid::Uuid::new_v4()),
             title,
             description,
@@ -49,7 +59,7 @@ impl Form {
             categories,
             attributes,
             items,
-        }
+        })
     }
 
     pub fn new(
@@ -458,3 +468,24 @@ impl_value_object!(FormItemMinSelection(i32));
 impl_value_object!(FormItemMaxSelection(i32));
 impl_value_object!(FormItemExtension(String));
 impl_value_object!(FormItemLimit(i32));
+
+#[cfg(test)]
+mod tests {
+    use crate::{entity::form::FormError, test::fixture};
+
+    use super::Form;
+
+    #[test]
+    fn 申請の開始時間が終了時間より後ならばエラーを返す() {
+        let form = Form::create(
+            fixture::form::title1(),
+            fixture::form::description1(),
+            fixture::form::ends_at1(),
+            fixture::form::starts_at1(),
+            fixture::form::categories1(),
+            fixture::form::attributes1(),
+            fixture::form::items1(),
+        );
+        assert!(matches!(form, Err(FormError::EndTimeEarlierThanStartTime)));
+    }
+}

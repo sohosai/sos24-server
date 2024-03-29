@@ -39,7 +39,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn list_general_fail() {
+    async fn 一般ユーザーは招待一覧を取得できない() {
         let repositories = MockRepositories::default();
         let use_case = InvitationUseCase::new_for_test(repositories);
 
@@ -54,7 +54,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn list_committee_success() {
+    async fn 実委人は招待一覧を取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .invitation_repository_mut()

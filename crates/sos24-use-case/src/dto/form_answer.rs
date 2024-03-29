@@ -46,24 +46,12 @@ impl ToEntity for CreateFormAnswerDto {
 
 pub struct UpdateFormAnswerDto {
     pub id: String,
-    pub project_id: String,
-    pub form_id: String,
     pub items: Vec<FormAnswerItemDto>,
 }
 
 impl UpdateFormAnswerDto {
-    pub fn new(
-        id: String,
-        project_id: String,
-        form_id: String,
-        items: Vec<FormAnswerItemDto>,
-    ) -> Self {
-        Self {
-            id,
-            project_id,
-            form_id,
-            items,
-        }
+    pub fn new(id: String, items: Vec<FormAnswerItemDto>) -> Self {
+        Self { id, items }
     }
 }
 

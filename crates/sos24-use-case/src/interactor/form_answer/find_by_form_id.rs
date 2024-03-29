@@ -29,7 +29,6 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .find_by_id(form_id.clone())
             .await?
             .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
-        // TODO: ensure!(form.value.is_visible_to(&actor));
 
         let raw_form_answer_list = self
             .repositories
@@ -45,4 +44,53 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::sync::Arc;
+
+    use sos24_domain::{
+        entity::{permission::PermissionDeniedError, user::UserRole},
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{
+        context::Context,
+        interactor::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError},
+    };
+
+    #[tokio::test]
+    async fn 一般ユーザーは特定の申請の回答一覧を取得できない() {
+        let repositories = MockRepositories::default();
+        let use_case = FormAnswerUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .find_by_form_id(&ctx, fixture::form::id1().value().to_string())
+            .await;
+        assert!(matches!(
+            res,
+            Err(FormAnswerUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人は特定の申請の回答一覧を取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .form_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+        repositories
+            .form_answer_repository_mut()
+            .expect_find_by_form_id()
+            .returning(|_| Ok(vec![]));
+        let use_case = FormAnswerUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case
+            .find_by_form_id(&ctx, fixture::form::id1().value().to_string())
+            .await;
+        assert!(matches!(res, Ok(_)));
+    }
+}

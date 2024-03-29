@@ -74,7 +74,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn create_general_success() {
+    async fn 一般ユーザーは自分の企画への招待を作成できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -113,7 +113,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_general_fail() {
+    async fn 一般ユーザーは他人の企画への招待を作成できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -155,4 +155,8 @@ mod tests {
             ))
         ));
     }
+
+    // TODO: 実委人管理者は他人の企画への招待を作成できる
+    // TODO: 一般ユーザーは募集期間外に自分の企画への招待を作成できない
+    // TODO: 実委人管理者は募集期間外に自分の企画への招待を作成できる
 }

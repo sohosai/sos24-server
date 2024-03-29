@@ -65,36 +65,20 @@ pub struct DestructedFormAnswer {
 }
 
 impl FormAnswer {
-    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
-        actor.has_permission(Permissions::UPDATE_FORM_ANSWER_ALL)
-    }
-
-    pub fn set_project_id(
-        &mut self,
-        actor: &Actor,
-        project_id: ProjectId,
-    ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
-        self.project_id = project_id;
-        Ok(())
-    }
-
-    pub fn set_form_id(
-        &mut self,
-        actor: &Actor,
-        form_id: FormId,
-    ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
-        self.form_id = form_id;
-        Ok(())
+    pub fn is_updatable_by(&self, actor: &Actor, owned_project_id: Option<ProjectId>) -> bool {
+        owned_project_id
+            .map(|project_id| self.project_id == project_id)
+            .unwrap_or(false)
+            || actor.has_permission(Permissions::UPDATE_FORM_ANSWER_ALL)
     }
 
     pub fn set_items(
         &mut self,
         actor: &Actor,
+        owned_project_id: Option<ProjectId>,
         items: Vec<FormAnswerItem>,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by(actor, owned_project_id));
         self.items = items;
         Ok(())
     }
