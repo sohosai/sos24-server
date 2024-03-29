@@ -6,9 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 3000:3000
+      - "127.0.0.1:3000:3000"
     env_file:
-        - .env
+      - .env
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
@@ -19,9 +19,9 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     env_file:
-        - .env
+      - .env
 
   mongo:
     image: mongo
@@ -29,18 +29,18 @@ services:
     volumes:
       - mongodb-data:/data/db
     env_file:
-        - .env
+      - .env
 
   mongo-express:
     image: mongo-express
     restart: always
     ports:
-      - 8081:8081
+      - "127.0.0.1:8081:8081"
     env_file:
-        - .env
+      - .env
     depends_on:
       - mongo
-    
+
 volumes:
   postgres-data:
   mongodb-data:
