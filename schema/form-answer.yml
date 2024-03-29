@@ -174,8 +174,5 @@ schemas:
   UpdateFormAnswer:
     type: object
     properties:
-      form_id:
-        type: string
-        format: uuid
       items:
         $ref: "#/schemas/FormAnswerItem"
