@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
+use axum::{Extension, Json};
 use axum::extract::{Multipart, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::{Extension, Json};
+
 use sos24_use_case::{context::Context, dto::file::CreateFileDto};
 
 use crate::{
@@ -11,6 +12,7 @@ use crate::{
     model::file::{CreateFileQuery, File, FileInfo, Visibility},
     module::Modules,
 };
+use crate::model::file::CreatedFileInfo;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
@@ -103,8 +105,9 @@ pub async fn handle_post(
         ));
     }
 
+    let mut created_file_ids = vec![];
     for file in filelist.into_iter() {
-        modules
+        let id = modules
             .file_use_case()
             .create(
                 &ctx,
@@ -113,8 +116,13 @@ pub async fn handle_post(
                 file,
             )
             .await?;
+        created_file_ids.push(id);
     }
-    Ok(StatusCode::CREATED)
+
+    let created_file_info = CreatedFileInfo {
+        ids: created_file_ids,
+    };
+    Ok((StatusCode::CREATED, Json(created_file_info)))
 }
 
 pub async fn handle_get_id(

@@ -56,3 +56,8 @@ impl From<FileInfoDto> for FileInfo {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct CreatedFileInfo {
+    pub ids: Vec<String>,
+}
