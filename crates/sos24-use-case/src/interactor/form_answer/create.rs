@@ -16,6 +16,7 @@ use crate::{
     context::Context,
     dto::{form_answer::CreateFormAnswerDto, ToEntity},
 };
+use crate::context::OwnedProject;
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 
@@ -28,7 +29,14 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
 
-        let form_answer = form_answer.into_entity()?;
+        let project_id = match ctx.project(Arc::clone(&self.repositories)).await? {
+            Some(OwnedProject::Owner(project)) => project.value.id().clone(),
+            Some(OwnedProject::SubOwner(project)) => project.value.id().clone(),
+            None => return Err(FormAnswerUseCaseError::NotProjectOwner),
+        };
+
+        let project_id_str = project_id.value().to_string();
+        let form_answer = (project_id_str, form_answer).into_entity()?;
 
         let prev_form_answer = self
             .repositories
@@ -86,7 +94,7 @@ mod tests {
     use std::sync::Arc;
 
     use sos24_domain::{
-        entity::{permission::PermissionDeniedError, user::UserRole},
+        entity::user::UserRole,
         test::{fixture, repository::MockRepositories},
     };
 
@@ -102,6 +110,10 @@ mod tests {
     #[tokio::test]
     async fn 一般ユーザーは自分の企画の回答を作成できる() {
         let mut repositories = MockRepositories::default();
+        repositories.project_repository_mut().expect_find_by_owner_id().returning(|_| {
+            Ok(Some(fixture::date::with(fixture::project::project1(fixture::user::id1())))
+            )
+        });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
@@ -129,7 +141,6 @@ mod tests {
             .create(
                 &ctx,
                 CreateFormAnswerDto::new(
-                    fixture::project::id1().value().to_string(),
                     fixture::form::id1().value().to_string(),
                     fixture::form_answer::items1()
                         .into_iter()
@@ -142,75 +153,10 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 一般ユーザーは他人の企画の回答を作成できない() {
+    async fn 企画責任者でないならば回答を作成できない() {
         let mut repositories = MockRepositories::default();
-        repositories
-            .form_answer_repository_mut()
-            .expect_find_by_project_id_and_form_id()
-            .returning(|_, _| Ok(None));
-        repositories
-            .project_repository_mut()
-            .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
-        repositories
-            .form_repository_mut()
-            .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
-        repositories
-            .form_answer_repository_mut()
-            .expect_create()
-            .returning(|_| Ok(()));
-        let use_case = FormAnswerUseCase::new(Arc::new(repositories));
-
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
-        let res = use_case
-            .create(
-                &ctx,
-                CreateFormAnswerDto::new(
-                    fixture::project::id1().value().to_string(),
-                    fixture::form::id1().value().to_string(),
-                    fixture::form_answer::items1()
-                        .into_iter()
-                        .map(FormAnswerItemDto::from_entity)
-                        .collect(),
-                ),
-            )
-            .await;
-        assert!(matches!(
-            res,
-            Err(FormAnswerUseCaseError::PermissionDeniedError(
-                PermissionDeniedError
-            ))
-        ));
-    }
-
-    #[tokio::test]
-    async fn 実委人管理者は他人の企画の回答を作成できる() {
-        let mut repositories = MockRepositories::default();
-        repositories
-            .form_answer_repository_mut()
-            .expect_find_by_project_id_and_form_id()
-            .returning(|_, _| Ok(None));
-        repositories
-            .project_repository_mut()
-            .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
-        repositories
-            .form_repository_mut()
-            .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
-        repositories
-            .form_answer_repository_mut()
-            .expect_create()
-            .returning(|_| Ok(()));
+        repositories.project_repository_mut().expect_find_by_owner_id().returning(|_| { Ok(None) });
+        repositories.project_repository_mut().expect_find_by_sub_owner_id().returning(|_| { Ok(None) });
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
@@ -218,7 +164,6 @@ mod tests {
             .create(
                 &ctx,
                 CreateFormAnswerDto::new(
-                    fixture::project::id1().value().to_string(),
                     fixture::form::id1().value().to_string(),
                     fixture::form_answer::items1()
                         .into_iter()
@@ -227,12 +172,16 @@ mod tests {
                 ),
             )
             .await;
-        assert!(matches!(res, Ok(())));
+        assert!(matches!(res, Err(FormAnswerUseCaseError::NotProjectOwner)));
     }
 
     #[tokio::test]
     async fn すでに回答がある場合はエラーになる() {
         let mut repositories = MockRepositories::default();
+        repositories.project_repository_mut().expect_find_by_owner_id().returning(|_| {
+            Ok(Some(fixture::date::with(fixture::project::project1(fixture::user::id1())))
+            )
+        });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
@@ -264,7 +213,6 @@ mod tests {
             .create(
                 &ctx,
                 CreateFormAnswerDto::new(
-                    fixture::project::id1().value().to_string(),
                     fixture::form::id1().value().to_string(),
                     fixture::form_answer::items1()
                         .into_iter()

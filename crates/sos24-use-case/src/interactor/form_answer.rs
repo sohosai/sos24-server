@@ -41,6 +41,8 @@ pub enum FormAnswerUseCaseError {
     AlreadyAnswered,
     #[error("File not found: {0:?}")]
     FileNotFound(FileId),
+    #[error("Not a project owner or subowner")]
+    NotProjectOwner,
 
     #[error(transparent)]
     FileDataRepositoryError(#[from] FileDataRepositoryError),
