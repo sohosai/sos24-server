@@ -39,6 +39,7 @@ pub struct Project {
 }
 
 impl Project {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: ProjectId,
         index: ProjectIndex,
@@ -133,9 +134,9 @@ impl Project {
     pub fn is_owned_by(&self, user_id: &UserId) -> bool {
         self.owner_id() == user_id
             || self
-                .sub_owner_id()
-                .as_ref()
-                .map_or(false, |sub_owner_id| sub_owner_id == user_id)
+            .sub_owner_id()
+            .as_ref()
+            .map_or(false, |sub_owner_id| sub_owner_id == user_id)
     }
 
     pub fn is_visible_to(&self, actor: &Actor) -> bool {
@@ -219,10 +220,10 @@ impl Project {
     pub fn set_owner_id(&mut self, id: UserId) -> Result<(), ProjectError> {
         if id == self.owner_id
             || self
-                .sub_owner_id
-                .as_ref()
-                .map(|sub_owner_id| sub_owner_id == &id)
-                .unwrap_or(false)
+            .sub_owner_id
+            .as_ref()
+            .map(|sub_owner_id| sub_owner_id == &id)
+            .unwrap_or(false)
         {
             return Err(ProjectError::AlreadyOwnerOrSubOwner);
         }
@@ -234,10 +235,10 @@ impl Project {
     pub fn set_sub_owner_id(&mut self, id: UserId) -> Result<(), ProjectError> {
         if id == self.owner_id
             || self
-                .sub_owner_id
-                .as_ref()
-                .map(|sub_owner_id| sub_owner_id == &id)
-                .unwrap_or(false)
+            .sub_owner_id
+            .as_ref()
+            .map(|sub_owner_id| sub_owner_id == &id)
+            .unwrap_or(false)
         {
             return Err(ProjectError::AlreadyOwnerOrSubOwner);
         }
@@ -302,7 +303,7 @@ impl<const MAXLEN: usize> TryFrom<String> for BoundedString<MAXLEN> {
                 | '\u{FF10}'..='\u{FF19}' // 全角数字
                 | '\u{FF21}'..='\u{FF3A}' // 全角英語（大文字）
                 | '\u{FF41}'..='\u{FF5A}' // 全角英語（小文字）
-                  => 2,
+                => 2,
                 _ => 3,
             };
 
@@ -322,11 +323,13 @@ impl<const MAXLEN: usize> TryFrom<String> for BoundedString<MAXLEN> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProjectTitle(BoundedString<20>);
+
 impl ProjectTitle {
     pub fn value(self) -> String {
         self.0.value()
     }
 }
+
 impl TryFrom<String> for ProjectTitle {
     type Error = BoundedStringError;
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -338,11 +341,13 @@ impl_value_object!(ProjectKanaTitle(String));
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProjectGroupName(BoundedString<20>);
+
 impl ProjectGroupName {
     pub fn value(self) -> String {
         self.0.value()
     }
 }
+
 impl TryFrom<String> for ProjectGroupName {
     type Error = BoundedStringError;
     fn try_from(value: String) -> Result<Self, Self::Error> {

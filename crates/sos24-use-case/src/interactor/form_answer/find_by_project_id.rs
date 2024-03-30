@@ -78,7 +78,7 @@ mod tests {
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
@@ -131,6 +131,6 @@ mod tests {
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

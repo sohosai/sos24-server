@@ -3,8 +3,8 @@ use std::str::FromStr;
 use getset::Getters;
 use thiserror::Error;
 
-use crate::entity::project::{ProjectAttributes, ProjectCategories};
 use crate::{ensure, impl_value_object};
+use crate::entity::project::{ProjectAttributes, ProjectCategories};
 
 use super::actor::Actor;
 use super::common::datetime::DateTime;
@@ -62,6 +62,7 @@ impl Form {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: FormId,
         title: FormTitle,

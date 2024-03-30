@@ -1,24 +1,31 @@
 use axum::http::StatusCode;
 
 use sos24_domain::entity::common::datetime::DateTimeError;
-use sos24_domain::entity::common::email::EmailError;
 use sos24_domain::entity::file_data::FileIdError;
 use sos24_domain::entity::form::{FormError, FormIdError, FormItemIdError};
 use sos24_domain::entity::form_answer::FormAnswerIdError;
-use sos24_domain::entity::invitation::{InvitationError, InvitationIdError};
-use sos24_domain::entity::news::NewsIdError;
-use sos24_domain::entity::permission::PermissionDeniedError;
-use sos24_domain::entity::project::{BoundedStringError, ProjectError, ProjectIdError};
+use sos24_domain::entity::project::BoundedStringError;
 use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::repository::file_object::FileObjectRepositoryError;
-use sos24_domain::repository::firebase_user::FirebaseUserRepositoryError;
 use sos24_domain::repository::form::FormRepositoryError;
 use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
-use sos24_domain::repository::invitation::InvitationRepositoryError;
-use sos24_domain::repository::news::NewsRepositoryError;
-use sos24_domain::repository::project::ProjectRepositoryError;
-use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::service::verify_form_answer::VerifyFormAnswerError;
+use sos24_domain::{
+    entity::{
+        common::email::EmailError,
+        invitation::{InvitationError, InvitationIdError},
+        news::NewsIdError,
+        permission::PermissionDeniedError,
+        project::{ProjectError, ProjectIdError},
+    },
+    repository::{
+        firebase_user::FirebaseUserRepositoryError, invitation::InvitationRepositoryError,
+        news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
+    },
+};
+use sos24_use_case::interactor::file::FileUseCaseError;
+use sos24_use_case::interactor::form::FormUseCaseError;
+use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
 use sos24_use_case::{
     context::ContextError,
     interactor::{
@@ -26,9 +33,6 @@ use sos24_use_case::{
         user::UserUseCaseError,
     },
 };
-use sos24_use_case::interactor::file::FileUseCaseError;
-use sos24_use_case::interactor::form::FormUseCaseError;
-use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
 
 use super::AppError;
 
@@ -237,7 +241,7 @@ impl From<ProjectUseCaseError> for AppError {
             ),
             ProjectUseCaseError::AlreadyOwnedProject(_) => AppError::new(
                 StatusCode::CONFLICT,
-                "project/alread-owned-project".to_string(),
+                "project/already-owned-project".to_string(),
                 message,
             ),
             ProjectUseCaseError::ApplicationsNotAccepted => AppError::new(

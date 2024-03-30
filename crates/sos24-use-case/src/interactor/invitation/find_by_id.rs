@@ -8,7 +8,7 @@ use sos24_domain::{
 
 use crate::{
     context::Context,
-    dto::{invitation::InvitationDto, FromEntity},
+    dto::{FromEntity, invitation::InvitationDto},
 };
 
 use super::{InvitationUseCase, InvitationUseCaseError};
@@ -68,7 +68,7 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
@@ -117,6 +117,6 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

@@ -8,7 +8,7 @@ use sos24_domain::{
 
 use crate::{
     context::Context,
-    dto::{news::NewsDto, FromEntity},
+    dto::{FromEntity, news::NewsDto},
 };
 
 use super::{NewsUseCase, NewsUseCaseError};
@@ -53,6 +53,6 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::news::id1().value().to_string())
             .await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

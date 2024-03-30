@@ -90,7 +90,7 @@ impl NewsRepository for PgNewsRepository {
         .fetch_optional(&*self.db)
         .await
         .context("Failed to fetch news")?;
-        Ok(news_row.map(|news| WithDate::try_from(news)).transpose()?)
+        Ok(news_row.map(WithDate::try_from).transpose()?)
     }
 
     async fn update(&self, news: News) -> Result<(), NewsRepositoryError> {

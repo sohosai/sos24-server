@@ -54,9 +54,9 @@ impl Repositories for DefaultRepositories {
     type InvitationRepositoryImpl = PgInvitationRepository;
     type NewsRepositoryImpl = PgNewsRepository;
     type ProjectRepositoryImpl = PgProjectRepository;
-    type UserRepositoryImpl = PgUserRepository;
     type FileDataRepositoryImpl = PgFileDataRepository;
     type FileObjectRepositoryImpl = S3FileObjectRepository;
+    type UserRepositoryImpl = PgUserRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -86,11 +86,11 @@ impl Repositories for DefaultRepositories {
         &self.file_data_repository
     }
 
-    fn user_repository(&self) -> &Self::UserRepositoryImpl {
-        &self.user_repository
-    }
-
     fn file_object_repository(&self) -> &Self::FileObjectRepositoryImpl {
         &self.file_object_repository
+    }
+
+    fn user_repository(&self) -> &Self::UserRepositoryImpl {
+        &self.user_repository
     }
 }

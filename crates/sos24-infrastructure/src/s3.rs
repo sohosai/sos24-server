@@ -1,8 +1,8 @@
 use std::ops::Deref;
 
 use aws_sdk_s3::{
-    config::{Builder, Credentials, Region},
     Client,
+    config::{Builder, Credentials, Region},
 };
 
 pub mod file_object;
@@ -17,7 +17,7 @@ impl S3 {
         access_key_id: &str,
         secret_access_key: &str,
     ) -> Self {
-        let credentail = Credentials::new(
+        let credential = Credentials::new(
             access_key_id,
             secret_access_key,
             None,
@@ -27,7 +27,7 @@ impl S3 {
         let config = Builder::new()
             .endpoint_url(endpoint)
             .region(Region::new(region.to_string()))
-            .credentials_provider(credentail)
+            .credentials_provider(credential)
             .behavior_version_latest()
             .build();
         Self(Client::from_conf(config))

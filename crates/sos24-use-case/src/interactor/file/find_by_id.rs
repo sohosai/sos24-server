@@ -1,17 +1,17 @@
 use std::sync::Arc;
 
-use crate::context::Context;
-use crate::dto::FromEntity;
-use sos24_domain::ensure;
-use sos24_domain::repository::file_data::FileDataRepository;
-use sos24_domain::repository::file_object::FileObjectRepository;
-use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::{
     entity::{file_data::FileId, file_object::ContentDisposition},
     repository::Repositories,
 };
+use sos24_domain::ensure;
+use sos24_domain::repository::file_data::FileDataRepository;
+use sos24_domain::repository::file_object::FileObjectRepository;
+use sos24_domain::repository::project::ProjectRepository;
 
+use crate::context::Context;
 use crate::dto::file::{FileDto, FileEntity};
+use crate::dto::FromEntity;
 
 use super::{FileUseCase, FileUseCaseError};
 
@@ -19,7 +19,7 @@ impl<R: Repositories> FileUseCase<R> {
     pub async fn find_by_id(
         &self,
         ctx: &Context,
-        backet: String,
+        bucket: String,
         id: String,
     ) -> Result<FileDto, FileUseCaseError> {
         let id = FileId::try_from(id)?;
@@ -44,7 +44,7 @@ impl<R: Repositories> FileUseCase<R> {
             .repositories
             .file_object_repository()
             .generate_url(
-                backet,
+                bucket,
                 raw_file_data.value.url().copy(),
                 Some(ContentDisposition::from(
                     raw_file_data.value.filename().clone(),

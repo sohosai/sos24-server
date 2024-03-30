@@ -1,4 +1,3 @@
-use sos24_domain::entity::form::FormItemExtension;
 use sos24_domain::entity::{
     common::{date::WithDate, datetime::DateTime},
     form::{
@@ -8,6 +7,7 @@ use sos24_domain::entity::{
         FormTitle,
     },
 };
+use sos24_domain::entity::form::FormItemExtension;
 
 use crate::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::interactor::form::FormUseCaseError;
@@ -111,6 +111,7 @@ pub struct UpdateFormDto {
 }
 
 impl UpdateFormDto {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: String,
         title: String,

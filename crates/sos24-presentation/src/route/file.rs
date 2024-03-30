@@ -97,7 +97,7 @@ pub async fn handle_post(
         }
     }
 
-    if filelist.len() == 0 {
+    if filelist.is_empty() {
         return Err(AppError::new(
             StatusCode::BAD_REQUEST,
             "file/no-file-found".to_string(),

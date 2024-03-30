@@ -21,7 +21,7 @@ impl<R: Repositories> InvitationUseCase<R> {
         let raw_invitation_list = self.repositories.invitation_repository().list().await?;
         let invitation_list = raw_invitation_list
             .into_iter()
-            .map(|invitation| InvitationDto::from_entity(invitation));
+            .map(InvitationDto::from_entity);
         Ok(invitation_list.collect())
     }
 }

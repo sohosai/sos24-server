@@ -8,7 +8,7 @@ use sos24_domain::{
 
 use crate::{
     context::Context,
-    dto::{news::NewsDto, FromEntity},
+    dto::{FromEntity, news::NewsDto},
 };
 
 use super::{NewsUseCase, NewsUseCaseError};
@@ -46,6 +46,6 @@ mod tests {
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
-        assert!(matches!(res, Ok(_)));
+        assert!(res.is_ok());
     }
 }

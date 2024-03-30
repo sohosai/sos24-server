@@ -158,7 +158,7 @@ impl ProjectRepository for PgProjectRepository {
             .await
             .context("Failed to fetch project")?;
         Ok(project_row
-            .map(|project| WithDate::try_from(project))
+            .map(WithDate::try_from)
             .transpose()?)
     }
 
@@ -175,7 +175,7 @@ impl ProjectRepository for PgProjectRepository {
             .await
             .context("Failed to fetch project")?;
         Ok(project_row
-            .map(|project| WithDate::try_from(project))
+            .map(WithDate::try_from)
             .transpose()?)
     }
 
@@ -191,7 +191,7 @@ impl ProjectRepository for PgProjectRepository {
             .await
             .context("Failed to fetch project")?;
         Ok(project_row
-            .map(|project| WithDate::try_from(project))
+            .map(WithDate::try_from)
             .transpose()?)
     }
 
@@ -221,9 +221,9 @@ impl ProjectRepository for PgProjectRepository {
             r#"UPDATE projects SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
-        .execute(&*self.db)
-        .await
-        .context("Failed to delete project")?;
+            .execute(&*self.db)
+            .await
+            .context("Failed to delete project")?;
         Ok(())
     }
 }

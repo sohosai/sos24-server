@@ -76,6 +76,7 @@ pub struct UpdateProjectDto {
 }
 
 impl UpdateProjectDto {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: String,
         title: String,
@@ -152,7 +153,7 @@ pub enum ProjectCategoryDto {
 }
 
 impl fmt::Display for ProjectCategoryDto {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             ProjectCategoryDto::General => write!(f, "普通企画"),
             ProjectCategoryDto::FoodsWithKitchen => write!(f, "調理企画（仕込み場が必要）"),

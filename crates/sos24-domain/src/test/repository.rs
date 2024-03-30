@@ -2,8 +2,8 @@ use crate::repository::{
     file_data::MockFileDataRepository, file_object::MockFileObjectRepository,
     firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
     form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
-    news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
-    Repositories,
+    news::MockNewsRepository, project::MockProjectRepository, Repositories,
+    user::MockUserRepository,
 };
 
 #[derive(Default)]
@@ -64,9 +64,9 @@ impl Repositories for MockRepositories {
     type InvitationRepositoryImpl = MockInvitationRepository;
     type NewsRepositoryImpl = MockNewsRepository;
     type ProjectRepositoryImpl = MockProjectRepository;
-    type UserRepositoryImpl = MockUserRepository;
     type FileDataRepositoryImpl = MockFileDataRepository;
     type FileObjectRepositoryImpl = MockFileObjectRepository;
+    type UserRepositoryImpl = MockUserRepository;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -92,15 +92,15 @@ impl Repositories for MockRepositories {
         &self.project_repository
     }
 
-    fn user_repository(&self) -> &Self::UserRepositoryImpl {
-        &self.user_repository
-    }
-
     fn file_data_repository(&self) -> &Self::FileDataRepositoryImpl {
         &self.file_data_repository
     }
 
     fn file_object_repository(&self) -> &Self::FileObjectRepositoryImpl {
         &self.file_object_repository
+    }
+
+    fn user_repository(&self) -> &Self::UserRepositoryImpl {
+        &self.user_repository
     }
 }

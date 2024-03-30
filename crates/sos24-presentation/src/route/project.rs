@@ -140,7 +140,6 @@ pub async fn handle_export(
         .header("Content-Type", "text/csv")
         .header("Content-Disposition", "attachment; filename=projects.csv")
         .body(data)
-        .map(|response| response)
         .map_err(|err| {
             tracing::error!("Failed to create response: {err:?}");
             AppError::new(

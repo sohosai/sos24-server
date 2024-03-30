@@ -46,6 +46,7 @@ pub enum FileSignedUrlError {
     #[error("Invalid URL")]
     InvalidUrl,
 }
+
 impl TryFrom<&str> for FileSignedUrl {
     type Error = FileSignedUrlError;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -76,11 +77,11 @@ pub enum FileObjectError {
 
 impl FileObjectKey {
     pub fn generate(prefix: &str) -> Self {
-        return match prefix.len() {
+        match prefix.len() {
             // /から始まるkeyは無効
             0 => Self(format!("{}", uuid::Uuid::new_v4())),
             _ => Self(format!("{}/{}", prefix, uuid::Uuid::new_v4())),
-        };
+        }
     }
     pub fn copy(&self) -> Self {
         Self(self.0.clone())
