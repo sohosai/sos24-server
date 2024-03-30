@@ -5,6 +5,7 @@ use mongodb::{
     Collection,
 };
 use serde::{Deserialize, Serialize};
+
 use sos24_domain::{
     entity::{
         common::date::WithDate,
@@ -18,6 +19,7 @@ use sos24_domain::{
     },
     repository::form_answer::{FormAnswerRepository, FormAnswerRepositoryError},
 };
+use sos24_domain::entity::file_data::FileId;
 
 use super::MongoDb;
 
@@ -65,8 +67,8 @@ impl TryFrom<FormAnswerDoc> for WithDate<FormAnswer> {
                 form_answer_doc
                     .items
                     .into_iter()
-                    .map(FormAnswerItem::from)
-                    .collect(),
+                    .map(FormAnswerItem::try_from)
+                    .collect::<Result<Vec<_>, _>>()?,
             ),
             form_answer_doc.created_at,
             form_answer_doc.updated_at,
@@ -92,12 +94,13 @@ impl From<FormAnswerItem> for FormAnswerItemDoc {
     }
 }
 
-impl From<FormAnswerItemDoc> for FormAnswerItem {
-    fn from(form_answer_item_doc: FormAnswerItemDoc) -> Self {
-        FormAnswerItem::new(
+impl TryFrom<FormAnswerItemDoc> for FormAnswerItem {
+    type Error = anyhow::Error;
+    fn try_from(form_answer_item_doc: FormAnswerItemDoc) -> Result<Self, Self::Error> {
+        Ok(FormAnswerItem::new(
             FormItemId::new(form_answer_item_doc.item_id),
-            form_answer_item_doc.kind.into(),
-        )
+            FormAnswerItemKind::try_from(form_answer_item_doc.kind)?,
+        ))
     }
 }
 
@@ -107,7 +110,7 @@ pub enum FormAnswerItemKindDoc {
     Int(i32),
     ChooseOne(String),
     ChooseMany(Vec<String>),
-    File(String),
+    File(Vec<String>),
 }
 
 impl From<FormAnswerItemKind> for FormAnswerItemKindDoc {
@@ -119,28 +122,29 @@ impl From<FormAnswerItemKind> for FormAnswerItemKindDoc {
             FormAnswerItemKind::ChooseMany(value) => {
                 FormAnswerItemKindDoc::ChooseMany(value.value())
             }
-            FormAnswerItemKind::File(value) => FormAnswerItemKindDoc::File(value.value()),
+            FormAnswerItemKind::File(value) => FormAnswerItemKindDoc::File(value.value().into_iter().map(|id| id.value().to_string()).collect()),
         }
     }
 }
 
-impl From<FormAnswerItemKindDoc> for FormAnswerItemKind {
-    fn from(form_answer_item_kind_doc: FormAnswerItemKindDoc) -> Self {
+impl TryFrom<FormAnswerItemKindDoc> for FormAnswerItemKind {
+    type Error = anyhow::Error;
+    fn try_from(form_answer_item_kind_doc: FormAnswerItemKindDoc) -> Result<Self, Self::Error> {
         match form_answer_item_kind_doc {
             FormAnswerItemKindDoc::String(value) => {
-                FormAnswerItemKind::String(FormAnswerItemString::new(value))
+                Ok(FormAnswerItemKind::String(FormAnswerItemString::new(value)))
             }
             FormAnswerItemKindDoc::Int(value) => {
-                FormAnswerItemKind::Int(FormAnswerItemInt::new(value))
+                Ok(FormAnswerItemKind::Int(FormAnswerItemInt::new(value)))
             }
             FormAnswerItemKindDoc::ChooseOne(value) => {
-                FormAnswerItemKind::ChooseOne(FormAnswerItemChooseOne::new(value))
+                Ok(FormAnswerItemKind::ChooseOne(FormAnswerItemChooseOne::new(value)))
             }
             FormAnswerItemKindDoc::ChooseMany(value) => {
-                FormAnswerItemKind::ChooseMany(FormAnswerItemChooseMany::new(value))
+                Ok(FormAnswerItemKind::ChooseMany(FormAnswerItemChooseMany::new(value)))
             }
             FormAnswerItemKindDoc::File(value) => {
-                FormAnswerItemKind::File(FormAnswerItemFile::new(value))
+                Ok(FormAnswerItemKind::File(FormAnswerItemFile::new(value.into_iter().map(FileId::try_from).collect::<Result<Vec<_>, _>>()?)))
             }
         }
     }

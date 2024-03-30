@@ -15,6 +15,8 @@ use sos24_domain::{
     },
     service::verify_form_answer::VerifyFormAnswerError,
 };
+use sos24_domain::entity::file_data::FileId;
+use sos24_domain::repository::file_data::FileDataRepositoryError;
 
 use crate::context::ContextError;
 
@@ -37,7 +39,11 @@ pub enum FormAnswerUseCaseError {
     FormNotFound(FormId),
     #[error("Already answered")]
     AlreadyAnswered,
+    #[error("File not found: {0:?}")]
+    FileNotFound(FileId),
 
+    #[error(transparent)]
+    FileDataRepositoryError(#[from] FileDataRepositoryError),
     #[error(transparent)]
     FormIdError(#[from] FormIdError),
     #[error(transparent)]

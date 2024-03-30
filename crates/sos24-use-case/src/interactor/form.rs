@@ -11,6 +11,7 @@ use sos24_domain::{
     },
     repository::{form::FormRepositoryError, form_answer::FormAnswerRepositoryError, Repositories},
 };
+use sos24_domain::entity::file_data::FileIdError;
 
 use crate::context::ContextError;
 use crate::interactor::project::ProjectUseCaseError;
@@ -32,6 +33,8 @@ pub enum FormUseCaseError {
     FormError(#[from] FormError),
     #[error(transparent)]
     FormAnswerRepositoryError(#[from] FormAnswerRepositoryError),
+    #[error(transparent)]
+    FileIdError(#[from] FileIdError),
     #[error(transparent)]
     ProjectUseCaseError(#[from] ProjectUseCaseError),
     #[error(transparent)]

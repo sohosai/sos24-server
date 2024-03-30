@@ -7,6 +7,7 @@ use sos24_domain::entity::{
     },
     project::ProjectId,
 };
+use sos24_domain::entity::file_data::FileId;
 
 use crate::interactor::form::FormUseCaseError;
 
@@ -126,7 +127,7 @@ pub enum FormAnswerItemKindDto {
     Int(i32),
     ChooseOne(String),
     ChooseMany(Vec<String>),
-    File(String),
+    File(Vec<String>),
 }
 
 impl ToEntity for FormAnswerItemKindDto {
@@ -147,7 +148,7 @@ impl ToEntity for FormAnswerItemKindDto {
                 FormAnswerItemChooseMany::new(value),
             )),
             FormAnswerItemKindDto::File(value) => {
-                Ok(FormAnswerItemKind::File(FormAnswerItemFile::new(value)))
+                Ok(FormAnswerItemKind::File(FormAnswerItemFile::new(value.into_iter().map(FileId::try_from).collect::<Result<_, _>>()?)))
             }
         }
     }
@@ -168,7 +169,7 @@ impl FromEntity for FormAnswerItemKindDto {
                 FormAnswerItemKindDto::ChooseMany(value.value().to_vec())
             }
             FormAnswerItemKind::File(value) => {
-                FormAnswerItemKindDto::File(value.value().to_string())
+                FormAnswerItemKindDto::File(value.value().into_iter().map(|id| id.value().to_string()).collect())
             }
         }
     }
