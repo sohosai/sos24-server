@@ -1,3 +1,4 @@
+use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::{
     common::date::WithDate,
     form::{FormId, FormItemId},
@@ -7,7 +8,6 @@ use sos24_domain::entity::{
     },
     project::ProjectId,
 };
-use sos24_domain::entity::file_data::FileId;
 
 use crate::interactor::form::FormUseCaseError;
 
@@ -21,10 +21,7 @@ pub struct CreateFormAnswerDto {
 
 impl CreateFormAnswerDto {
     pub fn new(form_id: String, items: Vec<FormAnswerItemDto>) -> Self {
-        Self {
-            form_id,
-            items,
-        }
+        Self { form_id, items }
     }
 }
 
@@ -36,7 +33,8 @@ impl ToEntity for (String, CreateFormAnswerDto) {
         Ok(FormAnswer::create(
             ProjectId::try_from(project_id)?,
             FormId::try_from(form_answer.form_id)?,
-            form_answer.items
+            form_answer
+                .items
                 .into_iter()
                 .map(FormAnswerItemDto::into_entity)
                 .collect::<Result<_, _>>()?,
@@ -147,7 +145,12 @@ impl ToEntity for FormAnswerItemKindDto {
                 FormAnswerItemChooseMany::new(value),
             )),
             FormAnswerItemKindDto::File(value) => {
-                Ok(FormAnswerItemKind::File(FormAnswerItemFile::new(value.into_iter().map(FileId::try_from).collect::<Result<_, _>>()?)))
+                Ok(FormAnswerItemKind::File(FormAnswerItemFile::new(
+                    value
+                        .into_iter()
+                        .map(FileId::try_from)
+                        .collect::<Result<_, _>>()?,
+                )))
             }
         }
     }
@@ -167,9 +170,13 @@ impl FromEntity for FormAnswerItemKindDto {
             FormAnswerItemKind::ChooseMany(value) => {
                 FormAnswerItemKindDto::ChooseMany(value.value().to_vec())
             }
-            FormAnswerItemKind::File(value) => {
-                FormAnswerItemKindDto::File(value.value().into_iter().map(|id| id.value().to_string()).collect())
-            }
+            FormAnswerItemKind::File(value) => FormAnswerItemKindDto::File(
+                value
+                    .value()
+                    .into_iter()
+                    .map(|id| id.value().to_string())
+                    .collect(),
+            ),
         }
     }
 }

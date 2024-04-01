@@ -1,22 +1,22 @@
 use std::sync::Arc;
 
+use axum::response::Response;
 use axum::{
-    Extension,
     extract::{Path, State},
     http::StatusCode,
-    Json, response::IntoResponse,
+    response::IntoResponse,
+    Extension, Json,
 };
-use axum::response::Response;
 
 use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
+use crate::error::AppError;
 use crate::{
     model::user::{
         ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserSummary, UserTobeExported,
     },
     module::Modules,
 };
-use crate::error::AppError;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,

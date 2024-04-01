@@ -41,7 +41,7 @@ impl FileData {
             id: self.id,
             name: self.filename,
             url: self.url,
-            owner: self.owner
+            owner: self.owner,
         }
     }
 }
@@ -51,7 +51,7 @@ pub struct DestructedFileData {
     pub id: FileId,
     pub name: FileName,
     pub url: FileObjectKey,
-    pub owner: Option<ProjectId>
+    pub owner: Option<ProjectId>,
 }
 
 impl_value_object!(FileId(uuid::Uuid));

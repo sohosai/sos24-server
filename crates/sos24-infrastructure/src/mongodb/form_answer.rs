@@ -6,6 +6,7 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
+use sos24_domain::entity::file_data::FileId;
 use sos24_domain::{
     entity::{
         common::date::WithDate,
@@ -19,7 +20,6 @@ use sos24_domain::{
     },
     repository::form_answer::{FormAnswerRepository, FormAnswerRepositoryError},
 };
-use sos24_domain::entity::file_data::FileId;
 
 use super::MongoDb;
 
@@ -122,7 +122,13 @@ impl From<FormAnswerItemKind> for FormAnswerItemKindDoc {
             FormAnswerItemKind::ChooseMany(value) => {
                 FormAnswerItemKindDoc::ChooseMany(value.value())
             }
-            FormAnswerItemKind::File(value) => FormAnswerItemKindDoc::File(value.value().into_iter().map(|id| id.value().to_string()).collect()),
+            FormAnswerItemKind::File(value) => FormAnswerItemKindDoc::File(
+                value
+                    .value()
+                    .into_iter()
+                    .map(|id| id.value().to_string())
+                    .collect(),
+            ),
         }
     }
 }
@@ -137,15 +143,19 @@ impl TryFrom<FormAnswerItemKindDoc> for FormAnswerItemKind {
             FormAnswerItemKindDoc::Int(value) => {
                 Ok(FormAnswerItemKind::Int(FormAnswerItemInt::new(value)))
             }
-            FormAnswerItemKindDoc::ChooseOne(value) => {
-                Ok(FormAnswerItemKind::ChooseOne(FormAnswerItemChooseOne::new(value)))
-            }
-            FormAnswerItemKindDoc::ChooseMany(value) => {
-                Ok(FormAnswerItemKind::ChooseMany(FormAnswerItemChooseMany::new(value)))
-            }
-            FormAnswerItemKindDoc::File(value) => {
-                Ok(FormAnswerItemKind::File(FormAnswerItemFile::new(value.into_iter().map(FileId::try_from).collect::<Result<Vec<_>, _>>()?)))
-            }
+            FormAnswerItemKindDoc::ChooseOne(value) => Ok(FormAnswerItemKind::ChooseOne(
+                FormAnswerItemChooseOne::new(value),
+            )),
+            FormAnswerItemKindDoc::ChooseMany(value) => Ok(FormAnswerItemKind::ChooseMany(
+                FormAnswerItemChooseMany::new(value),
+            )),
+            FormAnswerItemKindDoc::File(value) => Ok(FormAnswerItemKind::File(
+                FormAnswerItemFile::new(value.into_iter().map(FileId::try_from).collect::<Result<
+                    Vec<_>,
+                    _,
+                >>(
+                )?),
+            )),
         }
     }
 }

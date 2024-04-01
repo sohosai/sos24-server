@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
+use sos24_domain::entity::file_data::FileId;
+use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::{
     entity::{
         form::{FormId, FormIdError},
@@ -15,8 +17,6 @@ use sos24_domain::{
     },
     service::verify_form_answer::VerifyFormAnswerError,
 };
-use sos24_domain::entity::file_data::FileId;
-use sos24_domain::repository::file_data::FileDataRepositoryError;
 
 use crate::context::ContextError;
 

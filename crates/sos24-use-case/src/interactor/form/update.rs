@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::file_data::FileId;
 use sos24_domain::{
     ensure,
     entity::{
@@ -9,7 +10,6 @@ use sos24_domain::{
     },
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
-use sos24_domain::entity::file_data::FileId;
 
 use crate::{
     context::Context,
@@ -110,7 +110,10 @@ mod tests {
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
-                    fixture::form::attachments2().into_iter().map(|it| it.value().to_string()).collect(),
+                    fixture::form::attachments2()
+                        .into_iter()
+                        .map(|it| it.value().to_string())
+                        .collect(),
                 ),
             )
             .await;
@@ -157,7 +160,10 @@ mod tests {
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
-                    fixture::form::attachments2().into_iter().map(|it| it.value().to_string()).collect(),
+                    fixture::form::attachments2()
+                        .into_iter()
+                        .map(|it| it.value().to_string())
+                        .collect(),
                 ),
             )
             .await;
@@ -199,7 +205,10 @@ mod tests {
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
-                    fixture::form::attachments2().into_iter().map(|it| it.value().to_string()).collect(),
+                    fixture::form::attachments2()
+                        .into_iter()
+                        .map(|it| it.value().to_string())
+                        .collect(),
                 ),
             )
             .await;

@@ -1,8 +1,8 @@
 use std::ops::Deref;
 
 use aws_sdk_s3::{
-    Client,
     config::{Builder, Credentials, Region},
+    Client,
 };
 
 pub mod file_object;

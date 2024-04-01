@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::file_data::FileId;
+use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     entity::{
         news::{NewsBody, NewsId, NewsTitle},
@@ -7,8 +9,6 @@ use sos24_domain::{
     },
     repository::{news::NewsRepository, Repositories},
 };
-use sos24_domain::entity::file_data::FileId;
-use sos24_domain::repository::file_data::FileDataRepository;
 
 use crate::{
     context::Context,
@@ -96,7 +96,7 @@ mod tests {
 
     use crate::{
         context::Context,
-        dto::{FromEntity, news::UpdateNewsDto},
+        dto::{news::UpdateNewsDto, FromEntity},
         interactor::news::{NewsUseCase, NewsUseCaseError},
     };
 

@@ -1,18 +1,18 @@
 use std::sync::Arc;
 
-use axum::{Extension, Json};
 use axum::extract::{Multipart, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::{Extension, Json};
 
 use sos24_use_case::{context::Context, dto::file::CreateFileDto};
 
+use crate::model::file::CreatedFileInfo;
 use crate::{
     error::AppError,
     model::file::{CreateFileQuery, File, FileInfo, Visibility},
     module::Modules,
 };
-use crate::model::file::CreatedFileInfo;
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
@@ -89,11 +89,13 @@ pub async fn handle_post(
                     owner.clone(),
                 ));
             }
-            _ => return Err(AppError::new(
-                StatusCode::BAD_REQUEST,
-                "file/invalid-name-field".to_string(),
-                "Invalid name was provided".to_string(),
-            )),
+            _ => {
+                return Err(AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "file/invalid-name-field".to_string(),
+                    "Invalid name was provided".to_string(),
+                ))
+            }
         }
     }
 

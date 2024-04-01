@@ -7,8 +7,8 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::context::Context;
-use crate::dto::FromEntity;
 use crate::dto::project::ProjectDto;
+use crate::dto::FromEntity;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
 impl<R: Repositories> ProjectUseCase<R> {

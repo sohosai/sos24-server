@@ -8,7 +8,7 @@ use sos24_domain::{
 
 use crate::{
     context::Context,
-    dto::{FromEntity, news::NewsDto},
+    dto::{news::NewsDto, FromEntity},
 };
 
 use super::{NewsUseCase, NewsUseCaseError};
