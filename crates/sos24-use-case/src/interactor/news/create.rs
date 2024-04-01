@@ -48,7 +48,7 @@ mod tests {
 
     use crate::{
         context::Context,
-        dto::{FromEntity, news::CreateNewsDto},
+        dto::{news::CreateNewsDto, FromEntity},
         interactor::news::{NewsUseCase, NewsUseCaseError},
     };
 

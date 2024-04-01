@@ -72,7 +72,10 @@ mod tests {
                         fixture::form::formitem_required1().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
                     )],
-                    fixture::form::attachments1().into_iter().map(|it| it.value().to_string()).collect(),
+                    fixture::form::attachments1()
+                        .into_iter()
+                        .map(|it| it.value().to_string())
+                        .collect(),
                 ),
             )
             .await;
@@ -110,7 +113,10 @@ mod tests {
                         fixture::form::formitem_required1().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
                     )],
-                    fixture::form::attachments1().into_iter().map(|it| it.value().to_string()).collect(),
+                    fixture::form::attachments1()
+                        .into_iter()
+                        .map(|it| it.value().to_string())
+                        .collect(),
                 ),
             )
             .await;

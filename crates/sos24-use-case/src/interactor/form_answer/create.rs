@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::form_answer::FormAnswerItemKind;
+use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
@@ -9,14 +11,12 @@ use sos24_domain::{
     },
     service::verify_form_answer,
 };
-use sos24_domain::entity::form_answer::FormAnswerItemKind;
-use sos24_domain::repository::file_data::FileDataRepository;
 
+use crate::context::OwnedProject;
 use crate::{
     context::Context,
     dto::{form_answer::CreateFormAnswerDto, ToEntity},
 };
-use crate::context::OwnedProject;
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 
@@ -73,7 +73,12 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         for item in form_answer.items() {
             if let FormAnswerItemKind::File(value) = item.kind() {
                 for file_id in value.clone().value() {
-                    let _ = self.repositories.file_data_repository().find_by_id(file_id.clone()).await?.ok_or(FormAnswerUseCaseError::FileNotFound(file_id))?;
+                    let _ = self
+                        .repositories
+                        .file_data_repository()
+                        .find_by_id(file_id.clone())
+                        .await?
+                        .ok_or(FormAnswerUseCaseError::FileNotFound(file_id))?;
                 }
             }
         }
@@ -110,10 +115,14 @@ mod tests {
     #[tokio::test]
     async fn 一般ユーザーは自分の企画の回答を作成できる() {
         let mut repositories = MockRepositories::default();
-        repositories.project_repository_mut().expect_find_by_owner_id().returning(|_| {
-            Ok(Some(fixture::date::with(fixture::project::project1(fixture::user::id1())))
-            )
-        });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
+                ))))
+            });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
@@ -155,8 +164,14 @@ mod tests {
     #[tokio::test]
     async fn 企画責任者でないならば回答を作成できない() {
         let mut repositories = MockRepositories::default();
-        repositories.project_repository_mut().expect_find_by_owner_id().returning(|_| { Ok(None) });
-        repositories.project_repository_mut().expect_find_by_sub_owner_id().returning(|_| { Ok(None) });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
@@ -178,10 +193,14 @@ mod tests {
     #[tokio::test]
     async fn すでに回答がある場合はエラーになる() {
         let mut repositories = MockRepositories::default();
-        repositories.project_repository_mut().expect_find_by_owner_id().returning(|_| {
-            Ok(Some(fixture::date::with(fixture::project::project1(fixture::user::id1())))
-            )
-        });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
+                ))))
+            });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()

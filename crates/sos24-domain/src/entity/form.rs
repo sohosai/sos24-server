@@ -3,9 +3,9 @@ use std::str::FromStr;
 use getset::Getters;
 use thiserror::Error;
 
-use crate::{ensure, impl_value_object};
 use crate::entity::file_data::FileId;
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
+use crate::{ensure, impl_value_object};
 
 use super::actor::Actor;
 use super::common::datetime::DateTime;

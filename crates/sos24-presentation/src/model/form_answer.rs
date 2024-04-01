@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::form_answer::{CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto, UpdateFormAnswerDto};
+use sos24_use_case::dto::form_answer::{
+    CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
+    UpdateFormAnswerDto,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateFormAnswer {

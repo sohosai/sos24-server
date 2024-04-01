@@ -1,3 +1,6 @@
+use sos24_domain::entity::file_data::FileId;
+use sos24_domain::entity::form::FormItemExtension;
+use sos24_domain::entity::form_answer::FormAnswer;
 use sos24_domain::entity::{
     common::{date::WithDate, datetime::DateTime},
     form::{
@@ -7,9 +10,6 @@ use sos24_domain::entity::{
         FormTitle,
     },
 };
-use sos24_domain::entity::file_data::FileId;
-use sos24_domain::entity::form::FormItemExtension;
-use sos24_domain::entity::form_answer::FormAnswer;
 
 use crate::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::interactor::form::FormUseCaseError;
@@ -67,7 +67,10 @@ impl ToEntity for CreateFormDto {
                 .into_iter()
                 .map(NewFormItemDto::into_entity)
                 .collect::<Result<Vec<_>, _>>()?,
-            self.attachments.into_iter().map(FileId::try_from).collect::<Result<Vec<_>, _>>()?,
+            self.attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
         )?)
     }
 }
@@ -177,7 +180,11 @@ impl FromEntity for FormDto {
                 .into_iter()
                 .map(FormItemDto::from_entity)
                 .collect(),
-            attachments: form.attachments.into_iter().map(|it| it.value().to_string()).collect(),
+            attachments: form
+                .attachments
+                .into_iter()
+                .map(|it| it.value().to_string())
+                .collect(),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,

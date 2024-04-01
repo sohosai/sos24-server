@@ -157,9 +157,7 @@ impl ProjectRepository for PgProjectRepository {
             .fetch_optional(&*self.db)
             .await
             .context("Failed to fetch project")?;
-        Ok(project_row
-            .map(WithDate::try_from)
-            .transpose()?)
+        Ok(project_row.map(WithDate::try_from).transpose()?)
     }
 
     async fn find_by_owner_id(
@@ -174,9 +172,7 @@ impl ProjectRepository for PgProjectRepository {
             .fetch_optional(&*self.db)
             .await
             .context("Failed to fetch project")?;
-        Ok(project_row
-            .map(WithDate::try_from)
-            .transpose()?)
+        Ok(project_row.map(WithDate::try_from).transpose()?)
     }
 
     async fn find_by_sub_owner_id(
@@ -190,9 +186,7 @@ impl ProjectRepository for PgProjectRepository {
         ).fetch_optional(&*self.db)
             .await
             .context("Failed to fetch project")?;
-        Ok(project_row
-            .map(WithDate::try_from)
-            .transpose()?)
+        Ok(project_row.map(WithDate::try_from).transpose()?)
     }
 
     async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {
@@ -221,9 +215,9 @@ impl ProjectRepository for PgProjectRepository {
             r#"UPDATE projects SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
-            .execute(&*self.db)
-            .await
-            .context("Failed to delete project")?;
+        .execute(&*self.db)
+        .await
+        .context("Failed to delete project")?;
         Ok(())
     }
 }

@@ -2,8 +2,8 @@ use crate::repository::{
     file_data::MockFileDataRepository, file_object::MockFileObjectRepository,
     firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
     form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
-    news::MockNewsRepository, project::MockProjectRepository, Repositories,
-    user::MockUserRepository,
+    news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
+    Repositories,
 };
 
 #[derive(Default)]

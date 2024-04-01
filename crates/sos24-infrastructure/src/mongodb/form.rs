@@ -6,6 +6,9 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
+use sos24_domain::entity::file_data::FileId;
+use sos24_domain::entity::form::{FormItemExtension, FormItemId};
+use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::{
     entity::{
         common::{date::WithDate, datetime::DateTime},
@@ -18,9 +21,6 @@ use sos24_domain::{
     },
     repository::form::{FormRepository, FormRepositoryError},
 };
-use sos24_domain::entity::file_data::FileId;
-use sos24_domain::entity::form::{FormItemExtension, FormItemId};
-use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 
 use super::MongoDb;
 
@@ -53,7 +53,11 @@ impl From<Form> for FormDoc {
             categories: form.categories.bits() as i32,
             attributes: form.attributes.bits() as i32,
             items: form.items.into_iter().map(FormItemDoc::from).collect(),
-            attachments: form.attachments.into_iter().map(|it| it.value().to_string()).collect(),
+            attachments: form
+                .attachments
+                .into_iter()
+                .map(|it| it.value().to_string())
+                .collect(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
             deleted_at: None,
@@ -76,7 +80,11 @@ impl TryFrom<FormDoc> for WithDate<Form> {
                 ProjectAttributes::from_bits(value.attributes as u32)
                     .ok_or(anyhow!("cannot convert project attributes"))?,
                 value.items.into_iter().map(FormItemDoc::into).collect(),
-                value.attachments.into_iter().map(FileId::try_from).collect::<Result<_, _>>()?,
+                value
+                    .attachments
+                    .into_iter()
+                    .map(FileId::try_from)
+                    .collect::<Result<_, _>>()?,
             ),
             value.created_at,
             value.updated_at,

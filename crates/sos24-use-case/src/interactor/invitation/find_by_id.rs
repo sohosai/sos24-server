@@ -8,7 +8,7 @@ use sos24_domain::{
 
 use crate::{
     context::Context,
-    dto::{FromEntity, invitation::InvitationDto},
+    dto::{invitation::InvitationDto, FromEntity},
 };
 
 use super::{InvitationUseCase, InvitationUseCaseError};

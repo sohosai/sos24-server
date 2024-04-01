@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::user::UserId;
-use sos24_domain::repository::{Repositories, user::UserRepository};
+use sos24_domain::repository::{user::UserRepository, Repositories};
 
 use crate::context::Context;
-use crate::dto::FromEntity;
 use crate::dto::user::UserDto;
+use crate::dto::FromEntity;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
 impl<R: Repositories> UserUseCase<R> {
