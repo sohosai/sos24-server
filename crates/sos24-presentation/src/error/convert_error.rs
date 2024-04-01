@@ -43,6 +43,11 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::NotFound(_) => {
                 AppError::new(StatusCode::NOT_FOUND, "form/not-found".to_string(), message)
             }
+            FormUseCaseError::ProjectNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form/project-not-found".to_string(),
+                message,
+            ),
             FormUseCaseError::HasAnswers => AppError::new(
                 StatusCode::BAD_REQUEST,
                 "form/has-answers".to_string(),
@@ -60,6 +65,7 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::FormError(e) => e.into(),
             FormUseCaseError::FormAnswerRepositoryError(e) => e.into(),
             FormUseCaseError::FileIdError(e) => e.into(),
+            FormUseCaseError::ProjectRepositoryError(e) => e.into(),
         }
     }
 }
