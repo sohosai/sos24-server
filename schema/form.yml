@@ -333,6 +333,11 @@ schemas:
         type: array
         items:
           $ref: "#/schemas/FormItem"
+      attachments:
+        type: array
+        items:
+          type: string
+          format: uuid
 
   CreateForm:
     type: object
@@ -363,6 +368,11 @@ schemas:
         type: array
         items:
           $ref: "#/schemas/FormItem"
+      attachments:
+        type: array
+        items:
+          type: string
+          format: uuid
 
   UpdateForm:
     type: object
@@ -393,3 +403,8 @@ schemas:
         type: array
         items:
           $ref: "#/schemas/FormItem"
+      attachments:
+        type: array
+        items:
+          type: string
+          format: uuid

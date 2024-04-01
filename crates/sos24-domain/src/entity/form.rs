@@ -4,6 +4,7 @@ use getset::Getters;
 use thiserror::Error;
 
 use crate::{ensure, impl_value_object};
+use crate::entity::file_data::FileId;
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
 
 use super::actor::Actor;
@@ -34,6 +35,8 @@ pub struct Form {
     attributes: ProjectAttributes,
     #[getset(get = "pub")]
     items: Vec<FormItem>,
+    #[getset(get = "pub")]
+    attachments: Vec<FileId>,
 }
 
 impl Form {
@@ -45,6 +48,7 @@ impl Form {
         categories: ProjectCategories,
         attributes: ProjectAttributes,
         items: Vec<FormItem>,
+        attachments: Vec<FileId>,
     ) -> Result<Self, FormError> {
         if starts_at.clone().value() > ends_at.clone().value() {
             return Err(FormError::EndTimeEarlierThanStartTime);
@@ -59,6 +63,7 @@ impl Form {
             categories,
             attributes,
             items,
+            attachments,
         })
     }
 
@@ -72,6 +77,7 @@ impl Form {
         categories: ProjectCategories,
         attributes: ProjectAttributes,
         items: Vec<FormItem>,
+        attachments: Vec<FileId>,
     ) -> Self {
         Self {
             id,
@@ -82,6 +88,7 @@ impl Form {
             categories,
             attributes,
             items,
+            attachments,
         }
     }
 
@@ -95,6 +102,7 @@ impl Form {
             categories: self.categories,
             attributes: self.attributes,
             items: self.items,
+            attachments: self.attachments,
         }
     }
 }
@@ -109,6 +117,7 @@ pub struct DestructedForm {
     pub categories: ProjectCategories,
     pub attributes: ProjectAttributes,
     pub items: Vec<FormItem>,
+    pub attachments: Vec<FileId>,
 }
 
 impl Form {
@@ -183,6 +192,16 @@ impl Form {
     ) -> Result<(), PermissionDeniedError> {
         ensure!(self.is_updatable_by(actor));
         self.items = items;
+        Ok(())
+    }
+
+    pub fn set_attachments(
+        &mut self,
+        actor: &Actor,
+        attachments: Vec<FileId>,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.attachments = attachments;
         Ok(())
     }
 }
@@ -486,6 +505,7 @@ mod tests {
             fixture::form::categories1(),
             fixture::form::attributes1(),
             fixture::form::items1(),
+            fixture::form::attachments1(),
         );
         assert!(matches!(form, Err(FormError::EndTimeEarlierThanStartTime)));
     }

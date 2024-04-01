@@ -16,6 +16,7 @@ pub struct CreateForm {
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
     items: Vec<NewFormItem>,
+    attachments: Vec<String>,
 }
 
 impl From<CreateForm> for CreateFormDto {
@@ -40,6 +41,7 @@ impl From<CreateForm> for CreateFormDto {
                 .into_iter()
                 .map(NewFormItemDto::from)
                 .collect(),
+            create_form.attachments,
         )
     }
 }
@@ -74,6 +76,7 @@ pub struct UpdateForm {
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
     pub items: Vec<NewFormItem>,
+    pub attachments: Vec<String>,
 }
 
 pub trait ConvertToUpdateFormDto {
@@ -98,6 +101,7 @@ impl ConvertToUpdateFormDto for (String, UpdateForm) {
                 .map(ProjectAttributeDto::from)
                 .collect(),
             form.items.into_iter().map(NewFormItemDto::from).collect(),
+            form.attachments,
         )
     }
 }
@@ -112,6 +116,7 @@ pub struct Form {
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
     pub items: Vec<FormItem>,
+    pub attachments: Vec<String>,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,
@@ -136,6 +141,7 @@ impl From<FormDto> for Form {
                 .map(ProjectAttribute::from)
                 .collect(),
             items: form.items.into_iter().map(FormItem::from).collect(),
+            attachments: form.attachments,
             created_at: form.created_at.to_rfc3339(),
             updated_at: form.updated_at.to_rfc3339(),
             deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),

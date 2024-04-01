@@ -7,6 +7,7 @@ use crate::entity::{
     },
     project::{ProjectAttributes, ProjectCategories},
 };
+use crate::entity::file_data::FileId;
 
 pub fn id1() -> FormId {
     FormId::new(uuid::Uuid::from_u128(1))
@@ -70,6 +71,10 @@ pub fn items1() -> Vec<FormItem> {
     )]
 }
 
+pub fn attachments1() -> Vec<FileId> {
+    vec![]
+}
+
 pub fn form1() -> Form {
     Form::new(
         id1(),
@@ -80,6 +85,7 @@ pub fn form1() -> Form {
         categories1(),
         attributes1(),
         items1(),
+        attachments1(),
     )
 }
 
@@ -141,6 +147,10 @@ pub fn items2() -> Vec<FormItem> {
     )]
 }
 
+pub fn attachments2() -> Vec<FileId> {
+    vec![]
+}
+
 pub fn form2() -> Form {
     Form::new(
         id2(),
@@ -151,5 +161,6 @@ pub fn form2() -> Form {
         categories2(),
         attributes2(),
         items2(),
+        attachments2(),
     )
 }
