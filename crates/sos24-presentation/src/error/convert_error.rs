@@ -515,6 +515,11 @@ impl From<VerifyFormAnswerError> for AppError {
                 "form-answer/too-many-options-choose-many".to_string(),
                 error.to_string(),
             ),
+            VerifyFormAnswerError::TooManyFiles(_, _) => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/too-many-files".to_string(),
+                error.to_string(),
+            ),
         }
     }
 }
