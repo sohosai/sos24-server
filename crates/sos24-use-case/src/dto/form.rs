@@ -193,7 +193,7 @@ impl FromEntity for FormDto {
 }
 
 #[derive(Debug)]
-pub struct FormWithAnswerDto {
+pub struct FormSummaryDto {
     pub id: String,
     pub title: String,
     pub description: String,
@@ -201,15 +201,12 @@ pub struct FormWithAnswerDto {
     pub ends_at: chrono::DateTime<chrono::Utc>,
     pub categories: Vec<ProjectCategoryDto>,
     pub attributes: Vec<ProjectAttributeDto>,
-    pub items: Vec<FormItemDto>,
     pub answer_id: Option<String>,
     pub answered_at: Option<chrono::DateTime<chrono::Utc>>,
-    pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for FormWithAnswerDto {
+impl FromEntity for FormSummaryDto {
     type Entity = (WithDate<Form>, Option<WithDate<FormAnswer>>);
     fn from_entity((form_entity, form_answer_entity): Self::Entity) -> Self {
         let form = form_entity.value.destruct();
@@ -228,16 +225,9 @@ impl FromEntity for FormWithAnswerDto {
             ends_at: form.ends_at.value(),
             categories: Vec::from_entity(form.categories),
             attributes: Vec::from_entity(form.attributes),
-            items: form
-                .items
-                .into_iter()
-                .map(FormItemDto::from_entity)
-                .collect(),
             answer_id: answer_id.map(|it| it.value().to_string()),
             answered_at,
-            created_at: form_entity.created_at,
             updated_at: form_entity.updated_at,
-            deleted_at: form_entity.deleted_at,
         }
     }
 }

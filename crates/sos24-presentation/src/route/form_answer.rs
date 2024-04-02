@@ -9,7 +9,7 @@ use axum::{
 
 use sos24_use_case::{context::Context, dto::form_answer::CreateFormAnswerDto};
 
-use crate::model::form_answer::{CreatedFormAnswer, UpdateFormAnswer};
+use crate::model::form_answer::{CreatedFormAnswer, FormAnswerSummary, UpdateFormAnswer};
 use crate::{
     error::AppError,
     model::form_answer::{
@@ -48,9 +48,9 @@ pub async fn handle_get(
 
     raw_form_answer_list
         .map(|raw_form_answer_list| {
-            let form_answer_list: Vec<FormAnswer> = raw_form_answer_list
+            let form_answer_list: Vec<FormAnswerSummary> = raw_form_answer_list
                 .into_iter()
-                .map(FormAnswer::from)
+                .map(FormAnswerSummary::from)
                 .collect();
             (StatusCode::OK, Json(form_answer_list))
         })

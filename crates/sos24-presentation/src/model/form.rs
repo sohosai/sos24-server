@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::dto::form::{
-    CreateFormDto, FormDto, FormItemDto, FormItemKindDto, FormWithAnswerDto, NewFormItemDto,
+    CreateFormDto, FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
     UpdateFormDto,
 };
 use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
@@ -74,7 +74,6 @@ pub struct CreatedForm {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateForm {
-    pub id: String,
     pub title: String,
     pub description: String,
     pub starts_at: String,
@@ -156,7 +155,7 @@ impl From<FormDto> for Form {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct FormWithAnswer {
+pub struct FormSummary {
     pub id: String,
     pub title: String,
     pub description: String,
@@ -164,17 +163,14 @@ pub struct FormWithAnswer {
     pub ends_at: String,
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
-    pub items: Vec<FormItem>,
     pub answer_id: Option<String>,
     pub answered_at: Option<String>,
-    pub created_at: String,
     pub updated_at: String,
-    pub deleted_at: Option<String>,
 }
 
-impl From<FormWithAnswerDto> for FormWithAnswer {
-    fn from(form: FormWithAnswerDto) -> Self {
-        FormWithAnswer {
+impl From<FormSummaryDto> for FormSummary {
+    fn from(form: FormSummaryDto) -> Self {
+        FormSummary {
             id: form.id.to_string(),
             title: form.title,
             description: form.description,
@@ -190,12 +186,9 @@ impl From<FormWithAnswerDto> for FormWithAnswer {
                 .into_iter()
                 .map(ProjectAttribute::from)
                 .collect(),
-            items: form.items.into_iter().map(FormItem::from).collect(),
             answer_id: form.answer_id.map(|it| it.to_string()),
             answered_at: form.answered_at.map(|it| it.to_rfc3339()),
-            created_at: form.created_at.to_rfc3339(),
             updated_at: form.updated_at.to_rfc3339(),
-            deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

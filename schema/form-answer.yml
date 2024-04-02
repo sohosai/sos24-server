@@ -122,14 +122,14 @@ schemas:
   FormAnswerItem:
     type: object
     properties:
-      id:
+      item_id:
         type: string
         format: uuid
       type:
         $ref: "./form.yml#/schemas/FormItemType"
       value: { }
     required:
-      - id
+      - item_id
       - type
       - value
   FormAnswerSummary:
@@ -141,16 +141,22 @@ schemas:
       form_id:
         type: string
         format: uuid
+      form_title:
+        type: string
       project_id:
         type: string
         format: uuid
+      project_title:
+        type: string
       updated_at:
         type: string
         format: date-time
     required:
       - id
       - form_id
+      - form_title
       - project_id
+      - project_title
       - updated_at
   FormAnswer:
     type: object
@@ -168,6 +174,8 @@ schemas:
         format: uuid
       form_title:
         type: string
+      items:
+        $ref: "#/schemas/FormAnswerItem"
       created_at:
         type: string
         format: date-time
@@ -178,17 +186,15 @@ schemas:
         type: string
         format: date-time
         nullable: true
-      items:
-        $ref: "#/schemas/FormAnswerItem"
     required:
       - id
       - project_id
       - project_title
       - form_id
       - form_title
+      - items
       - created_at
       - updated_at
-      - items
   CreateFormAnswer:
     type: object
     properties:

@@ -253,6 +253,7 @@ schemas:
         nullable: true
       remarks:
         type: string
+        nullable: true
       created_at:
         type: string
         format: date-time
@@ -275,7 +276,6 @@ schemas:
       - owner_id
       - owner_name
       - owner_email
-      - remarks
       - created_at
       - updated_at
   CreateProject:
@@ -330,6 +330,7 @@ schemas:
           $ref: "#/components/ProjectAttribute"
       remarks:
         type: string
+        nullable: true
     required:
       - title
       - kana_title
@@ -337,7 +338,6 @@ schemas:
       - kana_group_name
       - category
       - attributes
-      - remarks
   CreatedProject:
     type: object
     properties:
