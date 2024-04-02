@@ -4,6 +4,7 @@ use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::ProjectId;
 use sos24_domain::repository::project::ProjectRepository;
+use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::context::Context;
@@ -29,7 +30,27 @@ impl<R: Repositories> ProjectUseCase<R> {
 
         ensure!(raw_project.value.is_visible_to(&actor));
 
-        let mut project = ProjectDto::from_entity(raw_project);
+        let owner_id = raw_project.value.owner_id();
+        let raw_owner = self
+            .repositories
+            .user_repository()
+            .find_by_id(owner_id.clone())
+            .await?
+            .ok_or(ProjectUseCaseError::UserNotFound(owner_id.clone()))?;
+
+        let sub_owner_id = raw_project.value.sub_owner_id();
+        let raw_sub_owner = match sub_owner_id {
+            Some(sub_owner_id) => Some(
+                self.repositories
+                    .user_repository()
+                    .find_by_id(sub_owner_id.clone())
+                    .await?
+                    .ok_or(ProjectUseCaseError::UserNotFound(sub_owner_id.clone()))?,
+            ),
+            None => None,
+        };
+
+        let mut project = ProjectDto::from_entity((raw_project, raw_owner, raw_sub_owner));
         if !actor.has_permission(Permissions::READ_PROJECT_ALL) {
             project.remarks = None;
         }
@@ -57,6 +78,14 @@ mod tests {
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
                     fixture::user::id1(),
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
                 ))))
             });
         let use_case = ProjectUseCase::new_for_test(repositories);
@@ -102,6 +131,14 @@ mod tests {
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::project::project1(
                     fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::Committee,
                 ))))
             });
         let use_case = ProjectUseCase::new_for_test(repositories);

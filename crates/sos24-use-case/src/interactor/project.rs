@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
+use sos24_domain::entity::user::UserId;
+use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::{
     entity::{
         permission::PermissionDeniedError,
@@ -28,7 +30,11 @@ pub enum ProjectUseCaseError {
     AlreadyOwnedProject(ProjectId),
     #[error("Project applications are not being accepted")]
     ApplicationsNotAccepted,
+    #[error("User not found: {0:?}")]
+    UserNotFound(UserId),
 
+    #[error(transparent)]
+    UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
     BoundedStringError(#[from] BoundedStringError),
     #[error(transparent)]

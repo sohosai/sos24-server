@@ -260,12 +260,18 @@ impl From<ProjectUseCaseError> for AppError {
                 "project/applications-not-accepted".to_string(),
                 message,
             ),
+            ProjectUseCaseError::UserNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "project/user-not-found".to_string(),
+                message,
+            ),
             ProjectUseCaseError::ContextError(e) => e.into(),
             ProjectUseCaseError::ProjectRepositoryError(e) => e.into(),
             ProjectUseCaseError::ProjectIdError(e) => e.into(),
             ProjectUseCaseError::PermissionDeniedError(e) => e.into(),
             ProjectUseCaseError::InternalError(e) => e.into(),
             ProjectUseCaseError::BoundedStringError(e) => e.into(),
+            ProjectUseCaseError::UserRepositoryError(e) => e.into(),
         }
     }
 }
