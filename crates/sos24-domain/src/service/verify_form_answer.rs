@@ -35,6 +35,8 @@ pub enum VerifyFormAnswerError {
     TooFewOptionsChooseMany(FormItemId, i32),
     #[error("ChooseOne answer item {0:?} has too many options (max: {1})")]
     TooManyOptionsChooseMany(FormItemId, i32),
+    #[error("File answer item {0:?} has too many files (max: {1})")]
+    TooManyFiles(FormItemId, i32),
 }
 
 pub fn verify(form: &Form, answer: &FormAnswer) -> Result<(), VerifyFormAnswerError> {
@@ -196,10 +198,19 @@ fn verify_item_choose_many(
 }
 
 fn verify_item_file(
-    _item_id: FormItemId,
-    _form_file: FormItemFile,
-    _answer_file: FormAnswerItemFile,
+    item_id: FormItemId,
+    form_file: FormItemFile,
+    answer_file: FormAnswerItemFile,
 ) -> Result<(), VerifyFormAnswerError> {
-    // TODO
+    let files = answer_file.clone().value();
+
+    // extensionsはフロントエンドでチェックするためここでは何もしない
+
+    if let Some(limit) = form_file.limit() {
+        let limit = limit.clone().value();
+        if files.len() > limit as usize {
+            return Err(VerifyFormAnswerError::TooManyFiles(item_id, limit));
+        }
+    }
     Ok(())
 }
