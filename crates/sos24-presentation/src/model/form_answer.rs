@@ -114,7 +114,6 @@ impl From<FormAnswerDto> for FormAnswerSummary {
     }
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FormAnswerItem {

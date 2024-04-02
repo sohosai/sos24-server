@@ -1,14 +1,15 @@
 use std::sync::Arc;
 
 use axum::{
-    Extension,
     extract::{Path, Query, State},
     http::StatusCode,
-    Json, response::IntoResponse,
+    response::IntoResponse,
+    Extension, Json,
 };
 
 use sos24_use_case::{context::Context, dto::form_answer::CreateFormAnswerDto};
 
+use crate::model::form_answer::{CreatedFormAnswer, FormAnswerSummary, UpdateFormAnswer};
 use crate::{
     error::AppError,
     model::form_answer::{
@@ -16,7 +17,6 @@ use crate::{
     },
     module::Modules,
 };
-use crate::model::form_answer::{CreatedFormAnswer, FormAnswerSummary, UpdateFormAnswer};
 
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
