@@ -32,6 +32,10 @@ paths:
       responses:
         201:
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/CreatedNews"
         400:
           description: Bad Request
         401:
@@ -242,3 +246,11 @@ schemas:
       - attachments
       - categories
       - attributes
+  CreatedNews:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+    required:
+      - id

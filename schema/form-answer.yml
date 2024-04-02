@@ -201,3 +201,11 @@ schemas:
         $ref: "#/schemas/FormAnswerItem"
     required:
       - items
+  CreatedFormAnswer:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+    required:
+      - id

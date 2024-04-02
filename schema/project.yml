@@ -33,6 +33,10 @@ paths:
       responses:
         201:
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/CreatedProject"
         400:
           description: Bad Request
         422:
@@ -334,3 +338,11 @@ schemas:
       - category
       - attributes
       - remarks
+  CreatedProject:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+    required:
+      - id

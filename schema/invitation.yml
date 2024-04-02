@@ -37,7 +37,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/schemas/Invitation"
+                $ref: "#/schemas/CreatedInvitation"
         400:
           description: Bad Request
         401:
@@ -165,3 +165,11 @@ schemas:
     required:
       - project_id
       - position
+  CreatedInvitation:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+    required:
+      - id

@@ -40,6 +40,10 @@ paths:
       responses:
         201:
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/CreatedForm"
         400:
           description: Bad Request
         401:
@@ -453,3 +457,11 @@ schemas:
       - attributes
       - items
       - attachments
+  CreatedForm:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+    required:
+      - id

@@ -37,7 +37,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/schemas/CreatedFileInfo"
+                $ref: "#/schemas/CreatedFile"
         400:
           description: Bad Request
         401:
@@ -129,7 +129,7 @@ schemas:
       - url
       - created_at
       - updated_at
-  CreatedFileInfo:
+  CreatedFile:
     type: object
     properties:
       ids:
