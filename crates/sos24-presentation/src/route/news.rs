@@ -4,11 +4,14 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
+
 use sos24_use_case::context::Context;
 use sos24_use_case::dto::news::CreateNewsDto;
 
 use crate::error::AppError;
-use crate::model::news::{ConvertToUpdateNewsDto, CreateNews, News, NewsSummary, UpdateNews};
+use crate::model::news::{
+    ConvertToUpdateNewsDto, CreateNews, CreatedNews, News, NewsSummary, UpdateNews,
+};
 use crate::module::Modules;
 
 pub async fn handle_get(
@@ -35,10 +38,11 @@ pub async fn handle_post(
 ) -> Result<impl IntoResponse, AppError> {
     let news = CreateNewsDto::from(raw_news);
     let res = modules.news_use_case().create(&ctx, news).await;
-    res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create news: {err:?}");
-        err.into()
-    })
+    res.map(|id| (StatusCode::CREATED, Json(CreatedNews { id })))
+        .map_err(|err| {
+            tracing::error!("Failed to create news: {err:?}");
+            err.into()
+        })
 }
 
 pub async fn handle_get_id(

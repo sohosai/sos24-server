@@ -10,7 +10,7 @@ use axum::{
 
 use sos24_use_case::{context::Context, dto::form::CreateFormDto};
 
-use crate::model::form::{Form, FormQuery, FormWithAnswer};
+use crate::model::form::{CreatedForm, Form, FormQuery, FormWithAnswer};
 use crate::{
     error::AppError,
     model::form::{ConvertToUpdateFormDto, UpdateForm},
@@ -63,10 +63,11 @@ pub async fn handle_post(
 ) -> Result<impl IntoResponse, AppError> {
     let form = CreateFormDto::from(raw_form);
     let res = module.form_use_case().create(&ctx, form).await;
-    res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create form: {err:?}");
-        err.into()
-    })
+    res.map(|id| (StatusCode::CREATED, Json(CreatedForm { id })))
+        .map_err(|err| {
+            tracing::error!("Failed to create form: {err:?}");
+            err.into()
+        })
 }
 
 pub async fn handle_get_id(

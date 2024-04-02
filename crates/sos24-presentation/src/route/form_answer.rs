@@ -9,7 +9,7 @@ use axum::{
 
 use sos24_use_case::{context::Context, dto::form_answer::CreateFormAnswerDto};
 
-use crate::model::form_answer::UpdateFormAnswer;
+use crate::model::form_answer::{CreatedFormAnswer, UpdateFormAnswer};
 use crate::{
     error::AppError,
     model::form_answer::{
@@ -70,10 +70,11 @@ pub async fn handle_post(
         .form_answer_use_case()
         .create(&ctx, form_answer)
         .await;
-    res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create form answer: {err:?}");
-        err.into()
-    })
+    res.map(|id| (StatusCode::CREATED, Json(CreatedFormAnswer { id })))
+        .map_err(|err| {
+            tracing::error!("Failed to create form answer: {err:?}");
+            err.into()
+        })
 }
 
 pub async fn handle_get_id(

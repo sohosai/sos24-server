@@ -22,6 +22,11 @@ impl From<CreateUser> for CreateUserDto {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct CreatedUser {
+    pub id: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateUser {
     pub name: String,

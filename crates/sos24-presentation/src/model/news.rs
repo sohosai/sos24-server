@@ -32,6 +32,11 @@ impl From<CreateNews> for CreateNewsDto {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct CreatedNews {
+    pub id: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateNews {
     title: String,

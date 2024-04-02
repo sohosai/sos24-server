@@ -39,6 +39,11 @@ impl ConvertToCreateProjectDto for (CreateProject, String) {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct CreatedProject {
+    pub id: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateProject {
     title: String,

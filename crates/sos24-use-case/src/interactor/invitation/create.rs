@@ -21,7 +21,7 @@ impl<R: Repositories> InvitationUseCase<R> {
         &self,
         ctx: &Context,
         raw_invitation: CreateInvitationDto,
-    ) -> Result<(), InvitationUseCaseError> {
+    ) -> Result<String, InvitationUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_INVITATION));
 
@@ -51,12 +51,13 @@ impl<R: Repositories> InvitationUseCase<R> {
 
         ensure!(project.value.is_visible_to(&actor));
 
+        let invitation_id = invitation.id().clone();
         self.repositories
             .invitation_repository()
             .create(invitation)
             .await?;
 
-        Ok(())
+        Ok(invitation_id.value().to_string())
     }
 }
 
@@ -109,7 +110,7 @@ mod tests {
                 },
             )
             .await;
-        assert!(matches!(res, Ok(())));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]

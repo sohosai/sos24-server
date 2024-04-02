@@ -18,13 +18,14 @@ impl<R: Repositories> FormUseCase<R> {
         &self,
         ctx: &Context,
         raw_form: CreateFormDto,
-    ) -> Result<(), FormUseCaseError> {
+    ) -> Result<String, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM));
 
         let form = raw_form.into_entity()?;
+        let form_id = form.id().clone();
         self.repositories.form_repository().create(form).await?;
-        Ok(())
+        Ok(form_id.value().to_string())
     }
 }
 
@@ -120,6 +121,6 @@ mod tests {
                 ),
             )
             .await;
-        assert!(matches!(res, Ok(())));
+        assert!(res.is_ok());
     }
 }

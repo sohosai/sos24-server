@@ -15,7 +15,7 @@ impl<R: Repositories> ProjectUseCase<R> {
         &self,
         ctx: &Context,
         raw_project: CreateProjectDto,
-    ) -> Result<(), ProjectUseCaseError> {
+    ) -> Result<String, ProjectUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
 
@@ -32,11 +32,13 @@ impl<R: Repositories> ProjectUseCase<R> {
         }
 
         let project = raw_project.into_entity()?;
+        let project_id = project.id().clone();
         self.repositories
             .project_repository()
             .create(project)
             .await?;
-        Ok(())
+
+        Ok(project_id.value().to_string())
     }
 }
 
@@ -83,7 +85,7 @@ mod tests {
                 ),
             )
             .await;
-        assert!(matches!(res, Ok(())));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]

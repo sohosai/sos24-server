@@ -25,7 +25,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         &self,
         ctx: &Context,
         form_answer: CreateFormAnswerDto,
-    ) -> Result<(), FormAnswerUseCaseError> {
+    ) -> Result<String, FormAnswerUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
 
@@ -85,12 +85,13 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         verify_form_answer::verify(&form.value, &form_answer)?;
 
+        let form_answer_id = form_answer.id().clone();
         self.repositories
             .form_answer_repository()
             .create(form_answer)
             .await?;
 
-        Ok(())
+        Ok(form_answer_id.value().to_string())
     }
 }
 
@@ -158,7 +159,7 @@ mod tests {
                 ),
             )
             .await;
-        assert!(matches!(res, Ok(())));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]

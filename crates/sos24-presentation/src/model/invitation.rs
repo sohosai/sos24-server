@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 use sos24_use_case::dto::invitation::{CreateInvitationDto, InvitationDto, InvitationPositionDto};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -20,6 +21,11 @@ impl ConvertToCreateInvitationDto for (CreateInvitation, String) {
             position: InvitationPositionDto::from(invitation.position),
         }
     }
+}
+
+#[derive(Debug, Serialize)]
+pub struct CreatedInvitation {
+    pub id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

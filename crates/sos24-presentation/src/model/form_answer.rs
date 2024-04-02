@@ -24,6 +24,11 @@ impl From<CreateFormAnswer> for CreateFormAnswerDto {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct CreatedFormAnswer {
+    pub id: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateFormAnswer {
     items: Vec<FormAnswerItem>,

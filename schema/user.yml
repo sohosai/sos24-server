@@ -33,6 +33,10 @@ paths:
       responses:
         201:
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/CreatedUser"
         400:
           description: Bad Request
         422:
@@ -258,3 +262,10 @@ schemas:
       - email
       - phone_number
       - role
+  CreatedUser:
+    type: object
+    properties:
+      id:
+        type: string
+    required:
+      - id

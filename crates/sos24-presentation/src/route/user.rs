@@ -11,6 +11,7 @@ use axum::{
 use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
 use crate::error::AppError;
+use crate::model::user::CreatedUser;
 use crate::{
     model::user::{
         ConvertToUpdateUserDto, CreateUser, UpdateUser, User, UserSummary, UserTobeExported,
@@ -110,10 +111,11 @@ pub async fn handle_post(
 ) -> Result<impl IntoResponse, AppError> {
     let user = CreateUserDto::from(raw_user);
     let res = modules.user_use_case().create(user).await;
-    res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create user: {err:?}");
-        err.into()
-    })
+    res.map(|id| (StatusCode::CREATED, Json(CreatedUser { id })))
+        .map_err(|err| {
+            tracing::error!("Failed to create user: {err:?}");
+            err.into()
+        })
 }
 
 pub async fn handle_get_id(
