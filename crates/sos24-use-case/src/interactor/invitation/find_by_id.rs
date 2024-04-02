@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
-use sos24_domain::repository::project::ProjectRepository;
-use sos24_domain::repository::user::UserRepository;
 use sos24_domain::{
-    ensure,
     entity::invitation::InvitationId,
-    repository::{invitation::InvitationRepository, Repositories},
+    repository::{
+        invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
+        Repositories,
+    },
 };
 
 use crate::{
@@ -18,11 +16,9 @@ use super::{InvitationUseCase, InvitationUseCaseError};
 impl<R: Repositories> InvitationUseCase<R> {
     pub async fn find_by_id(
         &self,
-        ctx: &Context,
+        _ctx: &Context,
         id: String,
     ) -> Result<InvitationDto, InvitationUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-
         let id = InvitationId::try_from(id)?;
         let raw_invitation = self
             .repositories
@@ -30,8 +26,6 @@ impl<R: Repositories> InvitationUseCase<R> {
             .find_by_id(id.clone())
             .await?
             .ok_or(InvitationUseCaseError::NotFound(id.clone()))?;
-
-        ensure!(raw_invitation.value.is_visible_to(&actor));
 
         let inviter_id = raw_invitation.value.inviter();
         let raw_inviter = self
@@ -60,16 +54,11 @@ impl<R: Repositories> InvitationUseCase<R> {
 #[cfg(test)]
 mod tests {
     use sos24_domain::{
-        entity::{
-            invitation::InvitationPosition, permission::PermissionDeniedError, user::UserRole,
-        },
+        entity::{invitation::InvitationPosition, user::UserRole},
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{
-        context::Context,
-        interactor::invitation::{InvitationUseCase, InvitationUseCaseError},
-    };
+    use crate::{context::Context, interactor::invitation::InvitationUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーは自分の企画への招待を取得できる() {
@@ -110,7 +99,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 一般ユーザーは他人の企画への招待を取得できない() {
+    async fn 一般ユーザーは他人の企画への招待を取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .invitation_repository_mut()
@@ -128,12 +117,7 @@ mod tests {
         let res = use_case
             .find_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;
-        assert!(matches!(
-            res,
-            Err(InvitationUseCaseError::PermissionDeniedError(
-                PermissionDeniedError
-            ))
-        ));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
