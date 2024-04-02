@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sos24_domain::repository::project::ProjectRepository;
+use sos24_domain::repository::user::UserRepository;
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
@@ -19,10 +21,33 @@ impl<R: Repositories> InvitationUseCase<R> {
         ensure!(actor.has_permission(Permissions::READ_INVITATION_ALL));
 
         let raw_invitation_list = self.repositories.invitation_repository().list().await?;
-        let invitation_list = raw_invitation_list
-            .into_iter()
-            .map(InvitationDto::from_entity);
-        Ok(invitation_list.collect())
+
+        let mut invitation_list = Vec::new();
+        for raw_invitation in raw_invitation_list {
+            let inviter_id = raw_invitation.value.inviter();
+            let raw_inviter = self
+                .repositories
+                .user_repository()
+                .find_by_id(inviter_id.clone())
+                .await?
+                .ok_or(InvitationUseCaseError::UserNotFound(inviter_id.clone()))?;
+
+            let project_id = raw_invitation.value.project_id();
+            let raw_project = self
+                .repositories
+                .project_repository()
+                .find_by_id(project_id.clone())
+                .await?
+                .ok_or(InvitationUseCaseError::ProjectNotFound(project_id.clone()))?;
+
+            invitation_list.push(InvitationDto::from_entity((
+                raw_invitation,
+                raw_inviter,
+                raw_project,
+            )));
+        }
+
+        Ok(invitation_list)
     }
 }
 

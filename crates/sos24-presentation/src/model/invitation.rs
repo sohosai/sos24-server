@@ -32,7 +32,9 @@ pub struct CreatedInvitation {
 pub struct Invitation {
     id: String,
     inviter: String,
+    inviter_name: String,
     project_id: String,
+    project_title: String,
     position: InvitationPosition,
     used_by: Option<String>,
     created_at: String,
@@ -45,7 +47,9 @@ impl From<InvitationDto> for Invitation {
         Self {
             id: dto.id,
             inviter: dto.inviter,
+            inviter_name: dto.inviter_name,
             project_id: dto.project_id,
+            project_title: dto.project_title,
             position: InvitationPosition::from(dto.position),
             used_by: dto.used_by,
             created_at: dto.created_at.to_rfc3339(),

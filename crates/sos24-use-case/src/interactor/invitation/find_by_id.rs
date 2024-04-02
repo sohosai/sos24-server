@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sos24_domain::repository::project::ProjectRepository;
+use sos24_domain::repository::user::UserRepository;
 use sos24_domain::{
     ensure,
     entity::invitation::InvitationId,
@@ -31,7 +33,27 @@ impl<R: Repositories> InvitationUseCase<R> {
 
         ensure!(raw_invitation.value.is_visible_to(&actor));
 
-        Ok(InvitationDto::from_entity(raw_invitation))
+        let inviter_id = raw_invitation.value.inviter();
+        let raw_inviter = self
+            .repositories
+            .user_repository()
+            .find_by_id(inviter_id.clone())
+            .await?
+            .ok_or(InvitationUseCaseError::UserNotFound(inviter_id.clone()))?;
+
+        let project_id = raw_invitation.value.project_id();
+        let raw_project = self
+            .repositories
+            .project_repository()
+            .find_by_id(project_id.clone())
+            .await?
+            .ok_or(InvitationUseCaseError::ProjectNotFound(project_id.clone()))?;
+
+        Ok(InvitationDto::from_entity((
+            raw_invitation,
+            raw_inviter,
+            raw_project,
+        )))
     }
 }
 
@@ -60,6 +82,22 @@ mod tests {
                     fixture::user::id1(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
                 ))))
             });
         let use_case = InvitationUseCase::new_for_test(repositories);
@@ -109,6 +147,22 @@ mod tests {
                     fixture::user::id2(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
                 ))))
             });
         let use_case = InvitationUseCase::new_for_test(repositories);
