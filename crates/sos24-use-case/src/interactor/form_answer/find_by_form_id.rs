@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::{
     ensure,
     entity::{form::FormId, permission::Permissions},
@@ -23,7 +24,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         ensure!(actor.has_permission(Permissions::READ_FORM_ANSWER_ALL));
 
         let form_id = FormId::try_from(form_id)?;
-        let _form = self
+        let raw_form = self
             .repositories
             .form_repository()
             .find_by_id(form_id.clone())
@@ -36,10 +37,23 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .find_by_form_id(form_id.clone())
             .await?;
 
-        let form_answer_list = raw_form_answer_list
-            .into_iter()
-            .map(FormAnswerDto::from_entity);
-        Ok(form_answer_list.collect())
+        let mut form_answer_list = Vec::new();
+        for raw_form_answer in raw_form_answer_list {
+            let project_id = raw_form_answer.value.project_id();
+            let raw_project = self
+                .repositories
+                .project_repository()
+                .find_by_id(project_id.clone())
+                .await?
+                .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
+            form_answer_list.push(FormAnswerDto::from_entity((
+                raw_form_answer,
+                raw_project,
+                raw_form.clone(),
+            )));
+        }
+
+        Ok(form_answer_list)
     }
 }
 
