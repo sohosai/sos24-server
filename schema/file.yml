@@ -101,6 +101,8 @@ schemas:
       file:
         type: string
         format: binary
+    required:
+      - file
   File:
     type: object
     properties:
@@ -121,6 +123,12 @@ schemas:
         type: string
         format: date-time
         nullable: true
+    required:
+      - id
+      - name
+      - url
+      - created_at
+      - updated_at
   CreatedFileInfo:
     type: object
     properties:
@@ -129,3 +137,5 @@ schemas:
         items:
           type: string
           format: uuid
+      required:
+        - ids

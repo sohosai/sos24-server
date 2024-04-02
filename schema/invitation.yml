@@ -145,6 +145,12 @@ schemas:
         type: string
         format: date-time
         nullable: true
+    required:
+      - id
+      - project_id
+      - position
+      - created_at
+      - updated_at
   CreateInvitation:
     type: object
     properties:
@@ -156,3 +162,6 @@ schemas:
         enum:
           - owner
           - sub_owner
+    required:
+      - project_id
+      - position
