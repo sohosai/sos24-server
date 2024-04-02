@@ -130,6 +130,8 @@ schemas:
       project_id:
         type: string
         format: uuid
+      project_title:
+        type: string
       position:
         type: string
         enum:
@@ -148,6 +150,7 @@ schemas:
     required:
       - id
       - project_id
+      - project_title
       - position
       - created_at
       - updated_at
