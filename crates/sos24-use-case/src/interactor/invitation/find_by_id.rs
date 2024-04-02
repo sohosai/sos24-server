@@ -1,14 +1,14 @@
 use sos24_domain::{
     entity::invitation::InvitationId,
     repository::{
-        invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
-        Repositories,
+        invitation::InvitationRepository, project::ProjectRepository, Repositories,
+        user::UserRepository,
     },
 };
 
 use crate::{
     context::Context,
-    dto::{invitation::InvitationDto, FromEntity},
+    dto::{FromEntity, invitation::InvitationDto},
 };
 
 use super::{InvitationUseCase, InvitationUseCaseError};
@@ -109,6 +109,22 @@ mod tests {
                     fixture::user::id2(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
+                ))))
+            });
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
                 ))))
             });
         let use_case = InvitationUseCase::new_for_test(repositories);
