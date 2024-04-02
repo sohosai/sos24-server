@@ -1,16 +1,16 @@
 use std::sync::Arc;
 
-use sos24_domain::entity::project::ProjectId;
-use sos24_domain::repository::form_answer::FormAnswerRepository;
-use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
     repository::{form::FormRepository, Repositories},
 };
+use sos24_domain::entity::project::ProjectId;
+use sos24_domain::repository::form_answer::FormAnswerRepository;
+use sos24_domain::repository::project::ProjectRepository;
 
-use crate::dto::form::FormWithAnswerDto;
 use crate::{context::Context, dto::FromEntity};
+use crate::dto::form::FormSummaryDto;
 
 use super::{FormUseCase, FormUseCaseError};
 
@@ -19,7 +19,7 @@ impl<R: Repositories> FormUseCase<R> {
         &self,
         ctx: &Context,
         project_id: String,
-    ) -> Result<Vec<FormWithAnswerDto>, FormUseCaseError> {
+    ) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
@@ -43,7 +43,7 @@ impl<R: Repositories> FormUseCase<R> {
                 .form_answer_repository()
                 .find_by_project_id_and_form_id(project_id.clone(), form_id)
                 .await?;
-            form_list.push(FormWithAnswerDto::from_entity((form, form_answer)));
+            form_list.push(FormSummaryDto::from_entity((form, form_answer)));
         }
         Ok(form_list)
     }
