@@ -214,6 +214,12 @@ schemas:
         type: integer
         example: 100
         nullable: true
+    required:
+      - id
+      - name
+      - description
+      - required
+      - type
     example:
       string:
         name: "項目1"
@@ -286,6 +292,15 @@ schemas:
         description: "対象となる企画属性"
         items:
           $ref: "./project.yml#/components/ProjectAttribute"
+    required:
+      - id
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - updated_at
+      - categories
+      - attributes
 
   Form:
     type: object
@@ -338,6 +353,18 @@ schemas:
         items:
           type: string
           format: uuid
+    required:
+      - id
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - created_at
+      - updated_at
+      - categories
+      - attributes
+      - items
+      - attachments
 
   CreateForm:
     type: object
@@ -373,6 +400,15 @@ schemas:
         items:
           type: string
           format: uuid
+    required:
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - categories
+      - attributes
+      - items
+      - attachments
 
   UpdateForm:
     type: object
@@ -408,3 +444,12 @@ schemas:
         items:
           type: string
           format: uuid
+    required:
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - categories
+      - attributes
+      - items
+      - attachments

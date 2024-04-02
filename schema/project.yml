@@ -197,7 +197,12 @@ schemas:
         type: array
         items:
           $ref: "#/components/ProjectAttribute"
-
+    required:
+      - id
+      - index
+      - title
+      - category
+      - attribute
   Project:
     type: object
     properties:
@@ -254,6 +259,21 @@ schemas:
         type: string
         format: date-time
         nullable: true
+    required:
+      - id
+      - index
+      - title
+      - kana_title
+      - group_name
+      - kana_group_name
+      - category
+      - attributes
+      - owner_id
+      - owner_name
+      - owner_email
+      - remarks
+      - created_at
+      - updated_at
   CreateProject:
     type: object
     properties:
@@ -275,6 +295,13 @@ schemas:
         type: array
         items:
           $ref: "#/components/ProjectAttribute"
+    required:
+      - title
+      - kana_title
+      - group_name
+      - kana_group_name
+      - category
+      - attributes
   UpdateProject:
     type: object
     properties:
@@ -299,3 +326,11 @@ schemas:
           $ref: "#/components/ProjectAttribute"
       remarks:
         type: string
+    required:
+      - title
+      - kana_title
+      - group_name
+      - kana_group_name
+      - category
+      - attributes
+      - remarks

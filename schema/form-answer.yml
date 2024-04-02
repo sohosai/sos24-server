@@ -43,6 +43,10 @@ paths:
       responses:
         201:
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/CreatedFormAnswer"
         400:
           description: Bad Request
         401:
@@ -124,6 +128,10 @@ schemas:
       type:
         $ref: "./form.yml#/schemas/FormItemType"
       value: { }
+    required:
+      - id
+      - type
+      - value
   FormAnswerSummary:
     type: object
     properties:
@@ -139,6 +147,11 @@ schemas:
       updated_at:
         type: string
         format: date-time
+    required:
+      - id
+      - form_id
+      - project_id
+      - updated_at
   FormAnswer:
     type: object
     properties:
@@ -163,6 +176,13 @@ schemas:
         nullable: true
       items:
         $ref: "#/schemas/FormAnswerItem"
+    required:
+      - id
+      - project_id
+      - form_id
+      - created_at
+      - updated_at
+      - items
   CreateFormAnswer:
     type: object
     properties:
@@ -171,8 +191,13 @@ schemas:
         format: uuid
       items:
         $ref: "#/schemas/FormAnswerItem"
+    required:
+      - form_id
+      - items
   UpdateFormAnswer:
     type: object
     properties:
       items:
         $ref: "#/schemas/FormAnswerItem"
+    required:
+      - items

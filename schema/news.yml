@@ -142,6 +142,12 @@ schemas:
       updated_at:
         type: string
         format: date-time
+    required:
+      - id
+      - title
+      - categories
+      - attributes
+      - updated_at
   News:
     type: object
     properties:
@@ -175,6 +181,15 @@ schemas:
         type: string
         format: date-time
         nullable: true
+    required:
+      - id
+      - title
+      - body
+      - attachments
+      - categories
+      - attributes
+      - created_at
+      - updated_at
   CreateNews:
     type: object
     properties:
@@ -195,6 +210,12 @@ schemas:
         type: array
         items:
           $ref: "./project.yml#/components/ProjectAttribute"
+    required:
+      - title
+      - body
+      - attachments
+      - categories
+      - attributes
   UpdateNews:
     type: object
     properties:
@@ -215,3 +236,9 @@ schemas:
         type: array
         items:
           $ref: "./project.yml#/components/ProjectAttribute"
+    required:
+      - title
+      - body
+      - attachments
+      - categories
+      - attributes

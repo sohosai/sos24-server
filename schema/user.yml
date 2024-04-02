@@ -177,7 +177,11 @@ schemas:
         format: email
       role:
         $ref: "#/components/UserRole"
-
+    required:
+      - id
+      - name
+      - email
+      - role
   User:
     type: object
     properties:
@@ -203,6 +207,16 @@ schemas:
       deleted_at:
         type: string
         format: date-time
+        nullable: true
+    required:
+      - id
+      - name
+      - kana_name
+      - email
+      - phone_number
+      - role
+      - created_at
+      - updated_at
   CreateUser:
     type: object
     properties:
@@ -218,6 +232,12 @@ schemas:
         format: password
       phone_number:
         type: string
+    required:
+      - name
+      - kana_name
+      - email
+      - password
+      - phone_number
   UpdateUser:
     type: object
     properties:
@@ -232,3 +252,9 @@ schemas:
         type: string
       role:
         $ref: "#/components/UserRole"
+    required:
+      - name
+      - kana_name
+      - email
+      - phone_number
+      - role
