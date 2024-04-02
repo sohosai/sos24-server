@@ -1,10 +1,13 @@
 use std::sync::Arc;
 
 use sos24_domain::entity::permission::Permissions;
-use sos24_domain::{ensure, repository::file_data::FileDataRepository};
 use sos24_domain::repository::Repositories;
+use sos24_domain::{ensure, repository::file_data::FileDataRepository};
 
-use crate::{context::Context, dto::{file::FileInfoDto, FromEntity}};
+use crate::{
+    context::Context,
+    dto::{file::FileInfoDto, FromEntity},
+};
 
 use super::{FileUseCase, FileUseCaseError};
 

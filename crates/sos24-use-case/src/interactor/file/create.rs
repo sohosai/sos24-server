@@ -50,7 +50,7 @@ impl<R: Repositories> FileUseCase<R> {
             .file_data_repository()
             .create(data)
             .await?;
-        
+
         Ok(id.value().to_string())
     }
 }

@@ -1,11 +1,11 @@
+use sos24_domain::entity::project::Project;
+use sos24_domain::entity::user::User;
 use sos24_domain::entity::{
     common::date::WithDate,
     invitation::{Invitation, InvitationPosition},
     project::ProjectId,
     user::UserId,
 };
-use sos24_domain::entity::project::Project;
-use sos24_domain::entity::user::User;
 
 use crate::interactor::invitation::InvitationUseCaseError;
 
