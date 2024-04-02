@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use sos24_domain::repository::form::FormRepository;
 use sos24_domain::{
     ensure,
     entity::form_answer::FormAnswerId,
@@ -30,15 +31,27 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .ok_or(FormAnswerUseCaseError::NotFound(id))?;
 
         let project_id = form_answer.value.project_id();
-        let project = self
+        let raw_project = self
             .repositories
             .project_repository()
             .find_by_id(project_id.clone())
             .await?
             .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
-        ensure!(project.value.is_visible_to(&actor));
+        ensure!(raw_project.value.is_visible_to(&actor));
 
-        Ok(FormAnswerDto::from_entity(form_answer))
+        let form_id = form_answer.value.form_id();
+        let raw_form = self
+            .repositories
+            .form_repository()
+            .find_by_id(form_id.clone())
+            .await?
+            .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
+
+        Ok(FormAnswerDto::from_entity((
+            form_answer,
+            raw_project,
+            raw_form,
+        )))
     }
 }
 
@@ -75,6 +88,10 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
+        repositories
+            .form_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
@@ -136,6 +153,10 @@ mod tests {
                     fixture::user::id2(),
                 ))))
             });
+        repositories
+            .form_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));

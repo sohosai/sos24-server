@@ -1,4 +1,6 @@
 use sos24_domain::entity::file_data::FileId;
+use sos24_domain::entity::form::Form;
+use sos24_domain::entity::project::Project;
 use sos24_domain::entity::{
     common::date::WithDate,
     form::{FormId, FormItemId},
@@ -57,7 +59,9 @@ impl UpdateFormAnswerDto {
 pub struct FormAnswerDto {
     pub id: String,
     pub project_id: String,
+    pub project_title: String,
     pub form_id: String,
+    pub form_title: String,
     pub items: Vec<FormAnswerItemDto>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
@@ -65,21 +69,26 @@ pub struct FormAnswerDto {
 }
 
 impl FromEntity for FormAnswerDto {
-    type Entity = WithDate<FormAnswer>;
-    fn from_entity(entity: Self::Entity) -> Self {
-        let form_answer = entity.value.destruct();
+    type Entity = (WithDate<FormAnswer>, WithDate<Project>, WithDate<Form>);
+    fn from_entity((form_answer_entity, project_entity, form_entity): Self::Entity) -> Self {
+        let form_answer = form_answer_entity.value.destruct();
+        let project = project_entity.value.destruct();
+        let form = form_entity.value.destruct();
+
         Self {
             id: form_answer.id.value().to_string(),
             project_id: form_answer.project_id.value().to_string(),
+            project_title: project.title.value().to_string(),
             form_id: form_answer.form_id.value().to_string(),
+            form_title: form.title.value().to_string(),
             items: form_answer
                 .items
                 .into_iter()
                 .map(FormAnswerItemDto::from_entity)
                 .collect(),
-            created_at: entity.created_at,
-            updated_at: entity.updated_at,
-            deleted_at: entity.deleted_at,
+            created_at: form_answer_entity.created_at,
+            updated_at: form_answer_entity.updated_at,
+            deleted_at: form_answer_entity.deleted_at,
         }
     }
 }

@@ -35,6 +35,8 @@ pub enum InvitationUseCaseError {
     ProjectNotFound(ProjectId),
     #[error("Already owner or sub-owner")]
     AlreadyOwnerOrSubOwner,
+    #[error("User not found: {0:?}")]
+    UserNotFound(UserId),
 
     #[error(transparent)]
     ProjectError(#[from] ProjectError),

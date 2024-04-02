@@ -1,6 +1,7 @@
 use std::fmt;
 use std::fmt::Formatter;
 
+use sos24_domain::entity::user::User;
 use sos24_domain::entity::{
     common::date::WithDate,
     project::{
@@ -111,7 +112,11 @@ pub struct ProjectDto {
     pub category: ProjectCategoryDto,
     pub attributes: Vec<ProjectAttributeDto>,
     pub owner_id: String,
+    pub owner_name: String,
+    pub owner_email: String,
     pub sub_owner_id: Option<String>,
+    pub sub_owner_name: Option<String>,
+    pub sub_owner_email: Option<String>,
     pub remarks: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
@@ -119,9 +124,17 @@ pub struct ProjectDto {
 }
 
 impl FromEntity for ProjectDto {
-    type Entity = WithDate<Project>;
+    type Entity = (WithDate<Project>, WithDate<User>, Option<WithDate<User>>);
     fn from_entity(entity: Self::Entity) -> Self {
-        let project = entity.value.destruct();
+        let (project_entity, owner_entity, sub_owner_entity) = entity;
+        let project = project_entity.value.destruct();
+        let owner = owner_entity.value.destruct();
+        let sub_owner = sub_owner_entity.map(|it| it.value.destruct());
+        let (sub_owner_name, sub_owner_email) = match sub_owner {
+            Some(user) => (Some(user.name.value()), Some(user.email.value())),
+            None => (None, None),
+        };
+
         Self {
             id: project.id.value().to_string(),
             index: project.index.value(),
@@ -132,11 +145,15 @@ impl FromEntity for ProjectDto {
             category: ProjectCategoryDto::from_entity(project.category),
             attributes: Vec::from_entity(project.attributes),
             owner_id: project.owner_id.value(),
+            owner_name: owner.name.value(),
+            owner_email: owner.email.value(),
             sub_owner_id: project.sub_owner_id.map(|id| id.value()),
+            sub_owner_name,
+            sub_owner_email,
             remarks: project.remarks.map(|it| it.value()),
-            created_at: entity.created_at,
-            updated_at: entity.updated_at,
-            deleted_at: entity.deleted_at,
+            created_at: project_entity.created_at,
+            updated_at: project_entity.updated_at,
+            deleted_at: project_entity.deleted_at,
         }
     }
 }

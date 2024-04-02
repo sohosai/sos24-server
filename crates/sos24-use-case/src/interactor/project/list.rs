@@ -3,6 +3,7 @@ use std::sync::Arc;
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::project::ProjectRepository;
+use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::context::Context;
@@ -16,8 +17,36 @@ impl<R: Repositories> ProjectUseCase<R> {
         ensure!(actor.has_permission(Permissions::READ_PROJECT_ALL));
 
         let raw_project_list = self.repositories.project_repository().list().await?;
-        let project_list = raw_project_list.into_iter().map(ProjectDto::from_entity);
-        Ok(project_list.collect())
+
+        let mut project_list = Vec::new();
+        for raw_project in raw_project_list {
+            let owner_id = raw_project.value.owner_id();
+            let raw_owner = self
+                .repositories
+                .user_repository()
+                .find_by_id(owner_id.clone())
+                .await?
+                .ok_or(ProjectUseCaseError::UserNotFound(owner_id.clone()))?;
+
+            let sub_owner_id = raw_project.value.sub_owner_id();
+            let raw_sub_owner = match sub_owner_id {
+                Some(sub_owner_id) => Some(
+                    self.repositories
+                        .user_repository()
+                        .find_by_id(sub_owner_id.clone())
+                        .await?
+                        .ok_or(ProjectUseCaseError::UserNotFound(sub_owner_id.clone()))?,
+                ),
+                None => None,
+            };
+
+            project_list.push(ProjectDto::from_entity((
+                raw_project,
+                raw_owner,
+                raw_sub_owner,
+            )));
+        }
+        Ok(project_list)
     }
 }
 

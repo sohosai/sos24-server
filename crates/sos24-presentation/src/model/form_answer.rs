@@ -62,7 +62,9 @@ pub struct FormAnswerQuery {
 pub struct FormAnswer {
     id: String,
     project_id: String,
+    project_title: String,
     form_id: String,
+    form_title: String,
     items: Vec<FormAnswerItem>,
     created_at: String,
     updated_at: String,
@@ -74,7 +76,9 @@ impl From<FormAnswerDto> for FormAnswer {
         FormAnswer {
             id: form_answer_dto.id,
             project_id: form_answer_dto.project_id,
+            project_title: form_answer_dto.project_title,
             form_id: form_answer_dto.form_id,
+            form_title: form_answer_dto.form_title,
             items: form_answer_dto
                 .items
                 .into_iter()

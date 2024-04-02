@@ -12,7 +12,7 @@ use csv::Writer;
 use sos24_use_case::context::Context;
 
 use crate::error::AppError;
-use crate::model::project::{CreatedProject, ProjectToBeExported, ProjectWithUser};
+use crate::model::project::{CreatedProject, ProjectToBeExported};
 use crate::{
     model::project::{
         ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project,
@@ -177,41 +177,12 @@ pub async fn handle_get_id(
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, AppError> {
     let raw_project = modules.project_use_case().find_by_id(&ctx, id).await;
-    match raw_project {
-        Ok(raw_project) => {
-            let owner = match modules
-                .user_use_case()
-                .find_by_id(&ctx, raw_project.owner_id.clone())
-                .await
-            {
-                Ok(user) => user,
-                Err(err) => {
-                    tracing::error!("Failed to find user: {err:?}");
-                    return Err(err.into());
-                }
-            };
-            let sub_owner = match raw_project.sub_owner_id.clone() {
-                Some(sub_owner_id) => {
-                    match modules.user_use_case().find_by_id(&ctx, sub_owner_id).await {
-                        Ok(user) => Some(user),
-                        Err(err) => {
-                            tracing::error!("Failed to find user: {err:?}");
-                            return Err(err.into());
-                        }
-                    }
-                }
-                None => None,
-            };
-            Ok((
-                StatusCode::OK,
-                Json(ProjectWithUser::from((raw_project, owner, sub_owner))),
-            ))
-        }
-        Err(err) => {
+    raw_project
+        .map(|raw_project| (StatusCode::OK, Json(Project::from(raw_project))))
+        .map_err(|err| {
             tracing::error!("Failed to find project: {err:?}");
-            Err(err.into())
-        }
-    }
+            err.into()
+        })
 }
 
 pub async fn handle_delete_id(

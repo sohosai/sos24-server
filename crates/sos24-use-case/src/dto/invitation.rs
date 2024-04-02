@@ -4,6 +4,8 @@ use sos24_domain::entity::{
     project::ProjectId,
     user::UserId,
 };
+use sos24_domain::entity::project::Project;
+use sos24_domain::entity::user::User;
 
 use crate::interactor::invitation::InvitationUseCaseError;
 
@@ -32,7 +34,9 @@ impl ToEntity for CreateInvitationDto {
 pub struct InvitationDto {
     pub id: String,
     pub inviter: String,
+    pub inviter_name: String,
     pub project_id: String,
+    pub project_title: String,
     pub position: InvitationPositionDto,
     pub used_by: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
@@ -41,18 +45,23 @@ pub struct InvitationDto {
 }
 
 impl FromEntity for InvitationDto {
-    type Entity = WithDate<Invitation>;
-    fn from_entity(entity: Self::Entity) -> Self {
-        let invitation = entity.value.destruct();
+    type Entity = (WithDate<Invitation>, WithDate<User>, WithDate<Project>);
+    fn from_entity((invitation_entity, user_entity, project_entity): Self::Entity) -> Self {
+        let invitation = invitation_entity.value.destruct();
+        let inviter = user_entity.value.destruct();
+        let project = project_entity.value.destruct();
+
         Self {
             id: invitation.id.value().to_string(),
             inviter: invitation.inviter.value().to_string(),
+            inviter_name: inviter.name.value().to_string(),
             project_id: invitation.project_id.value().to_string(),
+            project_title: project.title.value().to_string(),
             position: InvitationPositionDto::from_entity(invitation.position),
             used_by: invitation.used_by.map(|id| id.value().to_string()),
-            created_at: entity.created_at,
-            updated_at: entity.updated_at,
-            deleted_at: entity.deleted_at,
+            created_at: invitation_entity.created_at,
+            updated_at: invitation_entity.updated_at,
+            deleted_at: invitation_entity.deleted_at,
         }
     }
 }

@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sos24_domain::repository::form::FormRepository;
+use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
@@ -19,10 +21,33 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         ensure!(actor.has_permission(Permissions::READ_FORM_ANSWER_ALL));
 
         let raw_form_answer_list = self.repositories.form_answer_repository().list().await?;
-        let form_answer_list = raw_form_answer_list
-            .into_iter()
-            .map(FormAnswerDto::from_entity);
-        Ok(form_answer_list.collect())
+
+        let mut form_answer_list = Vec::new();
+        for raw_form_answer in raw_form_answer_list {
+            let project_id = raw_form_answer.value.project_id();
+            let raw_project = self
+                .repositories
+                .project_repository()
+                .find_by_id(project_id.clone())
+                .await?
+                .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
+
+            let form_id = raw_form_answer.value.form_id();
+            let raw_form = self
+                .repositories
+                .form_repository()
+                .find_by_id(form_id.clone())
+                .await?
+                .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
+
+            form_answer_list.push(FormAnswerDto::from_entity((
+                raw_form_answer,
+                raw_project,
+                raw_form,
+            )));
+        }
+
+        Ok(form_answer_list)
     }
 }
 
