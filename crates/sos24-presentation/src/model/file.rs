@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 use sos24_use_case::dto::file::{FileDto, FileInfoDto};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -58,6 +59,6 @@ impl From<FileInfoDto> for FileInfo {
 }
 
 #[derive(Debug, Serialize)]
-pub struct CreatedFileInfo {
+pub struct CreatedFile {
     pub ids: Vec<String>,
 }

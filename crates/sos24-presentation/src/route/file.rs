@@ -7,7 +7,7 @@ use axum::{Extension, Json};
 
 use sos24_use_case::{context::Context, dto::file::CreateFileDto};
 
-use crate::model::file::CreatedFileInfo;
+use crate::model::file::CreatedFile;
 use crate::{
     error::AppError,
     model::file::{CreateFileQuery, File, FileInfo, Visibility},
@@ -121,10 +121,12 @@ pub async fn handle_post(
         created_file_ids.push(id);
     }
 
-    let created_file_info = CreatedFileInfo {
-        ids: created_file_ids,
-    };
-    Ok((StatusCode::CREATED, Json(created_file_info)))
+    Ok((
+        StatusCode::CREATED,
+        Json(CreatedFile {
+            ids: created_file_ids,
+        }),
+    ))
 }
 
 pub async fn handle_get_id(

@@ -8,10 +8,11 @@ use axum::{
     Extension, Json,
 };
 use csv::Writer;
+
 use sos24_use_case::context::Context;
 
 use crate::error::AppError;
-use crate::model::project::{ProjectToBeExported, ProjectWithUser};
+use crate::model::project::{CreatedProject, ProjectToBeExported, ProjectWithUser};
 use crate::{
     model::project::{
         ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project,
@@ -47,10 +48,11 @@ pub async fn handle_post(
     let user_id = ctx.user_id().clone().value();
     let project = (raw_project, user_id).to_create_project_dto();
     let res = modules.project_use_case().create(&ctx, project).await;
-    res.map(|_| StatusCode::CREATED).map_err(|err| {
-        tracing::error!("Failed to create project: {err:?}");
-        err.into()
-    })
+    res.map(|id| (StatusCode::CREATED, Json(CreatedProject { id })))
+        .map_err(|err| {
+            tracing::error!("Failed to create project: {err:?}");
+            err.into()
+        })
 }
 
 pub async fn handle_export(

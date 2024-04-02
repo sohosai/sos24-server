@@ -8,7 +8,7 @@ use crate::dto::ToEntity;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
 impl<R: Repositories> UserUseCase<R> {
-    pub async fn create(&self, raw_user: CreateUserDto) -> Result<(), UserUseCaseError> {
+    pub async fn create(&self, raw_user: CreateUserDto) -> Result<String, UserUseCaseError> {
         let firebase_user = NewFirebaseUser::new(
             FirebaseUserEmail::try_from(raw_user.email.clone())?,
             FirebaseUserPassword::new(raw_user.password.clone()),
@@ -20,10 +20,11 @@ impl<R: Repositories> UserUseCase<R> {
             .await?;
 
         let user = (firebase_user_id.clone().value(), raw_user).into_entity()?;
+        let user_id = user.id().clone();
         let res = self.repositories.user_repository().create(user).await;
 
         match res {
-            Ok(_) => Ok(()),
+            Ok(_) => Ok(user_id.value().to_string()),
             Err(e) => {
                 self.repositories
                     .firebase_user_repository()
@@ -73,7 +74,7 @@ mod tests {
                 fixture::user::phone_number1().value(),
             ))
             .await;
-        assert!(matches!(res, Ok(())));
+        assert!(res.is_ok());
     }
 
     #[tokio::test]

@@ -18,7 +18,7 @@ impl<R: Repositories> NewsUseCase<R> {
         &self,
         ctx: &Context,
         raw_news: CreateNewsDto,
-    ) -> Result<(), NewsUseCaseError> {
+    ) -> Result<String, NewsUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_NEWS));
 
@@ -32,8 +32,10 @@ impl<R: Repositories> NewsUseCase<R> {
                 .ok_or(NewsUseCaseError::FileNotFound(file_id.clone()))?;
         }
 
+        let news_id = news.id().clone();
         self.repositories.news_repository().create(news).await?;
-        Ok(())
+
+        Ok(news_id.value().to_string())
     }
 }
 

@@ -67,6 +67,11 @@ impl From<NewFormItem> for NewFormItemDto {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct CreatedForm {
+    pub id: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateForm {
     pub id: String,
