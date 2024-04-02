@@ -20,6 +20,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy rustfmt
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: "/home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}"
@@ -33,3 +35,8 @@ jobs:
         env:
           SQLX_OFFLINE: true
         run: cargo test --verbose
+      - name: Lint
+        uses: giraffate/clippy-action@v1
+        with:
+          reporter: 'github-pr-review'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
