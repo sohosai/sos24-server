@@ -220,6 +220,7 @@ pub enum ProjectCategory {
     FoodsWithKitchen,
     FoodsWithoutKitchen,
     FoodsWithoutCooking,
+    #[serde(rename = "stage_1a")]
     Stage1A,
     StageUniversityHall,
     StageUnited,
