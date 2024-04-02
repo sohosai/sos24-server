@@ -127,6 +127,10 @@ schemas:
       id:
         type: string
         format: uuid
+      inviter:
+        type: string
+      inviter_name:
+        type: string
       project_id:
         type: string
         format: uuid
@@ -137,6 +141,9 @@ schemas:
         enum:
           - owner
           - sub_owner
+      used_by:
+        type: string
+        nullable: true
       created_at:
         type: string
         format: date-time
@@ -149,6 +156,8 @@ schemas:
         nullable: true
     required:
       - id
+      - inviter
+      - inviter_name
       - project_id
       - project_title
       - position

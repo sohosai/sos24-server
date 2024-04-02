@@ -261,6 +261,58 @@ schemas:
         type: "file"
         extensions: [ ".jpg", ".png" ]
         limit: 2
+  NewFormItem:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      required:
+        type: boolean
+      type:
+        $ref: "#/schemas/FormItemType"
+      min:
+        type: integer
+        nullable: true
+      max:
+        type: integer
+        nullable: true
+      min_length:
+        type: integer
+        nullable: true
+      max_length:
+        type: integer
+        nullable: true
+      min_selection:
+        type: integer
+        nullable: true
+      max_selection:
+        type: integer
+        nullable: true
+      allow_newline:
+        type: boolean
+        example: false
+        nullable: true
+      options:
+        type: array
+        items:
+          type: string
+        nullable: true
+      extensions:
+        type: array
+        items:
+          type: string
+        nullable: true
+      limit:
+        type: integer
+        example: 100
+        nullable: true
+    required:
+      - name
+      - description
+      - required
+      - type
   FormSummary:
     type: object
     properties:
@@ -282,10 +334,6 @@ schemas:
         type: string
         format: date-time
         example: "2024-03-20T18:00:00Z"
-      updated_at:
-        type: string
-        format: date-time
-        example: "2024-03-15T14:45:00Z"
       categories:
         type: array
         description: "対象となる企画区分"
@@ -296,15 +344,27 @@ schemas:
         description: "対象となる企画属性"
         items:
           $ref: "./project.yml#/components/ProjectAttribute"
+      answer_id:
+        type: string
+        format: uuid
+        nullable: true
+      answered_at:
+        type: string
+        format: date-time
+        nullable: true
+      updated_at:
+        type: string
+        format: date-time
+        example: "2024-03-15T14:45:00Z"
     required:
       - id
       - title
       - description
       - starts_at
       - ends_at
-      - updated_at
       - categories
       - attributes
+      - updated_at
 
   Form:
     type: object
@@ -327,19 +387,6 @@ schemas:
         type: string
         format: date-time
         example: "2024-03-20T18:00:00Z"
-      created_at:
-        type: string
-        format: date-time
-        example: "2024-03-15T10:30:00Z"
-      updated_at:
-        type: string
-        format: date-time
-        example: "2024-03-15T14:45:00Z"
-      deleted_at:
-        type: string
-        format: date-time
-        nullable: true
-        example: null
       categories:
         type: array
         items:
@@ -357,18 +404,31 @@ schemas:
         items:
           type: string
           format: uuid
+      created_at:
+        type: string
+        format: date-time
+        example: "2024-03-15T10:30:00Z"
+      updated_at:
+        type: string
+        format: date-time
+        example: "2024-03-15T14:45:00Z"
+      deleted_at:
+        type: string
+        format: date-time
+        nullable: true
+        example: null
     required:
       - id
       - title
       - description
       - starts_at
       - ends_at
-      - created_at
-      - updated_at
       - categories
       - attributes
       - items
       - attachments
+      - created_at
+      - updated_at
 
   CreateForm:
     type: object
@@ -398,7 +458,7 @@ schemas:
       items:
         type: array
         items:
-          $ref: "#/schemas/FormItem"
+          $ref: "#/schemas/NewFormItem"
       attachments:
         type: array
         items:
@@ -442,7 +502,7 @@ schemas:
       items:
         type: array
         items:
-          $ref: "#/schemas/FormItem"
+          $ref: "#/schemas/NewFormItem"
       attachments:
         type: array
         items:

@@ -91,6 +91,30 @@ impl From<FormAnswerDto> for FormAnswer {
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct FormAnswerSummary {
+    id: String,
+    project_id: String,
+    project_title: String,
+    form_id: String,
+    form_title: String,
+    updated_at: String,
+}
+
+impl From<FormAnswerDto> for FormAnswerSummary {
+    fn from(form_answer_dto: FormAnswerDto) -> Self {
+        FormAnswerSummary {
+            id: form_answer_dto.id,
+            project_id: form_answer_dto.project_id,
+            project_title: form_answer_dto.project_title,
+            form_id: form_answer_dto.form_id,
+            form_title: form_answer_dto.form_title,
+            updated_at: form_answer_dto.updated_at.to_rfc3339(),
+        }
+    }
+}
+
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FormAnswerItem {

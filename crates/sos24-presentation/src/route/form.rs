@@ -1,21 +1,21 @@
 use std::sync::Arc;
 
-use axum::extract::Query;
 use axum::{
+    Extension,
     extract::{Path, State},
     http::StatusCode,
-    response::IntoResponse,
-    Extension, Json,
+    Json, response::IntoResponse,
 };
+use axum::extract::Query;
 
 use sos24_use_case::{context::Context, dto::form::CreateFormDto};
 
-use crate::model::form::{CreatedForm, Form, FormQuery, FormWithAnswer};
 use crate::{
     error::AppError,
     model::form::{ConvertToUpdateFormDto, UpdateForm},
 };
 use crate::{model::form::CreateForm, module::Modules};
+use crate::model::form::{CreatedForm, Form, FormQuery, FormSummary};
 
 pub async fn handle_get(
     Query(query): Query<FormQuery>,
@@ -30,9 +30,9 @@ pub async fn handle_get(
                 .await;
             raw_form_list
                 .map(|raw_form_list| {
-                    let form_list: Vec<FormWithAnswer> = raw_form_list
+                    let form_list: Vec<FormSummary> = raw_form_list
                         .into_iter()
-                        .map(FormWithAnswer::from)
+                        .map(FormSummary::from)
                         .collect();
                     (StatusCode::OK, Json(form_list)).into_response()
                 })
