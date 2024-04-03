@@ -37,29 +37,29 @@ jobs:
 
   deploy:
     runs-on: [self-hosted, portainer]
-      steps:
-        - name: Deploy to Portainer
-          run: |
-            # List stacks
-            STACKS=$(curl -s -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}")
+    steps:
+      - name: Deploy to Portainer
+        run: |
+          # List stacks
+          STACKS=$(curl -s -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}")
 
-            # Get stack ID by name
-            STACK_ID=$(echo "${STACKS}" | jq -r --arg STACK_NAME "${STACK_NAME}" '.[] | select(.Name == $STACK_NAME) | .Id')
+          # Get stack ID by name
+          STACK_ID=$(echo "${STACKS}" | jq -r --arg STACK_NAME "${STACK_NAME}" '.[] | select(.Name == $STACK_NAME) | .Id')
 
-            # Create or update stack
-            if [ -n "${STACK_ID}" ]; then
-              echo "Updating stack"
-              UPDATE_DATA="{\"prune\": ${PRUNE}, \"pullImage\": ${PULL_IMAGE}, \"stackFileContent\": \"$(cat ${COMPOSE_FILE})\"}"
-              curl -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" -d "${UPDATE_DATA}"
-            else
-              echo "Creating stack"
-              CREATE_DATA="{\"name\": \"${STACK_NAME}\", \"Env\": [${{ secrets.PORTAINER_VARIABLE }}], \"stackFileContent\": \"$(cat ${COMPOSE_FILE})\"}"
-              curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks?type=${STACK_TYPE}&method=string&endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" -d "${CREATE_DATA}"
-            fi
-          env:
-            STACK_NAME: "sos24-server-stg"
-            STACK_TYPE: 2
-            ENDPOINT_ID: 2
-            COMPOSE_FILE: "docker-compose-stg.yaml"
-            PULL_IMAGE: "true"
-            VERIFY_SSL: "true"
+          # Create or update stack
+          if [ -n "${STACK_ID}" ]; then
+            echo "Updating stack"
+            UPDATE_DATA="{\"prune\": ${PRUNE}, \"pullImage\": ${PULL_IMAGE}, \"stackFileContent\": \"$(cat ${COMPOSE_FILE})\"}"
+            curl -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" -d "${UPDATE_DATA}"
+          else
+            echo "Creating stack"
+            CREATE_DATA="{\"name\": \"${STACK_NAME}\", \"Env\": [${{ secrets.PORTAINER_VARIABLE }}], \"stackFileContent\": \"$(cat ${COMPOSE_FILE})\"}"
+            curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks?type=${STACK_TYPE}&method=string&endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" -d "${CREATE_DATA}"
+          fi
+        env:
+          STACK_NAME: "sos24-server-stg"
+          STACK_TYPE: 2
+          ENDPOINT_ID: 2
+          COMPOSE_FILE: "docker-compose-stg.yaml"
+          PULL_IMAGE: "true"
+          VERIFY_SSL: "true"
