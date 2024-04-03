@@ -3,7 +3,7 @@ name: CD(staging)
 on: # 検証用。マージ時に修正する。
   push:
     branches:
-      - feature/#115-docker-environment
+      - feature/#115-docker-enviroment
   workflow_dispatch:
 
 jobs:
