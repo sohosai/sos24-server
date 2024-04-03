@@ -1,4 +1,4 @@
-name: Rust
+name: CD(staging)
 
 on: # 検証用。マージ時に修正する。
   push:
