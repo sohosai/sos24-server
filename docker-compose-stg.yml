@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    image: ghcr.io/sohosai/sos24-server:stg
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "portainer-traefik"
+      traefik.http.services.sos24-server.loadbalancer.server.port: 3000
+      traefik.http.routers.sos24-server.rule: Host(`sos24-server.playground.sohosai.com`)
+      traefik.http.routers.sos24-server.entrypoints: websecure
+      traefik.http.routers.sos24-server.tls.certresolver: leresolver
+
+  postgres:
+    image: postgres:14.1
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - mongodb-data:/data/db
+
+volumes:
+  postgres-data:
+  mongodb-data:

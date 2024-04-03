@@ -56,9 +56,9 @@ jobs:
   #           curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks?type=${STACK_TYPE}&method=string&endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" -d "${CREATE_DATA}"
   #         fi
   #       env:
-  #         STACK_NAME: "your-stack-name"
+  #         STACK_NAME: "sos24-server-stg"
   #         STACK_TYPE: 2
   #         ENDPOINT_ID: 2
-  #         COMPOSE_FILE: "docker-compose.yaml"
+  #         COMPOSE_FILE: "docker-compose-stg.yaml"
   #         PULL_IMAGE: "true"
   #         VERIFY_SSL: "true"

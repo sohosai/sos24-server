@@ -1,11 +1,13 @@
-FROM mcr.microsoft.com/devcontainers/rust:1-1-bullseye
+FROM rust:1-bullseye AS builder
 
-# Include lld linker to improve build times either by using environment variable
-# RUSTFLAGS="-C link-arg=-fuse-ld=lld" or with Cargo's configuration file (i.e see .cargo/config.toml).
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-   && apt-get -y install clang lld \
-   && apt-get autoremove -y && apt-get clean -y
+WORKDIR /app
+COPY . /app
 
-USER vscode
+RUN cargo build --release --bin sos24_presentation --verbose
 
-RUN cargo install sqlx-cli
+# We do not need the Rust toolchain to run the binary!
+FROM debian:bullseye-slim AS release
+LABEL maintainer="sohosai"
+WORKDIR /app
+COPY --from=builder /app/target/release/sos24_presentation /usr/local/bin
+ENTRYPOINT ["/usr/local/bin/sos24_presentation"]
