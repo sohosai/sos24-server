@@ -10,7 +10,7 @@ jobs:
   push-image:
     runs-on: [self-hosted, portainer]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v5
