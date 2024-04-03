@@ -3,8 +3,6 @@ version: '3.8'
 services:
   app:
     image: ghcr.io/sohosai/sos24-server:stg
-    env_file:
-      - .env.sample
     labels:
       traefik.enable: "true"
       traefik.docker.network: "portainer-traefik"
