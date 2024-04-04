@@ -49,14 +49,14 @@ jobs:
 
           # PORTAINER_VARIABLE to json
           mapfile -t env_array <<< "${{ secrets.PORTAINER_VARIABLE }}"
-          env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"$key\": \"$value\"},"; fi; done)
+          env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"name\": \"$key\", \"value\": \"$value\"},"; fi; done)
           env_data="${env_data%,}"
 
           echo $env_data
 
           # Create or update stack
           if [ -n "${STACK_ID}" ]; then
-            UPDATE_DATA="{\"prune\": ${PRUNE}, \"Env\": [$env_data], \"pullImage\": ${PULL_IMAGE}, \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')\"}"
+            UPDATE_DATA="{\"Prune\": ${PRUNE}, \"Env\": [$env_data], \"pullImage\": ${PULL_IMAGE}, \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')\"}"
             echo $UPDATE_DATA
             curl -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" --data-binary "${UPDATE_DATA}"
           else
