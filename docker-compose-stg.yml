@@ -5,7 +5,7 @@ services:
     image: ghcr.io/sohosai/sos24-server:stg
     restart: unless-stopped
     environment:
-      - HOST=sos24-server.playground.sohosai.com
+      - HOST=0.0.0.0
       - PORT=${PORT}
       - POSTGRES_DB_URL=${POSTGRES_DB_URL}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
@@ -14,7 +14,7 @@ services:
       - PROJECT_APPLICATION_END_AT=${PROJECT_APPLICATION_END_AT}
       - REQUIRE_EMAIL_VERIFICATION=${REQUIRE_EMAIL_VERIFICATION}
       - MONGO_DB_URL=${MONGO_DB_URL}
-      - MONGO_DB_NAME=${MONGO_DB}
+      - MONGO_DB=${MONGO_DB}
       - S3_ENDPOINT=${S3_ENDPOINT}
       - S3_REGION=${S3_REGION}
       - S3_BUCKET=${S3_BUCKET}
