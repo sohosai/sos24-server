@@ -7,37 +7,38 @@ on: # 検証用。マージ時に修正する。
   workflow_dispatch:
 
 jobs:
-  push-image:
-    runs-on: [self-hosted, portainer]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Docker meta
-        id: docker_meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/sohosai/sos24-server
-          tags: stg
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+  # push-image:
+  #   if: github.event.pull_request.merged == true
+  #   runs-on: [self-hosted, portainer]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Docker meta
+  #       id: docker_meta
+  #       uses: docker/metadata-action@v5
+  #       with:
+  #         images: ghcr.io/sohosai/sos24-server
+  #         tags: stg
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+  #     - name: Login to GitHub Container Registry
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ github.token }}
+  #     - name: Build and push
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: Dockerfile
+  #         push: true
+  #         tags: ${{ steps.docker_meta.outputs.tags }}
+  #         cache-from: type=gha
+  #         cache-to: type=gha,mode=max
 
   deploy:
     runs-on: [self-hosted, portainer]
-    needs: push-image
+    # needs: push-image
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to Portainer
@@ -50,7 +51,7 @@ jobs:
 
           # PORTAINER_VARIABLE to json
           mapfile -t env_array <<< "${{ secrets.PORTAINER_VARIABLE }}"
-          env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"name\": \"$key\", \"value\": \"$value\"},"; fi; done)
+          env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; value=${value//$'\n'/\\n}; value=${value//\"/\\\"}; echo "{\"name\": \"$key\", \"value\": \"$value\"},"; fi; done)
           env_data="${env_data%,}"
 
           # Create or update stack
