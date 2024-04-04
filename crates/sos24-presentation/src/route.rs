@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
+use axum::http::{header, Method};
 use axum::{
     extract::DefaultBodyLimit,
-    Router,
     routing::{delete, get, post, put},
+    Router,
 };
-use axum::http::{header, Method};
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
 use tracing::Level;
