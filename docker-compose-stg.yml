@@ -38,6 +38,8 @@ services:
       traefik.http.routers.sos24-server.rule: Host(`sos24-server.playground.sohosai.com`)
       traefik.http.routers.sos24-server.entrypoints: websecure
       traefik.http.routers.sos24-server.tls.certresolver: leresolver
+    networks:
+      - portainer-traefik
 
   postgres:
     image: postgres:14.1
@@ -54,3 +56,7 @@ services:
 volumes:
   postgres-data:
   mongodb-data:
+
+networks:
+  portainer-traefik:
+     external: true
