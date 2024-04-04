@@ -50,7 +50,7 @@ jobs:
           # Create or update stack
           if [ -n "${STACK_ID}" ]; then
             echo "Updating stack"
-            UPDATE_DATA="{\"prune\": ${PRUNE}, \"pullImage\": ${PULL_IMAGE}, \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr '\n' '\\n')\"}"
+            UPDATE_DATA="{\"prune\": ${PRUNE}, \"pullImage\": ${PULL_IMAGE}, \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/')\"}"
             curl -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" -d "${UPDATE_DATA}"
           else
             echo "Creating stack"
