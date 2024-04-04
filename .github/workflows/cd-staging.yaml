@@ -61,7 +61,7 @@ jobs:
           STACK_NAME: "sos24-server-stg"
           STACK_TYPE: 2
           ENDPOINT_ID: 2
-          COMPOSE_FILE: "docker-compose-stg.yaml"
+          COMPOSE_FILE: "docker-compose-stg.yml"
           PRUNE: "true"
           PULL_IMAGE: "true"
           VERIFY_SSL: "true"
