@@ -5,27 +5,16 @@ services:
     image: ghcr.io/sohosai/sos24-server:stg
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_HOSTNAME=${POSTGRES_HOSTNAME}
-      - POSTGRES_PORT=${POSTGRES_PORT}
+      - HOST=sos24-server.playground.sohosai.com
+      - PORT=${PORT}
       - POSTGRES_DB_URL=${POSTGRES_DB_URL}
-
-      # For sqlx::test
-      - DATABASE_URL=${POSTGRES_DB_URL}
-
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-
-      - MONGO_DB=${MONGO_DB}
-      - MONGO_DB_URL=${MONGO_DB_URL}
-
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - FIREBASE_SERVICE_ACCOUNT_KEY=${FIREBASE_SERVICE_ACCOUNT_KEY}
       - PROJECT_APPLICATION_START_AT=${PROJECT_APPLICATION_START_AT}
       - PROJECT_APPLICATION_END_AT=${PROJECT_APPLICATION_END_AT}
       - REQUIRE_EMAIL_VERIFICATION=${REQUIRE_EMAIL_VERIFICATION}
+      - MONGO_DB_URL=${MONGO_DB_URL}
+      - MONGO_DB_NAME=${MONGO_DB}
       - S3_ENDPOINT=${S3_ENDPOINT}
       - S3_REGION=${S3_REGION}
       - S3_BUCKET=${S3_BUCKET}
@@ -34,24 +23,35 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: "portainer-traefik"
-      traefik.http.services.sos24-server.loadbalancer.server.port: 3000
+      traefik.http.services.sos24-server.loadbalancer.server.port: ${PORT}
       traefik.http.routers.sos24-server.rule: Host(`sos24-server.playground.sohosai.com`)
       traefik.http.routers.sos24-server.entrypoints: websecure
       traefik.http.routers.sos24-server.tls.certresolver: leresolver
     networks:
       - portainer-traefik
+      - sos24-server-stg
 
   postgres:
     image: postgres:14.1
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - sos24-server-stg
 
   mongo:
     image: mongo
     restart: always
     volumes:
       - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - sos24-server-stg
 
 volumes:
   postgres-data:
@@ -60,3 +60,5 @@ volumes:
 networks:
   portainer-traefik:
      external: true
+  sos24-server-stg:
+     external: false
