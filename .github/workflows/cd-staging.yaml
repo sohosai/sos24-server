@@ -51,7 +51,6 @@ jobs:
           mapfile -t env_array <<< "${{ secrets.PORTAINER_VARIABLE }}"
           env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"$key\": \"$value\"},"; fi; done)
           env_data="${env_data%,}"
-          env_data="${env_data//$'\n'/}"
 
           # Create or update stack
           if [ -n "${STACK_ID}" ]; then
