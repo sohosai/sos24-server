@@ -52,6 +52,8 @@ jobs:
           env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"$key\": \"$value\"},"; fi; done)
           env_data="${env_data%,}"
 
+          echo $env_data
+
           # Create or update stack
           if [ -n "${STACK_ID}" ]; then
             UPDATE_DATA="{\"prune\": \"${PRUNE}\", \"Env\": \"[${env_data}]\", \"pullImage\": \"${PULL_IMAGE}\", \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')\"}"
