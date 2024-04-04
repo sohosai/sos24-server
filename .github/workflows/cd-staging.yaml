@@ -48,8 +48,8 @@ jobs:
           STACK_ID=$(echo "${STACKS}" | jq -r --arg STACK_NAME "${STACK_NAME}" '.[] | select(.Name == $STACK_NAME) | .Id')
 
           # PORTAINER_VARIABLE to json
-          mapfile -t env_array <<< "$(eval "echo ${{ secrets.PORTAINER_VARIABLE }}")"
-          env_data=$(for item in "${env_array[@]}"; do echo "{$item},"; done)
+          mapfile -t env_array <<< "${{ secrets.PORTAINER_VARIABLE }}"
+          env_data=$(for item in "${env_array[@]}"; do key=${item%%=*}; value=${item#*=}; echo "{\"$key\": \"$value\"},"; done)
           env_data="${env_data%,}"
 
           # Create or update stack
