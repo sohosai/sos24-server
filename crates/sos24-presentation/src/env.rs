@@ -1,5 +1,8 @@
 use std::env;
 
+use base64::Engine;
+use base64::prelude::BASE64_STANDARD;
+
 pub fn host() -> String {
     env::var("HOST").unwrap_or({
         tracing::debug!(
@@ -23,8 +26,10 @@ pub fn postgres_db_url() -> String {
 }
 
 pub fn firebase_service_account_key() -> String {
-    env::var("FIREBASE_SERVICE_ACCOUNT_KEY")
-        .expect("Env `FIREBASE_SERVICE_ACCOUNT_KEY` must be set")
+    let encoded_key = env::var("FIREBASE_SERVICE_ACCOUNT_KEY")
+        .expect("Env `FIREBASE_SERVICE_ACCOUNT_KEY` must be set");
+    let decoded_key = BASE64_STANDARD.decode(encoded_key.as_bytes()).expect("Failed to decode base64 encoded key");
+    String::from_utf8(decoded_key).expect("Invalid UTF-8 encoded key")
 }
 
 pub fn firebase_project_id() -> String {
