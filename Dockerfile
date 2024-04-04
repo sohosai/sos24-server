@@ -15,5 +15,5 @@ ARG APP_NAME
 LABEL maintainer="sohosai"
 WORKDIR /app
 COPY --from=builder /app/target/release/${APP_NAME} /usr/local/bin
-RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/usr/local/bin/sos24-presentation"]
