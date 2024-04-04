@@ -39,7 +39,7 @@ jobs:
     runs-on: [self-hosted, portainer]
     steps:
       - name: Deploy to Portainer
-      - run: |
+        run: |
           # List stacks
           STACKS=$(curl -s -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}")
 
