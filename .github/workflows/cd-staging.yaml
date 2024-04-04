@@ -38,6 +38,7 @@ jobs:
   deploy:
     runs-on: [self-hosted, portainer]
     steps:
+      - uses: actions/checkout@v4
       - name: Deploy to Portainer
         run: |
           # List stacks
