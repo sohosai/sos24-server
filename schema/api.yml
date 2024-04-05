@@ -1,4 +1,4 @@
-openapi: "3.0.2"
+openapi: "3.1.0"
 info:
   title: Sohosai Online System
   version: "1.0"
@@ -11,7 +11,7 @@ tags:
     description: ユーザー関連の操作
   - name: news
     description: ニュース関連の操作
-  - name: files 
+  - name: files
     description: ファイル関連の操作
   - name: forms
     description: 申請関連の操作
