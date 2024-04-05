@@ -24,47 +24,47 @@ tags:
 
 paths:
   /projects:
-    $ref: "./schema/project.yml#/paths/~1projects"
+    $ref: "./project.yml#/paths/~1projects"
   /projects/export:
-    $ref: "./schema/project.yml#/paths/~1projects~1export"
+    $ref: "./project.yml#/paths/~1projects~1export"
   /projects/me:
-    $ref: "./schema/project.yml#/paths/~1projects~1me"
+    $ref: "./project.yml#/paths/~1projects~1me"
   /projects/{project_id}:
-    $ref: "./schema/project.yml#/paths/~1projects~1{project_id}"
+    $ref: "./project.yml#/paths/~1projects~1{project_id}"
 
   /users:
-    $ref: "./schema/user.yml#/paths/~1users"
+    $ref: "./user.yml#/paths/~1users"
   /users/export:
-    $ref: "./schema/user.yml#/paths/~1users~1export"
+    $ref: "./user.yml#/paths/~1users~1export"
   /users/me:
-    $ref: "./schema/user.yml#/paths/~1users~1me"
+    $ref: "./user.yml#/paths/~1users~1me"
   /users/{user_id}:
-    $ref: "./schema/user.yml#/paths/~1users~1{user_id}"
+    $ref: "./user.yml#/paths/~1users~1{user_id}"
 
   /news:
-    $ref: "./schema/news.yml#/paths/~1news"
+    $ref: "./news.yml#/paths/~1news"
   /news/{news_id}:
-    $ref: "./schema/news.yml#/paths/~1news~1{news_id}"
+    $ref: "./news.yml#/paths/~1news~1{news_id}"
 
   /files:
-    $ref: "./schema/file.yml#/paths/~1files"
+    $ref: "./file.yml#/paths/~1files"
   /files/{file_id}:
-    $ref: "./schema/file.yml#/paths/~1files~1{file_id}"
+    $ref: "./file.yml#/paths/~1files~1{file_id}"
 
   /invitations:
-    $ref: "./schema/invitation.yml#/paths/~1invitations"
+    $ref: "./invitation.yml#/paths/~1invitations"
   /invitations/{invitation_id}:
-    $ref: "./schema/invitation.yml#/paths/~1invitations~1{invitation_id}"
+    $ref: "./invitation.yml#/paths/~1invitations~1{invitation_id}"
 
   /forms:
-    $ref: "./schema/form.yml#/paths/~1forms"
+    $ref: "./form.yml#/paths/~1forms"
   /forms/{form_id}:
-    $ref: "./schema/form.yml#/paths/~1forms~1{form_id}"
+    $ref: "./form.yml#/paths/~1forms~1{form_id}"
 
   /form-answers:
-    $ref: "./schema/form-answer.yml#/paths/~1form-answers"
+    $ref: "./form-answer.yml#/paths/~1form-answers"
   /form-answers/{form_answer_id}:
-    $ref: "./schema/form-answer.yml#/paths/~1form-answers~1{form_answer_id}"
+    $ref: "./form-answer.yml#/paths/~1form-answers~1{form_answer_id}"
 
 security:
   - Bearer: [ ]
