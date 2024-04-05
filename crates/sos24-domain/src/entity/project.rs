@@ -3,6 +3,7 @@ use std::str::FromStr;
 use bitflags::bitflags;
 use getset::Getters;
 use thiserror::Error;
+use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{ensure, impl_value_object};
 
@@ -280,7 +281,7 @@ impl<const MAXLEN: usize> BoundedString<MAXLEN> {
 #[derive(Debug, Error)]
 pub enum BoundedStringError {
     #[error("Invalid character: `{0}`")]
-    InvalidCharacter(char),
+    InvalidCharacter(String),
     #[error("Empty string is not allowed")]
     Empty,
     #[error("Too long (max: {0})")]
@@ -293,21 +294,28 @@ impl<const MAXLEN: usize> TryFrom<String> for BoundedString<MAXLEN> {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let mut length = 0; // 文字列長を3倍してカウントする
 
-        for c in value.chars() {
-            if emojis::get(&c.to_string()).is_some() {
-                return Err(BoundedStringError::InvalidCharacter(c));
+        let is_small = |c: char| match c {
+            '\u{0021}'..='\u{007E}' // 半角英数字・記号
+            | '\u{FF10}'..='\u{FF19}' // 全角数字
+            | '\u{FF21}'..='\u{FF3A}' // 全角英語（大文字）
+            | '\u{FF41}'..='\u{FF5A}' // 全角英語（小文字）
+            => true,
+            _ => false,
+        };
+
+        for grapheme_cluster in value.graphemes(true) {
+            if emojis::get(grapheme_cluster).is_some() {
+                return Err(BoundedStringError::InvalidCharacter(
+                    grapheme_cluster.to_string(),
+                ));
             }
 
-            let char_length = match c {
-                '\u{0021}'..='\u{007E}' // 半角英数字・記号
-                | '\u{FF10}'..='\u{FF19}' // 全角数字
-                | '\u{FF21}'..='\u{FF3A}' // 全角英語（大文字）
-                | '\u{FF41}'..='\u{FF5A}' // 全角英語（小文字）
-                => 2,
-                _ => 3,
-            };
-
-            length += char_length;
+            let mut chars = grapheme_cluster.chars();
+            let is_small_char = chars
+                .next()
+                .map(|c| is_small(c) && chars.next().is_none())
+                .unwrap_or(false);
+            length += if is_small_char { 2 } else { 3 };
         }
 
         if length == 0 {
@@ -422,5 +430,6 @@ mod tests {
         assert!(ProjectTitle::try_from(format!("{kana18}AAAA")).is_err());
 
         assert!(ProjectTitle::try_from("🙂".to_string()).is_err());
+        assert!(ProjectTitle::try_from("企画名#️⃣appare".to_string()).is_err());
     }
 }
