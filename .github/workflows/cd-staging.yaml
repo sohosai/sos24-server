@@ -34,7 +34,8 @@ jobs:
             app-target
           key: cache-${{ hashFiles('Dockerfile') }}
       - name: inject cache into docker
-        uses: reproducible-containers/buildkit-cache-dance@v3.0.0
+        # v3.0.0のcommitを指定
+        uses: reproducible-containers/buildkit-cache-dance@0fc239dcc207d7ce9fd659f4f92fefb84549c182
         with:
           cache-map: |
             {
