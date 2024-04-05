@@ -1,17 +1,17 @@
 use std::sync::Arc;
 
-use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::{
     ensure,
     entity::{form::FormId, permission::Permissions},
     repository::{form::FormRepository, Repositories},
 };
+use sos24_domain::repository::form_answer::FormAnswerRepository;
 
-use crate::context::OwnedProject;
 use crate::{
     context::Context,
     dto::{form::FormDto, FromEntity},
 };
+use crate::context::OwnedProject;
 
 use super::{FormUseCase, FormUseCaseError};
 
@@ -69,6 +69,10 @@ mod tests {
             .form_repository_mut()
             .expect_find_by_id()
             .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+        repositories.project_repository_mut().expect_find_by_owner_id().returning(|_| {
+            Ok(Some(fixture::date::with(fixture::project::project1(fixture::user::id1()))))
+        });
+        repositories.form_answer_repository_mut().expect_find_by_project_id_and_form_id().returning(|_, _| Ok(None));
         let use_case = FormUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
