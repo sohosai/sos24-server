@@ -1,13 +1,15 @@
 name: CD(staging)
 
-on: # 検証用。マージ時に修正する。
-  workflow_dispatch:
-  push:
+on:
+  pull_request:
     branches:
-      - feature/#115-docker-enviroment
+      - main
+    types:
+      - closed
 
 jobs:
   push-image:
+    if: github.event.pull_request.merged == true
     runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
