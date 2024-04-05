@@ -8,7 +8,6 @@ on: # 検証用。マージ時に修正する。
 
 jobs:
   push-image:
-    #if: github.event.pull_request.merged == true
     runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +41,7 @@ jobs:
               "usr-local-cargo-registry": "/usr/local/cargo/registry",
               "app-target": "/app/target"
             }
-          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+            skip-extraction: ${{ not steps.cache.outputs.cache-hit }}
       - name: Build and push
         uses: docker/build-push-action@v5
         with:

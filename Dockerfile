@@ -10,7 +10,7 @@ COPY . /app
 RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,target=/app/target,sharing=locked \
     cargo build --release --bin ${APP_NAME} --verbose \
-    && mkdir -p /app/release && cp -R /app/target/release/* /app/release/
+    && mkdir -p /tmp/release && cp -R /app/target/release/* /tmp/release
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bullseye-slim AS release
@@ -18,6 +18,6 @@ ARG APP_NAME
 
 LABEL maintainer="sohosai"
 WORKDIR /app
-COPY --from=builder /app/release/${APP_NAME} /usr/local/bin
+COPY --from=builder /tmp/release/${APP_NAME} /usr/local/bin
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/usr/local/bin/sos24-presentation"]
