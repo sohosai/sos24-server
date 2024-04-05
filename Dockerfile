@@ -6,9 +6,11 @@ ARG APP_NAME
 WORKDIR /app
 COPY . /app
 
+# cacheされたディレクトリはイメージに焼き付けられないため、最終生成物はキャッシュ外にコピーする
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
-    cargo build --release --bin ${APP_NAME} --verbose
+    cargo build --release --bin ${APP_NAME} --verbose \
+    && mkdir -p /app/release && cp -R /app/target/release/* /app/release/
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bullseye-slim AS release
@@ -16,6 +18,6 @@ ARG APP_NAME
 
 LABEL maintainer="sohosai"
 WORKDIR /app
-COPY --from=builder /app/target/release/${APP_NAME} /usr/local/bin
+COPY --from=builder /app/release/${APP_NAME} /usr/local/bin
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/usr/local/bin/sos24-presentation"]
