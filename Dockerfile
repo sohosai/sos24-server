@@ -1,3 +1,4 @@
+# syntax=docker.io/docker/dockerfile:1
 ARG APP_NAME=sos24-presentation
 
 FROM rust:1-bullseye AS builder
