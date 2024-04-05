@@ -20,12 +20,28 @@ paths:
                   $ref: "#/schemas/FormSummary"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     post:
       summary: 申請の作成
       tags:
@@ -46,14 +62,34 @@ paths:
                 $ref: "#/schemas/CreatedForm"
         400:
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         422:
           description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
   /forms/{form_id}:
     get:
@@ -74,10 +110,22 @@ paths:
                 $ref: "#/schemas/Form"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     put:
       summary: 特定のIDの申請を更新
       tags:
@@ -99,16 +147,40 @@ paths:
           description: OK
         400:
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         422:
           description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     delete:
       summary: 特定のIDの申請を削除
       tags:
@@ -124,12 +196,28 @@ paths:
           description: OK
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
   /projects/{project_id}/forms:
     get:
@@ -152,12 +240,28 @@ paths:
                   $ref: "#/schemas/Form"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
 schemas:
   FormItemType:

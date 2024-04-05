@@ -16,10 +16,22 @@ paths:
                   $ref: "#/schemas/FileInfo"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     post:
       summary: ファイルの作成
       tags:
@@ -46,14 +58,34 @@ paths:
                 $ref: "#/schemas/CreatedFile"
         400:
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         422:
           description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
   /files/{file_id}:
     get:
@@ -75,10 +107,22 @@ paths:
                 $ref: "#/schemas/File"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     delete:
       summary: 特定のIDのファイルの削除
       tags:
@@ -95,10 +139,22 @@ paths:
           description: OK
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
 schemas:
   CreateFile:
