@@ -19,7 +19,7 @@ impl<R: Repositories> FormUseCase<R> {
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let raw_form_list = self.repositories.form_repository().list().await?;
-        let form_list = raw_form_list.into_iter().map(FormDto::from_entity);
+        let form_list = raw_form_list.into_iter().map(|raw_form| FormDto::from_entity((raw_form, None)));
         Ok(form_list.collect())
     }
 }
