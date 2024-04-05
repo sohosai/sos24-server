@@ -2977,6 +2977,7 @@ dependencies = [
  "percent-encoding",
  "regex",
  "thiserror",
+ "unicode-segmentation",
  "url",
  "uuid",
 ]
