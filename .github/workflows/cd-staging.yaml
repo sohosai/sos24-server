@@ -41,7 +41,7 @@ jobs:
               "usr-local-cargo-registry": "/usr/local/cargo/registry",
               "app-target": "/app/target"
             }
-            skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
