@@ -6,7 +6,9 @@ ARG APP_NAME
 WORKDIR /app
 COPY . /app
 
-RUN cargo build --release --bin ${APP_NAME} --verbose
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo build --release --bin ${APP_NAME} --verbose
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bullseye-slim AS release
