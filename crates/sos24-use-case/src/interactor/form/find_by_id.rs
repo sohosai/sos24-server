@@ -1,17 +1,17 @@
 use std::sync::Arc;
 
+use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::{
     ensure,
     entity::{form::FormId, permission::Permissions},
     repository::{form::FormRepository, Repositories},
 };
-use sos24_domain::repository::form_answer::FormAnswerRepository;
 
+use crate::context::OwnedProject;
 use crate::{
     context::Context,
     dto::{form::FormDto, FromEntity},
 };
-use crate::context::OwnedProject;
 
 use super::{FormUseCase, FormUseCaseError};
 
@@ -19,7 +19,7 @@ impl<R: Repositories> FormUseCase<R> {
     pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<FormDto, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
-        
+
         let form_id = FormId::try_from(id)?;
         let raw_form = self
             .repositories
@@ -28,17 +28,18 @@ impl<R: Repositories> FormUseCase<R> {
             .await?
             .ok_or(FormUseCaseError::NotFound(form_id.clone()))?;
 
-
-        let project = ctx.project(Arc::clone(&self.repositories)).await?.map(|project| match project {
-            OwnedProject::Owner(project) => project,
-            OwnedProject::SubOwner(project) => project,
-        });
+        let project =
+            ctx.project(Arc::clone(&self.repositories))
+                .await?
+                .map(|project| match project {
+                    OwnedProject::Owner(project) => project,
+                    OwnedProject::SubOwner(project) => project,
+                });
         let project_id = project.map(|it| it.value.id().clone());
 
         let raw_form_answer = match project_id {
             Some(project_id) => {
-                self
-                    .repositories
+                self.repositories
                     .form_answer_repository()
                     .find_by_project_id_and_form_id(project_id, form_id)
                     .await?
