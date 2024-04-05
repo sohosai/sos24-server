@@ -67,6 +67,7 @@ pub enum ProjectCategoryRow {
     FoodsWithKitchen,
     FoodsWithoutKitchen,
     FoodsWithoutCooking,
+    #[sqlx(rename = "stage_1a")]
     Stage1A,
     StageUniversityHall,
     StageUnited,
