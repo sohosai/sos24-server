@@ -1,4 +1,3 @@
-# syntax=docker.io/docker/dockerfile:1
 ARG APP_NAME=sos24-presentation
 
 FROM rust:1-bullseye AS builder
@@ -8,8 +7,8 @@ WORKDIR /app
 COPY . /app
 
 # cacheされたディレクトリはイメージに焼き付けられないため、最終生成物はキャッシュ外にコピーする
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/app/target \
+RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
+    --mount=type=cache,target=/app/target,sharing=locked \
     cargo build --release --bin ${APP_NAME} --verbose \
     && mkdir -p /app/release && cp -R /app/target/release/* /app/release/
 

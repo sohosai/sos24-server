@@ -12,6 +12,23 @@ jobs:
     runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
+      - name: Cache
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: |
+            usr-local-cargo-registry
+            app-target
+          key: cache-${{ hashFiles('Dockerfile') }}
+      - name: inject cache into docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.0.0
+        with:
+          cache-map: |
+            {
+              "usr-local-cargo-registry": "/usr/local/cargo/registry",
+              "app-target": "/app/target"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v5
@@ -33,7 +50,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
-          cache-from: type=gha,mode=max
+          cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy:
