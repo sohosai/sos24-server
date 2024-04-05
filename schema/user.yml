@@ -16,10 +16,22 @@ paths:
                   $ref: "#/schemas/UserSummary"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     post:
       summary: ユーザーの作成
       tags:
@@ -39,10 +51,22 @@ paths:
                 $ref: "#/schemas/CreatedUser"
         400:
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         422:
           description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
   /users/export:
     get:
@@ -58,8 +82,16 @@ paths:
                 type: string
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
   /users/{user_id}:
     get:
@@ -81,12 +113,28 @@ paths:
                 $ref: "#/schemas/User"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     put:
       summary: 特定のIDのユーザーの更新
       tags:
@@ -109,16 +157,40 @@ paths:
           description: OK
         400:
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         422:
           description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
     delete:
       summary: 特定のIDのユーザーの削除
       tags:
@@ -133,14 +205,34 @@ paths:
       responses:
         200:
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         403:
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         404:
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
   /users/me:
     get:
@@ -156,8 +248,16 @@ paths:
                 $ref: "#/schemas/User"
         401:
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
         500:
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
 
 components:
   UserRole:
