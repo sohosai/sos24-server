@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
+use axum::http::{header, Method};
 use axum::{
     extract::DefaultBodyLimit,
     routing::{delete, get, post, put},
     Router,
 };
-use tower::ServiceBuilder;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
 use tracing::Level;
 
@@ -96,11 +97,16 @@ pub fn create_app(modules: Modules) -> Router {
         .nest("/", private_routes)
         .with_state(Arc::clone(&modules))
         .layer(
-            ServiceBuilder::new().layer(
-                TraceLayer::new_for_http()
-                    .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
-                    .on_request(DefaultOnRequest::new().level(Level::INFO))
-                    .on_response(DefaultOnResponse::new().level(Level::INFO)),
-            ),
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_request(DefaultOnRequest::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        )
+        .layer(
+            CorsLayer::new()
+                .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
+                .expose_headers([header::CONTENT_DISPOSITION])
+                .allow_methods([Method::GET, Method::PUT, Method::POST, Method::DELETE])
+                .allow_origin(Any),
         )
 }
