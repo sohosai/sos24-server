@@ -68,10 +68,11 @@ impl NewsRepository for PgNewsRepository {
     async fn create(&self, news: News) -> Result<(), NewsRepositoryError> {
         let news = news.destruct();
         sqlx::query!(
-            r#"INSERT INTO news (id, title, body, categories, attributes) VALUES ($1, $2, $3, $4, $5)"#,
+            r#"INSERT INTO news (id, title, body, attachments, categories, attributes) VALUES ($1, $2, $3, $4, $5, $6)"#,
             news.id.value(),
             news.title.value(),
             news.body.value(),
+            &news.attachments.into_iter().map(|id| id.value()).collect::<Vec<_>>(),
             news.categories.bits() as i32,
             news.attributes.bits() as i32,
         )
@@ -96,10 +97,11 @@ impl NewsRepository for PgNewsRepository {
     async fn update(&self, news: News) -> Result<(), NewsRepositoryError> {
         let news = news.destruct();
         sqlx::query!(
-            r#"UPDATE news SET title = $2, body = $3, categories = $4, attributes = $5 WHERE id = $1 and deleted_at IS NULL"#,
+            r#"UPDATE news SET title = $2, body = $3, attachments = $4, categories = $5, attributes = $6 WHERE id = $1 and deleted_at IS NULL"#,
             news.id.value(),
             news.title.value(),
             news.body.value(),
+            &news.attachments.into_iter().map(|id| id.value()).collect::<Vec<_>>(),
             news.categories.bits() as i32,
             news.attributes.bits() as i32,
         )
