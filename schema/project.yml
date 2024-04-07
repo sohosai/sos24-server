@@ -301,12 +301,23 @@ schemas:
         type: array
         items:
           $ref: "#/components/ProjectAttribute"
+      owner_id:
+        type: string
+        format: uuid
+      owner_name:
+        type: string
+      owner_email:
+        type: string
+        format: email
     required:
       - id
       - index
       - title
       - category
       - attribute
+      - owner_id
+      - owner_name
+      - owner_email
   Project:
     type: object
     properties:
