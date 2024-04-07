@@ -308,6 +308,7 @@ schemas:
         type: string
       owner_email:
         type: string
+        format: email
     required:
       - id
       - index
