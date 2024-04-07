@@ -302,6 +302,12 @@ schemas:
         type: string
       role:
         $ref: "#/components/UserRole"
+      owned_project_id:
+        type: string
+        nullable: true
+      owned_project_name:
+        type: string
+        nullable: true
       created_at:
         type: string
         format: date-time

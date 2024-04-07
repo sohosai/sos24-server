@@ -4,7 +4,7 @@ use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
-use crate::context::Context;
+use crate::context::{Context, OwnedProject};
 use crate::dto::user::UserDto;
 use crate::dto::FromEntity;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
@@ -21,8 +21,14 @@ impl<R: Repositories> UserUseCase<R> {
             .await?
             .ok_or(UserUseCaseError::NotFound(id.clone()))?;
 
+        let raw_project = match ctx.project(Arc::clone(&self.repositories)).await? {
+            Some(OwnedProject::Owner(project)) => Some(project),
+            Some(OwnedProject::SubOwner(project)) => Some(project),
+            None => None,
+        };
+
         if raw_user.value.is_visible_to(&actor) {
-            Ok(UserDto::from_entity(raw_user))
+            Ok(UserDto::from_entity((raw_user, raw_project)))
         } else {
             Err(UserUseCaseError::PermissionDeniedError(
                 PermissionDeniedError,
@@ -53,6 +59,14 @@ mod tests {
                     UserRole::General,
                 ))))
             });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
@@ -73,6 +87,14 @@ mod tests {
                     UserRole::General,
                 ))))
             });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
@@ -98,6 +120,14 @@ mod tests {
                     UserRole::General,
                 ))))
             });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
