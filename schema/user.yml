@@ -305,7 +305,7 @@ schemas:
       owned_project_id:
         type: string
         nullable: true
-      owned_project_name:
+      owned_project_title:
         type: string
         nullable: true
       created_at:
