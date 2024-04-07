@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 use sos24_use_case::dto::user::{CreateUserDto, UpdateUserDto, UserDto, UserRoleDto};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,6 +63,8 @@ pub struct User {
     pub email: String,
     pub phone_number: String,
     pub role: UserRole,
+    pub owned_project_id: Option<String>,
+    pub owned_project_title: Option<String>,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,
@@ -76,6 +79,8 @@ impl From<UserDto> for User {
             email: value.email,
             phone_number: value.phone_number,
             role: value.role.into(),
+            owned_project_id: value.owned_project_id,
+            owned_project_title: value.owned_project_title,
             created_at: value.created_at.to_rfc3339(),
             updated_at: value.updated_at.to_rfc3339(),
             deleted_at: value.deleted_at.map(|it| it.to_rfc3339()),

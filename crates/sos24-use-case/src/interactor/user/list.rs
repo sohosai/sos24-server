@@ -18,8 +18,10 @@ impl<R: Repositories> UserUseCase<R> {
         ensure!(actor.has_permission(Permissions::READ_USER_ALL));
 
         let raw_user_list = self.repositories.user_repository().list().await?;
-        let news_list = raw_user_list.into_iter().map(UserDto::from_entity);
-        Ok(news_list.collect())
+        let user_list = raw_user_list
+            .into_iter()
+            .map(|raw_user| UserDto::from_entity((raw_user, None)));
+        Ok(user_list.collect())
     }
 }
 
