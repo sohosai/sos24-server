@@ -23,6 +23,13 @@ tags:
     description: 実委人のみが利用可能
 
 paths:
+  /health:
+    get:
+      summary: サーバーの状態を確認する
+      responses:
+        200:
+          description: OK
+
   /projects:
     $ref: "./project.yml#/paths/~1projects"
   /projects/export:
