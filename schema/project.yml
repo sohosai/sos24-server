@@ -297,7 +297,7 @@ schemas:
         example: そぽたん焼き
       category:
         $ref: "#/components/ProjectCategory"
-      attribute:
+      attributes:
         type: array
         items:
           $ref: "#/components/ProjectAttribute"
@@ -314,7 +314,7 @@ schemas:
       - index
       - title
       - category
-      - attribute
+      - attributes
       - owner_id
       - owner_name
       - owner_email
