@@ -6,6 +6,7 @@ use sos24_domain::entity::common::email::EmailError;
 use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::firebase_user::FirebaseUserRepositoryError;
+use sos24_domain::repository::project::ProjectRepositoryError;
 use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::repository::Repositories;
 
@@ -22,6 +23,8 @@ pub enum UserUseCaseError {
     #[error("User not found: {0:?}")]
     NotFound(UserId),
 
+    #[error(transparent)]
+    ProjectRepositoryError(#[from] ProjectRepositoryError),
     #[error(transparent)]
     ContextError(#[from] ContextError),
     #[error(transparent)]

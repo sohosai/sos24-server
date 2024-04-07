@@ -1,10 +1,13 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::common::date::WithDate;
 use sos24_domain::entity::permission::PermissionDeniedError;
+use sos24_domain::entity::project::Project;
 use sos24_domain::entity::user::UserId;
+use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
-use crate::context::{Context, OwnedProject};
+use crate::context::Context;
 use crate::dto::user::UserDto;
 use crate::dto::FromEntity;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
@@ -13,21 +16,16 @@ impl<R: Repositories> UserUseCase<R> {
     pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<UserDto, UserUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
 
-        let id = UserId::new(id);
+        let user_id = UserId::new(id);
         let raw_user = self
             .repositories
             .user_repository()
-            .find_by_id(id.clone())
+            .find_by_id(user_id.clone())
             .await?
-            .ok_or(UserUseCaseError::NotFound(id.clone()))?;
-
-        let raw_project = match ctx.project(Arc::clone(&self.repositories)).await? {
-            Some(OwnedProject::Owner(project)) => Some(project),
-            Some(OwnedProject::SubOwner(project)) => Some(project),
-            None => None,
-        };
+            .ok_or(UserUseCaseError::NotFound(user_id.clone()))?;
 
         if raw_user.value.is_visible_to(&actor) {
+            let raw_project = find_owned_project(user_id.clone(), &*self.repositories).await?;
             Ok(UserDto::from_entity((raw_user, raw_project)))
         } else {
             Err(UserUseCaseError::PermissionDeniedError(
@@ -35,6 +33,29 @@ impl<R: Repositories> UserUseCase<R> {
             ))
         }
     }
+}
+
+async fn find_owned_project(
+    user_id: UserId,
+    repositories: &impl Repositories,
+) -> Result<Option<WithDate<Project>>, UserUseCaseError> {
+    if let Some(project) = repositories
+        .project_repository()
+        .find_by_owner_id(user_id.clone())
+        .await?
+    {
+        return Ok(Some(project));
+    }
+
+    if let Some(project) = repositories
+        .project_repository()
+        .find_by_sub_owner_id(user_id.clone())
+        .await?
+    {
+        return Ok(Some(project));
+    }
+
+    Ok(None)
 }
 
 #[cfg(test)]

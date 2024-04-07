@@ -295,6 +295,7 @@ impl From<UserUseCaseError> for AppError {
             UserUseCaseError::EmailError(e) => e.into(),
             UserUseCaseError::PermissionDeniedError(e) => e.into(),
             UserUseCaseError::InternalError(e) => e.into(),
+            UserUseCaseError::ProjectRepositoryError(e) => e.into(),
         }
     }
 }
