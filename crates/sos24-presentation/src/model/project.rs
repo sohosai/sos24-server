@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::project::ProjectAttributeDto;
 use sos24_use_case::dto::{
     project::{CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto},
     user::UserDto,
 };
+use sos24_use_case::dto::project::ProjectAttributeDto;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateProject {
@@ -195,6 +195,9 @@ pub struct ProjectSummary {
     title: String,
     category: ProjectCategory,
     attributes: Vec<ProjectAttribute>,
+    owner_id: String,
+    owner_name: String,
+    owner_email: String,
 }
 
 impl From<ProjectDto> for ProjectSummary {
@@ -209,6 +212,9 @@ impl From<ProjectDto> for ProjectSummary {
                 .into_iter()
                 .map(ProjectAttribute::from)
                 .collect(),
+            owner_id: project.owner_id,
+            owner_name: project.owner_name,
+            owner_email: project.owner_email,
         }
     }
 }
