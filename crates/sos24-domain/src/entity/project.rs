@@ -482,10 +482,16 @@ mod tests {
 
     #[test]
     fn match_project_attributes() {
-        let attributes = ProjectAttributes::ACADEMIC | ProjectAttributes::INSIDE;
-        assert!(attributes.matches(ProjectAttributes::ACADEMIC));
-        assert!(attributes.matches(ProjectAttributes::INSIDE));
-        assert!(!attributes.matches(ProjectAttributes::OUTSIDE));
+        let filter_attributes = ProjectAttributes::ACADEMIC | ProjectAttributes::INSIDE;
+        for attributes in ProjectAttributes::all().iter() {
+            if attributes.contains(ProjectAttributes::ACADEMIC)
+                || attributes.contains(ProjectAttributes::INSIDE)
+            {
+                assert!(filter_attributes.matches(attributes));
+            } else {
+                assert!(!filter_attributes.matches(attributes));
+            }
+        }
     }
 
     #[test]
