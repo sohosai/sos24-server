@@ -1,0 +1,36 @@
+paths:
+  /project-application-period:
+    get:
+      summary: 現在時刻が企画応募期間内かどうかを取得する
+      tags:
+        - projects
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/ProjectApplicationPeriod"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
+
+schemas:
+  ProjectApplicationPeriod:
+    type: object
+    properties:
+      in_project_application_period:
+        type: boolean
+    required:
+      - in_project_application_period

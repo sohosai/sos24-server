@@ -73,6 +73,9 @@ paths:
   /form-answers/{form_answer_id}:
     $ref: "./form-answer.yml#/paths/~1form-answers~1{form_answer_id}"
 
+  /project-application-period:
+    $ref: "./project-application-period.yml#/paths/~1project-application-period"
+
 security:
   - Bearer: [ ]
 

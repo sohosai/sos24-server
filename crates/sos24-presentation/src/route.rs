@@ -19,6 +19,7 @@ pub mod health;
 pub mod invitation;
 pub mod news;
 pub mod project;
+pub mod project_application_period;
 pub mod user;
 
 pub fn create_app(modules: Modules) -> Router {
@@ -75,6 +76,9 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/:form_answer_id", get(form_answer::handle_get_id))
         .route("/:form_answer_id", put(form_answer::handle_put_id));
 
+    let project_application_period =
+        Router::new().route("/", get(project_application_period::handle_get));
+
     let private_routes = Router::new()
         .nest("/news", news)
         .nest("/files", file)
@@ -83,6 +87,7 @@ pub fn create_app(modules: Modules) -> Router {
         .nest("/invitations", invitation)
         .nest("/forms", form)
         .nest("/form-answers", form_answers)
+        .nest("/project-application-period", project_application_period)
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),
             auth::jwt_auth,
