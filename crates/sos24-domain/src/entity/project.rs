@@ -365,7 +365,7 @@ impl TryFrom<String> for ProjectGroupName {
 
 impl_value_object!(ProjectKanaGroupName(String));
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProjectCategory {
     General,
     FoodsWithKitchen,
@@ -376,7 +376,7 @@ pub enum ProjectCategory {
     StageUnited,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ProjectAttributes(u32);
 
 bitflags! {
@@ -389,9 +389,15 @@ bitflags! {
     }
 }
 
+impl ProjectAttributes {
+    pub fn matches(self, attributes: ProjectAttributes) -> bool {
+        attributes.intersects(self)
+    }
+}
+
 impl_value_object!(ProjectRemarks(String));
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ProjectCategories(u32);
 
 bitflags! {
@@ -406,9 +412,33 @@ bitflags! {
     }
 }
 
+impl ProjectCategories {
+    pub fn matches(self, category: ProjectCategory) -> bool {
+        match category {
+            ProjectCategory::General => ProjectCategories::GENERAL.intersects(self),
+            ProjectCategory::FoodsWithKitchen => {
+                ProjectCategories::FOODS_WITH_KITCHEN.intersects(self)
+            }
+            ProjectCategory::FoodsWithoutKitchen => {
+                ProjectCategories::FOODS_WITHOUT_KITCHEN.intersects(self)
+            }
+            ProjectCategory::FoodsWithoutCooking => {
+                ProjectCategories::FOODS_WITHOUT_COOKING.intersects(self)
+            }
+            ProjectCategory::Stage1A => ProjectCategories::STAGE_1A.intersects(self),
+            ProjectCategory::StageUniversityHall => {
+                ProjectCategories::STAGE_UNIVERSITY_HALL.intersects(self)
+            }
+            ProjectCategory::StageUnited => ProjectCategories::STAGE_UNITED.intersects(self),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::entity::project::ProjectTitle;
+    use crate::entity::project::{
+        ProjectAttributes, ProjectCategories, ProjectCategory, ProjectTitle,
+    };
 
     #[test]
     fn valid_project_title() {
@@ -431,5 +461,39 @@ mod tests {
 
         assert!(ProjectTitle::try_from("🙂".to_string()).is_err());
         assert!(ProjectTitle::try_from("企画名#️⃣appare".to_string()).is_err());
+    }
+
+    #[test]
+    fn match_project_category() {
+        let categories = ProjectCategories::GENERAL | ProjectCategories::STAGE_1A;
+        assert!(categories.matches(ProjectCategory::General));
+        assert!(categories.matches(ProjectCategory::Stage1A));
+        assert!(!categories.matches(ProjectCategory::FoodsWithKitchen));
+    }
+
+    #[test]
+    fn not_match_project_category() {
+        let categories = ProjectCategories::empty();
+        assert!(!categories.matches(ProjectCategory::General));
+
+        let categories = ProjectCategories::GENERAL | ProjectCategories::STAGE_1A;
+        assert!(!categories.matches(ProjectCategory::FoodsWithKitchen));
+    }
+
+    #[test]
+    fn match_project_attributes() {
+        let attributes = ProjectAttributes::ACADEMIC | ProjectAttributes::INSIDE;
+        assert!(attributes.matches(ProjectAttributes::ACADEMIC));
+        assert!(attributes.matches(ProjectAttributes::INSIDE));
+        assert!(!attributes.matches(ProjectAttributes::OUTSIDE));
+    }
+
+    #[test]
+    fn not_match_project_attributes() {
+        let attributes = ProjectAttributes::empty();
+        assert!(!attributes.matches(ProjectAttributes::ACADEMIC));
+
+        let attributes = ProjectAttributes::ACADEMIC | ProjectAttributes::INSIDE;
+        assert!(!attributes.matches(ProjectAttributes::OUTSIDE));
     }
 }

@@ -4,7 +4,7 @@ use getset::Getters;
 use thiserror::Error;
 
 use crate::entity::file_data::FileId;
-use crate::entity::project::{ProjectAttributes, ProjectCategories};
+use crate::entity::project::{Project, ProjectAttributes, ProjectCategories};
 use crate::{ensure, impl_value_object};
 
 use super::actor::Actor;
@@ -203,6 +203,12 @@ impl Form {
         ensure!(self.is_updatable_by(actor));
         self.attachments = attachments;
         Ok(())
+    }
+
+    // この申請が引数に与えられた企画を対象にしたものであるかを返す
+    pub fn is_sent_to(&self, project: &Project) -> bool {
+        self.categories.matches(*project.category())
+            && self.attributes.matches(*project.attributes())
     }
 }
 
