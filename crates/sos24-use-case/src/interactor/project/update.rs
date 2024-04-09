@@ -34,7 +34,9 @@ impl<R: Repositories> ProjectUseCase<R> {
         ensure!(project.value.is_updatable_by(&actor));
 
         if !actor.has_permission(Permissions::UPDATE_PROJECT_ALL)
-            && !self.project_application_period.can_create_project(&actor, ctx.requested_at())
+            && !self
+                .project_application_period
+                .can_create_project(&actor, ctx.requested_at())
         {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
@@ -71,8 +73,8 @@ mod tests {
     use sos24_domain::test::repository::MockRepositories;
 
     use crate::context::Context;
-    use crate::dto::FromEntity;
     use crate::dto::project::{ProjectCategoryDto, UpdateProjectDto};
+    use crate::dto::FromEntity;
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
@@ -90,7 +92,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -126,7 +131,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -144,9 +152,11 @@ mod tests {
                 ),
             )
             .await;
-        assert!(matches!(res, Err(ProjectUseCaseError::ApplicationsNotAccepted)));
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::ApplicationsNotAccepted)
+        ));
     }
-
 
     #[tokio::test]
     async fn 実委人は他人の企画を更新できない() {
@@ -163,7 +173,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -204,7 +217,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
@@ -240,7 +256,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case

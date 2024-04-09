@@ -19,7 +19,10 @@ impl<R: Repositories> ProjectUseCase<R> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
 
-        if !self.project_application_period.can_create_project(&actor, ctx.requested_at()) {
+        if !self
+            .project_application_period
+            .can_create_project(&actor, ctx.requested_at())
+        {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
 
@@ -51,8 +54,8 @@ mod tests {
     use sos24_domain::test::repository::MockRepositories;
 
     use crate::context::Context;
-    use crate::dto::FromEntity;
     use crate::dto::project::{CreateProjectDto, ProjectCategoryDto};
+    use crate::dto::FromEntity;
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
@@ -70,7 +73,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -109,7 +115,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -147,7 +156,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -164,7 +176,10 @@ mod tests {
                 ),
             )
             .await;
-        assert!(matches!(res, Err(ProjectUseCaseError::ApplicationsNotAccepted)));
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::ApplicationsNotAccepted)
+        ));
     }
 
     #[tokio::test]
@@ -182,7 +197,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case

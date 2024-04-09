@@ -19,7 +19,11 @@ impl ProjectApplicationPeriod {
         }
     }
 
-    pub fn can_create_project(&self, actor: &Actor, datetime: &chrono::DateTime<chrono::Utc>) -> bool {
+    pub fn can_create_project(
+        &self,
+        actor: &Actor,
+        datetime: &chrono::DateTime<chrono::Utc>,
+    ) -> bool {
         if actor.has_permission(Permissions::CREATE_PROJECT_ANYTIME) {
             return true;
         }
