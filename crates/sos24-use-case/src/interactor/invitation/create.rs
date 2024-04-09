@@ -28,7 +28,7 @@ impl<R: Repositories> InvitationUseCase<R> {
         let invitation = raw_invitation.into_entity()?;
 
         ensure!(
-            self.project_application_period.contains(ctx.requested_at())
+            self.project_application_period.can_create_project(&actor, ctx.requested_at())
                 || actor.has_permission(Permissions::CREATE_INVITATION_ANYTIME)
         );
 
