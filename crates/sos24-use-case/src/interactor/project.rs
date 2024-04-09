@@ -2,8 +2,6 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
-use sos24_domain::entity::user::UserId;
-use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::{
     entity::{
         permission::PermissionDeniedError,
@@ -12,6 +10,8 @@ use sos24_domain::{
     },
     repository::{project::ProjectRepositoryError, Repositories},
 };
+use sos24_domain::entity::user::UserId;
+use sos24_domain::repository::user::UserRepositoryError;
 
 use crate::context::ContextError;
 
@@ -60,21 +60,5 @@ impl<R: Repositories> ProjectUseCase<R> {
             repositories,
             project_application_period,
         }
-    }
-
-    // for test purpose only
-    #[cfg(test)]
-    pub(crate) fn new_for_test(repositories: R) -> Self {
-        let application_period = ProjectApplicationPeriod::new(
-            chrono::Utc::now()
-                .checked_sub_days(chrono::Days::new(1))
-                .unwrap()
-                .to_rfc3339(),
-            chrono::Utc::now()
-                .checked_add_days(chrono::Days::new(1))
-                .unwrap()
-                .to_rfc3339(),
-        );
-        ProjectUseCase::new(Arc::new(repositories), application_period)
     }
 }

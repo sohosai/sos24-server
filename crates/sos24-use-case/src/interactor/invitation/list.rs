@@ -1,16 +1,16 @@
 use std::sync::Arc;
 
-use sos24_domain::repository::project::ProjectRepository;
-use sos24_domain::repository::user::UserRepository;
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
     repository::{invitation::InvitationRepository, Repositories},
 };
+use sos24_domain::repository::project::ProjectRepository;
+use sos24_domain::repository::user::UserRepository;
 
 use crate::{
     context::Context,
-    dto::{invitation::InvitationDto, FromEntity},
+    dto::{FromEntity, invitation::InvitationDto},
 };
 
 use super::{InvitationUseCase, InvitationUseCaseError};
@@ -53,6 +53,8 @@ impl<R: Repositories> InvitationUseCase<R> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use sos24_domain::{
         entity::{permission::PermissionDeniedError, user::UserRole},
         test::{fixture, repository::MockRepositories},
@@ -66,7 +68,7 @@ mod tests {
     #[tokio::test]
     async fn 一般ユーザーは招待一覧を取得できない() {
         let repositories = MockRepositories::default();
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
@@ -85,7 +87,7 @@ mod tests {
             .invitation_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;

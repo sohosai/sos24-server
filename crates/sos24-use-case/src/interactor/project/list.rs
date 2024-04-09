@@ -3,12 +3,12 @@ use std::sync::Arc;
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::project::ProjectRepository;
-use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
+use sos24_domain::repository::user::UserRepository;
 
 use crate::context::Context;
-use crate::dto::project::ProjectDto;
 use crate::dto::FromEntity;
+use crate::dto::project::ProjectDto;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
 impl<R: Repositories> ProjectUseCase<R> {
@@ -52,6 +52,8 @@ impl<R: Repositories> ProjectUseCase<R> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use sos24_domain::entity::permission::PermissionDeniedError;
     use sos24_domain::entity::user::UserRole;
     use sos24_domain::test::fixture;
@@ -63,7 +65,7 @@ mod tests {
     #[tokio::test]
     async fn 一般ユーザーは企画一覧を取得できない() {
         let repositories = MockRepositories::default();
-        let use_case = ProjectUseCase::new_for_test(repositories);
+        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
@@ -82,7 +84,7 @@ mod tests {
             .project_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = ProjectUseCase::new_for_test(repositories);
+        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
