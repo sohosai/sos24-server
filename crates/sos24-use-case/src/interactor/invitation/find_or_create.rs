@@ -17,7 +17,7 @@ use crate::{
 use super::{InvitationUseCase, InvitationUseCaseError};
 
 impl<R: Repositories> InvitationUseCase<R> {
-    pub async fn create(
+    pub async fn find_or_create(
         &self,
         ctx: &Context,
         raw_invitation: CreateInvitationDto,
@@ -25,7 +25,7 @@ impl<R: Repositories> InvitationUseCase<R> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_INVITATION));
 
-        let invitation = raw_invitation.into_entity()?;
+        let new_invitation = raw_invitation.into_entity()?;
 
         ensure!(
             self.project_application_period
@@ -35,27 +35,43 @@ impl<R: Repositories> InvitationUseCase<R> {
 
         self.repositories
             .user_repository()
-            .find_by_id(invitation.inviter().clone())
+            .find_by_id(new_invitation.inviter().clone())
             .await?
             .ok_or(InvitationUseCaseError::InviterNotFound(
-                invitation.inviter().clone(),
+                new_invitation.inviter().clone(),
             ))?;
 
         let project = self
             .repositories
             .project_repository()
-            .find_by_id(invitation.project_id().clone())
+            .find_by_id(new_invitation.project_id().clone())
             .await?
             .ok_or(InvitationUseCaseError::ProjectNotFound(
-                invitation.project_id().clone(),
+                new_invitation.project_id().clone(),
             ))?;
 
         ensure!(project.value.is_visible_to(&actor));
 
-        let invitation_id = invitation.id().clone();
+        let invitation_list = self
+            .repositories
+            .invitation_repository()
+            .find_by_inviter(new_invitation.inviter().clone())
+            .await?;
+        for invitation in invitation_list {
+            let invitation = invitation.value;
+            if !invitation.is_used()
+                && invitation.project_id() == new_invitation.project_id()
+                && invitation.position() == new_invitation.position()
+            {
+                let invitation_id = invitation.id().clone();
+                return Ok(invitation_id.value().to_string());
+            }
+        }
+
+        let invitation_id = new_invitation.id().clone();
         self.repositories
             .invitation_repository()
-            .create(invitation)
+            .create(new_invitation)
             .await?;
 
         Ok(invitation_id.value().to_string())
@@ -98,13 +114,17 @@ mod tests {
             });
         repositories
             .invitation_repository_mut()
+            .expect_find_by_inviter()
+            .returning(|_| Ok(vec![]));
+        repositories
+            .invitation_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
         let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
-            .create(
+            .find_or_create(
                 &ctx,
                 CreateInvitationDto {
                     inviter: fixture::user::id1().value().to_string(),
@@ -162,7 +182,7 @@ mod tests {
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
-            .create(
+            .find_or_create(
                 &ctx,
                 CreateInvitationDto {
                     inviter: fixture::user::id1().value().to_string(),

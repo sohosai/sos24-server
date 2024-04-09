@@ -1,6 +1,7 @@
 use mockall::automock;
 use thiserror::Error;
 
+use crate::entity::user::UserId;
 use crate::entity::{
     common::date::WithDate,
     invitation::{Invitation, InvitationId},
@@ -21,6 +22,12 @@ pub trait InvitationRepository: Send + Sync + 'static {
         &self,
         id: InvitationId,
     ) -> Result<Option<WithDate<Invitation>>, InvitationRepositoryError>;
+
+    async fn find_by_inviter(
+        &self,
+        inviter: UserId,
+    ) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError>;
+
     async fn update(&self, invitation: Invitation) -> Result<(), InvitationRepositoryError>;
     async fn delete_by_id(&self, id: InvitationId) -> Result<(), InvitationRepositoryError>;
 }

@@ -42,7 +42,10 @@ pub async fn handle_post(
 ) -> Result<impl IntoResponse, AppError> {
     let user_id = ctx.user_id().clone().value();
     let invitation = (raw_invitation, user_id).to_create_invitation_dto();
-    let res = modules.invitation_use_case().create(&ctx, invitation).await;
+    let res = modules
+        .invitation_use_case()
+        .find_or_create(&ctx, invitation)
+        .await;
     res.map(|id| (StatusCode::CREATED, Json(CreatedInvitation { id })))
         .map_err(|err| {
             tracing::error!("Failed to create invitation: {err:?}");
