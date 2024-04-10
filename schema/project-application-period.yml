@@ -1,7 +1,7 @@
 paths:
   /project-application-period:
     get:
-      summary: 現在時刻が企画応募期間内かどうかを取得する
+      summary: 企画募集期間を取得する
       tags:
         - projects
       responses:
@@ -10,9 +10,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/schemas/ProjectApplicationPeriod"
+                $ref: "#/schemas/ProjectApplicationPeriod"
         401:
           description: Unauthorized
           content:
@@ -32,10 +30,10 @@ schemas:
     properties:
       start_at:
         type: string
-        format: datetime
+        format: date-time
       end_at:
         type: string
-        format: datetime
+        format: date-time
     required:
       - start_at
       - end_at
