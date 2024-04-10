@@ -4,8 +4,8 @@ use sos24_domain::{
     ensure,
     entity::permission::Permissions,
     repository::{
-        invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
-        Repositories,
+        invitation::InvitationRepository, project::ProjectRepository, Repositories,
+        user::UserRepository,
     },
 };
 
@@ -28,7 +28,8 @@ impl<R: Repositories> InvitationUseCase<R> {
         let invitation = raw_invitation.into_entity()?;
 
         ensure!(
-            self.project_application_period.contains(ctx.requested_at())
+            self.project_application_period
+                .can_create_project(&actor, ctx.requested_at())
                 || actor.has_permission(Permissions::CREATE_INVITATION_ANYTIME)
         );
 
@@ -63,6 +64,8 @@ impl<R: Repositories> InvitationUseCase<R> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use sos24_domain::{
         entity::{permission::PermissionDeniedError, user::UserRole},
         test::{fixture, repository::MockRepositories},
@@ -75,7 +78,7 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn 一般ユーザーは自分の企画への招待を作成できる() {
+    async fn 一般ユーザーは企画募集期間内に自分の企画への招待を作成できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -97,7 +100,7 @@ mod tests {
             .invitation_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -111,6 +114,25 @@ mod tests {
             )
             .await;
         assert!(res.is_ok());
+    }
+
+    #[tokio::test]
+    async fn 一般ユーザーは企画募集期間外に自分の企画への招待を作成できない() {
+        let repositories = MockRepositories::default();
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateInvitationDto {
+                    inviter: fixture::user::id1().value().to_string(),
+                    project_id: fixture::project::id1().value().to_string(),
+                    position: InvitationPositionDto::SubOwner,
+                },
+            )
+            .await;
+        assert!(matches!(res, Err(InvitationUseCaseError::PermissionDeniedError(PermissionDeniedError))));
     }
 
     #[tokio::test]
@@ -136,7 +158,7 @@ mod tests {
             .invitation_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -157,7 +179,81 @@ mod tests {
         ));
     }
 
-    // TODO: 実委人管理者は他人の企画への招待を作成できる
-    // TODO: 一般ユーザーは募集期間外に自分の企画への招待を作成できない
-    // TODO: 実委人管理者は募集期間外に自分の企画への招待を作成できる
+    #[tokio::test]
+    async fn 実委人管理者は他人の企画への招待を作成できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::CommitteeOperator,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .invitation_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateInvitationDto {
+                    inviter: fixture::user::id1().value().to_string(),
+                    project_id: fixture::project::id1().value().to_string(),
+                    position: InvitationPositionDto::SubOwner,
+                },
+            )
+            .await;
+        assert!(res.is_ok());
+    }
+
+    #[tokio::test]
+    async fn 実委人管理者は企画募集期間外に他人の企画への招待を作成できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user1(
+                    UserRole::CommitteeOperator,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id2(),
+                ))))
+            });
+        repositories
+            .invitation_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateInvitationDto {
+                    inviter: fixture::user::id1().value().to_string(),
+                    project_id: fixture::project::id1().value().to_string(),
+                    position: InvitationPositionDto::SubOwner,
+                },
+            )
+            .await;
+        assert!(res.is_ok());
+    }
 }

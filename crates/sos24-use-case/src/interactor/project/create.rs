@@ -19,7 +19,10 @@ impl<R: Repositories> ProjectUseCase<R> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
 
-        if !self.project_application_period.contains(ctx.requested_at()) {
+        if !self
+            .project_application_period
+            .can_create_project(&actor, ctx.requested_at())
+        {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
 
@@ -44,6 +47,8 @@ impl<R: Repositories> ProjectUseCase<R> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use sos24_domain::entity::user::UserRole;
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
@@ -68,7 +73,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new_for_test(repositories);
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -107,7 +115,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
-        let use_case = ProjectUseCase::new_for_test(repositories);
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -130,6 +141,84 @@ mod tests {
         ));
     }
 
-    // TODO: 一般ユーザーは応募期間外に企画を作成できない
+    #[tokio::test]
+    async fn 実委人は応募期間外に企画を作成できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateProjectDto::new(
+                    fixture::project::title1().value(),
+                    fixture::project::kana_title1().value(),
+                    fixture::project::group_name1().value(),
+                    fixture::project::kana_group_name1().value(),
+                    ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    Vec::from_entity(fixture::project::attributes1()),
+                    fixture::user::id1().value(),
+                ),
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(ProjectUseCaseError::ApplicationsNotAccepted)
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人管理者は応募期間外に企画を作成できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let res = use_case
+            .create(
+                &ctx,
+                CreateProjectDto::new(
+                    fixture::project::title1().value(),
+                    fixture::project::kana_title1().value(),
+                    fixture::project::group_name1().value(),
+                    fixture::project::kana_group_name1().value(),
+                    ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    Vec::from_entity(fixture::project::attributes1()),
+                    fixture::user::id1().value(),
+                ),
+            )
+            .await;
+        assert!(res.is_ok());
+    }
+
     // TODO: 副企画責任者の一般ユーザーは企画を作成できない
 }

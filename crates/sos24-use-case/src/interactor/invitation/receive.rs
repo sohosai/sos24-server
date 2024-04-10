@@ -58,6 +58,8 @@ impl<R: Repositories> InvitationUseCase<R> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use sos24_domain::{
         entity::{invitation::InvitationPosition, user::UserRole},
         test::{fixture, repository::MockRepositories},
@@ -102,7 +104,7 @@ mod tests {
             .invitation_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case

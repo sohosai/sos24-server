@@ -41,6 +41,8 @@ bitflags! {
       const CREATE_FILE_PUBLIC = 1 << 24;
       const READ_FILE_ALL = 1 << 25;
       const DELETE_FILE_ALL = 1 << 26;
+
+      const CREATE_PROJECT_ANYTIME = 1 << 27;
     }
 }
 
@@ -66,6 +68,7 @@ impl UserRole {
                     | Permissions::UPDATE_FORM_ANSWER_ALL
                     | Permissions::CREATE_FILE_PUBLIC
                     | Permissions::DELETE_FILE_ALL
+                    | Permissions::CREATE_PROJECT_ANYTIME
             }
             UserRole::Committee => {
                 UserRole::General.permissions()

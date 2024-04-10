@@ -1,14 +1,14 @@
 use sos24_domain::{
     entity::invitation::InvitationId,
     repository::{
-        invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
-        Repositories,
+        invitation::InvitationRepository, project::ProjectRepository, Repositories,
+        user::UserRepository,
     },
 };
 
 use crate::{
     context::Context,
-    dto::{invitation::InvitationDto, FromEntity},
+    dto::{FromEntity, invitation::InvitationDto},
 };
 
 use super::{InvitationUseCase, InvitationUseCaseError};
@@ -53,6 +53,8 @@ impl<R: Repositories> InvitationUseCase<R> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use sos24_domain::{
         entity::{invitation::InvitationPosition, user::UserRole},
         test::{fixture, repository::MockRepositories},
@@ -89,7 +91,7 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -127,7 +129,7 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -165,7 +167,7 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = InvitationUseCase::new_for_test(repositories);
+        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
