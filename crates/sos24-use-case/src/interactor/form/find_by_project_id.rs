@@ -5,7 +5,6 @@ use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::{
     ensure,
-    entity::permission::Permissions,
     repository::{form::FormRepository, Repositories},
 };
 
@@ -21,7 +20,6 @@ impl<R: Repositories> FormUseCase<R> {
         project_id: String,
     ) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-        ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let project_id = ProjectId::try_from(project_id)?;
         let project = self
@@ -33,10 +31,13 @@ impl<R: Repositories> FormUseCase<R> {
         ensure!(project.value.is_visible_to(&actor));
 
         let forms = self.repositories.form_repository().list().await?;
+        let filtered_forms = forms
+            .into_iter()
+            .filter(|form| form.value.is_sent_to(&project.value));
 
         // FIXME : N+1
         let mut form_list = vec![];
-        for form in forms {
+        for form in filtered_forms {
             let form_id = form.value.id().clone();
             let form_answer = self
                 .repositories
@@ -50,4 +51,87 @@ impl<R: Repositories> FormUseCase<R> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::sync::Arc;
+
+    use sos24_domain::entity::permission::PermissionDeniedError;
+    use sos24_domain::entity::user::UserRole;
+    use sos24_domain::test::fixture;
+    use sos24_domain::test::repository::MockRepositories;
+
+    use crate::context::Context;
+    use crate::interactor::form::{FormUseCase, FormUseCaseError};
+
+    #[tokio::test]
+    async fn 一般ユーザーは自分の企画を対象にした申請一覧を取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
+                ))))
+            });
+        repositories
+            .form_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let use_case = FormUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
+            .await;
+        assert!(res.is_ok());
+    }
+
+    #[tokio::test]
+    async fn 一般ユーザーは他人の企画を対象にした申請一覧を取得できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id2(),
+                ))))
+            });
+        let use_case = FormUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let res = use_case
+            .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
+            .await;
+        assert!(matches!(
+            res,
+            Err(FormUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人は他人の企画を対象にした申請一覧を取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .project_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::project::project1(
+                    fixture::user::id1(),
+                ))))
+            });
+        repositories
+            .form_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let use_case = FormUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case
+            .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
+            .await;
+        assert!(res.is_ok());
+    }
+}
