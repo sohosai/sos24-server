@@ -13,7 +13,7 @@ use sos24_domain::{
     },
     repository::{
         invitation::InvitationRepositoryError, project::ProjectRepositoryError,
-        Repositories, user::UserRepositoryError,
+        user::UserRepositoryError, Repositories,
     },
 };
 

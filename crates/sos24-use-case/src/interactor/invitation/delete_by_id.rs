@@ -53,7 +53,10 @@ mod tests {
     #[tokio::test]
     async fn 実委人は招待を削除できない() {
         let repositories = MockRepositories::default();
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor2(UserRole::Committee));
         let res = use_case
@@ -84,7 +87,10 @@ mod tests {
             .invitation_repository_mut()
             .expect_delete_by_id()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case

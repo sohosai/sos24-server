@@ -104,7 +104,10 @@ mod tests {
             .invitation_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case

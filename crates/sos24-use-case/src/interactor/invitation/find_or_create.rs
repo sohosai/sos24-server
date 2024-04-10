@@ -4,8 +4,8 @@ use sos24_domain::{
     ensure,
     entity::permission::Permissions,
     repository::{
-        invitation::InvitationRepository, project::ProjectRepository, Repositories,
-        user::UserRepository,
+        invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
+        Repositories,
     },
 };
 
@@ -120,7 +120,10 @@ mod tests {
             .invitation_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -139,11 +142,14 @@ mod tests {
     #[tokio::test]
     async fn 一般ユーザーは企画募集期間外に自分の企画への招待を作成できない() {
         let repositories = MockRepositories::default();
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
-            .create(
+            .find_or_create(
                 &ctx,
                 CreateInvitationDto {
                     inviter: fixture::user::id1().value().to_string(),
@@ -152,7 +158,12 @@ mod tests {
                 },
             )
             .await;
-        assert!(matches!(res, Err(InvitationUseCaseError::PermissionDeniedError(PermissionDeniedError))));
+        assert!(matches!(
+            res,
+            Err(InvitationUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
     }
 
     #[tokio::test]
@@ -178,7 +189,10 @@ mod tests {
             .invitation_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -220,13 +234,20 @@ mod tests {
             });
         repositories
             .invitation_repository_mut()
+            .expect_find_by_inviter()
+            .returning(|_| Ok(vec![]));
+        repositories
+            .invitation_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
-            .create(
+            .find_or_create(
                 &ctx,
                 CreateInvitationDto {
                     inviter: fixture::user::id1().value().to_string(),
@@ -259,13 +280,20 @@ mod tests {
             });
         repositories
             .invitation_repository_mut()
+            .expect_find_by_inviter()
+            .returning(|_| Ok(vec![]));
+        repositories
+            .invitation_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::not_applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::not_applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
-            .create(
+            .find_or_create(
                 &ctx,
                 CreateInvitationDto {
                     inviter: fixture::user::id1().value().to_string(),

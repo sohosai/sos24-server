@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
+use sos24_domain::entity::user::UserId;
+use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::{
     entity::{
         permission::PermissionDeniedError,
@@ -10,8 +12,6 @@ use sos24_domain::{
     },
     repository::{project::ProjectRepositoryError, Repositories},
 };
-use sos24_domain::entity::user::UserId;
-use sos24_domain::repository::user::UserRepositoryError;
 
 use crate::context::ContextError;
 
