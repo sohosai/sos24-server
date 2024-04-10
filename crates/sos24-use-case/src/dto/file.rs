@@ -26,6 +26,7 @@ pub struct FileDto {
     pub id: String,
     pub filename: String,
     pub url: String,
+    pub owner: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -34,6 +35,7 @@ pub struct FileDto {
 pub struct FileInfoDto {
     pub id: String,
     pub filename: String,
+    pub owner: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -46,6 +48,7 @@ impl FromEntity for FileInfoDto {
         Self {
             id: filedata.id.value().to_string(),
             filename: filedata.name.value(),
+            owner: filedata.owner.map(|it| it.value().to_string()),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
             deleted_at: entity.deleted_at,
@@ -73,6 +76,7 @@ impl FromEntity for FileDto {
             id: file_data.id.value().to_string(),
             filename: file_data.name.value().to_string(),
             url: url.value().to_string(),
+            owner: file_data.owner.map(|it| it.value().to_string()),
             created_at: entity.data.created_at,
             updated_at: entity.data.updated_at,
             deleted_at: entity.data.deleted_at,

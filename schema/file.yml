@@ -175,6 +175,10 @@ schemas:
         type: string
       url:
         type: string
+      owner:
+        type: string
+        format: uuid
+        nullable: true
       created_at:
         type: string
         format: date-time
@@ -199,6 +203,10 @@ schemas:
         format: uuid
       name:
         type: string
+      owner:
+        type: string
+        format: uuid
+        nullable: true
       created_at:
         type: string
         format: date-time
