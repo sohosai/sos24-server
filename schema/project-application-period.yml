@@ -30,7 +30,12 @@ schemas:
   ProjectApplicationPeriod:
     type: object
     properties:
-      in_project_application_period:
-        type: boolean
+      start_at:
+        type: string
+        format: datetime
+      end_at:
+        type: string
+        format: datetime
     required:
-      - in_project_application_period
+      - start_at
+      - end_at
