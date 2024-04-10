@@ -2,12 +2,13 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
+use sos24_domain::entity::project::BoundedStringError;
 use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::{
     entity::{
         permission::PermissionDeniedError,
-        project::{BoundedStringError, ProjectId, ProjectIdError},
+        project::{ProjectId, ProjectIdError},
         project_application_period::ProjectApplicationPeriod,
     },
     repository::{project::ProjectRepositoryError, Repositories},
@@ -37,7 +38,9 @@ pub enum ProjectUseCaseError {
     #[error(transparent)]
     UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
-    BoundedStringError(#[from] BoundedStringError),
+    ProjectTitleError(BoundedStringError),
+    #[error(transparent)]
+    ProjectGroupNameError(BoundedStringError),
     #[error(transparent)]
     ContextError(#[from] ContextError),
     #[error(transparent)]
