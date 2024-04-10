@@ -8,5 +8,5 @@ pub mod form_answer;
 pub mod invitation;
 pub mod news;
 pub mod project;
-pub mod user;
 pub mod project_application_period;
+pub mod user;

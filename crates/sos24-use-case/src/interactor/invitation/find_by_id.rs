@@ -1,14 +1,14 @@
 use sos24_domain::{
     entity::invitation::InvitationId,
     repository::{
-        invitation::InvitationRepository, project::ProjectRepository, Repositories,
-        user::UserRepository,
+        invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
+        Repositories,
     },
 };
 
 use crate::{
     context::Context,
-    dto::{FromEntity, invitation::InvitationDto},
+    dto::{invitation::InvitationDto, FromEntity},
 };
 
 use super::{InvitationUseCase, InvitationUseCaseError};
@@ -91,7 +91,10 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -129,7 +132,10 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -167,7 +173,10 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = InvitationUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = InvitationUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case

@@ -1,5 +1,7 @@
 use anyhow::Context;
 use futures_util::{StreamExt, TryStreamExt};
+use sqlx::prelude::{FromRow, Type};
+
 use sos24_domain::{
     entity::{
         common::date::WithDate,
@@ -9,7 +11,6 @@ use sos24_domain::{
     },
     repository::invitation::{InvitationRepository, InvitationRepositoryError},
 };
-use sqlx::prelude::{FromRow, Type};
 
 use super::Postgresql;
 
@@ -83,11 +84,11 @@ impl InvitationRepository for PgInvitationRepository {
             InvitationRow,
             r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE deleted_at IS NULL"#
         )
-        .fetch(&*self.db)
-        .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
-        .try_collect()
-        .await
-        .context("Failed to fetch invitations list")?;
+            .fetch(&*self.db)
+            .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
+            .try_collect()
+            .await
+            .context("Failed to fetch invitations list")?;
         Ok(invitations_list)
     }
 
@@ -100,9 +101,9 @@ impl InvitationRepository for PgInvitationRepository {
             invitation.project_id.value(),
             InvitationPositionRow::from(invitation.position) as InvitationPositionRow,
         )
-        .execute(&*self.db)
-        .await
-        .context("Failed to create invitation")?;
+            .execute(&*self.db)
+            .await
+            .context("Failed to create invitation")?;
         Ok(())
     }
 
@@ -115,10 +116,27 @@ impl InvitationRepository for PgInvitationRepository {
             r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
-        .fetch_optional(&*self.db)
-        .await
-        .context("Failed to fetch invitation")?;
+            .fetch_optional(&*self.db)
+            .await
+            .context("Failed to fetch invitation")?;
         Ok(invitation_row.map(WithDate::from))
+    }
+
+    async fn find_by_inviter(
+        &self,
+        inviter: UserId,
+    ) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError> {
+        let invitation_list = sqlx::query_as!(
+            InvitationRow,
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE inviter = $1 AND deleted_at IS NULL"#,
+            inviter.value(),
+        )
+            .fetch(&*self.db)
+            .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
+            .try_collect()
+            .await
+            .context("Failed to fetch invitation")?;
+        Ok(invitation_list)
     }
 
     async fn update(&self, invitation: Invitation) -> Result<(), InvitationRepositoryError> {
@@ -131,9 +149,9 @@ impl InvitationRepository for PgInvitationRepository {
             InvitationPositionRow::from(invitation.position) as InvitationPositionRow,
             invitation.used_by.map(|id| id.value()),
         )
-        .execute(&*self.db)
-        .await
-        .context("Failed to update invitation")?;
+            .execute(&*self.db)
+            .await
+            .context("Failed to update invitation")?;
         Ok(())
     }
 

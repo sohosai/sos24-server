@@ -52,7 +52,10 @@ mod tests {
                     fixture::user::id1(),
                 ))))
             });
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
@@ -81,7 +84,10 @@ mod tests {
             .project_repository_mut()
             .expect_delete_by_id()
             .returning(|_| Ok(()));
-        let use_case = ProjectUseCase::new(Arc::new(repositories), fixture::project_application_period::applicable_period());
+        let use_case = ProjectUseCase::new(
+            Arc::new(repositories),
+            fixture::project_application_period::applicable_period(),
+        );
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case

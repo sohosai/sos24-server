@@ -13,15 +13,15 @@ use sos24_domain::{
     },
     repository::{
         invitation::InvitationRepositoryError, project::ProjectRepositoryError,
-        Repositories, user::UserRepositoryError,
+        user::UserRepositoryError, Repositories,
     },
 };
 
 use crate::context::ContextError;
 
-pub mod create;
 pub mod delete_by_id;
 pub mod find_by_id;
+pub mod find_or_create;
 pub mod list;
 pub mod receive;
 

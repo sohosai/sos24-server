@@ -86,6 +86,10 @@ impl Invitation {
         self.used_by.replace(user);
         Ok(())
     }
+
+    pub fn is_used(&self) -> bool {
+        self.used_by.is_some()
+    }
 }
 
 impl_value_object!(InvitationId(uuid::Uuid));
