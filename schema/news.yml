@@ -1,6 +1,7 @@
 paths:
   /news:
     get:
+      operationId: getNews
       summary: ニュース一覧の取得
       tags:
         - news
@@ -27,6 +28,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postNews
       summary: ニュースの作成
       tags:
         - news
@@ -77,6 +79,7 @@ paths:
 
   /news/{news_id}:
     get:
+      operationId: getNewsById
       summary: 特定のIDのニュースの取得
       tags:
         - news
@@ -112,6 +115,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     put:
+      operationId: putNewsById
       summary: 特定のIDのニュースの更新
       tags:
         - news
@@ -168,6 +172,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     delete:
+      operationId: deleteNewsById
       summary: 特定のIDのニュースの削除
       tags:
         - news
@@ -264,7 +269,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
     required:
       - id
       - title

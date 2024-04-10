@@ -1,6 +1,7 @@
 paths:
   /projects:
     get:
+      operationId: getProjects
       summary: 企画一覧の取得
       tags:
         - projects
@@ -33,6 +34,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postProject
       summary: 企画の作成
       tags:
         - projects
@@ -70,6 +72,7 @@ paths:
 
   /projects/export:
     get:
+      operationId: getProjectsExport
       summary: 企画一覧のエクスポート
       tags:
         - committee
@@ -95,6 +98,7 @@ paths:
 
   /projects/{project_id}:
     get:
+      operationId: getProjectById
       summary: 特定のIDの企画の取得
       tags:
         - projects
@@ -136,6 +140,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     put:
+      operationId: putProjectById
       summary: 特定のIDの企画の更新
       tags:
         - projects
@@ -192,6 +197,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     delete:
+      operationId: deleteProjectById
       summary: 特定のIDの企画の削除
       tags:
         - projects
@@ -232,6 +238,7 @@ paths:
 
   /projects/me:
     get:
+      operationId: getMyProject
       summary: 自分が企画責任者・副企画責任者になっている企画の取得
       tags:
         - projects
@@ -355,16 +362,12 @@ schemas:
       sub_owner_id:
         type: string
         format: uuid
-        nullable: true
       sub_owner_name:
         type: string
-        nullable: true
       sub_owner_email:
         type: string
-        nullable: true
       remarks:
         type: string
-        nullable: true
       created_at:
         type: string
         format: date-time
@@ -374,7 +377,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
     required:
       - id
       - index
@@ -441,7 +443,6 @@ schemas:
           $ref: "#/components/ProjectAttribute"
       remarks:
         type: string
-        nullable: true
     required:
       - title
       - kana_title

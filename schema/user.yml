@@ -1,6 +1,7 @@
 paths:
   /users:
     get:
+      operationId: getUsers
       summary: ユーザー一覧の取得
       tags:
         - users
@@ -33,6 +34,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postUser
       summary: ユーザーの作成
       tags:
         - users
@@ -70,6 +72,7 @@ paths:
 
   /users/export:
     get:
+      operationId: getUsersExport
       summary: ユーザー一覧のエクスポート
       tags:
         - committee
@@ -95,6 +98,7 @@ paths:
 
   /users/{user_id}:
     get:
+      operationId: getUserById
       summary: 特定のIDのユーザーの取得
       tags:
         - users
@@ -136,6 +140,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     put:
+      operationId: putUserById
       summary: 特定のIDのユーザーの更新
       tags:
         - users
@@ -192,6 +197,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     delete:
+      operationId: deleteUserById
       summary: 特定のIDのユーザーの削除
       tags:
         - users
@@ -236,6 +242,7 @@ paths:
 
   /users/me:
     get:
+      operationId: getMyUser
       summary: 自分のユーザーの取得
       tags:
         - users
@@ -304,10 +311,8 @@ schemas:
         $ref: "#/components/UserRole"
       owned_project_id:
         type: string
-        nullable: true
       owned_project_title:
         type: string
-        nullable: true
       created_at:
         type: string
         format: date-time
@@ -317,7 +322,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
     required:
       - id
       - name
