@@ -176,11 +176,17 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
     async fn list(&self) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
         let form_answer_list = self
             .collection
-            .find(doc! { "deleted_at": None::<String> }, None)
+            .aggregate(
+                vec![
+                    doc! { "$match": { "deleted_at": None::<String> } },
+                    doc! { "$sort": { "created_at": 1 } },
+                ],
+                None,
+            )
             .await
             .context("Failed to list form answers")?;
         let form_answers = form_answer_list
-            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form answer list")?))
+            .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
         Ok(form_answers)
@@ -213,14 +219,14 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
     ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
         let form_answer_list = self
             .collection
-            .find(
-                doc! { "project_id": project_id.value(), "deleted_at": None::<String> },
-                None,
-            )
+            .aggregate(vec![
+                doc! { "$match": { "project_id": project_id.value(),  "deleted_at": None::<String> } },
+                doc! { "$sort": { "created_at": 1 } },
+            ], None)
             .await
             .context("Failed to find form answers")?;
         let form_answers = form_answer_list
-            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form answer")?))
+            .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
         Ok(form_answers)
@@ -232,14 +238,17 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
     ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
         let form_answer_list = self
             .collection
-            .find(
-                doc! { "form_id": form_id.value(), "deleted_at": None::<String> },
+            .aggregate(
+                vec![
+                    doc! { "$match": { "form_id": form_id.value(), "deleted_at": None::<String> } },
+                    doc! { "$sort": { "created_at": 1 } },
+                ],
                 None,
             )
             .await
             .context("Failed to find form answers")?;
         let form_answers = form_answer_list
-            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form answer")?))
+            .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
         Ok(form_answers)
