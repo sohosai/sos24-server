@@ -10,6 +10,8 @@ async fn main() {
 
     tracing_subscriber::fmt::init();
 
+    tracing::info!("Initializing server");
+
     let config = Config {
         firebase_project_id: env::firebase_project_id(),
         require_email_verification: env::require_email_verification(),
@@ -21,6 +23,8 @@ async fn main() {
     };
     let modules = module::new(config).await.unwrap();
     let app = create_app(modules);
+
+    tracing::info!("Server initialized");
 
     let addr = format!("{}:{}", env::host(), env::port());
     let listener = TcpListener::bind(&addr).await.unwrap();
