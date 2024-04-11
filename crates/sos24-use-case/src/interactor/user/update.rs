@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use sos24_domain::entity::permission::PermissionDeniedError;
+use sos24_domain::ensure;
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
@@ -24,13 +24,7 @@ impl<R: Repositories> UserUseCase<R> {
             .find_by_id(id.clone())
             .await?
             .ok_or(UserUseCaseError::NotFound(id.clone()))?;
-
-        if !user.value.is_visible_to(&actor) {
-            return Err(UserUseCaseError::NotFound(id));
-        }
-        if !user.value.is_updatable_by(&actor) {
-            return Err(PermissionDeniedError.into());
-        }
+        ensure!(user.value.is_updatable_by(&actor));
 
         let mut new_user = user.value;
 
