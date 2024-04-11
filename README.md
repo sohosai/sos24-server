@@ -1,5 +1,7 @@
 # sos24-server
-[![CD(staging)](https://github.com/sohosai/sos24-server/actions/workflows/cd-staging.yaml/badge.svg?branch=main&event=push)](https://github.com/sohosai/sos24-server/actions/workflows/cd-staging.yaml)
+[![CD(prodution)](https://github.com/sohosai/sos24-server/actions/workflows/cd.yaml/badge.svg?event=pull_request)](https://github.com/sohosai/sos24-server/actions/workflows/cd.yaml)
+[![CD(staging)](https://github.com/sohosai/sos24-server/actions/workflows/cd-staging.yaml/badge.svg?event=pull_request)](https://github.com/sohosai/sos24-server/actions/workflows/cd-staging.yaml)
+
 
 > [!NOTE]
 > クエリを変更した場合はCIを通すために `cargo sqlx prepare --workspace` を実行してください。
