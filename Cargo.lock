@@ -2996,6 +2996,7 @@ dependencies = [
  "serde_json",
  "sos24-domain",
  "sqlx",
+ "tracing",
  "url",
  "uuid",
 ]
