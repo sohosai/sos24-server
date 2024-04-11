@@ -270,12 +270,46 @@ impl From<ProjectUseCaseError> for AppError {
                 "project/user-not-found".to_string(),
                 message,
             ),
+            // TODO: BoundedStringに関してコードが重複しているのを修正する
+            ProjectUseCaseError::ProjectTitleError(e) => match e {
+                BoundedStringError::InvalidCharacter(_) => AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "project-title/invalid-character".to_string(),
+                    message,
+                ),
+                BoundedStringError::Empty => AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "project-title/empty".to_string(),
+                    message,
+                ),
+                BoundedStringError::TooLong(_) => AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "project-title/too-long".to_string(),
+                    message,
+                ),
+            },
+            ProjectUseCaseError::ProjectGroupNameError(e) => match e {
+                BoundedStringError::InvalidCharacter(_) => AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "project-group-name/invalid-character".to_string(),
+                    message,
+                ),
+                BoundedStringError::Empty => AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "project-group-name/empty".to_string(),
+                    message,
+                ),
+                BoundedStringError::TooLong(_) => AppError::new(
+                    StatusCode::BAD_REQUEST,
+                    "project-group-name/too-long".to_string(),
+                    message,
+                ),
+            },
             ProjectUseCaseError::ContextError(e) => e.into(),
             ProjectUseCaseError::ProjectRepositoryError(e) => e.into(),
             ProjectUseCaseError::ProjectIdError(e) => e.into(),
             ProjectUseCaseError::PermissionDeniedError(e) => e.into(),
             ProjectUseCaseError::InternalError(e) => e.into(),
-            ProjectUseCaseError::BoundedStringError(e) => e.into(),
             ProjectUseCaseError::UserRepositoryError(e) => e.into(),
         }
     }
