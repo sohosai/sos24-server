@@ -17,6 +17,8 @@ impl S3 {
         access_key_id: &str,
         secret_access_key: &str,
     ) -> Self {
+        tracing::info!("Initializing S3 client");
+
         let credential = Credentials::new(
             access_key_id,
             secret_access_key,
@@ -30,6 +32,8 @@ impl S3 {
             .credentials_provider(credential)
             .behavior_version_latest()
             .build();
+
+        tracing::info!("S3 client initialized");
         Self(Client::from_conf(config))
     }
 }
