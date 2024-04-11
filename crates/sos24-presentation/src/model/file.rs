@@ -7,6 +7,7 @@ pub struct File {
     pub id: String,
     pub url: String,
     pub name: String,
+    pub owner: Option<String>,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,
@@ -18,6 +19,7 @@ impl From<FileDto> for File {
             id: file.id,
             url: file.url,
             name: file.filename,
+            owner: file.owner,
             created_at: file.created_at.to_rfc3339(),
             updated_at: file.updated_at.to_rfc3339(),
             deleted_at: file.deleted_at.map(|it| it.to_rfc3339()),
@@ -41,6 +43,7 @@ pub enum Visibility {
 pub struct FileInfo {
     pub id: String,
     pub filename: String,
+    pub owner: Option<String>,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,
@@ -51,6 +54,7 @@ impl From<FileInfoDto> for FileInfo {
         FileInfo {
             id: file.id,
             filename: file.filename,
+            owner: file.owner,
             created_at: file.created_at.to_rfc3339(),
             updated_at: file.updated_at.to_rfc3339(),
             deleted_at: file.deleted_at.map(|it| it.to_rfc3339()),
