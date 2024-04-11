@@ -83,7 +83,7 @@ jobs:
           fi"
       - name: create .env
         run: |
-          echo ${{ secrets.PRD_VARIABLE }} > .env
+          echo "${{ secrets.PRD_VARIABLE }}" > .env
       - name: copy files
         run: |
           rsync -vrm .env docker-compose-db.yml docker-compose-prd.yml ubuntu@${{ secrets.DEPLOYSERVER_IP }}:/home/ubuntu/
