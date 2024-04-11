@@ -25,6 +25,7 @@ tags:
 paths:
   /health:
     get:
+      operationId: getHealth
       summary: サーバーの状態を確認する
       responses:
         200:

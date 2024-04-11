@@ -1,6 +1,7 @@
 paths:
   /files:
     get:
+      operationId: getFiles
       summary: ニュースの添付ファイル一覧の取得
       tags:
         - files
@@ -33,6 +34,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postFiles
       summary: ファイルの作成
       tags:
         - files
@@ -89,6 +91,7 @@ paths:
 
   /files/{file_id}:
     get:
+      operationId: getFileById
       summary: 特定のIDのファイルの取得
       tags:
         - files
@@ -124,6 +127,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     delete:
+      operationId: deleteFileById
       summary: 特定のIDのファイルの削除
       tags:
         - files
@@ -184,7 +188,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
     required:
       - id
       - name
@@ -208,7 +211,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
     required:
       - id
       - name
@@ -222,5 +224,5 @@ schemas:
         items:
           type: string
           format: uuid
-      required:
-        - ids
+    required:
+      - ids

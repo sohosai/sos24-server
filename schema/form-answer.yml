@@ -1,6 +1,7 @@
 paths:
   /form-answers:
     get:
+      operationId: getFormAnswers
       summary: 申請の回答一覧を取得
       tags:
         - form-answers
@@ -47,6 +48,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postFormAnswer
       summary: 申請の回答を作成
       tags:
         - form-answers
@@ -102,6 +104,7 @@ paths:
 
   /form-answers/{form_answer_id}:
     get:
+      operationId: getFormAnswerById
       summary: 申請の回答を取得
       tags:
         - form-answers
@@ -144,6 +147,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     put:
+      operationId: putFormAnswerById
       summary: 申請の回答を更新
       tags:
         - form-answers
@@ -197,7 +201,7 @@ paths:
             application/json:
               schema:
                 $ref: "./error.yml#/schemas/Error"
-                
+
 schemas:
   FormAnswerItem:
     type: object
@@ -265,7 +269,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
     required:
       - id
       - project_id

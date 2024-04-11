@@ -1,6 +1,7 @@
 paths:
   /invitations:
     get:
+      operationId: getInvitations
       summary: 招待一覧の取得
       tags:
         - invitations
@@ -33,6 +34,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postInvitation
       summary: 招待の作成
       tags:
         - invitations
@@ -83,6 +85,7 @@ paths:
 
   /invitations/{invitation_id}:
     get:
+      operationId: getInvitationById
       summary: 特定のIDの招待の取得
       tags:
         - invitations
@@ -125,6 +128,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postInvitationById
       summary: 特定のIDの招待の受諾
       tags:
         - invitations
@@ -162,6 +166,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     delete:
+      operationId: deleteInvitationById
       summary: 招待の削除
       tags:
         - invitations
@@ -223,7 +228,6 @@ schemas:
           - sub_owner
       used_by:
         type: string
-        nullable: true
       created_at:
         type: string
         format: date-time
@@ -233,7 +237,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
     required:
       - id
       - inviter

@@ -1,6 +1,7 @@
 paths:
   /forms:
     get:
+      operationId: getForms
       summary: 申請一覧の取得
       tags:
         - forms
@@ -43,6 +44,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     post:
+      operationId: postForm
       summary: 申請の作成
       tags:
         - forms
@@ -93,6 +95,7 @@ paths:
 
   /forms/{form_id}:
     get:
+      operationId: getFormById
       summary: 特定のIDの申請を取得
       tags:
         - forms
@@ -127,6 +130,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     put:
+      operationId: putFormById
       summary: 特定のIDの申請を更新
       tags:
         - forms
@@ -182,6 +186,7 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
     delete:
+      operationId: deleteFormById
       summary: 特定のIDの申請を削除
       tags:
         - forms
@@ -194,50 +199,6 @@ paths:
       responses:
         200:
           description: OK
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "./error.yml#/schemas/Error"
-        403:
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "./error.yml#/schemas/Error"
-        404:
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: "./error.yml#/schemas/Error"
-        500:
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: "./error.yml#/schemas/Error"
-
-  /projects/{project_id}/forms:
-    get:
-      summary: 特定のIDの企画に対する全ての申請を取得
-      tags:
-        - forms
-      parameters:
-        - name: project_id
-          in: path
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/schemas/Form"
         401:
           description: Unauthorized
           content:
@@ -288,40 +249,30 @@ schemas:
         $ref: "#/schemas/FormItemType"
       min:
         type: integer
-        nullable: true
       max:
         type: integer
-        nullable: true
       min_length:
         type: integer
-        nullable: true
       max_length:
         type: integer
-        nullable: true
       min_selection:
         type: integer
-        nullable: true
       max_selection:
         type: integer
-        nullable: true
       allow_newline:
         type: boolean
         example: false
-        nullable: true
       options:
         type: array
         items:
           type: string
-        nullable: true
       extensions:
         type: array
         items:
           type: string
-        nullable: true
       limit:
         type: integer
         example: 100
-        nullable: true
     required:
       - id
       - name
@@ -378,40 +329,30 @@ schemas:
         $ref: "#/schemas/FormItemType"
       min:
         type: integer
-        nullable: true
       max:
         type: integer
-        nullable: true
       min_length:
         type: integer
-        nullable: true
       max_length:
         type: integer
-        nullable: true
       min_selection:
         type: integer
-        nullable: true
       max_selection:
         type: integer
-        nullable: true
       allow_newline:
         type: boolean
         example: false
-        nullable: true
       options:
         type: array
         items:
           type: string
-        nullable: true
       extensions:
         type: array
         items:
           type: string
-        nullable: true
       limit:
         type: integer
         example: 100
-        nullable: true
     required:
       - name
       - description
@@ -451,11 +392,9 @@ schemas:
       answer_id:
         type: string
         format: uuid
-        nullable: true
       answered_at:
         type: string
         format: date-time
-        nullable: true
       updated_at:
         type: string
         format: date-time
@@ -511,11 +450,9 @@ schemas:
       answer_id:
         type: string
         format: uuid
-        nullable: true
       answered_at:
         type: string
         format: date-time
-        nullable: true
       created_at:
         type: string
         format: date-time
@@ -527,7 +464,6 @@ schemas:
       deleted_at:
         type: string
         format: date-time
-        nullable: true
         example: null
     required:
       - id

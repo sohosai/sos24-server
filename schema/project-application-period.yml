@@ -1,6 +1,7 @@
 paths:
   /project-application-period:
     get:
+      operationId: getProjectApplicationPeriod
       summary: 企画募集期間を取得する
       tags:
         - projects
