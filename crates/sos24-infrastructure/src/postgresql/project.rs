@@ -116,8 +116,10 @@ impl ProjectRepository for PgProjectRepository {
     async fn list(&self) -> Result<Vec<WithDate<Project>>, ProjectRepositoryError> {
         let project_list = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE deleted_at IS NULL"#
-        )
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            FROM projects
+            WHERE deleted_at IS NULL
+            ORDER BY index ASC"#)
             .fetch(&*self.db)
             .map(|row| WithDate::try_from(row?))
             .try_collect()
@@ -129,7 +131,8 @@ impl ProjectRepository for PgProjectRepository {
     async fn create(&self, project: Project) -> Result<(), ProjectRepositoryError> {
         let project = project.destruct();
         sqlx::query!(
-        r#"INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
+        r#"INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
         project.id.value(),
         project.title.value(),
         project.kana_title.value(),
@@ -152,7 +155,9 @@ impl ProjectRepository for PgProjectRepository {
     ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            FROM projects
+            WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
             .fetch_optional(&*self.db)
@@ -167,7 +172,9 @@ impl ProjectRepository for PgProjectRepository {
     ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE owner_id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            FROM projects
+            WHERE owner_id = $1 AND deleted_at IS NULL"#,
             owner_id.value()
         )
             .fetch_optional(&*self.db)
@@ -182,7 +189,9 @@ impl ProjectRepository for PgProjectRepository {
     ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            FROM projects
+            WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
             sub_owner_id.value()
         ).fetch_optional(&*self.db)
             .await
@@ -193,7 +202,9 @@ impl ProjectRepository for PgProjectRepository {
     async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {
         let project = project.destruct();
         sqlx::query!(
-            r#"UPDATE projects SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10 WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"UPDATE projects
+            SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10
+            WHERE id = $1 AND deleted_at IS NULL"#,
             project.id.value(),
             project.title.value(),
             project.kana_title.value(),
@@ -213,7 +224,9 @@ impl ProjectRepository for PgProjectRepository {
 
     async fn delete_by_id(&self, id: ProjectId) -> Result<(), ProjectRepositoryError> {
         sqlx::query!(
-            r#"UPDATE projects SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"UPDATE projects
+            SET deleted_at = NOW()
+            WHERE id = $1 AND deleted_at IS NULL"#,
             id.value()
         )
         .execute(&*self.db)

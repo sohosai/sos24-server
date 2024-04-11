@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+  "query": "INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks)\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
   "describe": {
     "columns": [],
     "parameters": {
@@ -33,5 +33,5 @@
     },
     "nullable": []
   },
-  "hash": "f3899b3d88f583e84949c63d9eac17abf19ecd331e3422aa34140f40800c896c"
+  "hash": "f44e0e65f144d2740435182bc4547c99d38b86a2e5211c7fa42a369a46d3f54e"
 }

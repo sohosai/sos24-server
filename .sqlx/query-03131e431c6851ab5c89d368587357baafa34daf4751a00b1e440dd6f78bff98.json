@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, index, title, kana_title, group_name, kana_group_name, category AS \"category: ProjectCategoryRow\", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at FROM projects WHERE sub_owner_id = $1 AND deleted_at IS NULL",
+  "query": "SELECT id, index, title, kana_title, group_name, kana_group_name, category AS \"category: ProjectCategoryRow\", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at\n            FROM projects\n            WHERE sub_owner_id = $1 AND deleted_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -111,5 +111,5 @@
       true
     ]
   },
-  "hash": "d56be71d1543e5e3ae7615dec2055c3bfb4c5ecda3aaf7396461ba33318e8ac4"
+  "hash": "03131e431c6851ab5c89d368587357baafa34daf4751a00b1e440dd6f78bff98"
 }

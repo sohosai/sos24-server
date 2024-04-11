@@ -56,12 +56,15 @@ impl PgNewsRepository {
 
 impl NewsRepository for PgNewsRepository {
     async fn list(&self) -> Result<Vec<WithDate<News>>, NewsRepositoryError> {
-        let news_list = sqlx::query_as!(NewsRow, r#"SELECT * FROM news WHERE deleted_at IS NULL"#)
-            .fetch(&*self.db)
-            .map(|row| WithDate::try_from(row?))
-            .try_collect()
-            .await
-            .context("Failed to fetch news list")?;
+        let news_list = sqlx::query_as!(
+            NewsRow,
+            r#"SELECT * FROM news WHERE deleted_at IS NULL ORDER BY created_at DESC"#
+        )
+        .fetch(&*self.db)
+        .map(|row| WithDate::try_from(row?))
+        .try_collect()
+        .await
+        .context("Failed to fetch news list")?;
         Ok(news_list)
     }
 

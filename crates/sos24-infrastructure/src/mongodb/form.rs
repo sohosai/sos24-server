@@ -249,11 +249,17 @@ impl FormRepository for MongoFormRepository {
     async fn list(&self) -> Result<Vec<WithDate<Form>>, FormRepositoryError> {
         let form_list = self
             .collection
-            .find(doc! { "deleted_at": None::<String> }, None)
+            .aggregate(
+                vec![
+                    doc! { "$match": { "deleted_at": None::<String> } },
+                    doc! { "$sort": { "ends_at": 1 } },
+                ],
+                None,
+            )
             .await
             .context("Failed to list forms")?;
         let forms = form_list
-            .map(|doc| WithDate::try_from(doc.context("Failed to fetch form list")?))
+            .map(|doc| WithDate::try_from(bson::from_document::<FormDoc>(doc?)?))
             .try_collect()
             .await?;
         Ok(forms)
