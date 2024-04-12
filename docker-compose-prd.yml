@@ -4,6 +4,8 @@ services:
   app:
     image: ghcr.io/sohosai/sos24-server:prd
     restart: unless-stopped
+    depends_on:
+      - sos24-traefik
     environment:
       - HOST=0.0.0.0
       - PORT=${PORT}
