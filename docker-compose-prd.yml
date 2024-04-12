@@ -4,6 +4,8 @@ services:
   app:
     image: ghcr.io/sohosai/sos24-server:prd
     restart: unless-stopped
+    depends_on:
+      - sos24-traefik
     environment:
       - HOST=0.0.0.0
       - PORT=${PORT}
@@ -22,7 +24,7 @@ services:
       - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
     labels:
       - traefik.enable=true
-      - traefik.docker.network=sos24-server-prd
+      - traefik.docker.network=sos24-traefik
       - traefik.http.services.sos24-server.loadbalancer.server.port=${PORT}
       - traefik.http.routers.sos24-server.rule=Host(`api.sos24.sohosai.com`)
       - traefik.http.routers.sos24-server.entrypoints=websecure
