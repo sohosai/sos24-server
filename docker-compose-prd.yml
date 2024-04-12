@@ -79,4 +79,9 @@ volumes:
 
 networks:
   sos24-traefik:
+    name: sos24-traefik
+    attachable: true
+    external: true
   sos24-server-prd:
+    name: sos24-server-prd
+    internal: true
