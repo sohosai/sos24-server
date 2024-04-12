@@ -189,3 +189,17 @@ impl FromEntity for FormAnswerItemKindDto {
         }
     }
 }
+
+pub struct FormAnswerToBeExportedListDto {
+    pub form_title: String,
+    pub form_item_names: Vec<String>,
+    pub form_answers: Vec<FormAnswerToBeExportedDto>,
+}
+
+pub struct FormAnswerToBeExportedDto {
+    pub project_index: i32,
+    pub project_title: String,
+    pub project_group_name: String,
+    pub form_answer_item_values: Vec<Option<String>>,
+    pub created_at: String,
+}

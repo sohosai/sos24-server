@@ -3011,6 +3011,7 @@ dependencies = [
  "csv",
  "dotenvy",
  "jsonwebtoken",
+ "percent-encoding",
  "reqwest",
  "serde",
  "serde_json",

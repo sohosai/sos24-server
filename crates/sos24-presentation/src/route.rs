@@ -73,6 +73,7 @@ pub fn create_app(modules: Modules) -> Router {
     let form_answers = Router::new()
         .route("/", get(form_answer::handle_get))
         .route("/", post(form_answer::handle_post))
+        .route("/export", get(form_answer::handle_export))
         .route("/:form_answer_id", get(form_answer::handle_get_id))
         .route("/:form_answer_id", put(form_answer::handle_put_id));
 
