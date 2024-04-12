@@ -34,7 +34,21 @@ use sos24_use_case::{
     },
 };
 
+use crate::csv::CsvSerializationError;
+
 use super::AppError;
+
+impl From<CsvSerializationError> for AppError {
+    fn from(error: CsvSerializationError) -> Self {
+        match error {
+            CsvSerializationError::FailedToSerialize(err) => AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "csv/failed-to-serialize".to_string(),
+                err.to_string(),
+            ),
+        }
+    }
+}
 
 impl From<FormUseCaseError> for AppError {
     fn from(error: FormUseCaseError) -> Self {

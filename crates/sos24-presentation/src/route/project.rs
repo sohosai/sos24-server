@@ -7,10 +7,10 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use csv::Writer;
 
 use sos24_use_case::context::Context;
 
+use crate::csv::serialize_to_csv;
 use crate::error::AppError;
 use crate::model::project::{CreatedProject, ProjectToBeExported};
 use crate::{
@@ -98,45 +98,10 @@ pub async fn handle_export(
         projects.push(ProjectToBeExported::from((project, owner, sub_owner)));
     }
 
-    let mut wrt = Writer::from_writer(vec![]);
-    for user_with_project in projects {
-        match wrt.serialize(user_with_project) {
-            Ok(result) => result,
-            Err(err) => {
-                tracing::error!("Failed to serialize: {err:?}");
-                // ToDo: CSV関連の処理を何処かにまとめる
-                return Err(AppError::new(
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "csv/failed-to-serialize".to_string(),
-                    format!("{err:?}"),
-                ));
-            }
-        };
-    }
-
-    let csv = match wrt.into_inner() {
-        Ok(csv) => csv,
-        Err(err) => {
-            tracing::error!("Failed to write csv: {err:?}");
-            return Err(AppError::new(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "csv/failed-to-write".to_string(),
-                format!("{err:?}"),
-            ));
-        }
-    };
-
-    let data = match String::from_utf8(csv) {
-        Ok(data) => data,
-        Err(err) => {
-            tracing::error!("Failed to convert csv to string: {err:?}");
-            return Err(AppError::new(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "csv/failed-to-convert".to_string(),
-                format!("{err:?}"),
-            ));
-        }
-    };
+    let data = serialize_to_csv(projects).map_err(|err| {
+        tracing::error!("Failed to serialize to csv: {err:?}");
+        AppError::from(err)
+    })?;
 
     Response::builder()
         .header("Content-Type", "text/csv")

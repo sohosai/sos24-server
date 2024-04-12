@@ -3017,6 +3017,7 @@ dependencies = [
  "sos24-domain",
  "sos24-infrastructure",
  "sos24-use-case",
+ "thiserror",
  "tokio",
  "tower",
  "tower-http",

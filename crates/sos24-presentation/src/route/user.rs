@@ -10,6 +10,7 @@ use axum::{
 
 use sos24_use_case::{context::Context, dto::user::CreateUserDto};
 
+use crate::csv::serialize_to_csv;
 use crate::error::AppError;
 use crate::model::user::CreatedUser;
 use crate::{
@@ -52,44 +53,10 @@ pub async fn handle_export(
         }
     };
 
-    let mut wrt = csv::Writer::from_writer(vec![]);
-    for user in user_list {
-        match wrt.serialize(user) {
-            Ok(result) => result,
-            Err(err) => {
-                tracing::error!("Failed to serialize user: {err:?}");
-                return Err(AppError::new(
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "csv/failed-to-serialize".to_string(),
-                    format!("{err:?}"),
-                ));
-            }
-        }
-    }
-
-    let csv = match wrt.into_inner() {
-        Ok(csv) => csv,
-        Err(err) => {
-            tracing::error!("Failed to write csv: {err:?}");
-            return Err(AppError::new(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "csv/failed-to-write".to_string(),
-                format!("{err:?}"),
-            ));
-        }
-    };
-
-    let data = match String::from_utf8(csv) {
-        Ok(data) => data,
-        Err(err) => {
-            tracing::error!("Failed to convert csv to string: {err:?}");
-            return Err(AppError::new(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "csv/failed-to-convert".to_string(),
-                format!("{err:?}"),
-            ));
-        }
-    };
+    let data = serialize_to_csv(user_list).map_err(|err| {
+        tracing::error!("Failed to serialize to csv: {err:?}");
+        AppError::from(err)
+    })?;
 
     Response::builder()
         .header("Content-Type", "text/csv")
