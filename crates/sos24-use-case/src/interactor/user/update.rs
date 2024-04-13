@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
 use sos24_domain::ensure;
+use sos24_domain::entity::firebase_user::FirebaseUserId;
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
 use sos24_domain::repository::{Repositories, user::UserRepository};
+use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 
 use crate::context::Context;
 use crate::dto::ToEntity;
@@ -33,15 +35,31 @@ impl<R: Repositories> UserUseCase<R> {
         new_user.set_phone_number(&actor, UserPhoneNumber::new(user_data.phone_number))?;
         new_user.set_role(&actor, user_data.role.into_entity()?)?;
 
+        let firebase_user_id: FirebaseUserId = new_user.id().clone().into();
 
+        let old_email = new_user.email().clone();
         let new_email = UserEmail::try_from(user_data.email)?;
-        if new_user.email() != &new_email {
+        if old_email != new_email {
+            let firebase_user_new_email = new_email.clone().into();
             new_user.set_email(&actor, new_email)?;
+            self.repositories
+                .firebase_user_repository()
+                .update_email_by_id(firebase_user_id.clone(), firebase_user_new_email)
+                .await?;
         }
 
-
-        self.repositories.user_repository().update(new_user).await?;
-        Ok(())
+        let res = self.repositories.user_repository().update(new_user).await;
+        match res {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                let firebase_user_old_email = old_email.clone().into();
+                self.repositories
+                    .firebase_user_repository()
+                    .update_email_by_id(firebase_user_id, firebase_user_old_email)
+                    .await?;
+                Err(e.into())
+            }
+        }
     }
 }
 
@@ -73,6 +91,10 @@ mod tests {
             .user_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
+        repositories
+            .firebase_user_repository_mut()
+            .expect_update_email_by_id()
+            .returning(|_, _| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
