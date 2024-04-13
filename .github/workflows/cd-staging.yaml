@@ -73,7 +73,7 @@ jobs:
   conditional:
     runs-on: [self-hosted, portainer]
     needs: push-image
-    if: github.event.pull_request.merged == true || github.event.workflow_dispatch == true && github.event.inputs.push-image-only != true
+    if: github.event.pull_request.merged == true || github.event.workflow_dispatch == true && github.event.inputs.push-image-only == false
     steps:
       - run: echo "conditonal run"
 
