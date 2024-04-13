@@ -133,7 +133,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           content: "push-image: ${{ needs.push-image.result }}\ndeploy: ${{ needs.deploy.result }}"
-          title: "${{ github.workflow.run-name }}"
+          title: "${{ github.workflow }}"
           description: "Build and deploy status of sos24-server-prodution."
           color: 0x0000ff
           url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
