@@ -1,7 +1,10 @@
+use rs_firebase_admin_sdk::auth::UserUpdate;
 use rs_firebase_admin_sdk::{
     auth::{FirebaseAuthService, NewUser},
     client::error::ApiClientError,
 };
+
+use sos24_domain::entity::firebase_user::FirebaseUserEmail;
 use sos24_domain::{
     entity::firebase_user::{FirebaseUserId, NewFirebaseUser},
     repository::firebase_user::{FirebaseUserRepository, FirebaseUserRepositoryError},
@@ -42,6 +45,19 @@ impl FirebaseUserRepository for FirebaseUserRepositoryImpl {
                 _ => Err(anyhow::anyhow!("Failed to create firebase user: {err}").into()),
             },
         }
+    }
+
+    async fn update_email_by_id(
+        &self,
+        id: FirebaseUserId,
+        email: FirebaseUserEmail,
+    ) -> Result<(), FirebaseUserRepositoryError> {
+        let update = UserUpdate::builder(id.value()).email(email.value()).build();
+        self.auth
+            .update_user(update)
+            .await
+            .map(|_| ())
+            .map_err(|err| anyhow::anyhow!("Failed to update firebase user: {err}").into())
     }
 
     async fn delete_by_id(&self, id: FirebaseUserId) -> Result<(), FirebaseUserRepositoryError> {
