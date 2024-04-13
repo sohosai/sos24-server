@@ -140,13 +140,16 @@ pub async fn handle_export(
         AppError::from(err)
     })?;
 
-    let filename = format!("{}_回答一覧", form_answer_list.form_title);
+    let filename = format!("{}_回答一覧.csv", form_answer_list.form_title);
     let encoded_filename = percent_encoding::percent_encode(filename.as_bytes(), NON_ALPHANUMERIC);
     Response::builder()
         .header("Content-Type", "text/csv")
         .header(
             "Content-Disposition",
-            format!("attachment; filename*=UTF8''{}.csv", encoded_filename),
+            format!(
+                "attachment; filename=\"{}\" filename*=UTF-8''{}",
+                filename, encoded_filename
+            ),
         )
         .body(Body::from(data))
         .map_err(|err| {
