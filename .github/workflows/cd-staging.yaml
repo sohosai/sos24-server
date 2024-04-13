@@ -73,7 +73,9 @@ jobs:
   deploy:
     runs-on: [self-hosted, portainer]
     needs: push-image
-    if: github.event.pull_request.merged == true && ${{ cancelled() }} == false || github.event.inputs.push-image-only == 'false' && ${{ cancelled() }} == false
+    if: |
+      (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) || \
+      (github.event.inputs.push-image-only == 'false' && github.event.inputs.push-image-only != 'true' && always() && !failure() && !cancelled())
     steps:
       - uses: actions/checkout@v4
         with:
