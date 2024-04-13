@@ -2,11 +2,11 @@ name: CD(staging)
 run-name: CD(staging) - ${{ github.event_name }}
 
 on:
-  pull_request:
-    branches:
-      - develop
-    types:
-      - closed
+#  pull_request:
+#    branches:
+#      - develop
+#    types:
+#      - closed
 
   workflow_dispatch:
     inputs:
@@ -50,7 +50,7 @@ jobs:
           path: |
             usr-local-cargo-registry
             app-target
-          key: cache-${{ hashFiles('Dockerfile.stg') }}
+          key: cache-${{ hashFiles('Dockerfile') }}
       - name: inject cache into docker
         # v3.0.0のcommitを指定
         uses: reproducible-containers/buildkit-cache-dance@0fc239dcc207d7ce9fd659f4f92fefb84549c182
@@ -63,12 +63,12 @@ jobs:
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
       - name: create demo.sql
         run: |
-          echo "${{ secrets.DEMO_SQL }}" > demo.sql
+          echo "${{ secrets.DEMO_SQL }}" > migrations/99999999999999_demo.sql
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.stg
+          file: Dockerfile
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           cache-from: type=gha
@@ -103,11 +103,17 @@ jobs:
             result=$(curl -sS -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" --data-binary "${UPDATE_DATA}")
             result=$(echo "$result" | jq '.Env = ["***"]')
             echo "$result"
+            if [[ $result == *"failed to deploy a stack:"* ]]; then
+              exit 1
+            fi
           else
             CREATE_DATA="{\"name\": \"${STACK_NAME}\", \"Env\": [$env_data], \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')\"}"
             result=$(curl -sS -X POST "${{ secrets.PORTAINER_URL }}/api/stacks?type=${STACK_TYPE}&method=string&endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" --data-binary "${CREATE_DATA}")
             result=$(echo "$result" | jq '.Env = ["***"]')
             echo "$result"
+            if [[ $result == *"failed to deploy a stack:"* ]]; then
+              exit 1
+            fi
           fi
         env:
           STACK_NAME: "sos24-server-stg"
