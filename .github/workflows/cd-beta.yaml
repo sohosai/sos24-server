@@ -33,7 +33,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/sohosai/sos24-server
-          tags: stg
+          tags: beta
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
