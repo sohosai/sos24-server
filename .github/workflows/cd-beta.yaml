@@ -90,7 +90,7 @@ jobs:
           STACK_ID=$(echo "${STACKS}" | jq -r --arg STACK_NAME "${STACK_NAME}" '.[] | select(.Name == $STACK_NAME) | .Id')
 
           # PORTAINER_VARIABLE to json
-          mapfile -t env_array <<< "${{ secrets.PORTAINER_VARIABLE }}"
+          mapfile -t env_array <<< "${{ secrets.BETA_VARIABLE }}"
           env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"name\": \"$key\", \"value\": \"$value\"},"; fi; done)
           env_data="${env_data%,}"
 
