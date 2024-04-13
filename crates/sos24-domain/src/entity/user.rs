@@ -155,6 +155,9 @@ pub enum UserRole {
 pub struct UserEmail(Email);
 
 impl UserEmail {
+    pub fn raw_value(self) -> Email {
+        self.0
+    }
     pub fn value(self) -> String {
         self.0.value()
     }
