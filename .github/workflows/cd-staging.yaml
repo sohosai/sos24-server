@@ -80,7 +80,7 @@ jobs:
     needs: conditional
     if: always()
     steps:
-      - uses: fail if conditional job failed
+      - name: fail if conditional job failed
         if: ${{ needs.conditional.result == 'failure' }}
         run: exit 1
       - uses: actions/checkout@v4
