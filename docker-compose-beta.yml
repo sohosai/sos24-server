@@ -23,10 +23,10 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: "portainer-traefik"
-      traefik.http.services.sos24-server.loadbalancer.server.port: ${PORT}
-      traefik.http.routers.sos24-server.rule: Host(`sos24-api-beta.playground.sohosai.com`)
-      traefik.http.routers.sos24-server.entrypoints: websecure
-      traefik.http.routers.sos24-server.tls.certresolver: leresolver
+      traefik.http.services.sos24-server-beta.loadbalancer.server.port: ${PORT}
+      traefik.http.routers.sos24-server-beta.rule: Host(`sos24-api-beta.playground.sohosai.com`)
+      traefik.http.routers.sos24-server-beta.entrypoints: websecure
+      traefik.http.routers.sos24-server-beta.tls.certresolver: leresolver
     networks:
       - portainer-traefik
       - sos24-server-beta
