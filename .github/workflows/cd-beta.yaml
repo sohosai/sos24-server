@@ -1,12 +1,13 @@
-name: CD(prodution)
-run-name: CD(prodution) - ${{ github.event_name }}
+name: CD(beta)
+run-name: CD(beta) - ${{ github.event_name }}
 
 on:
   pull_request:
     branches:
-      - main
+      - develop
     types:
       - closed
+
   workflow_dispatch:
     inputs:
       push-image-only:
@@ -27,13 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: develop
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/sohosai/sos24-server
-          tags: prd
+          tags: beta
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
@@ -79,48 +80,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
-      - name: Setup SSH
+          ref: develop
+      - name: Deploy to Portainer
         run: |
-          mkdir -p ~/.ssh/
-          echo "${{ secrets.SSH_PRIV_KEY }}" > ~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_PUB_KEY }}" > ~/.ssh/id_ed25519.pub
-          chmod 600 ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519.pub
-          ssh-keyscan -H ${{ secrets.DEPLOYSERVER_IP }} >> ~/.ssh/known_hosts
-      - name: old container dwon
-        run: |
-          # down database container
-          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "if [ -f /home/ubuntu/docker-compose-db.yml ]; then \
-          if ! docker context ls | grep -q remote; then \
-            docker context create remote --docker 'host=ssh://ubuntu@10.0.0.2' && \
-            ssh-keyscan -H 10.0.0.2 >> ~/.ssh/known_hosts; \
-          fi; \
-          docker --context remote compose -f docker-compose-db.yml down; \
-          fi"
-          # down server container
-          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "if [ -f /home/ubuntu/docker-compose-prd.yml ]; then \
-            docker compose -f docker-compose-prd.yml down; \
-          fi"
-      - name: create .env
-        run: |
-          echo "${{ secrets.PRD_VARIABLE }}" > .env
-      - name: copy files
-        run: |
-          rsync -vrm .env docker-compose-db.yml docker-compose-prd.yml ubuntu@${{ secrets.DEPLOYSERVER_IP }}:/home/ubuntu/
-      - name: Deploy server
-        run: |
-          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} && \
-          if ! docker context ls | grep -q remote; then \
-            docker context create remote --docker 'host=ssh://ubuntu@10.0.0.2' && \
-            ssh-keyscan -H 10.0.0.2 >> ~/.ssh/known_hosts; \
-          fi; \
-          docker --context remote compose --env-file .env -f docker-compose-db.yml pull && \
-          docker --context remote compose --env-file .env -f docker-compose-db.yml up -d && \
-          docker compose --env-file .env -f docker-compose-prd.yml pull && \
-          docker compose --env-file .env -f docker-compose-prd.yml up -d && \
-          docker logout ghcr.io && \
-          rm .env"
+          # List stacks
+          STACKS=$(curl -s -X GET "${{ secrets.PORTAINER_URL }}/api/stacks" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}")
+
+          # Get stack ID by name
+          STACK_ID=$(echo "${STACKS}" | jq -r --arg STACK_NAME "${STACK_NAME}" '.[] | select(.Name == $STACK_NAME) | .Id')
+
+          # PORTAINER_VARIABLE to json
+          mapfile -t env_array <<< "${{ secrets.PORTAINER_VARIABLE }}"
+          env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"name\": \"$key\", \"value\": \"$value\"},"; fi; done)
+          env_data="${env_data%,}"
+
+          # Create or update stack
+          if [ -n "${STACK_ID}" ]; then
+            UPDATE_DATA="{\"Prune\": ${PRUNE}, \"Env\": [$env_data], \"pullImage\": ${PULL_IMAGE}, \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')\"}"
+            result=$(curl -sS -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" --data-binary "${UPDATE_DATA}")
+            result=$(echo "$result" | jq '.Env = ["***"]')
+            echo "$result"
+          else
+            CREATE_DATA="{\"name\": \"${STACK_NAME}\", \"Env\": [$env_data], \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')\"}"
+            result=$(curl -sS -X POST "${{ secrets.PORTAINER_URL }}/api/stacks?type=${STACK_TYPE}&method=string&endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" --data-binary "${CREATE_DATA}")
+            result=$(echo "$result" | jq '.Env = ["***"]')
+            echo "$result"
+          fi
+        env:
+          STACK_NAME: "sos24-server-beta"
+          STACK_TYPE: 2
+          ENDPOINT_ID: 2
+          COMPOSE_FILE: "docker-compose-beta.yml"
+          PRUNE: "true"
+          PULL_IMAGE: "true"
+          VERIFY_SSL: "true"
 
   notify:
     runs-on: [self-hosted, portainer]
@@ -134,8 +127,8 @@ jobs:
           status: ${{ job.status }}
           content: "push-image: ${{ needs.push-image.result }}\ndeploy: ${{ needs.deploy.result }}"
           title: "${{ github.workflow.run-name }}"
-          description: "Build and deploy status of sos24-server-prodution."
+          description: "Build and deploy status of sos24-server-beta."
           color: 0x0000ff
           url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           username: GitHub Actions
-          avatar_url: https://r2.sohosai.com/logo.png    
+          avatar_url: https://r2.sohosai.com/logo.png
