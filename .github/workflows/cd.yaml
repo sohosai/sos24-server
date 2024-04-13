@@ -21,7 +21,7 @@ on:
 
 jobs:
   push-image:
-    if: github.event.pull_request.merged == true || github.event.workflow_dispatch == true && github.event.inputs.deploy-only == false
+    if: github.event.pull_request.merged == true || github.event.inputs.deploy-only == false
     runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
   conditional:
     runs-on: [self-hosted, portainer]
     needs: push-image
-    if: github.event.pull_request.merged == true || github.event.workflow_dispatch == true && github.event.inputs.push-image-only == false
+    if: github.event.pull_request.merged == true || github.event.inputs.push-image-only == false
     steps:
       - run: echo "conditonal run"
 
