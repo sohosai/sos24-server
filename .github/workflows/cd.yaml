@@ -73,7 +73,7 @@ jobs:
     runs-on: [self-hosted, portainer]
     needs: push-image
     if: |
-      (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) || \
+      (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) ||
       (github.event.inputs.push-image-only == 'false' && always() && !failure() && !cancelled())
     steps:
       - uses: actions/checkout@v4
