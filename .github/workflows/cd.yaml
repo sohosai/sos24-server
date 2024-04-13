@@ -6,13 +6,27 @@ on:
       - main
     types:
       - closed
+  workflow_dispatch:
+    inputs:
+      push-image-only:
+        type: boolean
+        default: false
+        required: false
+        description: "push image only(not deploy)"
+      deploy-only:
+        type: boolean
+        default: false
+        required: false
+        description: "deploy only(not push image)"
 
 jobs:
   push-image:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true || github.event.workflow_dispatch == true && github.event.inputs.push-image-only != true
     runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v5
@@ -55,11 +69,22 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
+  conditional:
     runs-on: [self-hosted, portainer]
     needs: push-image
+    if: github.event.pull_request.merged == true || github.event.workflow_dispatch == true && github.event.inputs.push-image-only != true
+
+  deploy:
+    runs-on: [self-hosted, portainer]
+    needs: conditional
+    if: always()
     steps:
+      - name: fail if conditional job failed
+        if: ${{ needs.conditional.result == 'failure' }}
+        run: exit 1
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh/
