@@ -4,7 +4,6 @@ services:
   app:
     image: ghcr.io/sohosai/sos24-server:stg
     restart: unless-stopped
-    entrypoint: /app/stg-entrypoint.sh
     environment:
       - HOST=0.0.0.0
       - PORT=${PORT}

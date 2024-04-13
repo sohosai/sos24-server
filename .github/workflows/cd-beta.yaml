@@ -100,11 +100,17 @@ jobs:
             result=$(curl -sS -X PUT "${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" --data-binary "${UPDATE_DATA}")
             result=$(echo "$result" | jq '.Env = ["***"]')
             echo "$result"
+            if [[ $result == *"failed to deploy a stack:"* ]]; then
+              exit 1
+            fi
           else
             CREATE_DATA="{\"name\": \"${STACK_NAME}\", \"Env\": [$env_data], \"stackFileContent\": \"$(cat ${COMPOSE_FILE} | tr -d '\r' | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')\"}"
             result=$(curl -sS -X POST "${{ secrets.PORTAINER_URL }}/api/stacks?type=${STACK_TYPE}&method=string&endpointId=${ENDPOINT_ID}" -H "Content-Type: application/json" -gH "x-api-key:${{ secrets.PORTAINER_APIKEY }}" --data-binary "${CREATE_DATA}")
             result=$(echo "$result" | jq '.Env = ["***"]')
             echo "$result"
+            if [[ $result == *"failed to deploy a stack:"* ]]; then
+              exit 1
+            fi
           fi
         env:
           STACK_NAME: "sos24-server-beta"
