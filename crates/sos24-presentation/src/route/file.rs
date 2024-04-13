@@ -2,12 +2,14 @@ use std::sync::Arc;
 
 use axum::extract::{Multipart, Path, Query, State};
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
+use axum_extra::body::AsyncReadBody;
+use percent_encoding::NON_ALPHANUMERIC;
 
 use sos24_use_case::{context::Context, dto::file::CreateFileDto};
 
-use crate::model::file::CreatedFile;
+use crate::model::file::{CreatedFile, ExportFileQuery};
 use crate::{
     error::AppError,
     model::file::{CreateFileQuery, File, FileInfo, Visibility},
@@ -94,7 +96,7 @@ pub async fn handle_post(
                     StatusCode::BAD_REQUEST,
                     "file/invalid-name-field".to_string(),
                     "Invalid name was provided".to_string(),
-                ))
+                ));
             }
         }
     }
@@ -127,6 +129,50 @@ pub async fn handle_post(
             ids: created_file_ids,
         }),
     ))
+}
+
+pub async fn handle_export(
+    State(modules): State<Arc<Modules>>,
+    Query(query): Query<ExportFileQuery>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, AppError> {
+    let Some(owner_project) = query.owner_project else {
+        return Err(AppError::new(
+            StatusCode::BAD_REQUEST,
+            "file/invalid-query".to_string(),
+            "Invalid query".to_string(),
+        ));
+    };
+
+    let archive = modules
+        .file_use_case()
+        .export_by_owner_project(&ctx, modules.config().s3_bucket_name.clone(), owner_project)
+        .await
+        .map_err(|err| {
+            tracing::error!("Failed to export file: {err:?}");
+            AppError::from(err)
+        })?;
+
+    let filename = format!("{}_ファイル一覧.zip", archive.owner_project_title);
+    let encoded_filename = percent_encoding::percent_encode(filename.as_bytes(), NON_ALPHANUMERIC);
+    Response::builder()
+        .header("Content-Type", "application/zip")
+        .header(
+            "Content-Disposition",
+            format!(
+                "attachment; filename=\"{}\" filename*=UTF-8''{}",
+                filename, encoded_filename
+            ),
+        )
+        .body(AsyncReadBody::new(archive.body))
+        .map_err(|err| {
+            tracing::error!("Failed to create response: {err:?}");
+            AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "file/failed-to-create-response".to_string(),
+                format!("{err:?}"),
+            )
+        })
 }
 
 pub async fn handle_get_id(

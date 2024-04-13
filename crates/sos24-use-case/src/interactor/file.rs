@@ -1,17 +1,19 @@
 use std::sync::Arc;
 
+use thiserror::Error;
+
 use sos24_domain::entity::file_data::{FileId, FileIdError};
-use sos24_domain::entity::project::ProjectIdError;
+use sos24_domain::entity::project::{ProjectId, ProjectIdError};
 use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::repository::file_object::FileObjectRepositoryError;
 use sos24_domain::repository::project::ProjectRepositoryError;
 use sos24_domain::{entity::permission::PermissionDeniedError, repository::Repositories};
-use thiserror::Error;
 
 use crate::context::ContextError;
 
 pub mod create;
 pub mod delete_by_id;
+mod export_by_owner;
 pub mod find_by_id;
 pub mod list;
 
@@ -19,6 +21,11 @@ pub mod list;
 pub enum FileUseCaseError {
     #[error("File not found: {0:?}")]
     NotFound(FileId),
+    #[error("Project not found: {0:?}")]
+    ProjectNotFound(ProjectId),
+    #[error("Owner not found")]
+    OwnerNotFound,
+
     #[error(transparent)]
     FileDataRepositoryError(#[from] FileDataRepositoryError),
     #[error(transparent)]
@@ -31,8 +38,6 @@ pub enum FileUseCaseError {
     ContextError(#[from] ContextError),
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
-    #[error("Owner not found")]
-    OwnerNotFound(),
     #[error(transparent)]
     ProjectIdError(#[from] ProjectIdError),
     #[error(transparent)]

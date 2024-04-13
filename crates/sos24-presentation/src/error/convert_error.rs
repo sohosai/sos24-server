@@ -185,6 +185,16 @@ impl From<FileUseCaseError> for AppError {
             FileUseCaseError::NotFound(_) => {
                 AppError::new(StatusCode::NOT_FOUND, "file/not-found".to_string(), message)
             }
+            FileUseCaseError::ProjectNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "file/project-not-found".to_string(),
+                message,
+            ),
+            FileUseCaseError::OwnerNotFound => AppError::new(
+                StatusCode::NOT_FOUND,
+                "file/owner-not-found".to_string(),
+                message,
+            ),
             FileUseCaseError::FileDataRepositoryError(e) => e.into(),
             FileUseCaseError::FileIdError(e) => e.into(),
             FileUseCaseError::PermissionDeniedError(e) => e.into(),
@@ -192,11 +202,7 @@ impl From<FileUseCaseError> for AppError {
             FileUseCaseError::FileObjectRepositoryError(e) => e.into(),
             FileUseCaseError::ContextError(e) => e.into(),
             FileUseCaseError::ProjectRepositoryError(e) => e.into(),
-            FileUseCaseError::OwnerNotFound() => AppError::new(
-                StatusCode::NOT_FOUND,
-                "file/owner-not-found".to_string(),
-                message,
-            ),
+
             FileUseCaseError::ProjectIdError(e) => e.into(),
         }
     }
