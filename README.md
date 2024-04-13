@@ -1,5 +1,6 @@
 # sos24-server
 [![CD(prodution)](https://github.com/sohosai/sos24-server/actions/workflows/cd.yaml/badge.svg)](https://github.com/sohosai/sos24-server/actions/workflows/cd.yaml)
+[![CD(beta)](https://github.com/sohosai/sos24-server/actions/workflows/cd-beta.yaml/badge.svg)](https://github.com/sohosai/sos24-server/actions/workflows/cd-beta.yaml)
 [![CD(staging)](https://github.com/sohosai/sos24-server/actions/workflows/cd-staging.yaml/badge.svg)](https://github.com/sohosai/sos24-server/actions/workflows/cd-staging.yaml)
 
 
