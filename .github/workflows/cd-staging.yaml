@@ -1,4 +1,5 @@
 name: CD(staging)
+run-name: CD(staging) - ${{ github.event_name }}
 
 on:
   pull_request:
@@ -49,7 +50,7 @@ jobs:
           path: |
             usr-local-cargo-registry
             app-target
-          key: cache-${{ hashFiles('Dockerfile') }}
+          key: cache-${{ hashFiles('Dockerfile.stg') }}
       - name: inject cache into docker
         # v3.0.0のcommitを指定
         uses: reproducible-containers/buildkit-cache-dance@0fc239dcc207d7ce9fd659f4f92fefb84549c182
@@ -60,11 +61,14 @@ jobs:
               "app-target": "/app/target"
             }
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+      - name: create demo.sql
+        run: |
+          echo "${{ secrets.DEMO_SQL }}" > demo.sql
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: Dockerfile.stg
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           cache-from: type=gha
@@ -113,3 +117,21 @@ jobs:
           PRUNE: "true"
           PULL_IMAGE: "true"
           VERIFY_SSL: "true"
+
+  notify:
+    runs-on: [self-hosted, portainer]
+    needs: [push-image, deploy]
+    if: always() && !failure() && !cancelled()
+    steps:
+      - name: Notify
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "push-image: ${{ needs.push-image.result }}\ndeploy: ${{ needs.deploy.result }}"
+          title: "${{ github.workflow.run-name }}"
+          description: "Build and deploy status of sos24-server-staging."
+          color: 0x0000ff
+          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          username: GitHub Actions
+          avatar_url: https://r2.sohosai.com/logo.png          

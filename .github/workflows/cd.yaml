@@ -1,4 +1,5 @@
 name: CD(prodution)
+run-name: CD(prodution) - ${{ github.event_name }}
 
 on:
   pull_request:
@@ -120,3 +121,21 @@ jobs:
           docker compose --env-file .env -f docker-compose-prd.yml up -d && \
           docker logout ghcr.io && \
           rm .env"
+
+  notify:
+    runs-on: [self-hosted, portainer]
+    needs: [push-image, deploy]
+    if: always() && !failure() && !cancelled()
+    steps:
+      - name: Notify
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          content: "push-image: ${{ needs.push-image.result }}\ndeploy: ${{ needs.deploy.result }}"
+          title: "${{ github.workflow.run-name }}"
+          description: "Build and deploy status of sos24-server-prodution."
+          color: 0x0000ff
+          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          username: GitHub Actions
+          avatar_url: https://r2.sohosai.com/logo.png    

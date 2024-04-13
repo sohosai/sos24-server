@@ -3,3 +3,5 @@
 
 psqldef
 .env
+
+demo.sql
