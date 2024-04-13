@@ -21,7 +21,7 @@ on:
 
 jobs:
   push-image:
-    if: github.event.pull_request.merged == true || github.event.inputs.deploy-only == 'false'
+    if: github.event.pull_request.merged == true || github.event.inputs.push-image-only == 'true' && github.event.inputs.deploy-only == 'true' || github.event.inputs.deploy-only == 'false'
     runs-on: [self-hosted, portainer]
     steps:
       - uses: actions/checkout@v4
@@ -69,21 +69,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  conditional:
-    runs-on: [self-hosted, portainer]
-    needs: push-image
-    if: github.event.pull_request.merged == true || github.event.inputs.push-image-only == 'false'
-    steps:
-      - run: echo "conditonal run"
-
   deploy:
     runs-on: [self-hosted, portainer]
-    needs: conditional
-    if: always()
+    needs: push-image
+    if: cancelled != true || github.event.inputs.push-image-only == 'true' && github.event.inputs.deploy-only == 'true' || github.event.inputs.push-image-only == 'false'
     steps:
-      - name: fail if conditional job failed
-        if: ${{ needs.conditional.result == 'failure' }}
-        run: exit 1
       - uses: actions/checkout@v4
         with:
           ref: main
