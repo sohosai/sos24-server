@@ -73,7 +73,7 @@ jobs:
   deploy:
     runs-on: [self-hosted, portainer]
     needs: push-image
-    if: ${{ ! cancelled() }} == false || github.event.inputs.push-image-only == 'true' && github.event.inputs.deploy-only == 'true' || github.event.inputs.push-image-only == 'false'
+    if: ${{ cancelled() }} == false || github.event.inputs.push-image-only == 'true' && github.event.inputs.deploy-only == 'true' || github.event.inputs.push-image-only == 'false'
     steps:
       - name: fail if conditional job failed
         if: ${{ needs.conditional.result == 'failure' }}
