@@ -132,8 +132,10 @@ impl User {
     }
 
     pub fn set_role(&mut self, actor: &Actor, role: UserRole) -> Result<(), PermissionDeniedError> {
-        ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL));
-        self.role = role;
+        if self.role != role {
+            ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL));
+            self.role = role;
+        }
         Ok(())
     }
 }

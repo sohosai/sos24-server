@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use sos24_domain::ensure;
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
-use sos24_domain::repository::{user::UserRepository, Repositories};
+use sos24_domain::repository::{Repositories, user::UserRepository};
 
 use crate::context::Context;
-use crate::dto::user::UpdateUserDto;
 use crate::dto::ToEntity;
+use crate::dto::user::UpdateUserDto;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
 impl<R: Repositories> UserUseCase<R> {
@@ -28,30 +28,17 @@ impl<R: Repositories> UserUseCase<R> {
 
         let mut new_user = user.value;
 
-        let new_name = UserName::new(user_data.name);
-        if new_user.name() != &new_name {
-            new_user.set_name(&actor, new_name)?;
-        }
+        new_user.set_name(&actor, UserName::new(user_data.name))?;
+        new_user.set_kana_name(&actor, UserKanaName::new(user_data.kana_name))?;
+        new_user.set_phone_number(&actor, UserPhoneNumber::new(user_data.phone_number))?;
+        new_user.set_role(&actor, user_data.role.into_entity()?)?;
 
-        let new_kana_name = UserKanaName::new(user_data.kana_name);
-        if new_user.kana_name() != &new_kana_name {
-            new_user.set_kana_name(&actor, new_kana_name)?;
-        }
 
         let new_email = UserEmail::try_from(user_data.email)?;
         if new_user.email() != &new_email {
             new_user.set_email(&actor, new_email)?;
         }
 
-        let new_phone_number = UserPhoneNumber::new(user_data.phone_number);
-        if new_user.phone_number() != &new_phone_number {
-            new_user.set_phone_number(&actor, new_phone_number)?;
-        }
-
-        let new_role = user_data.role.into_entity()?;
-        if new_user.role() != &new_role {
-            new_user.set_role(&actor, new_role)?;
-        }
 
         self.repositories.user_repository().update(new_user).await?;
         Ok(())
@@ -67,8 +54,8 @@ mod tests {
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
     use crate::context::Context;
-    use crate::dto::user::{UpdateUserDto, UserRoleDto};
     use crate::dto::FromEntity;
+    use crate::dto::user::{UpdateUserDto, UserRoleDto};
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
