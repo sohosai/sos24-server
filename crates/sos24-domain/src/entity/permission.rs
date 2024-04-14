@@ -55,6 +55,7 @@ impl UserRole {
                     | Permissions::CREATE_NEWS
                     | Permissions::UPDATE_NEWS_ALL
                     | Permissions::DELETE_NEWS_ALL
+                    | Permissions::READ_USER_ALL
                     | Permissions::UPDATE_USER_ALL
                     | Permissions::DELETE_USER_ALL
                     | Permissions::UPDATE_PROJECT_ALL
@@ -72,7 +73,6 @@ impl UserRole {
             }
             UserRole::Committee => {
                 UserRole::General.permissions()
-                    | Permissions::READ_USER_ALL
                     | Permissions::READ_PROJECT_ALL
                     | Permissions::READ_INVITATION_ALL
                     | Permissions::READ_FORM_ANSWER_ALL
