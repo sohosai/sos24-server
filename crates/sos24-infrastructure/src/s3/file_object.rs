@@ -1,7 +1,14 @@
 use std::time::Duration;
 
 use anyhow::Context;
+use async_zip::tokio::write::ZipFileWriter;
+use async_zip::{Compression, ZipEntryBuilder};
 use aws_sdk_s3::{presigning::PresigningConfig, primitives::SdkBody};
+use tokio::io::DuplexStream;
+use tokio_util::compat::FuturesAsyncWriteCompatExt;
+
+use sos24_domain::entity::common::date::WithDate;
+use sos24_domain::entity::file_data::FileData;
 use sos24_domain::{
     entity::file_object::{ContentDisposition, FileObject, FileObjectKey, FileSignedUrl},
     repository::file_object::{FileObjectRepository, FileObjectRepositoryError},
@@ -57,5 +64,50 @@ impl FileObjectRepository for S3FileObjectRepository {
             .await
             .context("Failed to generate presign url")?;
         Ok(FileSignedUrl::try_from(request.uri()).context("Failed to parse")?)
+    }
+
+    async fn create_archive(
+        &self,
+        bucket: String,
+        files: Vec<WithDate<FileData>>,
+    ) -> Result<DuplexStream, FileObjectRepositoryError> {
+        let (writer, reader) = tokio::io::duplex(65535);
+        let mut zip_writer = ZipFileWriter::with_tokio(writer);
+
+        for file in files {
+            let file_key = file.value.url().clone().value();
+            let file_data = self
+                .s3
+                .get_object()
+                .bucket(&bucket)
+                .key(file_key)
+                .send()
+                .await
+                .context("Failed to get object")?;
+            let mut file_data_stream = file_data.body.into_async_read();
+
+            let file_name = file.value.filename().clone().value();
+            let zip_entry = ZipEntryBuilder::new(file_name.into(), Compression::Deflate)
+                .last_modification_date(file.updated_at.into());
+            let mut zip_entry_stream = zip_writer
+                .write_entry_stream(zip_entry)
+                .await
+                .context("Failed to write entry")?
+                .compat_write();
+
+            tokio::io::copy(&mut file_data_stream, &mut zip_entry_stream)
+                .await
+                .context("Failed to copy")?;
+
+            zip_entry_stream
+                .into_inner()
+                .close()
+                .await
+                .context("Failed to close")?;
+        }
+
+        zip_writer.close().await.context("Failed to close")?;
+
+        Ok(reader)
     }
 }

@@ -36,6 +36,7 @@ pub fn create_app(modules: Modules) -> Router {
         .route("/", post(file::handle_post))
         .layer(DefaultBodyLimit::max(modules.config().file_upload_limit))
         .route("/", get(file::handle_get))
+        .route("/export", get(file::handle_export))
         .route("/:file_id", get(file::handle_get_id))
         .route("/:file_id", delete(file::handle_delete_id));
 
@@ -73,6 +74,7 @@ pub fn create_app(modules: Modules) -> Router {
     let form_answers = Router::new()
         .route("/", get(form_answer::handle_get))
         .route("/", post(form_answer::handle_post))
+        .route("/export", get(form_answer::handle_export))
         .route("/:form_answer_id", get(form_answer::handle_get_id))
         .route("/:form_answer_id", put(form_answer::handle_put_id));
 

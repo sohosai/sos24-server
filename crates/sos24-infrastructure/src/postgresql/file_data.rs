@@ -1,5 +1,7 @@
 use anyhow::Context;
 use futures_util::{StreamExt, TryStreamExt};
+use sqlx::prelude::*;
+
 use sos24_domain::{
     entity::{
         common::date::WithDate,
@@ -9,7 +11,6 @@ use sos24_domain::{
     },
     repository::file_data::{FileDataRepository, FileDataRepositoryError},
 };
-use sqlx::prelude::*;
 
 use crate::postgresql::Postgresql;
 
@@ -98,6 +99,24 @@ impl FileDataRepository for PgFileDataRepository {
         .context("Failed to fetch file data")?;
 
         Ok(file_data_row.map(WithDate::try_from).transpose()?)
+    }
+
+    async fn find_by_owner_project(
+        &self,
+        owner_project: ProjectId,
+    ) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError> {
+        let file_data_list = sqlx::query_as!(
+            FileDataRow,
+            r#"SELECT * FROM files WHERE owner_project = $1 AND deleted_at IS NULL"#,
+            owner_project.value()
+        )
+        .fetch(&*self.db)
+        .map(|row| WithDate::try_from(row?))
+        .try_collect()
+        .await
+        .context("Failed to fetch file data list by owner")?;
+
+        Ok(file_data_list)
     }
 
     async fn delete_by_id(&self, id: FileId) -> Result<(), FileDataRepositoryError> {

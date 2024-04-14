@@ -66,3 +66,8 @@ impl From<FileInfoDto> for FileInfo {
 pub struct CreatedFile {
     pub ids: Vec<String>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct ExportFileQuery {
+    pub owner_project: Option<String>,
+}
