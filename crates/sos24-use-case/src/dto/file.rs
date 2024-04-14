@@ -1,3 +1,5 @@
+use tokio::io::AsyncRead;
+
 use sos24_domain::entity::{
     common::date::WithDate, file_data::FileData, file_object::FileSignedUrl,
 };
@@ -82,4 +84,9 @@ impl FromEntity for FileDto {
             deleted_at: entity.data.deleted_at,
         }
     }
+}
+
+pub struct ArchiveToBeExportedDto<R: AsyncRead> {
+    pub owner_project_title: String,
+    pub body: R,
 }

@@ -95,7 +95,7 @@ impl UserRepository for PgUserRepository {
         SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at
         FROM users
         WHERE deleted_at IS NULL
-        ORDER BY name ASC"#)
+        ORDER BY role DESC, email ASC"#)
             .fetch(&*self.db)
             .map(|row| WithDate::try_from(row.context("Failed to fetch user list")?))
             .try_collect()

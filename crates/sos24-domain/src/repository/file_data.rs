@@ -1,6 +1,7 @@
 use mockall::automock;
 use thiserror::Error;
 
+use crate::entity::project::ProjectId;
 use crate::entity::{
     common::date::WithDate,
     file_data::{FileData, FileId},
@@ -21,5 +22,9 @@ pub trait FileDataRepository: Send + Sync + 'static {
         &self,
         id: FileId,
     ) -> Result<Option<WithDate<FileData>>, FileDataRepositoryError>;
+    async fn find_by_owner_project(
+        &self,
+        owner_project: ProjectId,
+    ) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError>;
     async fn delete_by_id(&self, id: FileId) -> Result<(), FileDataRepositoryError>;
 }

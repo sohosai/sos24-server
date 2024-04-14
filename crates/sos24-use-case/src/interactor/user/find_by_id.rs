@@ -70,14 +70,14 @@ mod tests {
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
-    async fn 一般ユーザーは自分のユーザーを取得できる() {
+    async fn 実委人は自分のユーザーを取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
+                    UserRole::Committee,
                 ))))
             });
         repositories
@@ -90,7 +90,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_id(&ctx, fixture::user::id1().value())
             .await;
@@ -98,40 +98,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 一般ユーザーは他人のユーザーを取得できない() {
-        let mut repositories = MockRepositories::default();
-        repositories
-            .user_repository_mut()
-            .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user2(
-                    UserRole::General,
-                ))))
-            });
-        repositories
-            .project_repository_mut()
-            .expect_find_by_owner_id()
-            .returning(|_| Ok(None));
-        repositories
-            .project_repository_mut()
-            .expect_find_by_sub_owner_id()
-            .returning(|_| Ok(None));
-        let use_case = UserUseCase::new(Arc::new(repositories));
-
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
-        let res = use_case
-            .find_by_id(&ctx, fixture::user::id2().value())
-            .await;
-        assert!(matches!(
-            res,
-            Err(UserUseCaseError::PermissionDeniedError(
-                PermissionDeniedError
-            ))
-        ));
-    }
-
-    #[tokio::test]
-    async fn 実委人は他人のユーザーを取得できる() {
+    async fn 実委人は他人のユーザーを取得できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -152,6 +119,39 @@ mod tests {
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let res = use_case
+            .find_by_id(&ctx, fixture::user::id2().value())
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人管理者は他人のユーザーを取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::date::with(fixture::user::user2(
+                    UserRole::General,
+                ))))
+            });
+        repositories
+            .project_repository_mut()
+            .expect_find_by_owner_id()
+            .returning(|_| Ok(None));
+        repositories
+            .project_repository_mut()
+            .expect_find_by_sub_owner_id()
+            .returning(|_| Ok(None));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .find_by_id(&ctx, fixture::user::id2().value())
             .await;

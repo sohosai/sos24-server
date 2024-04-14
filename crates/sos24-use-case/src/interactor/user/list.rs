@@ -40,11 +40,11 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn 一般ユーザーはユーザー一覧を取得できない() {
+    async fn 実委人はユーザー一覧を取得できない() {
         let repositories = MockRepositories::default();
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
@@ -55,7 +55,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 実委人はユーザー一覧を取得できる() {
+    async fn 実委人管理者はユーザー一覧を取得できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -63,7 +63,7 @@ mod tests {
             .returning(|| Ok(vec![]));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case.list(&ctx).await;
         assert!(matches!(res, Ok(list) if list.is_empty()));
     }

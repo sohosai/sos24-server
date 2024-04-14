@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: ghcr.io/sohosai/sos24-server:stg
+    image: ghcr.io/sohosai/sos24-server:beta
     restart: unless-stopped
     environment:
       - HOST=0.0.0.0
@@ -23,13 +23,13 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: "portainer-traefik"
-      traefik.http.services.sos24-server-stg.loadbalancer.server.port: ${PORT}
-      traefik.http.routers.sos24-server-stg.rule: Host(`sos24-api-stg.playground.sohosai.com`)
-      traefik.http.routers.sos24-server-stg.entrypoints: websecure
-      traefik.http.routers.sos24-server-stg.tls.certresolver: leresolver
+      traefik.http.services.sos24-server-beta.loadbalancer.server.port: ${PORT}
+      traefik.http.routers.sos24-server-beta.rule: Host(`sos24-api-beta.playground.sohosai.com`)
+      traefik.http.routers.sos24-server-beta.entrypoints: websecure
+      traefik.http.routers.sos24-server-beta.tls.certresolver: leresolver
     networks:
       - portainer-traefik
-      - sos24-server-stg
+      - sos24-server-beta
 
   postgres:
     image: postgres:14.1
@@ -40,7 +40,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     networks:
-      - sos24-server-stg
+      - sos24-server-beta
 
   mongo:
     image: mongo
@@ -51,7 +51,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     networks:
-      - sos24-server-stg
+      - sos24-server-beta
 
 volumes:
   postgres-data:
@@ -59,8 +59,8 @@ volumes:
 
 networks:
   portainer-traefik:
-    name: portainer-traefik
-    external: true
-  sos24-server-stg:
-    name: sos24-server-stg
-    internal: true
+     name: portainer-traefik
+     external: true
+  sos24-server-beta:
+     name: sos24-server-beta
+     internal: true

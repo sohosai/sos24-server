@@ -36,7 +36,7 @@ impl<R: Repositories> FileUseCase<R> {
                 .project_repository()
                 .find_by_id(project_id)
                 .await?
-                .ok_or(FileUseCaseError::OwnerNotFound())?
+                .ok_or(FileUseCaseError::OwnerNotFound)?
                 .value;
             ensure!(project.is_visible_to(&actor));
         }

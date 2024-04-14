@@ -58,6 +58,11 @@ pub struct FormAnswerQuery {
     pub form_id: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct ExportFormAnswerQuery {
+    pub form_id: Option<String>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormAnswer {
     id: String,

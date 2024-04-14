@@ -16,3 +16,4 @@ unicode-segmentation.workspace = true
 uuid.workspace = true
 url.workspace = true
 percent-encoding.workspace = true
+tokio.workspace = true

@@ -132,8 +132,10 @@ impl User {
     }
 
     pub fn set_role(&mut self, actor: &Actor, role: UserRole) -> Result<(), PermissionDeniedError> {
-        ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL));
-        self.role = role;
+        if self.role != role {
+            ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL));
+            self.role = role;
+        }
         Ok(())
     }
 }
@@ -155,6 +157,9 @@ pub enum UserRole {
 pub struct UserEmail(Email);
 
 impl UserEmail {
+    pub fn raw_value(self) -> Email {
+        self.0
+    }
     pub fn value(self) -> String {
         self.0.value()
     }

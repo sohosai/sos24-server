@@ -1,12 +1,12 @@
-name: CD(staging)
-run-name: CD(staging) - ${{ github.event_name }}
+name: CD(beta)
+run-name: CD(beta) - ${{ github.event_name }}
 
 on:
-  pull_request:
-    branches:
-      - develop
-    types:
-      - closed
+#  pull_request:
+#    branches:
+#      - develop
+#    types:
+#      - closed
 
   workflow_dispatch:
     inputs:
@@ -34,7 +34,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/sohosai/sos24-server
-          tags: stg
+          tags: beta
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
@@ -61,9 +61,6 @@ jobs:
               "app-target": "/app/target"
             }
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
-      - name: create demo.sql
-        run: |
-          echo "${{ secrets.DEMO_SQL }}" > migrations/99999999999999_demo.sql
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -93,7 +90,7 @@ jobs:
           STACK_ID=$(echo "${STACKS}" | jq -r --arg STACK_NAME "${STACK_NAME}" '.[] | select(.Name == $STACK_NAME) | .Id')
 
           # PORTAINER_VARIABLE to json
-          mapfile -t env_array <<< "${{ secrets.STG_VARIABLE }}"
+          mapfile -t env_array <<< "${{ secrets.BETA_VARIABLE }}"
           env_data=$(for item in "${env_array[@]}"; do if [ -n "$item" ]; then key=${item%%=*}; value=${item#*=}; echo "{\"name\": \"$key\", \"value\": \"$value\"},"; fi; done)
           env_data="${env_data%,}"
 
@@ -116,10 +113,10 @@ jobs:
             fi
           fi
         env:
-          STACK_NAME: "sos24-server-stg"
+          STACK_NAME: "sos24-server-beta"
           STACK_TYPE: 2
           ENDPOINT_ID: 2
-          COMPOSE_FILE: "docker-compose-stg.yml"
+          COMPOSE_FILE: "docker-compose-beta.yml"
           PRUNE: "true"
           PULL_IMAGE: "true"
           VERIFY_SSL: "true"
@@ -136,8 +133,8 @@ jobs:
           status: ${{ job.status }}
           content: "push-image: ${{ needs.push-image.result }}\ndeploy: ${{ needs.deploy.result }}"
           title: "${{ github.workflow }}"
-          description: "Build and deploy status of sos24-server-staging."
+          description: "Build and deploy status of sos24-server-beta."
           color: 0x0000ff
           url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           username: GitHub Actions
-          avatar_url: https://r2.sohosai.com/logo.png          
+          avatar_url: https://r2.sohosai.com/logo.png
