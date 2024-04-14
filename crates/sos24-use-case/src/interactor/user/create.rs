@@ -1,5 +1,6 @@
+use sos24_domain::entity::firebase_user::FirebaseUserEmail;
 use sos24_domain::{
-    entity::firebase_user::{FirebaseUserEmail, FirebaseUserPassword, NewFirebaseUser},
+    entity::firebase_user::{FirebaseUserPassword, NewFirebaseUser},
     repository::{firebase_user::FirebaseUserRepository, user::UserRepository, Repositories},
 };
 

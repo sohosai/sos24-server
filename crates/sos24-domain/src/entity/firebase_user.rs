@@ -1,10 +1,17 @@
 use getset::{Getters, Setters};
 
+use crate::entity::user::{UserEmail, UserId};
 use crate::impl_value_object;
 
 use super::common::email::{Email, EmailError};
 
 impl_value_object!(FirebaseUserId(String));
+
+impl From<UserId> for FirebaseUserId {
+    fn from(value: UserId) -> Self {
+        Self(value.value())
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct NewFirebaseUser {
@@ -47,6 +54,12 @@ impl TryFrom<String> for FirebaseUserEmail {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let email = Email::try_from(value)?;
         Ok(Self(email))
+    }
+}
+
+impl From<UserEmail> for FirebaseUserEmail {
+    fn from(value: UserEmail) -> Self {
+        Self(value.raw_value())
     }
 }
 

@@ -18,5 +18,12 @@ pub trait FirebaseUserRepository: Send + Sync + 'static {
         &self,
         new_firebase_user: NewFirebaseUser,
     ) -> Result<FirebaseUserId, FirebaseUserRepositoryError>;
+
+    async fn update_email_by_id(
+        &self,
+        id: FirebaseUserId,
+        email: FirebaseUserEmail,
+    ) -> Result<(), FirebaseUserRepositoryError>;
+
     async fn delete_by_id(&self, id: FirebaseUserId) -> Result<(), FirebaseUserRepositoryError>;
 }
