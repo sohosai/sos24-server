@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, name, kana_name, email, phone_number, role AS \"role: UserRoleRow\", created_at, updated_at, deleted_at\n        FROM users\n        WHERE deleted_at IS NULL\n        ORDER BY name ASC",
+  "query": "\n        SELECT id, name, kana_name, email, phone_number, role AS \"role: UserRoleRow\", created_at, updated_at, deleted_at\n        FROM users\n        WHERE deleted_at IS NULL\n        ORDER BY role DESC, email ASC",
   "describe": {
     "columns": [
       {
@@ -76,5 +76,5 @@
       true
     ]
   },
-  "hash": "58c1bd183ef866322113b1601a05e0f83b00b07af1c3f77e65cbbfbc4407ded7"
+  "hash": "a9cb58d0d10560f0477c55498b336536373f8d23d2dafb03f4ca8f150f34aed4"
 }
