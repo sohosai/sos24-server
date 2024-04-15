@@ -60,26 +60,29 @@ impl FirebaseUserRepository for FirebaseUserRepositoryImpl {
         let update = UserUpdate::builder(id.clone().value())
             .email(email.value())
             .build();
-        self.auth
-            .update_user(update)
-            .await
-            .map(|_| ())
-            .map_err(|err| anyhow::anyhow!("Failed to update firebase user: {err}").into())?;
 
-        tracing::info!("Firebaseのユーザーのメールアドレスの更新が完了しました: {id:?}");
-        Ok(())
+        let res = self.auth.update_user(update).await;
+
+        match res {
+            Ok(_) => {
+                tracing::info!("Firebaseのユーザーのメールアドレスの更新が完了しました: {id:?}");
+                Ok(())
+            }
+            Err(err) => Err(anyhow::anyhow!("Failed to update firebase user: {err}").into()),
+        }
     }
 
     async fn delete_by_id(&self, id: FirebaseUserId) -> Result<(), FirebaseUserRepositoryError> {
         tracing::info!("Firebaseのユーザーを削除します: {id:?}");
 
-        self.auth
-            .delete_user(id.clone().value())
-            .await
-            .map_err(|err| anyhow::anyhow!("Failed to delete firebase user: {err}").into())?;
+        let res = self.auth.delete_user(id.clone().value()).await;
 
-        tracing::info!("Firebaseのユーザーの削除が完了しました: {id:?}");
-
-        Ok(())
+        match res {
+            Ok(_) => {
+                tracing::info!("Firebaseのユーザーの削除が完了しました: {id:?}");
+                Ok(())
+            }
+            Err(err) => Err(anyhow::anyhow!("Failed to delete firebase user: {err}").into()),
+        }
     }
 }
