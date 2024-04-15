@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
+use axum::body::Body;
 use axum::extract::{Multipart, Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
-use axum_extra::body::AsyncReadBody;
 use percent_encoding::NON_ALPHANUMERIC;
+use tokio_util::io::ReaderStream;
 
 use sos24_use_case::{context::Context, dto::file::CreateFileDto};
 
@@ -136,10 +137,7 @@ pub async fn handle_export(
     Query(query): Query<ExportFileQuery>,
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, AppError> {
-    fn archive_to_body(
-        filename: String,
-        body: AsyncReadBody,
-    ) -> Result<impl IntoResponse, AppError> {
+    fn archive_to_body(filename: String, body: Body) -> Result<impl IntoResponse, AppError> {
         let encoded_filename =
             percent_encoding::percent_encode(filename.as_bytes(), NON_ALPHANUMERIC);
         Response::builder()
@@ -172,7 +170,10 @@ pub async fn handle_export(
                     tracing::error!("Failed to export file: {err:?}");
                     AppError::from(err)
                 })?;
-            archive_to_body(archive.filename, AsyncReadBody::new(archive.body))
+            archive_to_body(
+                archive.filename,
+                Body::from_stream(ReaderStream::new(archive.body)),
+            )
         }
         (None, Some(form_id)) => {
             let archive = modules
@@ -183,7 +184,10 @@ pub async fn handle_export(
                     tracing::error!("Failed to export file: {err:?}");
                     AppError::from(err)
                 })?;
-            archive_to_body(archive.filename, AsyncReadBody::new(archive.body))
+            archive_to_body(
+                archive.filename,
+                Body::from_stream(ReaderStream::new(archive.body)),
+            )
         }
         _ => Err(AppError::new(
             StatusCode::BAD_REQUEST,
