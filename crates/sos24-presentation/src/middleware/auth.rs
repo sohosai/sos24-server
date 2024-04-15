@@ -11,6 +11,7 @@ use jsonwebtoken::{
     decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation,
 };
 use serde::{Deserialize, Serialize};
+
 use sos24_use_case::context::Context;
 
 use crate::{error::AppError, module::Modules};
@@ -33,6 +34,8 @@ pub(crate) async fn jwt_auth(
     mut request: Request,
     next: Next,
 ) -> Result<impl IntoResponse, AppError> {
+    tracing::info!("ユーザー認証を行います");
+
     let authorization_header = request.headers().get("Authorization").ok_or(AppError::new(
         StatusCode::UNAUTHORIZED,
         "auth/missing-authorization-header".to_string(),
@@ -81,6 +84,7 @@ pub(crate) async fn jwt_auth(
     let ctx = Context::new(token.claims.sub.clone());
     request.extensions_mut().insert(ctx);
 
+    tracing::info!("ユーザー認証が完了しました");
     Ok(next.run(request).await)
 }
 
