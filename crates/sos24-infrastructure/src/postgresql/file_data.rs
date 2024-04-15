@@ -32,7 +32,7 @@ impl TryFrom<FileDataRow> for WithDate<FileData> {
         Ok(WithDate::new(
             FileData::new(
                 FileId::new(value.id),
-                FileName::new(value.name),
+                FileName::sanitized(value.name),
                 FileObjectKey::new(value.url),
                 value.owner_project.map(ProjectId::new),
             ),

@@ -79,7 +79,7 @@ impl<R: Repositories> FileUseCase<R> {
                     );
                     file_list.push(ArchiveEntry::new(
                         file_data.url,
-                        FileName::new(filename),
+                        FileName::sanitized(filename),
                         file.updated_at,
                     ));
                 }
