@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use tokio::io::AsyncRead;
 
+use sos24_domain::entity::file_object::ArchiveEntry;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::ProjectId;
 use sos24_domain::repository::file_object::FileObjectRepository;
@@ -37,7 +38,13 @@ impl<R: Repositories> FileUseCase<R> {
             .repositories
             .file_data_repository()
             .find_by_owner_project(owner_project)
-            .await?;
+            .await?
+            .into_iter()
+            .map(|file| {
+                let file_data = file.value.destruct();
+                ArchiveEntry::new(file_data.url, file_data.name, file.updated_at)
+            })
+            .collect();
 
         let archive = self
             .repositories

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use tokio::io::AsyncRead;
 
+use sos24_domain::entity::file_object::ArchiveEntry;
 use sos24_domain::entity::form::FormId;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::file_object::FileObjectRepository;
@@ -49,7 +50,12 @@ impl<R: Repositories> FileUseCase<R> {
                     .find_by_id(file_id.clone())
                     .await?
                     .ok_or(FileUseCaseError::NotFound(file_id))?;
-                file_list.push(file);
+                let file_data = file.value.destruct();
+                file_list.push(ArchiveEntry::new(
+                    file_data.url,
+                    file_data.name,
+                    file.updated_at,
+                ));
             }
         }
 
