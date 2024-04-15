@@ -80,6 +80,8 @@ impl PgInvitationRepository {
 
 impl InvitationRepository for PgInvitationRepository {
     async fn list(&self) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError> {
+        tracing::info!("招待一覧を取得します");
+
         let invitations_list = sqlx::query_as!(
             InvitationRow,
             r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE deleted_at IS NULL"#
@@ -89,10 +91,14 @@ impl InvitationRepository for PgInvitationRepository {
             .try_collect()
             .await
             .context("Failed to fetch invitations list")?;
+
+        tracing::info!("招待一覧を取得しました");
         Ok(invitations_list)
     }
 
     async fn create(&self, invitation: Invitation) -> Result<(), InvitationRepositoryError> {
+        tracing::info!("招待を作成します");
+
         let invitation = invitation.destruct();
         sqlx::query!(
             r#"INSERT INTO invitations (id, inviter, project_id, position) VALUES ($1, $2, $3, $4)"#,
@@ -104,6 +110,8 @@ impl InvitationRepository for PgInvitationRepository {
             .execute(&*self.db)
             .await
             .context("Failed to create invitation")?;
+
+        tracing::info!("招待を作成しました");
         Ok(())
     }
 
@@ -111,14 +119,18 @@ impl InvitationRepository for PgInvitationRepository {
         &self,
         id: InvitationId,
     ) -> Result<Option<WithDate<Invitation>>, InvitationRepositoryError> {
+        tracing::info!("招待を取得します: {id:?}");
+
         let invitation_row = sqlx::query_as!(
             InvitationRow,
             r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
             .fetch_optional(&*self.db)
             .await
             .context("Failed to fetch invitation")?;
+
+        tracing::info!("招待を取得しました: {id:?}");
         Ok(invitation_row.map(WithDate::from))
     }
 
@@ -126,20 +138,26 @@ impl InvitationRepository for PgInvitationRepository {
         &self,
         inviter: UserId,
     ) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError> {
+        tracing::info!("招待を取得します: {inviter:?}");
+
         let invitation_list = sqlx::query_as!(
             InvitationRow,
             r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE inviter = $1 AND deleted_at IS NULL"#,
-            inviter.value(),
+            inviter.clone().value(),
         )
             .fetch(&*self.db)
             .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
             .try_collect()
             .await
             .context("Failed to fetch invitation")?;
+
+        tracing::info!("招待を取得しました: {inviter:?}");
         Ok(invitation_list)
     }
 
     async fn update(&self, invitation: Invitation) -> Result<(), InvitationRepositoryError> {
+        tracing::info!("招待を更新します");
+
         let invitation = invitation.destruct();
         sqlx::query!(
             r#"UPDATE invitations SET inviter = $2, project_id = $3, position = $4, used_by = $5 WHERE id = $1 AND deleted_at IS NULL"#,
@@ -152,17 +170,23 @@ impl InvitationRepository for PgInvitationRepository {
             .execute(&*self.db)
             .await
             .context("Failed to update invitation")?;
+
+        tracing::info!("招待を更新しました");
         Ok(())
     }
 
     async fn delete_by_id(&self, id: InvitationId) -> Result<(), InvitationRepositoryError> {
+        tracing::info!("招待を削除します: {id:?}");
+
         sqlx::query!(
             r#"UPDATE invitations SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
         .execute(&*self.db)
         .await
         .context("Failed to delete invitation")?;
+
+        tracing::info!("招待を削除しました: {id:?}");
         Ok(())
     }
 }

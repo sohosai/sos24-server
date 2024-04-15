@@ -56,6 +56,8 @@ impl PgNewsRepository {
 
 impl NewsRepository for PgNewsRepository {
     async fn list(&self) -> Result<Vec<WithDate<News>>, NewsRepositoryError> {
+        tracing::info!("お知らせ一覧を取得します");
+
         let news_list = sqlx::query_as!(
             NewsRow,
             r#"SELECT * FROM news WHERE deleted_at IS NULL ORDER BY created_at DESC"#
@@ -65,10 +67,14 @@ impl NewsRepository for PgNewsRepository {
         .try_collect()
         .await
         .context("Failed to fetch news list")?;
+
+        tracing::info!("お知らせ一覧を取得しました");
         Ok(news_list)
     }
 
     async fn create(&self, news: News) -> Result<(), NewsRepositoryError> {
+        tracing::info!("お知らせを作成します");
+
         let news = news.destruct();
         sqlx::query!(
             r#"INSERT INTO news (id, title, body, attachments, categories, attributes) VALUES ($1, $2, $3, $4, $5, $6)"#,
@@ -82,22 +88,30 @@ impl NewsRepository for PgNewsRepository {
             .execute(&*self.db)
             .await
             .context("Failed to create news")?;
+
+        tracing::info!("お知らせを作成しました");
         Ok(())
     }
 
     async fn find_by_id(&self, id: NewsId) -> Result<Option<WithDate<News>>, NewsRepositoryError> {
+        tracing::info!("お知らせを取得します: {id:?}");
+
         let news_row = sqlx::query_as!(
             NewsRow,
             r#"SELECT * FROM news WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
         .fetch_optional(&*self.db)
         .await
         .context("Failed to fetch news")?;
+
+        tracing::info!("お知らせを取得しました: {id:?}");
         Ok(news_row.map(WithDate::try_from).transpose()?)
     }
 
     async fn update(&self, news: News) -> Result<(), NewsRepositoryError> {
+        tracing::info!("お知らせを更新します");
+
         let news = news.destruct();
         sqlx::query!(
             r#"UPDATE news SET title = $2, body = $3, attachments = $4, categories = $5, attributes = $6 WHERE id = $1 and deleted_at IS NULL"#,
@@ -111,17 +125,23 @@ impl NewsRepository for PgNewsRepository {
             .execute(&*self.db)
             .await
             .context("Failed to update news")?;
+
+        tracing::info!("お知らせを更新しました");
         Ok(())
     }
 
     async fn delete_by_id(&self, id: NewsId) -> Result<(), NewsRepositoryError> {
+        tracing::info!("お知らせを削除します: {id:?}");
+
         sqlx::query!(
             r#"UPDATE news SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
         .execute(&*self.db)
         .await
         .context("Failed to delete news")?;
+
+        tracing::info!("お知らせを削除しました: {id:?}");
         Ok(())
     }
 }

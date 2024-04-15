@@ -55,6 +55,8 @@ impl PgFileDataRepository {
 
 impl FileDataRepository for PgFileDataRepository {
     async fn list(&self) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError> {
+        tracing::info!("ファイルデータ一覧を取得しています");
+
         let file_data_list = sqlx::query_as!(
             FileDataRow,
             r#"SELECT * FROM files WHERE deleted_at IS NULL"#
@@ -65,12 +67,14 @@ impl FileDataRepository for PgFileDataRepository {
         .await
         .context("Failed to fetch file data list")?;
 
+        tracing::info!("ファイルデータ一覧の取得が完了しました");
         Ok(file_data_list)
     }
 
     async fn create(&self, file_data: FileData) -> Result<(), FileDataRepositoryError> {
-        let file_data = file_data.destruct();
+        tracing::info!("ファイルデータを作成しています");
 
+        let file_data = file_data.destruct();
         sqlx::query!(
             r#"INSERT INTO files (id, name, url, owner_project) VALUES ($1, $2, $3, $4)"#,
             file_data.id.value(),
@@ -82,6 +86,7 @@ impl FileDataRepository for PgFileDataRepository {
         .await
         .context("Failed to create file data")?;
 
+        tracing::info!("ファイルデータの作成が完了しました");
         Ok(())
     }
 
@@ -89,15 +94,18 @@ impl FileDataRepository for PgFileDataRepository {
         &self,
         id: FileId,
     ) -> Result<Option<WithDate<FileData>>, FileDataRepositoryError> {
+        tracing::info!("ファイルデータを取得しています: {id:?}");
+
         let file_data_row = sqlx::query_as!(
             FileDataRow,
             r#"SELECT * FROM files WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
         .fetch_optional(&*self.db)
         .await
         .context("Failed to fetch file data")?;
 
+        tracing::info!("ファイルデータの取得が完了しました: {id:?}");
         Ok(file_data_row.map(WithDate::try_from).transpose()?)
     }
 
@@ -105,10 +113,12 @@ impl FileDataRepository for PgFileDataRepository {
         &self,
         owner_project: ProjectId,
     ) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError> {
+        tracing::info!("プロジェクトに紐づくファイルデータを取得しています: {owner_project:?}");
+
         let file_data_list = sqlx::query_as!(
             FileDataRow,
             r#"SELECT * FROM files WHERE owner_project = $1 AND deleted_at IS NULL"#,
-            owner_project.value()
+            owner_project.clone().value()
         )
         .fetch(&*self.db)
         .map(|row| WithDate::try_from(row?))
@@ -116,17 +126,22 @@ impl FileDataRepository for PgFileDataRepository {
         .await
         .context("Failed to fetch file data list by owner")?;
 
+        tracing::info!("プロジェクトに紐づくファイルデータの取得が完了しました: {owner_project:?}");
         Ok(file_data_list)
     }
 
     async fn delete_by_id(&self, id: FileId) -> Result<(), FileDataRepositoryError> {
+        tracing::info!("ファイルデータを削除しています: {id:?}");
+
         sqlx::query!(
             r#"UPDATE files SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
         .execute(&*self.db)
         .await
         .context("Failed to delete file data")?;
+
+        tracing::info!("ファイルデータの削除が完了しました: {id:?}");
         Ok(())
     }
 }
