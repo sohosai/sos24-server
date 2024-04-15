@@ -83,6 +83,17 @@ impl FormAnswer {
         self.items = items;
         Ok(())
     }
+
+    pub fn list_files(&self) -> Vec<FileId> {
+        self.items
+            .iter()
+            .filter_map(|item| match &item.kind {
+                FormAnswerItemKind::File(file) => Some(file.clone().value()),
+                _ => None,
+            })
+            .flatten()
+            .collect()
+    }
 }
 
 impl_value_object!(FormAnswerId(uuid::Uuid));
