@@ -174,6 +174,8 @@ impl MongoFormAnswerRepository {
 
 impl FormAnswerRepository for MongoFormAnswerRepository {
     async fn list(&self) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+        tracing::info!("申請回答一覧を取得します");
+
         let form_answer_list = self
             .collection
             .aggregate(
@@ -189,15 +191,21 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
+
+        tracing::info!("申請回答一覧を取得しました");
         Ok(form_answers)
     }
 
     async fn create(&self, form_answer: FormAnswer) -> Result<(), FormAnswerRepositoryError> {
+        tracing::info!("申請回答を作成します");
+
         let form_answer_doc = FormAnswerDoc::from(form_answer);
         self.collection
             .insert_one(form_answer_doc, None)
             .await
             .context("Failed to insert form answer")?;
+
+        tracing::info!("申請回答を作成しました");
         Ok(())
     }
 
@@ -205,11 +213,15 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         &self,
         id: FormAnswerId,
     ) -> Result<Option<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+        tracing::info!("申請回答を取得します: {id:?}");
+
         let form_answer_doc = self
             .collection
-            .find_one(doc! { "_id": id.value() }, None)
+            .find_one(doc! { "_id": id.clone().value() }, None)
             .await
             .context("Failed to find form answer")?;
+
+        tracing::info!("申請回答を取得しました: {id:?}");
         Ok(form_answer_doc.map(WithDate::try_from).transpose()?)
     }
 
@@ -217,10 +229,12 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         &self,
         project_id: ProjectId,
     ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+        tracing::info!("企画の申請回答を取得します: {project_id:?}");
+
         let form_answer_list = self
             .collection
             .aggregate(vec![
-                doc! { "$match": { "project_id": project_id.value(),  "deleted_at": None::<String> } },
+                doc! { "$match": { "project_id": project_id.clone().value(),  "deleted_at": None::<String> } },
                 doc! { "$sort": { "created_at": 1 } },
             ], None)
             .await
@@ -229,6 +243,8 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
+
+        tracing::info!("企画の申請回答を取得しました: {project_id:?}");
         Ok(form_answers)
     }
 
@@ -236,11 +252,13 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         &self,
         form_id: FormId,
     ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+        tracing::info!("申請の回答を取得します: {form_id:?}");
+
         let form_answer_list = self
             .collection
             .aggregate(
                 vec![
-                    doc! { "$match": { "form_id": form_id.value(), "deleted_at": None::<String> } },
+                    doc! { "$match": { "form_id": form_id.clone().value(), "deleted_at": None::<String> } },
                     doc! { "$sort": { "created_at": 1 } },
                 ],
                 None,
@@ -251,6 +269,8 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
+
+        tracing::info!("申請の回答を取得しました: {form_id:?}");
         Ok(form_answers)
     }
 
@@ -259,18 +279,24 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         project_id: ProjectId,
         form_id: FormId,
     ) -> Result<Option<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+        tracing::info!("企画の申請の回答を取得します: {project_id:?}, {form_id:?}");
+
         let form_answer_doc = self
             .collection
             .find_one(
-                doc! { "project_id": project_id.value(), "form_id": form_id.value() },
+                doc! { "project_id": project_id.clone().value(), "form_id": form_id.clone().value() },
                 None,
             )
             .await
             .context("Failed to find form answer")?;
+
+        tracing::info!("企画の申請の回答を取得しました: {project_id:?}, {form_id:?}");
         Ok(form_answer_doc.map(WithDate::try_from).transpose()?)
     }
 
     async fn update(&self, form_answer: FormAnswer) -> Result<(), FormAnswerRepositoryError> {
+        tracing::info!("申請回答を更新します");
+
         let form_answer_doc = FormAnswerDoc::from(form_answer);
         self.collection
             .update_one(
@@ -287,6 +313,8 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             )
             .await
             .context("Failed to update form")?;
+
+        tracing::info!("申請回答を更新しました");
         Ok(())
     }
 }

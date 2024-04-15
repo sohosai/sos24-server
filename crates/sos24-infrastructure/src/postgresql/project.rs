@@ -114,6 +114,8 @@ impl PgProjectRepository {
 
 impl ProjectRepository for PgProjectRepository {
     async fn list(&self) -> Result<Vec<WithDate<Project>>, ProjectRepositoryError> {
+        tracing::info!("企画一覧を取得します");
+
         let project_list = sqlx::query_as!(
             ProjectRow,
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
@@ -125,10 +127,14 @@ impl ProjectRepository for PgProjectRepository {
             .try_collect()
             .await
             .context("Failed to fetch project list")?;
+
+        tracing::info!("企画一覧を取得しました");
         Ok(project_list)
     }
 
     async fn create(&self, project: Project) -> Result<(), ProjectRepositoryError> {
+        tracing::info!("企画を作成します");
+
         let project = project.destruct();
         sqlx::query!(
         r#"INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks)
@@ -146,6 +152,8 @@ impl ProjectRepository for PgProjectRepository {
             .execute(&*self.db)
             .await
             .context("Failed to create project")?;
+
+        tracing::info!("企画を作成しました");
         Ok(())
     }
 
@@ -153,16 +161,20 @@ impl ProjectRepository for PgProjectRepository {
         &self,
         id: ProjectId,
     ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+        tracing::info!("企画を取得します: {id:?}");
+
         let project_row = sqlx::query_as!(
             ProjectRow,
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
             FROM projects
             WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
             .fetch_optional(&*self.db)
             .await
             .context("Failed to fetch project")?;
+
+        tracing::info!("企画を取得しました: {id:?}");
         Ok(project_row.map(WithDate::try_from).transpose()?)
     }
 
@@ -170,16 +182,20 @@ impl ProjectRepository for PgProjectRepository {
         &self,
         owner_id: UserId,
     ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+        tracing::info!("企画責任者に紐づく企画を取得します: {owner_id:?}");
+
         let project_row = sqlx::query_as!(
             ProjectRow,
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
             FROM projects
             WHERE owner_id = $1 AND deleted_at IS NULL"#,
-            owner_id.value()
+            owner_id.clone().value()
         )
             .fetch_optional(&*self.db)
             .await
             .context("Failed to fetch project")?;
+
+        tracing::info!("企画責任者に紐づく企画を取得しました: {owner_id:?}");
         Ok(project_row.map(WithDate::try_from).transpose()?)
     }
 
@@ -187,19 +203,25 @@ impl ProjectRepository for PgProjectRepository {
         &self,
         sub_owner_id: UserId,
     ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+        tracing::info!("副企画責任者に紐づく企画を取得します: {sub_owner_id:?}");
+
         let project_row = sqlx::query_as!(
             ProjectRow,
             r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
             FROM projects
             WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
-            sub_owner_id.value()
+            sub_owner_id.clone().value()
         ).fetch_optional(&*self.db)
             .await
             .context("Failed to fetch project")?;
+
+        tracing::info!("副企画責任者に紐づく企画を取得しました: {sub_owner_id:?}");
         Ok(project_row.map(WithDate::try_from).transpose()?)
     }
 
     async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {
+        tracing::info!("企画を更新します");
+
         let project = project.destruct();
         sqlx::query!(
             r#"UPDATE projects
@@ -219,19 +241,25 @@ impl ProjectRepository for PgProjectRepository {
             .execute(&*self.db)
             .await
             .context("Failed to update project")?;
+
+        tracing::info!("企画を更新しました");
         Ok(())
     }
 
     async fn delete_by_id(&self, id: ProjectId) -> Result<(), ProjectRepositoryError> {
+        tracing::info!("企画を削除します: {id:?}");
+
         sqlx::query!(
             r#"UPDATE projects
             SET deleted_at = NOW()
             WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value()
+            id.clone().value()
         )
         .execute(&*self.db)
         .await
         .context("Failed to delete project")?;
+
+        tracing::info!("企画を削除しました: {id:?}");
         Ok(())
     }
 }
