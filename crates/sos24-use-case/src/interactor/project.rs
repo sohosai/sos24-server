@@ -4,6 +4,9 @@ use thiserror::Error;
 
 use sos24_domain::entity::project::BoundedStringError;
 use sos24_domain::entity::user::UserId;
+use sos24_domain::repository::file_data::FileDataRepositoryError;
+use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
+use sos24_domain::repository::invitation::InvitationRepositoryError;
 use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::{
     entity::{
@@ -35,6 +38,12 @@ pub enum ProjectUseCaseError {
     #[error("User not found: {0:?}")]
     UserNotFound(UserId),
 
+    #[error(transparent)]
+    FormAnswerRepositoryError(#[from] FormAnswerRepositoryError),
+    #[error(transparent)]
+    InvitationRepositoryError(#[from] InvitationRepositoryError),
+    #[error(transparent)]
+    FileDataRepositoryError(#[from] FileDataRepositoryError),
     #[error(transparent)]
     UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]

@@ -331,6 +331,9 @@ impl From<ProjectUseCaseError> for AppError {
             ProjectUseCaseError::PermissionDeniedError(e) => e.into(),
             ProjectUseCaseError::InternalError(e) => e.into(),
             ProjectUseCaseError::UserRepositoryError(e) => e.into(),
+            ProjectUseCaseError::FormAnswerRepositoryError(e) => e.into(),
+            ProjectUseCaseError::InvitationRepositoryError(e) => e.into(),
+            ProjectUseCaseError::FileDataRepositoryError(e) => e.into(),
         }
     }
 }
