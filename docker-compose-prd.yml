@@ -65,6 +65,7 @@ services:
       - traefik.http.routers.dashboard.service=api@internal
       - traefik.http.routers.dashboard.rule=Host(`sos24-production.server.sohosai.internal`)
     ports:
+      - "8080:8080"
       - "80:80"
       - "443:443"
     volumes:
