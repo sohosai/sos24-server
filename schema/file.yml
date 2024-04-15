@@ -160,6 +160,48 @@ paths:
               schema:
                 $ref: "./error.yml#/schemas/Error"
 
+  /files/export:
+    get:
+      operationId: getFilesExport
+      summary: ファイル一覧のエクスポート
+      tags:
+        - files
+        - committee
+      parameters:
+        - name: form_id
+          in: query
+          schema: { type: string }
+          required: false
+        - name: project_id
+          in: query
+          schema: { type: string }
+          required: false
+      responses:
+        200:
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "./error.yml#/schemas/Error"
+
 schemas:
   CreateFile:
     type: object
