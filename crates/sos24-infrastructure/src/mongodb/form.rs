@@ -247,6 +247,8 @@ impl MongoFormRepository {
 
 impl FormRepository for MongoFormRepository {
     async fn list(&self) -> Result<Vec<WithDate<Form>>, FormRepositoryError> {
+        tracing::info!("申請一覧を取得します");
+
         let form_list = self
             .collection
             .aggregate(
@@ -262,31 +264,43 @@ impl FormRepository for MongoFormRepository {
             .map(|doc| WithDate::try_from(bson::from_document::<FormDoc>(doc?)?))
             .try_collect()
             .await?;
+
+        tracing::info!("申請一覧を取得しました");
         Ok(forms)
     }
 
     async fn create(&self, form: Form) -> Result<(), FormRepositoryError> {
+        tracing::info!("申請を作成します");
+
         let form_doc = FormDoc::from(form);
         self.collection
             .insert_one(form_doc, None)
             .await
             .context("Failed to create form")?;
+
+        tracing::info!("申請を作成しました");
         Ok(())
     }
 
     async fn find_by_id(&self, id: FormId) -> Result<Option<WithDate<Form>>, FormRepositoryError> {
+        tracing::info!("申請を取得します: {id:?}");
+
         let form_doc = self
             .collection
             .find_one(
-                doc! { "_id": id.value(),  "deleted_at": None::<String>  },
+                doc! { "_id": id.clone().value(),  "deleted_at": None::<String>  },
                 None,
             )
             .await
             .context("Failed to find form")?;
+
+        tracing::info!("申請を取得しました: {id:?}");
         Ok(form_doc.map(WithDate::try_from).transpose()?)
     }
 
     async fn update(&self, form: Form) -> Result<(), FormRepositoryError> {
+        tracing::info!("申請を更新します");
+
         let form_doc = FormDoc::from(form);
         self.collection
             .update_one(
@@ -307,18 +321,24 @@ impl FormRepository for MongoFormRepository {
             )
             .await
             .context("Failed to update form")?;
+
+        tracing::info!("申請を更新しました");
         Ok(())
     }
 
     async fn delete_by_id(&self, id: FormId) -> Result<(), FormRepositoryError> {
+        tracing::info!("申請を削除します: {id:?}");
+
         self.collection
             .update_one(
-                doc! { "_id": id.value(),  "deleted_at": None::<String> },
+                doc! { "_id": id.clone().value(),  "deleted_at": None::<String> },
                 doc! { "$set": { "deleted_at": chrono::Utc::now() } },
                 None,
             )
             .await
             .context("Failed to delete form")?;
+
+        tracing::info!("申請を削除しました: {id:?}");
         Ok(())
     }
 }

@@ -32,6 +32,8 @@ impl FileObjectRepository for S3FileObjectRepository {
         bucket: String,
         object: FileObject,
     ) -> Result<(), FileObjectRepositoryError> {
+        tracing::info!("ファイルをS3にアップロードします");
+
         let raw_file_object = object.destruct();
         self.s3
             .put_object()
@@ -41,6 +43,8 @@ impl FileObjectRepository for S3FileObjectRepository {
             .send()
             .await
             .context("failed to create object")?;
+
+        tracing::info!("ファイルのアップロードが完了しました");
         Ok(())
     }
 
@@ -50,6 +54,8 @@ impl FileObjectRepository for S3FileObjectRepository {
         key: FileObjectKey,
         content_disposition: Option<ContentDisposition>,
     ) -> Result<FileSignedUrl, FileObjectRepositoryError> {
+        tracing::info!("ファイルの署名付きURLを生成します: {key:?}");
+
         let presign_config = PresigningConfig::builder()
             .expires_in(Duration::new(3000, 0))
             .build()
@@ -58,11 +64,13 @@ impl FileObjectRepository for S3FileObjectRepository {
             .s3
             .get_object()
             .bucket(bucket)
-            .key(key.value())
+            .key(key.clone().value())
             .set_response_content_disposition(content_disposition.map(|value| value.value()))
             .presigned(presign_config)
             .await
             .context("Failed to generate presign url")?;
+
+        tracing::info!("ファイルの署名付きURLを生成しました: {key:?}");
         Ok(FileSignedUrl::try_from(request.uri()).context("Failed to parse")?)
     }
 
@@ -71,6 +79,8 @@ impl FileObjectRepository for S3FileObjectRepository {
         bucket: String,
         files: Vec<WithDate<FileData>>,
     ) -> Result<DuplexStream, FileObjectRepositoryError> {
+        tracing::info!("ファイルのアーカイブを作成します");
+
         let (writer, reader) = tokio::io::duplex(65535);
         let mut zip_writer = ZipFileWriter::with_tokio(writer);
 
@@ -108,6 +118,7 @@ impl FileObjectRepository for S3FileObjectRepository {
 
         zip_writer.close().await.context("Failed to close")?;
 
+        tracing::info!("ファイルのアーカイブを作成しました");
         Ok(reader)
     }
 }

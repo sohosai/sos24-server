@@ -91,6 +91,8 @@ impl PgUserRepository {
 
 impl UserRepository for PgUserRepository {
     async fn list(&self) -> Result<Vec<WithDate<User>>, UserRepositoryError> {
+        tracing::info!("ユーザー一覧を取得します");
+
         let user_list = sqlx::query_as!(UserRow, r#"
         SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at
         FROM users
@@ -100,10 +102,14 @@ impl UserRepository for PgUserRepository {
             .map(|row| WithDate::try_from(row.context("Failed to fetch user list")?))
             .try_collect()
             .await?;
+
+        tracing::info!("ユーザー一覧を取得しました");
         Ok(user_list)
     }
 
     async fn create(&self, user: User) -> Result<(), UserRepositoryError> {
+        tracing::info!("ユーザーを作成します");
+
         let user = user.destruct();
         let res = sqlx::query!(
             r#"
@@ -118,6 +124,7 @@ impl UserRepository for PgUserRepository {
         .execute(&*self.db)
         .await;
 
+        tracing::info!("ユーザーを作成しました");
         match res {
             Ok(_) => Ok(()),
             Err(e) => match e.as_database_error() {
@@ -133,20 +140,26 @@ impl UserRepository for PgUserRepository {
     }
 
     async fn find_by_id(&self, id: UserId) -> Result<Option<WithDate<User>>, UserRepositoryError> {
+        tracing::info!("ユーザーを取得します: {id:?}");
+
         let user_row = sqlx::query_as!(
             UserRow,
             r#"SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at
             FROM users
             WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value(),
+            id.clone().value(),
         )
             .fetch_optional(&*self.db)
             .await
             .context("Failed to fetch user by id")?;
+
+        tracing::info!("ユーザーを取得しました: {id:?}");
         Ok(user_row.map(WithDate::try_from).transpose()?)
     }
 
     async fn update(&self, user: User) -> Result<(), UserRepositoryError> {
+        tracing::info!("ユーザーを更新します");
+
         let user = user.destruct();
         sqlx::query!(
             r#"UPDATE users
@@ -162,19 +175,25 @@ impl UserRepository for PgUserRepository {
         .execute(&*self.db)
         .await
         .context("Failed to update user")?;
+
+        tracing::info!("ユーザーを更新しました");
         Ok(())
     }
 
     async fn delete_by_id(&self, id: UserId) -> Result<(), UserRepositoryError> {
+        tracing::info!("ユーザーを削除します: {id:?}");
+
         sqlx::query!(
             r#"UPDATE users
             SET deleted_at = NOW()
             WHERE id = $1 AND deleted_at IS NULL"#,
-            id.value(),
+            id.clone().value(),
         )
         .execute(&*self.db)
         .await
         .context("Failed to delete user")?;
+
+        tracing::info!("ユーザーを削除しました: {id:?}");
         Ok(())
     }
 }
