@@ -1,4 +1,5 @@
 use thiserror::Error;
+use unicode_segmentation::UnicodeSegmentation;
 
 use crate::entity::{
     form::{
@@ -95,17 +96,18 @@ fn verify_item_string(
     answer_string: FormAnswerItemString,
 ) -> Result<(), VerifyFormAnswerError> {
     let value = answer_string.value();
+    let value_len = value.graphemes(true).count();
 
     if let Some(min_length) = form_string.min_length().clone() {
         let min_length = min_length.value();
-        if value.chars().count() < min_length as usize {
+        if value_len < min_length as usize {
             return Err(VerifyFormAnswerError::TooShortString(item_id, min_length));
         }
     }
 
     if let Some(max_length) = form_string.max_length().clone() {
         let max_length = max_length.value();
-        if value.chars().count() > max_length as usize {
+        if value_len > max_length as usize {
             return Err(VerifyFormAnswerError::TooLongString(item_id, max_length));
         }
     }
