@@ -69,13 +69,12 @@ impl<R: Repositories> FileUseCase<R> {
                     let file_data = file.value.destruct();
 
                     let filename = format!(
-                        "{}_{}_{}_{}_{}_{}_{}",
-                        form.value.title().clone().value(),
+                        "{}/{}_{}_{}_{}_{}",
                         form_item.name().clone().value(),
                         project.index.clone().value(),
                         project.title.clone().value(),
                         project.group_name.clone().value(),
-                        index,
+                        index + 1,
                         file_data.name.clone().value(),
                     );
                     file_list.push(ArchiveEntry::new(
