@@ -32,7 +32,6 @@ impl<R: Repositories> FileUseCase<R> {
             .await?
             .ok_or(FileUseCaseError::ProjectNotFound(owner_project.clone()))?;
         ensure!(raw_project.value.is_visible_to(&actor));
-        let project = raw_project.value.destruct();
 
         let file_list = self
             .repositories
@@ -45,8 +44,10 @@ impl<R: Repositories> FileUseCase<R> {
             .file_object_repository()
             .create_archive(bucket, file_list)
             .await?;
+
+        let project = raw_project.value.destruct();
         Ok(ArchiveToBeExportedDto {
-            owner_project_title: project.title.value(),
+            filename: format!("{}_ファイル一覧.zip", project.title.value()),
             body: archive,
         })
     }

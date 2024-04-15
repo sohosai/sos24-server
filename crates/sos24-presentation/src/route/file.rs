@@ -153,15 +153,15 @@ pub async fn handle_export(
             AppError::from(err)
         })?;
 
-    let filename = format!("{}_ファイル一覧.zip", archive.owner_project_title);
-    let encoded_filename = percent_encoding::percent_encode(filename.as_bytes(), NON_ALPHANUMERIC);
+    let encoded_filename =
+        percent_encoding::percent_encode(archive.filename.as_bytes(), NON_ALPHANUMERIC);
     Response::builder()
         .header("Content-Type", "application/zip")
         .header(
             "Content-Disposition",
             format!(
                 "attachment; filename=\"{}\" filename*=UTF-8''{}",
-                filename, encoded_filename
+                archive.filename, encoded_filename
             ),
         )
         .body(AsyncReadBody::new(archive.body))

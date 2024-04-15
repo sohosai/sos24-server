@@ -87,6 +87,6 @@ impl FromEntity for FileDto {
 }
 
 pub struct ArchiveToBeExportedDto<R: AsyncRead> {
-    pub owner_project_title: String,
+    pub filename: String,
     pub body: R,
 }
