@@ -77,14 +77,16 @@ impl FileObjectRepository for S3FileObjectRepository {
         &self,
         bucket: String,
         entry_list: Vec<ArchiveEntry>,
-    ) -> Result<DuplexStream, FileObjectRepositoryError> {
+        writer: DuplexStream,
+    ) -> Result<(), FileObjectRepositoryError> {
         tracing::info!("ファイルのアーカイブを作成します");
 
-        let (writer, reader) = tokio::io::duplex(65535);
         let mut zip_writer = ZipFileWriter::with_tokio(writer);
 
         for entry in entry_list {
             let entry = entry.destruct();
+            tracing::info!("ファイルをアーカイブに追加します: {:?}", entry.key);
+
             let file_data = self
                 .s3
                 .get_object()
@@ -104,7 +106,7 @@ impl FileObjectRepository for S3FileObjectRepository {
                 .context("Failed to write entry")?
                 .compat_write();
 
-            tokio::io::copy(&mut file_data_stream, &mut zip_entry_stream)
+            tokio::io::copy_buf(&mut file_data_stream, &mut zip_entry_stream)
                 .await
                 .context("Failed to copy")?;
 
@@ -113,11 +115,13 @@ impl FileObjectRepository for S3FileObjectRepository {
                 .close()
                 .await
                 .context("Failed to close")?;
+
+            tracing::info!("ファイルをアーカイブに追加しました");
         }
 
         zip_writer.close().await.context("Failed to close")?;
 
         tracing::info!("ファイルのアーカイブを作成しました");
-        Ok(reader)
+        Ok(())
     }
 }

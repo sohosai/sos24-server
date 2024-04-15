@@ -46,16 +46,22 @@ impl<R: Repositories> FileUseCase<R> {
             })
             .collect();
 
-        let archive = self
-            .repositories
-            .file_object_repository()
-            .create_archive(bucket, file_list)
-            .await?;
+        let (writer, reader) = tokio::io::duplex(65535);
+        let repositories = Arc::clone(&self.repositories);
+        tokio::spawn(async move {
+            if let Err(err) = repositories
+                .file_object_repository()
+                .create_archive(bucket, file_list, writer)
+                .await
+            {
+                tracing::error!("Failed to create archive: {err:?}");
+            }
+        });
 
         let project = raw_project.value.destruct();
         Ok(ArchiveToBeExportedDto {
             filename: format!("{}_ファイル一覧.zip", project.title.value()),
-            body: archive,
+            body: reader,
         })
     }
 }

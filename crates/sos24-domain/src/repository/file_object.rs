@@ -27,9 +27,10 @@ pub trait FileObjectRepository: Send + Sync + 'static {
         content_disposition: Option<ContentDisposition>,
     ) -> Result<FileSignedUrl, FileObjectRepositoryError>;
     // TODO: 返り値をラッピングしておくと内部仕様が露出しなくてよい
-    async fn create_archive(
+    fn create_archive(
         &self,
         bucket: String,
         entry_list: Vec<ArchiveEntry>,
-    ) -> Result<DuplexStream, FileObjectRepositoryError>;
+        writer: DuplexStream,
+    ) -> impl std::future::Future<Output = Result<(), FileObjectRepositoryError>> + Send;
 }
