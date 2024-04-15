@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Context as _;
 use axum::{
@@ -10,6 +11,7 @@ use axum::{
 use jsonwebtoken::{
     decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation,
 };
+use reqwest::ClientBuilder;
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::context::Context;
@@ -94,7 +96,12 @@ pub(crate) async fn verify_id_token(
 ) -> anyhow::Result<TokenData<Claims>> {
     let header = decode_header(token)?;
     let kid = header.kid.context("No key ID found in JWT header")?;
-    let jwks: JwkSet = reqwest::get(JWK_URL).await?.json().await?;
+
+    let client = ClientBuilder::new()
+        .timeout(Duration::from_secs(60))
+        .build()
+        .context("Failed to create HTTP client")?;
+    let jwks: JwkSet = client.get(JWK_URL).send().await?.json().await?;
 
     let jwk = jwks.find(&kid).context("Unknown key ID")?;
     let key = DecodingKey::from_jwk(jwk)?;
