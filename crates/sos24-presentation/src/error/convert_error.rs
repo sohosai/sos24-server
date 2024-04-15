@@ -200,6 +200,11 @@ impl From<FileUseCaseError> for AppError {
                 "file/form-not-found".to_string(),
                 message,
             ),
+            FileUseCaseError::FormItemNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "file/form-item-not-found".to_string(),
+                message,
+            ),
             FileUseCaseError::FileDataRepositoryError(e) => e.into(),
             FileUseCaseError::FileIdError(e) => e.into(),
             FileUseCaseError::PermissionDeniedError(e) => e.into(),

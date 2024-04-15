@@ -2,12 +2,14 @@ use std::sync::Arc;
 
 use tokio::io::AsyncRead;
 
+use sos24_domain::entity::file_data::FileName;
 use sos24_domain::entity::file_object::ArchiveEntry;
 use sos24_domain::entity::form::FormId;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::file_object::FileObjectRepository;
 use sos24_domain::repository::form::FormRepository;
 use sos24_domain::repository::form_answer::FormAnswerRepository;
+use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 use sos24_domain::{ensure, repository::file_data::FileDataRepository};
 
@@ -42,33 +44,65 @@ impl<R: Repositories> FileUseCase<R> {
 
         let mut file_list = Vec::new();
         for form_answer in form_answer_list {
-            let file_ids = form_answer.value.list_files();
-            for file_id in file_ids {
-                let file = self
-                    .repositories
-                    .file_data_repository()
-                    .find_by_id(file_id.clone())
-                    .await?
-                    .ok_or(FileUseCaseError::NotFound(file_id))?;
-                let file_data = file.value.destruct();
-                file_list.push(ArchiveEntry::new(
-                    file_data.url,
-                    file_data.name,
-                    file.updated_at,
-                ));
+            let project_id = form_answer.value.project_id().clone();
+            let project = self
+                .repositories
+                .project_repository()
+                .find_by_id(project_id.clone())
+                .await?
+                .ok_or(FileUseCaseError::ProjectNotFound(project_id))?;
+            let project = project.value.destruct();
+
+            let file_items = form_answer.value.list_file_items();
+            for (item_id, files) in file_items {
+                let Some(form_item) = form.value.find_item(&item_id) else {
+                    return Err(FileUseCaseError::FormItemNotFound(item_id));
+                };
+
+                for (index, file_id) in files.into_iter().enumerate() {
+                    let file = self
+                        .repositories
+                        .file_data_repository()
+                        .find_by_id(file_id.clone())
+                        .await?
+                        .ok_or(FileUseCaseError::NotFound(file_id))?;
+                    let file_data = file.value.destruct();
+
+                    let filename = format!(
+                        "{}_{}_{}_{}_{}_{}_{}",
+                        form.value.title().clone().value(),
+                        form_item.name().clone().value(),
+                        project.index.clone().value(),
+                        project.title.clone().value(),
+                        project.group_name.clone().value(),
+                        index,
+                        file_data.name.clone().value(),
+                    );
+                    file_list.push(ArchiveEntry::new(
+                        file_data.url,
+                        FileName::new(filename),
+                        file.updated_at,
+                    ));
+                }
             }
         }
 
-        let archive = self
-            .repositories
-            .file_object_repository()
-            .create_archive(bucket, file_list)
-            .await?;
+        let (writer, reader) = tokio::io::duplex(65535);
+        let repositories = Arc::clone(&self.repositories);
+        tokio::spawn(async move {
+            if let Err(err) = repositories
+                .file_object_repository()
+                .create_archive(bucket, file_list, writer)
+                .await
+            {
+                tracing::error!("Failed to create archive: {err:?}");
+            }
+        });
 
         let form = form.value.destruct();
         Ok(ArchiveToBeExportedDto {
             filename: format!("{}_ファイル一覧.zip", form.title.value()),
-            body: archive,
+            body: reader,
         })
     }
 }

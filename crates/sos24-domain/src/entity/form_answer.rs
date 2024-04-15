@@ -84,14 +84,15 @@ impl FormAnswer {
         Ok(())
     }
 
-    pub fn list_files(&self) -> Vec<FileId> {
+    pub fn list_file_items(&self) -> Vec<(FormItemId, Vec<FileId>)> {
         self.items
             .iter()
             .filter_map(|item| match &item.kind {
-                FormAnswerItemKind::File(file) => Some(file.clone().value()),
+                FormAnswerItemKind::File(file) => {
+                    Some((item.item_id().clone(), file.clone().value()))
+                }
                 _ => None,
             })
-            .flatten()
             .collect()
     }
 }
