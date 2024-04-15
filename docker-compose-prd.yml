@@ -52,6 +52,7 @@ services:
       - --providers.docker
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
+      - --entrypoints.traefik.address=:8080
       - --certificatesresolvers.leresolver.acme.email=${LETSENCRYPT_EMAIL}
       - --certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.leresolver.acme.tlschallenge=true
@@ -62,6 +63,7 @@ services:
       - traefik.http.routers.http-catchall.middlewares=redirect-to-https
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
       # traefikダッシュボード(sohosai internalからのみアクセス可能)
+      - traefik.http.routers.dashboard.entrypoints=traefik
       - traefik.http.routers.dashboard.service=api@internal
       - traefik.http.routers.dashboard.rule=Host(`sos24-production.server.sohosai.internal`)
     ports:
