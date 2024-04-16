@@ -23,18 +23,16 @@ use sos24_domain::{
         news::NewsRepositoryError, project::ProjectRepositoryError, user::UserRepositoryError,
     },
 };
-use sos24_use_case::interactor::file::FileUseCaseError;
-use sos24_use_case::interactor::form::FormUseCaseError;
-use sos24_use_case::interactor::form_answer::FormAnswerUseCaseError;
-use sos24_use_case::{
-    context::ContextError,
-    interactor::{
-        invitation::InvitationUseCaseError, news::NewsUseCaseError, project::ProjectUseCaseError,
-        user::UserUseCaseError,
-    },
-};
+use sos24_use_case::context::ContextError;
+use sos24_use_case::file::use_case::FileUseCaseError;
+use sos24_use_case::form::use_case::FormUseCaseError;
+use sos24_use_case::form_answer::use_case::FormAnswerUseCaseError;
+use sos24_use_case::invitation::use_case::InvitationUseCaseError;
+use sos24_use_case::news::use_case::NewsUseCaseError;
+use sos24_use_case::project::use_case::ProjectUseCaseError;
+use sos24_use_case::user::use_case::UserUseCaseError;
 
-use crate::csv::CsvSerializationError;
+use crate::route::shared::csv::CsvSerializationError;
 
 use super::AppError;
 
@@ -130,6 +128,7 @@ impl From<FormAnswerUseCaseError> for AppError {
             FormAnswerUseCaseError::VerifyFormAnswerError(e) => e.into(),
             FormAnswerUseCaseError::FormAnswerIdError(e) => e.into(),
             FormAnswerUseCaseError::FileDataRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::FormItemIdError(e) => e.into(),
         }
     }
 }

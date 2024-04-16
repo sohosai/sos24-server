@@ -1,93 +1,64 @@
-use std::sync::Arc;
+use serde::{Deserialize, Serialize};
+use sos24_use_case::invitation::dto::{InvitationDto, InvitationPositionDto};
 
-use axum::{
-    extract::{Path, State},
-    http::StatusCode,
-    response::IntoResponse,
-    Extension, Json,
-};
+pub mod delete_by_id;
+pub mod get;
+pub mod get_by_id;
+pub mod post;
+pub mod post_by_id;
 
-use sos24_use_case::context::Context;
-
-use crate::model::invitation::CreatedInvitation;
-use crate::{
-    error::AppError,
-    model::invitation::{ConvertToCreateInvitationDto, CreateInvitation, Invitation},
-    module::Modules,
-};
-
-pub async fn handle_get(
-    Extension(ctx): Extension<Context>,
-    State(modules): State<Arc<Modules>>,
-) -> Result<impl IntoResponse, AppError> {
-    let raw_invitation_list = modules.invitation_use_case().list(&ctx).await;
-    raw_invitation_list
-        .map(|raw_invitation_list| {
-            let invitation_list: Vec<Invitation> = raw_invitation_list
-                .into_iter()
-                .map(Invitation::from)
-                .collect();
-            (StatusCode::OK, Json(invitation_list))
-        })
-        .map_err(|err| {
-            tracing::error!("Failed to list invitations: {err:?}");
-            err.into()
-        })
+#[derive(Debug, Serialize)]
+pub struct Invitation {
+    id: String,
+    inviter: String,
+    inviter_name: String,
+    project_id: String,
+    project_title: String,
+    position: InvitationPosition,
+    used_by: Option<String>,
+    created_at: String,
+    updated_at: String,
+    deleted_at: Option<String>,
 }
 
-pub async fn handle_post(
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-    Json(raw_invitation): Json<CreateInvitation>,
-) -> Result<impl IntoResponse, AppError> {
-    let user_id = ctx.user_id().clone().value();
-    let invitation = (raw_invitation, user_id).to_create_invitation_dto();
-    let res = modules
-        .invitation_use_case()
-        .find_or_create(&ctx, invitation)
-        .await;
-    res.map(|id| (StatusCode::CREATED, Json(CreatedInvitation { id })))
-        .map_err(|err| {
-            tracing::error!("Failed to create invitation: {err:?}");
-            err.into()
-        })
-}
-
-pub async fn handle_get_id(
-    Path(id): Path<String>,
-    Extension(ctx): Extension<Context>,
-    State(modules): State<Arc<Modules>>,
-) -> Result<impl IntoResponse, AppError> {
-    let raw_invitation = modules.invitation_use_case().find_by_id(&ctx, id).await;
-    match raw_invitation {
-        Ok(raw_invitation) => Ok((StatusCode::OK, Json(Invitation::from(raw_invitation)))),
-        Err(err) => {
-            tracing::error!("Failed to find invitation: {err:?}");
-            Err(err.into())
+impl From<InvitationDto> for Invitation {
+    fn from(dto: InvitationDto) -> Self {
+        Self {
+            id: dto.id,
+            inviter: dto.inviter,
+            inviter_name: dto.inviter_name,
+            project_id: dto.project_id,
+            project_title: dto.project_title,
+            position: InvitationPosition::from(dto.position),
+            used_by: dto.used_by,
+            created_at: dto.created_at.to_rfc3339(),
+            updated_at: dto.updated_at.to_rfc3339(),
+            deleted_at: dto.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }
 
-pub async fn handle_post_id(
-    Path(id): Path<String>,
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, AppError> {
-    let res = modules.invitation_use_case().receive(&ctx, id).await;
-    res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to receive invitation: {err:?}");
-        err.into()
-    })
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum InvitationPosition {
+    Owner,
+    SubOwner,
 }
 
-pub async fn handle_delete_id(
-    Path(id): Path<String>,
-    Extension(ctx): Extension<Context>,
-    State(modules): State<Arc<Modules>>,
-) -> Result<impl IntoResponse, AppError> {
-    let res = modules.invitation_use_case().delete_by_id(&ctx, id).await;
-    res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to delete invitation: {err:?}");
-        err.into()
-    })
+impl From<InvitationPosition> for InvitationPositionDto {
+    fn from(position: InvitationPosition) -> Self {
+        match position {
+            InvitationPosition::Owner => Self::Owner,
+            InvitationPosition::SubOwner => Self::SubOwner,
+        }
+    }
+}
+
+impl From<InvitationPositionDto> for InvitationPosition {
+    fn from(position: InvitationPositionDto) -> Self {
+        match position {
+            InvitationPositionDto::Owner => Self::Owner,
+            InvitationPositionDto::SubOwner => Self::SubOwner,
+        }
+    }
 }

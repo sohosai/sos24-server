@@ -4,11 +4,13 @@ use std::sync::Arc;
 
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
-use sos24_use_case::interactor::file::FileUseCase;
-use sos24_use_case::interactor::{
-    form::FormUseCase, form_answer::FormAnswerUseCase, invitation::InvitationUseCase,
-    news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
-};
+use sos24_use_case::file::use_case::FileUseCase;
+use sos24_use_case::form::use_case::FormUseCase;
+use sos24_use_case::form_answer::use_case::FormAnswerUseCase;
+use sos24_use_case::invitation::use_case::InvitationUseCase;
+use sos24_use_case::news::use_case::NewsUseCase;
+use sos24_use_case::project::use_case::ProjectUseCase;
+use sos24_use_case::user::use_case::UserUseCase;
 
 #[cfg(not(test))]
 use sos24_infrastructure::DefaultRepositories;

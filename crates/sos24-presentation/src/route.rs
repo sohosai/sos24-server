@@ -10,7 +10,9 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
 use tracing::Level;
 
-use crate::{middleware::auth, module::Modules};
+use crate::module::Modules;
+
+use self::shared::auth;
 
 pub mod file;
 pub mod form;
@@ -20,66 +22,67 @@ pub mod invitation;
 pub mod news;
 pub mod project;
 pub mod project_application_period;
+pub mod shared;
 pub mod user;
 
 pub fn create_app(modules: Modules) -> Router {
     let modules = Arc::new(modules);
 
     let news = Router::new()
-        .route("/", get(news::handle_get))
-        .route("/", post(news::handle_post))
-        .route("/:news_id", get(news::handle_get_id))
-        .route("/:news_id", delete(news::handle_delete_id))
-        .route("/:news_id", put(news::handle_put_id));
+        .route("/", get(news::get::handle))
+        .route("/", post(news::post::handle))
+        .route("/:news_id", get(news::get_by_id::handle))
+        .route("/:news_id", delete(news::delete_by_id::handle))
+        .route("/:news_id", put(news::put_by_id::handle));
 
     let file = Router::new()
-        .route("/", post(file::handle_post))
+        .route("/", post(file::post::handle))
         .layer(DefaultBodyLimit::max(modules.config().file_upload_limit))
-        .route("/", get(file::handle_get))
-        .route("/export", get(file::handle_export))
-        .route("/:file_id", get(file::handle_get_id))
-        .route("/:file_id", delete(file::handle_delete_id));
+        .route("/", get(file::get::handle))
+        .route("/export", get(file::export::handle))
+        .route("/:file_id", get(file::get_by_id::handle))
+        .route("/:file_id", delete(file::delete_by_id::handle));
 
     let user = Router::new()
-        .route("/", get(user::handle_get))
-        .route("/export", get(user::handle_export))
-        .route("/me", get(user::handle_get_me))
-        .route("/:user_id", get(user::handle_get_id))
-        .route("/:user_id", delete(user::handle_delete_id))
-        .route("/:user_id", put(user::handle_put_id));
+        .route("/", get(user::get::handle))
+        .route("/export", get(user::export::handle))
+        .route("/me", get(user::get_me::handle))
+        .route("/:user_id", get(user::get_by_id::handle))
+        .route("/:user_id", delete(user::delete_by_id::handle))
+        .route("/:user_id", put(user::put_by_id::handle));
 
     let project = Router::new()
-        .route("/", get(project::handle_get))
-        .route("/", post(project::handle_post))
-        .route("/export", get(project::handle_export))
-        .route("/me", get(project::handle_get_me))
-        .route("/:project_id", get(project::handle_get_id))
-        .route("/:project_id", delete(project::handle_delete_id))
-        .route("/:project_id", put(project::handle_put_id));
+        .route("/", get(project::get::handle))
+        .route("/", post(project::post::handle))
+        .route("/export", get(project::export::handle))
+        .route("/me", get(project::get_me::handle))
+        .route("/:project_id", get(project::get_by_id::handle))
+        .route("/:project_id", delete(project::delete_by_id::handle))
+        .route("/:project_id", put(project::put_by_id::handle));
 
     let invitation = Router::new()
-        .route("/", get(invitation::handle_get))
-        .route("/", post(invitation::handle_post))
-        .route("/:invitation_id", get(invitation::handle_get_id))
-        .route("/:invitation_id", delete(invitation::handle_delete_id))
-        .route("/:invitation_id", post(invitation::handle_post_id));
+        .route("/", get(invitation::get::handle))
+        .route("/", post(invitation::post::handle))
+        .route("/:invitation_id", get(invitation::get_by_id::handle))
+        .route("/:invitation_id", delete(invitation::delete_by_id::handle))
+        .route("/:invitation_id", post(invitation::post_by_id::handle));
 
     let form = Router::new()
-        .route("/", get(form::handle_get))
-        .route("/", post(form::handle_post))
-        .route("/:form_id", get(form::handle_get_id))
-        .route("/:form_id", delete(form::handle_delete_id))
-        .route("/:form_id", put(form::handle_put_id));
+        .route("/", get(form::get::handle))
+        .route("/", post(form::post::handle))
+        .route("/:form_id", get(form::get_by_id::handle))
+        .route("/:form_id", delete(form::delete_by_id::handle))
+        .route("/:form_id", put(form::put_by_id::handle));
 
     let form_answers = Router::new()
-        .route("/", get(form_answer::handle_get))
-        .route("/", post(form_answer::handle_post))
-        .route("/export", get(form_answer::handle_export))
-        .route("/:form_answer_id", get(form_answer::handle_get_id))
-        .route("/:form_answer_id", put(form_answer::handle_put_id));
+        .route("/", get(form_answer::get::handle))
+        .route("/", post(form_answer::post::handle))
+        .route("/export", get(form_answer::export::handle))
+        .route("/:form_answer_id", get(form_answer::get_by_id::handle))
+        .route("/:form_answer_id", put(form_answer::put_by_id::handle));
 
     let project_application_period =
-        Router::new().route("/", get(project_application_period::handle_get));
+        Router::new().route("/", get(project_application_period::get::handle));
 
     let private_routes = Router::new()
         .nest("/news", news)
@@ -97,7 +100,7 @@ pub fn create_app(modules: Modules) -> Router {
 
     let public_routes = Router::new()
         .route("/health", get(health::handle_get))
-        .route("/users", post(user::handle_post));
+        .route("/users", post(user::post::handle));
 
     Router::new()
         .nest("/", public_routes)

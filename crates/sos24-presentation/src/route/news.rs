@@ -1,87 +1,39 @@
-use std::sync::Arc;
+use serde::{Deserialize, Serialize};
+use sos24_use_case::news::dto::NewsDto;
 
-use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::{Extension, Json};
+use super::project::{ProjectAttributes, ProjectCategories};
 
-use sos24_use_case::context::Context;
-use sos24_use_case::dto::news::CreateNewsDto;
+pub mod delete_by_id;
+pub mod get;
+pub mod get_by_id;
+pub mod post;
+pub mod put_by_id;
 
-use crate::error::AppError;
-use crate::model::news::{
-    ConvertToUpdateNewsDto, CreateNews, CreatedNews, News, NewsSummary, UpdateNews,
-};
-use crate::module::Modules;
-
-pub async fn handle_get(
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, AppError> {
-    let raw_news_list = modules.news_use_case().list(&ctx).await;
-    raw_news_list
-        .map(|raw_news_list| {
-            let news_list: Vec<NewsSummary> =
-                raw_news_list.into_iter().map(NewsSummary::from).collect();
-            (StatusCode::OK, Json(news_list))
-        })
-        .map_err(|err| {
-            tracing::error!("Failed to list news: {err:?}");
-            err.into()
-        })
+#[derive(Debug, Serialize, Deserialize)]
+pub struct News {
+    pub id: String,
+    pub title: String,
+    pub body: String,
+    pub attachments: Vec<String>,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
 }
 
-pub async fn handle_post(
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-    Json(raw_news): Json<CreateNews>,
-) -> Result<impl IntoResponse, AppError> {
-    let news = CreateNewsDto::from(raw_news);
-    let res = modules.news_use_case().create(&ctx, news).await;
-    res.map(|id| (StatusCode::CREATED, Json(CreatedNews { id })))
-        .map_err(|err| {
-            tracing::error!("Failed to create news: {err:?}");
-            err.into()
-        })
-}
-
-pub async fn handle_get_id(
-    Path(id): Path<String>,
-    Extension(ctx): Extension<Context>,
-    State(modules): State<Arc<Modules>>,
-) -> Result<impl IntoResponse, AppError> {
-    let raw_news = modules.news_use_case().find_by_id(&ctx, id).await;
-    match raw_news {
-        Ok(raw_news) => Ok((StatusCode::OK, Json(News::from(raw_news)))),
-        Err(err) => {
-            tracing::error!("Failed to find news: {err:?}");
-            Err(err.into())
+impl From<NewsDto> for News {
+    fn from(news: NewsDto) -> Self {
+        News {
+            id: news.id,
+            title: news.title,
+            body: news.body,
+            attachments: news.attachments,
+            categories: ProjectCategories::from(news.categories),
+            attributes: ProjectAttributes::from(news.attributes),
+            created_at: news.created_at.to_rfc3339(),
+            updated_at: news.updated_at.to_rfc3339(),
+            deleted_at: news.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
-}
-
-pub async fn handle_delete_id(
-    Path(id): Path<String>,
-    Extension(ctx): Extension<Context>,
-    State(modules): State<Arc<Modules>>,
-) -> Result<impl IntoResponse, AppError> {
-    let res = modules.news_use_case().delete_by_id(&ctx, id).await;
-    res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to delete news: {err:?}");
-        err.into()
-    })
-}
-
-pub async fn handle_put_id(
-    Path(id): Path<String>,
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-    Json(raw_news): Json<UpdateNews>,
-) -> Result<impl IntoResponse, AppError> {
-    let news = (id, raw_news).to_update_news_dto();
-    let res = modules.news_use_case().update(&ctx, news).await;
-    res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to update news: {err:?}");
-        err.into()
-    })
 }

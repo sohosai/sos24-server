@@ -1,99 +1,206 @@
-use std::sync::Arc;
-
-use axum::extract::Query;
-use axum::{
-    extract::{Path, State},
-    http::StatusCode,
-    response::IntoResponse,
-    Extension, Json,
+use serde::{Deserialize, Serialize};
+use sos24_use_case::form::dto::{
+    FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
 };
 
-use sos24_use_case::{context::Context, dto::form::CreateFormDto};
+use super::project::{ProjectAttributes, ProjectCategories};
 
-use crate::model::form::{CreatedForm, Form, FormQuery, FormSummary};
-use crate::{
-    error::AppError,
-    model::form::{ConvertToUpdateFormDto, UpdateForm},
-};
-use crate::{model::form::CreateForm, module::Modules};
+pub mod delete_by_id;
+pub mod get;
+pub mod get_by_id;
+pub mod post;
+pub mod put_by_id;
 
-pub async fn handle_get(
-    Query(query): Query<FormQuery>,
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, AppError> {
-    let raw_form_list = match query.project_id {
-        Some(project_id) => {
-            modules
-                .form_use_case()
-                .find_by_project_id(&ctx, project_id)
-                .await
-        }
-        None => modules.form_use_case().list(&ctx).await,
-    };
-    raw_form_list
-        .map(|raw_form_list| {
-            let form_list: Vec<FormSummary> =
-                raw_form_list.into_iter().map(FormSummary::from).collect();
-            (StatusCode::OK, Json(form_list)).into_response()
-        })
-        .map_err(|err| {
-            tracing::error!("Failed to find form by project id: {err:?}");
-            err.into()
-        })
+#[derive(Debug, Deserialize)]
+pub struct NewFormItem {
+    pub name: String,
+    pub description: String,
+    pub required: bool,
+    #[serde(flatten)]
+    pub kind: FormItemKind,
 }
 
-pub async fn handle_post(
-    State(module): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-    Json(raw_form): Json<CreateForm>,
-) -> Result<impl IntoResponse, AppError> {
-    let form = CreateFormDto::from(raw_form);
-    let res = module.form_use_case().create(&ctx, form).await;
-    res.map(|id| (StatusCode::CREATED, Json(CreatedForm { id })))
-        .map_err(|err| {
-            tracing::error!("Failed to create form: {err:?}");
-            err.into()
-        })
-}
-
-pub async fn handle_get_id(
-    Path(id): Path<String>,
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, AppError> {
-    let raw_form = modules.form_use_case().find_by_id(&ctx, id).await;
-    match raw_form {
-        Ok(raw_form) => Ok((StatusCode::OK, Json(Form::from(raw_form)))),
-        Err(err) => {
-            tracing::error!("Failed to find form by id: {err:?}");
-            Err(err.into())
+impl From<NewFormItem> for NewFormItemDto {
+    fn from(create_form_item: NewFormItem) -> Self {
+        NewFormItemDto {
+            name: create_form_item.name,
+            description: create_form_item.description,
+            required: create_form_item.required,
+            kind: FormItemKindDto::from(create_form_item.kind),
         }
     }
 }
 
-pub async fn handle_delete_id(
-    Path(id): Path<String>,
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-) -> Result<impl IntoResponse, AppError> {
-    let res = modules.form_use_case().delete_by_id(&ctx, id).await;
-    res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to delete form: {err:?}");
-        err.into()
-    })
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Form {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
+    pub items: Vec<FormItem>,
+    pub attachments: Vec<String>,
+    pub answer_id: Option<String>,
+    pub answered_at: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
 }
 
-pub async fn handle_put_id(
-    Path(id): Path<String>,
-    State(modules): State<Arc<Modules>>,
-    Extension(ctx): Extension<Context>,
-    Json(raw_form): Json<UpdateForm>,
-) -> Result<impl IntoResponse, AppError> {
-    let form = (id, raw_form).to_update_form_dto();
-    let res = modules.form_use_case().update(&ctx, form).await;
-    res.map(|_| StatusCode::OK).map_err(|err| {
-        tracing::error!("Failed to update form: {err:?}");
-        err.into()
-    })
+impl From<FormDto> for Form {
+    fn from(form: FormDto) -> Self {
+        Form {
+            id: form.id.to_string(),
+            title: form.title,
+            description: form.description,
+            starts_at: form.starts_at.to_rfc3339(),
+            ends_at: form.ends_at.to_rfc3339(),
+            categories: ProjectCategories::from(form.categories),
+            attributes: ProjectAttributes::from(form.attributes),
+            items: form.items.into_iter().map(FormItem::from).collect(),
+            attachments: form.attachments,
+            answer_id: form.answer_id.map(|it| it.to_string()),
+            answered_at: form.answered_at.map(|it| it.to_rfc3339()),
+            created_at: form.created_at.to_rfc3339(),
+            updated_at: form.updated_at.to_rfc3339(),
+            deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FormSummary {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
+    pub answer_id: Option<String>,
+    pub answered_at: Option<String>,
+    pub updated_at: String,
+}
+
+impl From<FormSummaryDto> for FormSummary {
+    fn from(form: FormSummaryDto) -> Self {
+        FormSummary {
+            id: form.id.to_string(),
+            title: form.title,
+            description: form.description,
+            starts_at: form.starts_at.to_rfc3339(),
+            ends_at: form.ends_at.to_rfc3339(),
+            categories: ProjectCategories::from(form.categories),
+            attributes: ProjectAttributes::from(form.attributes),
+            answer_id: form.answer_id.map(|it| it.to_string()),
+            answered_at: form.answered_at.map(|it| it.to_rfc3339()),
+            updated_at: form.updated_at.to_rfc3339(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FormItem {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub required: bool,
+    #[serde(flatten)]
+    pub kind: FormItemKind,
+}
+
+impl From<FormItemDto> for FormItem {
+    fn from(item: FormItemDto) -> Self {
+        FormItem {
+            id: item.id.to_string(),
+            name: item.name,
+            description: item.description,
+            required: item.required,
+            kind: item.kind.into(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum FormItemKind {
+    String {
+        min_length: Option<i32>,
+        max_length: Option<i32>,
+        allow_newline: bool,
+    },
+    Int {
+        min: Option<i32>,
+        max: Option<i32>,
+    },
+    ChooseOne {
+        options: Vec<String>,
+    },
+    ChooseMany {
+        options: Vec<String>,
+        min_selection: Option<i32>,
+        max_selection: Option<i32>,
+    },
+    File {
+        extensions: Option<Vec<String>>,
+        limit: Option<i32>,
+    },
+}
+
+impl From<FormItemKind> for FormItemKindDto {
+    fn from(kind: FormItemKind) -> Self {
+        match kind {
+            FormItemKind::String {
+                min_length,
+                max_length,
+                allow_newline,
+            } => FormItemKindDto::String {
+                min_length,
+                max_length,
+                allow_newline,
+            },
+            FormItemKind::Int { min, max } => FormItemKindDto::Int { min, max },
+            FormItemKind::ChooseOne { options } => FormItemKindDto::ChooseOne { options },
+            FormItemKind::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            } => FormItemKindDto::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            },
+            FormItemKind::File { extensions, limit } => FormItemKindDto::File { extensions, limit },
+        }
+    }
+}
+
+impl From<FormItemKindDto> for FormItemKind {
+    fn from(kind: FormItemKindDto) -> Self {
+        match kind {
+            FormItemKindDto::String {
+                min_length,
+                max_length,
+                allow_newline,
+            } => FormItemKind::String {
+                min_length,
+                max_length,
+                allow_newline,
+            },
+            FormItemKindDto::Int { min, max } => FormItemKind::Int { min, max },
+            FormItemKindDto::ChooseOne { options } => FormItemKind::ChooseOne { options },
+            FormItemKindDto::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            } => FormItemKind::ChooseMany {
+                options,
+                min_selection,
+                max_selection,
+            },
+            FormItemKindDto::File { extensions, limit } => FormItemKind::File { extensions, limit },
+        }
+    }
 }
