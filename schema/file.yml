@@ -180,9 +180,10 @@ paths:
         200:
           description: OK
           content:
-            text/csv:
+            application/zip:
               schema:
                 type: string
+                format: binary
         401:
           description: Unauthorized
           content:
