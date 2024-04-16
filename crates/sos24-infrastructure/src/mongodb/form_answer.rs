@@ -317,4 +317,16 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         tracing::info!("申請回答を更新しました");
         Ok(())
     }
+
+    async fn delete_by_project_id(&self, id: ProjectId) -> Result<(), FormAnswerRepositoryError> {
+        self.collection
+            .update_many(
+                doc! { "project_id": id.value(),  "deleted_at": None::<String> },
+                doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
+                None,
+            )
+            .await
+            .context("Failed to delete form by project id")?;
+        Ok(())
+    }
 }

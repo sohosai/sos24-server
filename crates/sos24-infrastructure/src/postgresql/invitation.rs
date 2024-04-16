@@ -189,4 +189,15 @@ impl InvitationRepository for PgInvitationRepository {
         tracing::info!("招待を削除しました: {id:?}");
         Ok(())
     }
+
+    async fn delete_by_project_id(&self, id: ProjectId) -> Result<(), InvitationRepositoryError> {
+        sqlx::query!(
+            r#"UPDATE invitations SET deleted_at = now() WHERE project_id = $1 AND deleted_at IS NULL"#,
+            id.value()
+        )
+            .execute(&*self.db)
+            .await
+            .context("Failed to delete invitation by project id")?;
+        Ok(())
+    }
 }

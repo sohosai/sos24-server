@@ -3,6 +3,9 @@ use std::sync::Arc;
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::ProjectId;
+use sos24_domain::repository::file_data::FileDataRepository;
+use sos24_domain::repository::form_answer::FormAnswerRepository;
+use sos24_domain::repository::invitation::InvitationRepository;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
@@ -23,8 +26,24 @@ impl<R: Repositories> ProjectUseCase<R> {
 
         self.repositories
             .project_repository()
-            .delete_by_id(id)
+            .delete_by_id(id.clone())
             .await?;
+
+        self.repositories
+            .form_answer_repository()
+            .delete_by_project_id(id.clone())
+            .await?;
+
+        self.repositories
+            .invitation_repository()
+            .delete_by_project_id(id.clone())
+            .await?;
+
+        self.repositories
+            .file_data_repository()
+            .delete_by_owner_project(id)
+            .await?;
+
         Ok(())
     }
 }
@@ -83,6 +102,18 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_delete_by_id()
+            .returning(|_| Ok(()));
+        repositories
+            .form_answer_repository_mut()
+            .expect_delete_by_project_id()
+            .returning(|_| Ok(()));
+        repositories
+            .invitation_repository_mut()
+            .expect_delete_by_project_id()
+            .returning(|_| Ok(()));
+        repositories
+            .file_data_repository_mut()
+            .expect_delete_by_owner_project()
             .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
