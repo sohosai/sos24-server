@@ -322,7 +322,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         self.collection
             .update_many(
                 doc! { "project_id": id.value(),  "deleted_at": None::<String> },
-                doc! { "$set": { "deleted_at": chrono::Utc::now() } },
+                doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
                 None,
             )
             .await
