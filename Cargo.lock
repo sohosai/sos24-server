@@ -447,30 +447,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "axum-extra"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0be6ea09c9b96cb5076af0de2e383bd2bc0c18f827cf1967bdd353e0b910d733"
-dependencies = [
- "axum",
- "axum-core",
- "bytes",
- "futures-util",
- "http 1.1.0",
- "http-body 1.0.0",
- "http-body-util",
- "mime",
- "pin-project-lite",
- "serde",
- "tokio",
- "tokio-util",
- "tower",
- "tower-layer",
- "tower-service",
- "tracing",
-]
-
-[[package]]
 name = "axum-macros"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -648,6 +624,28 @@ dependencies = [
  "serde",
  "wasm-bindgen",
  "windows-targets 0.52.4",
+]
+
+[[package]]
+name = "chrono-tz"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93698b29de5e97ad0ae26447b344c482a7284c737d9ddc5f9e52b74a336671bb"
+dependencies = [
+ "chrono",
+ "chrono-tz-build",
+ "phf",
+]
+
+[[package]]
+name = "chrono-tz-build"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c088aee841df9c3041febbb73934cfc39708749bf96dc827e3359cd39ef11b1"
+dependencies = [
+ "parse-zoneinfo",
+ "phf",
+ "phf_codegen",
 ]
 
 [[package]]
@@ -2214,6 +2212,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "parse-zoneinfo"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c705f256449c60da65e11ff6626e0c16a0a0b96aaa348de61376b249bc340f41"
+dependencies = [
+ "regex",
+]
+
+[[package]]
 name = "paste"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2260,6 +2267,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ade2d8b8f33c7333b51bcf0428d37e217e9f32192ae4772156f65063b8ce03dc"
 dependencies = [
  "phf_shared",
+]
+
+[[package]]
+name = "phf_codegen"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8d39688d359e6b34654d328e262234662d16cc0f60ec8dcbe5e718709342a5a"
+dependencies = [
+ "phf_generator",
+ "phf_shared",
+]
+
+[[package]]
+name = "phf_generator"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48e4cc64c2ad9ebe670cb8fd69dd50ae301650392e81c05f9bfcb2d5bdbc24b0"
+dependencies = [
+ "phf_shared",
+ "rand",
 ]
 
 [[package]]
@@ -3093,8 +3120,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
- "axum-extra",
  "base64 0.22.0",
+ "chrono",
+ "chrono-tz",
  "csv",
  "dotenvy",
  "jsonwebtoken",
@@ -3107,6 +3135,7 @@ dependencies = [
  "sos24-use-case",
  "thiserror",
  "tokio",
+ "tokio-util",
  "tower",
  "tower-http",
  "tracing",
@@ -3119,9 +3148,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "chrono-tz",
  "sos24-domain",
  "thiserror",
  "tokio",
+ "tracing",
  "url",
  "uuid",
 ]

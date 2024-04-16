@@ -7,8 +7,7 @@ use aws_sdk_s3::{presigning::PresigningConfig, primitives::SdkBody};
 use tokio::io::DuplexStream;
 use tokio_util::compat::FuturesAsyncWriteCompatExt;
 
-use sos24_domain::entity::common::date::WithDate;
-use sos24_domain::entity::file_data::FileData;
+use sos24_domain::entity::file_object::ArchiveEntry;
 use sos24_domain::{
     entity::file_object::{ContentDisposition, FileObject, FileObjectKey, FileSignedUrl},
     repository::file_object::{FileObjectRepository, FileObjectRepositoryError},
@@ -77,35 +76,37 @@ impl FileObjectRepository for S3FileObjectRepository {
     async fn create_archive(
         &self,
         bucket: String,
-        files: Vec<WithDate<FileData>>,
-    ) -> Result<DuplexStream, FileObjectRepositoryError> {
+        entry_list: Vec<ArchiveEntry>,
+        writer: DuplexStream,
+    ) -> Result<(), FileObjectRepositoryError> {
         tracing::info!("ファイルのアーカイブを作成します");
 
-        let (writer, reader) = tokio::io::duplex(65535);
         let mut zip_writer = ZipFileWriter::with_tokio(writer);
 
-        for file in files {
-            let file_key = file.value.url().clone().value();
+        for entry in entry_list {
+            let entry = entry.destruct();
+            tracing::info!("ファイルをアーカイブに追加します: {:?}", entry.key);
+
             let file_data = self
                 .s3
                 .get_object()
                 .bucket(&bucket)
-                .key(file_key)
+                .key(entry.key.value())
                 .send()
                 .await
                 .context("Failed to get object")?;
             let mut file_data_stream = file_data.body.into_async_read();
 
-            let file_name = file.value.filename().clone().value();
-            let zip_entry = ZipEntryBuilder::new(file_name.into(), Compression::Deflate)
-                .last_modification_date(file.updated_at.into());
+            let zip_entry =
+                ZipEntryBuilder::new(entry.filename.value().into(), Compression::Deflate)
+                    .last_modification_date(entry.updated_at.into());
             let mut zip_entry_stream = zip_writer
                 .write_entry_stream(zip_entry)
                 .await
                 .context("Failed to write entry")?
                 .compat_write();
 
-            tokio::io::copy(&mut file_data_stream, &mut zip_entry_stream)
+            tokio::io::copy_buf(&mut file_data_stream, &mut zip_entry_stream)
                 .await
                 .context("Failed to copy")?;
 
@@ -114,11 +115,13 @@ impl FileObjectRepository for S3FileObjectRepository {
                 .close()
                 .await
                 .context("Failed to close")?;
+
+            tracing::info!("ファイルをアーカイブに追加しました");
         }
 
         zip_writer.close().await.context("Failed to close")?;
 
         tracing::info!("ファイルのアーカイブを作成しました");
-        Ok(reader)
+        Ok(())
     }
 }

@@ -27,4 +27,8 @@ pub trait FileDataRepository: Send + Sync + 'static {
         owner_project: ProjectId,
     ) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError>;
     async fn delete_by_id(&self, id: FileId) -> Result<(), FileDataRepositoryError>;
+    async fn delete_by_owner_project(
+        &self,
+        owner_project: ProjectId,
+    ) -> Result<(), FileDataRepositoryError>;
 }

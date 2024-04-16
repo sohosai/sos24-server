@@ -307,14 +307,14 @@ impl FormRepository for MongoFormRepository {
                 doc! { "_id": form_doc._id,  "deleted_at": None::<String> },
                 doc! { "$set":
                     doc! {
-                        "title": form_doc.title,
-                        "description": form_doc.description,
-                        "starts_at": form_doc.starts_at,
-                        "ends_at": form_doc.ends_at,
-                        "categories": form_doc.categories,
-                        "attributes": form_doc.attributes,
+                        "title": bson::to_bson(&form_doc.title).unwrap(),
+                        "description": bson::to_bson(&form_doc.description).unwrap(),
+                        "starts_at": bson::to_bson(&form_doc.starts_at).unwrap(),
+                        "ends_at":bson::to_bson(&form_doc.ends_at).unwrap(),
+                        "categories": bson::to_bson(&form_doc.categories).unwrap(),
+                        "attributes": bson::to_bson(&form_doc.attributes).unwrap(),
                         "items": bson::to_bson(&form_doc.items).unwrap(),
-                        "updated_at": form_doc.updated_at,
+                        "updated_at": bson::to_bson(&form_doc.updated_at).unwrap(),
                     }
                 },
                 None,
@@ -332,7 +332,7 @@ impl FormRepository for MongoFormRepository {
         self.collection
             .update_one(
                 doc! { "_id": id.clone().value(),  "deleted_at": None::<String> },
-                doc! { "$set": { "deleted_at": chrono::Utc::now() } },
+                doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
                 None,
             )
             .await

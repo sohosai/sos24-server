@@ -195,6 +195,16 @@ impl From<FileUseCaseError> for AppError {
                 "file/owner-not-found".to_string(),
                 message,
             ),
+            FileUseCaseError::FormNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "file/form-not-found".to_string(),
+                message,
+            ),
+            FileUseCaseError::FormItemNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "file/form-item-not-found".to_string(),
+                message,
+            ),
             FileUseCaseError::FileDataRepositoryError(e) => e.into(),
             FileUseCaseError::FileIdError(e) => e.into(),
             FileUseCaseError::PermissionDeniedError(e) => e.into(),
@@ -202,8 +212,10 @@ impl From<FileUseCaseError> for AppError {
             FileUseCaseError::FileObjectRepositoryError(e) => e.into(),
             FileUseCaseError::ContextError(e) => e.into(),
             FileUseCaseError::ProjectRepositoryError(e) => e.into(),
-
             FileUseCaseError::ProjectIdError(e) => e.into(),
+            FileUseCaseError::FormRepositoryError(e) => e.into(),
+            FileUseCaseError::FormIdError(e) => e.into(),
+            FileUseCaseError::FormAnswerRepositoryError(e) => e.into(),
         }
     }
 }
@@ -331,6 +343,9 @@ impl From<ProjectUseCaseError> for AppError {
             ProjectUseCaseError::PermissionDeniedError(e) => e.into(),
             ProjectUseCaseError::InternalError(e) => e.into(),
             ProjectUseCaseError::UserRepositoryError(e) => e.into(),
+            ProjectUseCaseError::FormAnswerRepositoryError(e) => e.into(),
+            ProjectUseCaseError::InvitationRepositoryError(e) => e.into(),
+            ProjectUseCaseError::FileDataRepositoryError(e) => e.into(),
         }
     }
 }

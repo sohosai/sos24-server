@@ -32,7 +32,7 @@ impl TryFrom<FileDataRow> for WithDate<FileData> {
         Ok(WithDate::new(
             FileData::new(
                 FileId::new(value.id),
-                FileName::new(value.name),
+                FileName::sanitized(value.name),
                 FileObjectKey::new(value.url),
                 value.owner_project.map(ProjectId::new),
             ),
@@ -142,6 +142,20 @@ impl FileDataRepository for PgFileDataRepository {
         .context("Failed to delete file data")?;
 
         tracing::info!("ファイルデータの削除が完了しました: {id:?}");
+        Ok(())
+    }
+
+    async fn delete_by_owner_project(
+        &self,
+        owner_project: ProjectId,
+    ) -> Result<(), FileDataRepositoryError> {
+        sqlx::query!(
+            r#"UPDATE files SET deleted_at = NOW() WHERE owner_project = $1 AND deleted_at IS NULL"#,
+            owner_project.value()
+        )
+            .execute(&*self.db)
+            .await
+            .context("Failed to delete file data by owner project")?;
         Ok(())
     }
 }

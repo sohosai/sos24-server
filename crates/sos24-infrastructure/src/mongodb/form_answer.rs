@@ -303,10 +303,10 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
                 doc! { "_id": form_answer_doc._id,  "deleted_at": None::<String> },
                 doc! { "$set":
                     doc! {
-                        "project_id": form_answer_doc.project_id,
-                        "form_d": form_answer_doc.form_id,
+                        "project_id": bson::to_bson(&form_answer_doc.project_id).unwrap(),
+                        "form_id": bson::to_bson(&form_answer_doc.form_id).unwrap(),
                         "items": bson::to_bson(&form_answer_doc.items).unwrap(),
-                        "updated_at": form_answer_doc.updated_at,
+                        "updated_at": bson::to_bson(&form_answer_doc.updated_at).unwrap(),
                     }
                 },
                 None,
@@ -315,6 +315,18 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .context("Failed to update form")?;
 
         tracing::info!("申請回答を更新しました");
+        Ok(())
+    }
+
+    async fn delete_by_project_id(&self, id: ProjectId) -> Result<(), FormAnswerRepositoryError> {
+        self.collection
+            .update_many(
+                doc! { "project_id": id.value(),  "deleted_at": None::<String> },
+                doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
+                None,
+            )
+            .await
+            .context("Failed to delete form by project id")?;
         Ok(())
     }
 }

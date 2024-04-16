@@ -22,36 +22,25 @@ pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, AppError> {
-    match query.project_id {
+    let raw_form_list = match query.project_id {
         Some(project_id) => {
-            let raw_form_list = modules
+            modules
                 .form_use_case()
                 .find_by_project_id(&ctx, project_id)
-                .await;
-            raw_form_list
-                .map(|raw_form_list| {
-                    let form_list: Vec<FormSummary> =
-                        raw_form_list.into_iter().map(FormSummary::from).collect();
-                    (StatusCode::OK, Json(form_list)).into_response()
-                })
-                .map_err(|err| {
-                    tracing::error!("Failed to find form by project id: {err:?}");
-                    err.into()
-                })
+                .await
         }
-        None => {
-            let raw_form_list = modules.form_use_case().list(&ctx).await;
-            raw_form_list
-                .map(|raw_form_list| {
-                    let form_list: Vec<Form> = raw_form_list.into_iter().map(Form::from).collect();
-                    (StatusCode::OK, Json(form_list)).into_response()
-                })
-                .map_err(|err| {
-                    tracing::error!("Failed to list form: {err:?}");
-                    err.into()
-                })
-        }
-    }
+        None => modules.form_use_case().list(&ctx).await,
+    };
+    raw_form_list
+        .map(|raw_form_list| {
+            let form_list: Vec<FormSummary> =
+                raw_form_list.into_iter().map(FormSummary::from).collect();
+            (StatusCode::OK, Json(form_list)).into_response()
+        })
+        .map_err(|err| {
+            tracing::error!("Failed to find form by project id: {err:?}");
+            err.into()
+        })
 }
 
 pub async fn handle_post(

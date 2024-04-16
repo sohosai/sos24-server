@@ -1,3 +1,4 @@
+use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::dto::project::ProjectAttributeDto;
@@ -183,7 +184,7 @@ impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
                 .collect::<Vec<String>>()
                 .join(";"),
             remark: project.remarks,
-            created_at: project.created_at.to_rfc3339(),
+            created_at: project.created_at.with_timezone(&Tokyo).to_rfc3339(),
         }
     }
 }

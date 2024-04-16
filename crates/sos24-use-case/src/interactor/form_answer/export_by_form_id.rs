@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use chrono_tz::Asia::Tokyo;
+
 use sos24_domain::entity::form::FormId;
 use sos24_domain::entity::form_answer::{FormAnswerItem, FormAnswerItemKind};
 use sos24_domain::repository::form::FormRepository;
@@ -70,7 +72,10 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 project_title: project.title.value().to_string(),
                 project_group_name: project.group_name.value().to_string(),
                 form_answer_item_values,
-                created_at: raw_form_answer.created_at.to_rfc3339(),
+                created_at: raw_form_answer
+                    .created_at
+                    .with_timezone(&Tokyo)
+                    .to_rfc3339(),
             });
         }
 

@@ -7,7 +7,7 @@ pub fn id() -> FileId {
 }
 
 pub fn filename() -> FileName {
-    FileName::new("test.txt".to_string())
+    FileName::sanitized("test.txt".to_string())
 }
 
 pub fn file_data(owner: Option<ProjectId>) -> FileData {

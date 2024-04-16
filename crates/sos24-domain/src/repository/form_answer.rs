@@ -35,4 +35,5 @@ pub trait FormAnswerRepository: Send + Sync + 'static {
         form_id: FormId,
     ) -> Result<Option<WithDate<FormAnswer>>, FormAnswerRepositoryError>;
     async fn update(&self, form_answer: FormAnswer) -> Result<(), FormAnswerRepositoryError>;
+    async fn delete_by_project_id(&self, id: ProjectId) -> Result<(), FormAnswerRepositoryError>;
 }

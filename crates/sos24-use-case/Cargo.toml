@@ -7,7 +7,9 @@ edition.workspace = true
 sos24-domain = { path = "../sos24-domain" }
 anyhow.workspace = true
 chrono.workspace = true
+chrono-tz.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+tracing.workspace = true
 uuid.workspace = true
 url.workspace = true

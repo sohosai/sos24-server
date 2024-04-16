@@ -210,6 +210,10 @@ impl Form {
         self.categories.matches(*project.category())
             && self.attributes.matches(*project.attributes())
     }
+
+    pub fn find_item(&self, item_id: &FormItemId) -> Option<&FormItem> {
+        self.items.iter().find(|item| item.id() == item_id)
+    }
 }
 
 impl_value_object!(FormId(uuid::Uuid));
