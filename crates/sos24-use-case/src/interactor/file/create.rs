@@ -25,7 +25,7 @@ impl<R: Repositories> FileUseCase<R> {
     ) -> Result<String, FileUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         let key = FileObjectKey::generate(key_prefix.as_str());
-        let filename = FileName::new(raw_file.filename);
+        let filename = FileName::sanitized(raw_file.filename);
         let owner = match raw_file.owner {
             Some(it) => {
                 ensure!(actor.has_permission(Permissions::CREATE_FILE_PRIVATE));

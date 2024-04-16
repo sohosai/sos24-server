@@ -88,6 +88,41 @@ impl FileObjectKey {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArchiveEntry {
+    key: FileObjectKey,
+    filename: FileName,
+    updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl ArchiveEntry {
+    pub fn new(
+        key: FileObjectKey,
+        filename: FileName,
+        updated_at: chrono::DateTime<chrono::Utc>,
+    ) -> Self {
+        Self {
+            key,
+            filename,
+            updated_at,
+        }
+    }
+
+    pub fn destruct(self) -> DestructedArchiveEntry {
+        DestructedArchiveEntry {
+            key: self.key,
+            filename: self.filename,
+            updated_at: self.updated_at,
+        }
+    }
+}
+
+pub struct DestructedArchiveEntry {
+    pub key: FileObjectKey,
+    pub filename: FileName,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
 #[cfg(test)]
 mod test {
     use crate::entity::file_object::generate_content_disposition;

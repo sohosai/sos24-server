@@ -2,9 +2,9 @@ use mockall::automock;
 use thiserror::Error;
 use tokio::io::DuplexStream;
 
-use crate::entity::common::date::WithDate;
-use crate::entity::file_data::FileData;
-use crate::entity::file_object::{ContentDisposition, FileObject, FileObjectKey, FileSignedUrl};
+use crate::entity::file_object::{
+    ArchiveEntry, ContentDisposition, FileObject, FileObjectKey, FileSignedUrl,
+};
 
 #[derive(Debug, Error)]
 pub enum FileObjectRepositoryError {
@@ -27,9 +27,10 @@ pub trait FileObjectRepository: Send + Sync + 'static {
         content_disposition: Option<ContentDisposition>,
     ) -> Result<FileSignedUrl, FileObjectRepositoryError>;
     // TODO: 返り値をラッピングしておくと内部仕様が露出しなくてよい
-    async fn create_archive(
+    fn create_archive(
         &self,
         bucket: String,
-        files: Vec<WithDate<FileData>>,
-    ) -> Result<DuplexStream, FileObjectRepositoryError>;
+        entry_list: Vec<ArchiveEntry>,
+        writer: DuplexStream,
+    ) -> impl std::future::Future<Output = Result<(), FileObjectRepositoryError>> + Send;
 }

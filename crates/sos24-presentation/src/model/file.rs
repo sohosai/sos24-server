@@ -69,5 +69,6 @@ pub struct CreatedFile {
 
 #[derive(Debug, Deserialize)]
 pub struct ExportFileQuery {
-    pub owner_project: Option<String>,
+    pub project_id: Option<String>,
+    pub form_id: Option<String>,
 }

@@ -6,22 +6,20 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
-use crate::{
-    context::Context,
-    dto::{form::FormDto, FromEntity},
-};
+use crate::dto::form::FormSummaryDto;
+use crate::{context::Context, dto::FromEntity};
 
 use super::{FormUseCase, FormUseCaseError};
 
 impl<R: Repositories> FormUseCase<R> {
-    pub async fn list(&self, ctx: &Context) -> Result<Vec<FormDto>, FormUseCaseError> {
+    pub async fn list(&self, ctx: &Context) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let raw_form_list = self.repositories.form_repository().list().await?;
         let form_list = raw_form_list
             .into_iter()
-            .map(|raw_form| FormDto::from_entity((raw_form, None)));
+            .map(|raw_form| FormSummaryDto::from_entity((raw_form, None)));
         Ok(form_list.collect())
     }
 }
