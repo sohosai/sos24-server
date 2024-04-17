@@ -98,7 +98,7 @@ pub struct FormItemDoc {
     #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
     _id: uuid::Uuid,
     name: String,
-    description: String,
+    description: Option<String>,
     required: bool,
     kind: FormItemKindDoc,
 }
@@ -109,7 +109,7 @@ impl From<FormItem> for FormItemDoc {
         Self {
             _id: value.id.value(),
             name: value.name.value(),
-            description: value.description.value(),
+            description: value.description.map(|it| it.value()),
             required: value.required.value(),
             kind: FormItemKindDoc::from(value.kind),
         }
@@ -121,7 +121,7 @@ impl From<FormItemDoc> for FormItem {
         FormItem::new(
             FormItemId::new(value._id),
             FormItemName::new(value.name),
-            FormItemDescription::new(value.description),
+            value.description.map(FormItemDescription::new),
             FormItemRequired::new(value.required),
             FormItemKind::from(value.kind),
         )

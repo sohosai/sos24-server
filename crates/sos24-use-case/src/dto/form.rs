@@ -78,13 +78,18 @@ impl ToEntity for CreateFormDto {
 #[derive(Debug)]
 pub struct NewFormItemDto {
     name: String,
-    description: String,
+    description: Option<String>,
     required: bool,
     kind: FormItemKindDto,
 }
 
 impl NewFormItemDto {
-    pub fn new(name: String, description: String, required: bool, kind: FormItemKindDto) -> Self {
+    pub fn new(
+        name: String,
+        description: Option<String>,
+        required: bool,
+        kind: FormItemKindDto,
+    ) -> Self {
         Self {
             name,
             description,
@@ -100,7 +105,7 @@ impl ToEntity for NewFormItemDto {
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(FormItem::create(
             FormItemName::new(self.name),
-            FormItemDescription::new(self.description),
+            self.description.map(FormItemDescription::new),
             FormItemRequired::new(self.required),
             self.kind.into_entity()?,
         ))
@@ -247,7 +252,7 @@ impl FromEntity for FormSummaryDto {
 pub struct FormItemDto {
     pub id: String,
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub required: bool,
     pub kind: FormItemKindDto,
 }
@@ -256,7 +261,7 @@ impl FormItemDto {
     pub fn new(
         id: String,
         name: String,
-        description: String,
+        description: Option<String>,
         required: bool,
         kind: FormItemKindDto,
     ) -> Self {
@@ -276,7 +281,7 @@ impl ToEntity for FormItemDto {
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
         Ok(FormItem::create(
             FormItemName::new(self.name),
-            FormItemDescription::new(self.description),
+            self.description.map(FormItemDescription::new),
             FormItemRequired::new(self.required),
             self.kind.into_entity()?,
         ))
@@ -290,7 +295,7 @@ impl FromEntity for FormItemDto {
         Self::new(
             entity.id.value().to_string(),
             entity.name.value(),
-            entity.description.value(),
+            entity.description.map(|it| it.value()),
             entity.required.value(),
             FormItemKindDto::from_entity(entity.kind),
         )

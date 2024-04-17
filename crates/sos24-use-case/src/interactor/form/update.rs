@@ -106,7 +106,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes2()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
-                        fixture::form::description2().value(),
+                        Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
@@ -156,7 +156,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes2()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
-                        fixture::form::description2().value(),
+                        Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
@@ -201,7 +201,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes2()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
-                        fixture::form::description2().value(),
+                        Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],

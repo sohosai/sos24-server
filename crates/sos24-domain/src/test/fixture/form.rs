@@ -65,7 +65,7 @@ pub fn items1() -> Vec<FormItem> {
     vec![FormItem::new(
         formitem_id1(),
         formitem_name1(),
-        formitem_description1(),
+        Some(formitem_description1()),
         formitem_required1(),
         formitem_kind1(),
     )]
@@ -141,7 +141,7 @@ pub fn items2() -> Vec<FormItem> {
     vec![FormItem::new(
         formitem_id2(),
         formitem_name2(),
-        formitem_description2(),
+        Some(formitem_description2()),
         formitem_required2(),
         formitem_kind2(),
     )]
