@@ -241,7 +241,7 @@ pub struct FormItem {
     #[getset(get = "pub")]
     name: FormItemName,
     #[getset(get = "pub")]
-    description: FormItemDescription,
+    description: Option<FormItemDescription>,
     #[getset(get = "pub")]
     required: FormItemRequired,
     #[getset(get = "pub")]
@@ -251,7 +251,7 @@ pub struct FormItem {
 impl FormItem {
     pub fn create(
         name: FormItemName,
-        description: FormItemDescription,
+        description: Option<FormItemDescription>,
         required: FormItemRequired,
         kind: FormItemKind,
     ) -> Self {
@@ -267,7 +267,7 @@ impl FormItem {
     pub fn new(
         id: FormItemId,
         name: FormItemName,
-        description: FormItemDescription,
+        description: Option<FormItemDescription>,
         required: FormItemRequired,
         kind: FormItemKind,
     ) -> Self {
@@ -295,7 +295,7 @@ impl FormItem {
 pub struct DestructedFormItem {
     pub id: FormItemId,
     pub name: FormItemName,
-    pub description: FormItemDescription,
+    pub description: Option<FormItemDescription>,
     pub required: FormItemRequired,
     pub kind: FormItemKind,
 }

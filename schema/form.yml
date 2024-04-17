@@ -355,7 +355,6 @@ schemas:
         example: 100
     required:
       - name
-      - description
       - required
       - type
   FormSummary:

@@ -50,7 +50,7 @@ impl From<CreateForm> for CreateFormDto {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewFormItem {
     name: String,
-    description: String,
+    description: Option<String>,
     required: bool,
     #[serde(flatten)]
     kind: FormItemKind,
@@ -206,7 +206,7 @@ pub struct FormQuery {
 pub struct FormItem {
     pub id: String,
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub required: bool,
     #[serde(flatten)]
     pub kind: FormItemKind,
