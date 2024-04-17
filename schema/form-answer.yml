@@ -248,7 +248,7 @@ schemas:
         format: uuid
       type:
         $ref: "./form.yml#/schemas/FormItemType"
-      value: { }
+      value: {}
     required:
       - item_id
       - type
@@ -296,7 +296,9 @@ schemas:
       form_title:
         type: string
       items:
-        $ref: "#/schemas/FormAnswerItem"
+        type: array
+        items:
+          $ref: "#/schemas/FormAnswerItem"
       created_at:
         type: string
         format: date-time
@@ -322,7 +324,9 @@ schemas:
         type: string
         format: uuid
       items:
-        $ref: "#/schemas/FormAnswerItem"
+        type: array
+        items:
+          $ref: "#/schemas/FormAnswerItem"
     required:
       - form_id
       - items
@@ -330,7 +334,9 @@ schemas:
     type: object
     properties:
       items:
-        $ref: "#/schemas/FormAnswerItem"
+        type: array
+        items:
+          $ref: "#/schemas/FormAnswerItem"
     required:
       - items
   CreatedFormAnswer:
