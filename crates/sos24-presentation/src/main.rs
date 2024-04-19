@@ -34,7 +34,7 @@ async fn main() {
     let sched = JobScheduler::new()
         .await
         .expect("Failed to create job scheduler");
-    let job = Job::new_async("1/10 * * * * *", move |_, _| {
+    let job = Job::new_async("0 * * * * *", move |_, _| {
         let modules = Arc::clone(&modules);
         let config = config.clone().into();
         Box::pin(async move {
