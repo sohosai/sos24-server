@@ -76,9 +76,6 @@ pub fn create_app(modules: Arc<Modules>) -> Router {
         .route("/:form_answer_id", get(form_answer::handle_get_id))
         .route("/:form_answer_id", put(form_answer::handle_put_id));
 
-    let project_application_period =
-        Router::new().route("/", get(project_application_period::handle_get));
-
     let private_routes = Router::new()
         .nest("/news", news)
         .nest("/files", file)
@@ -87,7 +84,6 @@ pub fn create_app(modules: Arc<Modules>) -> Router {
         .nest("/invitations", invitation)
         .nest("/forms", form)
         .nest("/form-answers", form_answers)
-        .nest("/project-application-period", project_application_period)
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),
             auth::jwt_auth,
@@ -95,7 +91,11 @@ pub fn create_app(modules: Arc<Modules>) -> Router {
 
     let public_routes = Router::new()
         .route("/health", get(health::handle_get))
-        .route("/users", post(user::handle_post));
+        .route("/users", post(user::handle_post))
+        .route(
+            "/project-application-period",
+            get(project_application_period::handle_get),
+        );
 
     Router::new()
         .nest("/", public_routes)
