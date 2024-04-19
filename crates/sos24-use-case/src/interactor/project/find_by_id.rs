@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::ProjectId;
@@ -18,7 +16,7 @@ impl<R: Repositories> ProjectUseCase<R> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<ProjectDto, ProjectUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let id = ProjectId::try_from(id)?;
         let raw_project = self

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::{invitation::InvitationId, permission::Permissions},
@@ -16,7 +14,7 @@ impl<R: Repositories> InvitationUseCase<R> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<(), InvitationUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::DELETE_INVITATION_ALL));
 
         let id = InvitationId::try_from(id)?;

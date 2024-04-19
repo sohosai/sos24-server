@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
@@ -16,7 +14,7 @@ use super::{NewsUseCase, NewsUseCaseError};
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
     pub async fn list(&self, ctx: &impl ContextProvider) -> Result<Vec<NewsDto>, NewsUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
 
         let raw_news_list = self.repositories.news_repository().list().await?;

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
@@ -16,7 +14,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         &self,
         ctx: &impl ContextProvider,
     ) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let raw_form_list = self.repositories.form_repository().list().await?;

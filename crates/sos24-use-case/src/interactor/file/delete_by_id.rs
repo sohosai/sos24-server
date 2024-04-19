@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{ensure, entity::file_data::FileId, repository::Repositories};
@@ -14,7 +12,7 @@ impl<R: Repositories> FileUseCase<R> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<(), FileUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::DELETE_FILE_ALL));
 
         // ソフトデリートで実装している（オブジェクトストレージからは削除されない）

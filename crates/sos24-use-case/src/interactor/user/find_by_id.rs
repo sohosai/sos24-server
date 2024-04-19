@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::common::date::WithDate;
 use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::project::Project;
@@ -18,7 +16,7 @@ impl<R: Repositories> UserUseCase<R> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<UserDto, UserUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let user_id = UserId::new(id);
         let raw_user = self

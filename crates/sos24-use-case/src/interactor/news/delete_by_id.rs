@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::{news::NewsId, permission::Permissions},
@@ -16,7 +14,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<(), NewsUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
 
         let id = NewsId::try_from(id)?;

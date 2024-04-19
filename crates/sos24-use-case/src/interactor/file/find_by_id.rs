@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::ensure;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::repository::file_object::FileObjectRepository;
@@ -23,7 +21,7 @@ impl<R: Repositories> FileUseCase<R> {
         id: String,
     ) -> Result<FileDto, FileUseCaseError> {
         let id = FileId::try_from(id)?;
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         let raw_file_data = self
             .repositories
             .file_data_repository()
