@@ -93,10 +93,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
     ));
 
     let send_grid = SendGrid::new(&env::send_grid_api_key());
-    let adapters = Arc::new(sos24_infrastructure::DefaultAdapters::new(
-        send_grid,
-        env::send_grid_group_id(),
-    ));
+    let adapters = Arc::new(sos24_infrastructure::DefaultAdapters::new(send_grid));
 
     let application_period = ProjectApplicationPeriod::new(
         config.project_application_start_at.clone(),

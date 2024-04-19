@@ -17,6 +17,5 @@ pub struct Email {
 #[automock]
 #[allow(async_fn_in_trait)]
 pub trait EmailSender: Send + Sync + 'static {
-    fn opt_out_url(&self) -> String;
     async fn send_email(&self, command: SendEmailCommand) -> anyhow::Result<()>;
 }

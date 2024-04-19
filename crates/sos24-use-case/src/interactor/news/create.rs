@@ -92,8 +92,10 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
 {url}
 
 ※このメールは雙峰祭オンラインシステムが自動送信しています。
-※配信停止は以下のリンクからお手続きください。
-{optout_url}"#,
+＿＿＿
+筑波大学学園祭実行委員会
+Email : {email}
+電話 : 029-853-2899"#,
                 title = news.title().clone().value(),
                 body = news.body().clone().value(),
                 url = format!(
@@ -101,7 +103,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
                     ctx.config().app_url,
                     news.id().clone().value()
                 ),
-                optout_url = self.adapters.email_sender().opt_out_url(),
+                email = ctx.config().email_reply_to_address.clone(),
             ),
         };
         self.adapters.email_sender().send_email(command).await?;
@@ -172,10 +174,6 @@ mod tests {
             .expect_list()
             .returning(|| Ok(vec![]));
         let mut adapters = MockAdapters::default();
-        adapters
-            .email_sender_mut()
-            .expect_opt_out_url()
-            .returning(|| String::new());
         adapters
             .email_sender_mut()
             .expect_send_email()

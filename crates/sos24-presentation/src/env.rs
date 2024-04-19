@@ -86,13 +86,6 @@ pub fn send_grid_api_key() -> String {
     env::var("SEND_GRID_API_KEY").expect("Env `SEND_GRID_API_KEY` must be set")
 }
 
-pub fn send_grid_group_id() -> u32 {
-    env::var("SEND_GRID_GROUP_ID")
-        .expect("Env `SEND_GRID_GROUP_ID` must be set")
-        .parse::<u32>()
-        .expect("Env `SEND_GRID_GROUP_ID` must be a number")
-}
-
 pub fn email_sender_address() -> String {
     env::var("EMAIL_SENDER_ADDRESS").expect("Env `EMAIL_SENDER_ADDRESS` must be set")
 }
