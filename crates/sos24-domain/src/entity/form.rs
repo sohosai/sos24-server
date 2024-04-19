@@ -34,6 +34,8 @@ pub struct Form {
     #[getset(get = "pub")]
     attributes: ProjectAttributes,
     #[getset(get = "pub")]
+    is_notified: FormIsNotified,
+    #[getset(get = "pub")]
     items: Vec<FormItem>,
     #[getset(get = "pub")]
     attachments: Vec<FileId>,
@@ -62,6 +64,7 @@ impl Form {
             ends_at,
             categories,
             attributes,
+            is_notified: FormIsNotified::new(false),
             items,
             attachments,
         })
@@ -76,6 +79,7 @@ impl Form {
         ends_at: DateTime,
         categories: ProjectCategories,
         attributes: ProjectAttributes,
+        is_notified: FormIsNotified,
         items: Vec<FormItem>,
         attachments: Vec<FileId>,
     ) -> Self {
@@ -87,6 +91,7 @@ impl Form {
             ends_at,
             categories,
             attributes,
+            is_notified,
             items,
             attachments,
         }
@@ -101,6 +106,7 @@ impl Form {
             ends_at: self.ends_at,
             categories: self.categories,
             attributes: self.attributes,
+            is_notified: self.is_notified,
             items: self.items,
             attachments: self.attachments,
         }
@@ -116,6 +122,7 @@ pub struct DestructedForm {
     pub ends_at: DateTime,
     pub categories: ProjectCategories,
     pub attributes: ProjectAttributes,
+    pub is_notified: FormIsNotified,
     pub items: Vec<FormItem>,
     pub attachments: Vec<FileId>,
 }
@@ -205,6 +212,11 @@ impl Form {
         Ok(())
     }
 
+    pub fn set_notified(&mut self) -> Result<(), PermissionDeniedError> {
+        self.is_notified = FormIsNotified::new(true);
+        Ok(())
+    }
+
     // この申請が引数に与えられた企画を対象にしたものであるかを返す
     pub fn is_sent_to(&self, project: &Project) -> bool {
         self.categories.matches(*project.category())
@@ -233,6 +245,7 @@ impl TryFrom<String> for FormId {
 
 impl_value_object!(FormTitle(String));
 impl_value_object!(FormDescription(String));
+impl_value_object!(FormIsNotified(bool));
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormItem {

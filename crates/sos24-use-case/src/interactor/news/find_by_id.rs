@@ -7,14 +7,19 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::Context,
+    adapter::Adapters,
+    context::ContextProvider,
     dto::{news::NewsDto, FromEntity},
 };
 
 use super::{NewsUseCase, NewsUseCaseError};
 
-impl<R: Repositories> NewsUseCase<R> {
-    pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<NewsDto, NewsUseCaseError> {
+impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
+    pub async fn find_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<NewsDto, NewsUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
 
@@ -38,7 +43,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::Context, interactor::news::NewsUseCase};
+    use crate::{adapter::MockAdapters, context::TestContext, interactor::news::NewsUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーはお知らせを取得できる() {
@@ -47,9 +52,10 @@ mod tests {
             .news_repository_mut()
             .expect_find_by_id()
             .returning(|_| Ok(Some(fixture::date::with(fixture::news::news1()))));
-        let use_case = NewsUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::news::id1().value().to_string())
             .await;

@@ -19,6 +19,7 @@ use thiserror::Error;
 pub enum ContextError {
     #[error("User not found: {0:?}")]
     UserNotFound(UserId),
+
     #[error(transparent)]
     UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
@@ -31,71 +32,47 @@ pub enum OwnedProject {
     SubOwner(WithDate<Project>),
 }
 
-#[derive(Debug, Clone)]
-pub struct Context {
-    user_id: UserId,
-    requested_at: chrono::DateTime<chrono::Utc>,
-
-    actor: Option<Actor>, // for test purpose only
+#[derive(Clone, Debug, Default)]
+pub struct Config {
+    pub email_sender_address: String,
+    pub email_reply_to_address: String,
+    pub app_url: String,
 }
 
-impl Context {
-    pub fn new(user_id: String) -> Self {
-        Self {
-            user_id: UserId::new(user_id),
-            requested_at: chrono::Utc::now(),
-            actor: None,
-        }
-    }
+#[allow(async_fn_in_trait)]
+pub trait ContextProvider: Send + Sync + 'static {
+    fn user_id(&self) -> String;
+    fn requested_at(&self) -> &chrono::DateTime<chrono::Utc>;
+    fn config(&self) -> &Config;
 
-    // for test purpose only
-    pub fn with_actor(actor: Actor) -> Self {
-        Self {
-            user_id: actor.user_id().clone(),
-            requested_at: chrono::Utc::now(),
-            actor: Some(actor),
-        }
-    }
-
-    pub fn user_id(&self) -> &UserId {
-        &self.user_id
-    }
-
-    pub fn requested_at(&self) -> &chrono::DateTime<chrono::Utc> {
-        &self.requested_at
-    }
-
-    pub async fn user<R: Repositories>(
+    async fn user<R: Repositories>(
         &self,
         repositories: Arc<R>,
     ) -> Result<WithDate<User>, ContextError> {
+        let user_id = UserId::new(self.user_id());
         repositories
             .user_repository()
-            .find_by_id(self.user_id.clone())
+            .find_by_id(user_id.clone())
             .await?
-            .ok_or(ContextError::UserNotFound(self.user_id.clone()))
+            .ok_or(ContextError::UserNotFound(user_id))
     }
 
-    pub async fn actor<R: Repositories>(
-        &self,
-        repositories: Arc<R>,
-    ) -> Result<Actor, ContextError> {
-        match self.actor {
-            Some(ref actor) => Ok(actor.clone()),
-            None => {
-                let user = self.user(repositories).await?;
-                Ok(Actor::new(self.user_id.clone(), user.value.role().clone()))
-            }
-        }
+    async fn actor<R: Repositories>(&self, repositories: Arc<R>) -> Result<Actor, ContextError> {
+        let user = self.user(repositories).await?;
+        Ok(Actor::new(
+            user.value.id().clone(),
+            user.value.role().clone(),
+        ))
     }
 
-    pub async fn project<R: Repositories>(
+    async fn project<R: Repositories>(
         &self,
         repositories: Arc<R>,
     ) -> Result<Option<OwnedProject>, ContextError> {
+        let user_id = UserId::new(self.user_id());
         if let Some(project) = repositories
             .project_repository()
-            .find_by_owner_id(self.user_id.clone())
+            .find_by_owner_id(user_id.clone())
             .await?
         {
             return Ok(Some(OwnedProject::Owner(project)));
@@ -103,12 +80,46 @@ impl Context {
 
         if let Some(project) = repositories
             .project_repository()
-            .find_by_sub_owner_id(self.user_id.clone())
+            .find_by_sub_owner_id(user_id)
             .await?
         {
             return Ok(Some(OwnedProject::SubOwner(project)));
         }
 
         Ok(None)
+    }
+}
+
+pub struct TestContext {
+    actor: Actor,
+    requested_at: chrono::DateTime<chrono::Utc>,
+    config: Config,
+}
+
+impl TestContext {
+    pub fn new(actor: Actor) -> Self {
+        Self {
+            actor,
+            requested_at: chrono::Utc::now(),
+            config: Config::default(),
+        }
+    }
+}
+
+impl ContextProvider for TestContext {
+    fn user_id(&self) -> String {
+        self.actor.user_id().clone().value()
+    }
+
+    fn requested_at(&self) -> &chrono::DateTime<chrono::Utc> {
+        &self.requested_at
+    }
+
+    fn config(&self) -> &Config {
+        &self.config
+    }
+
+    async fn actor<R: Repositories>(&self, _repositories: Arc<R>) -> Result<Actor, ContextError> {
+        Ok(self.actor.clone())
     }
 }

@@ -14,9 +14,7 @@ use jsonwebtoken::{
 use reqwest::ClientBuilder;
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::context::Context;
-
-use crate::{error::AppError, module::Modules};
+use crate::{context::Context, error::AppError, module::Modules};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {
@@ -83,7 +81,7 @@ pub(crate) async fn jwt_auth(
     }
 
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
-    let ctx = Context::new(token.claims.sub.clone());
+    let ctx = Context::new(token.claims.sub.clone(), modules.config().clone().into());
     request.extensions_mut().insert(ctx);
 
     tracing::info!("ユーザー認証が完了しました");

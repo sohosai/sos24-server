@@ -7,13 +7,13 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::Context,
+    context::ContextProvider,
     dto::{user::UserDto, FromEntity},
     interactor::user::{UserUseCase, UserUseCaseError},
 };
 
 impl<R: Repositories> UserUseCase<R> {
-    pub async fn list(&self, ctx: &Context) -> Result<Vec<UserDto>, UserUseCaseError> {
+    pub async fn list(&self, ctx: &impl ContextProvider) -> Result<Vec<UserDto>, UserUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_USER_ALL));
 
@@ -35,7 +35,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         interactor::user::{UserUseCase, UserUseCaseError},
     };
 
@@ -44,7 +44,7 @@ mod tests {
         let repositories = MockRepositories::default();
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
@@ -63,7 +63,7 @@ mod tests {
             .returning(|| Ok(vec![]));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case.list(&ctx).await;
         assert!(matches!(res, Ok(list) if list.is_empty()));
     }

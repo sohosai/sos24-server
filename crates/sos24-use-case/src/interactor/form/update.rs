@@ -11,17 +11,16 @@ use sos24_domain::{
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::{
-    context::Context,
-    dto::{form::UpdateFormDto, ToEntity},
-};
+use crate::adapter::Adapters;
+use crate::context::ContextProvider;
+use crate::dto::{form::UpdateFormDto, ToEntity};
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn update(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_data: UpdateFormDto,
     ) -> Result<(), FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -79,7 +78,8 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        adapter::MockAdapters,
+        context::TestContext,
         dto::{
             form::{FormItemKindDto, NewFormItemDto, UpdateFormDto},
             FromEntity,
@@ -90,9 +90,10 @@ mod tests {
     #[tokio::test]
     async fn 実委人は申請を更新できない() {
         let repositories = MockRepositories::default();
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -140,9 +141,10 @@ mod tests {
             .form_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,
@@ -185,9 +187,10 @@ mod tests {
                     fixture::form_answer::form_answer1(fixture::project::id1()),
                 )])
             });
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,

@@ -67,6 +67,11 @@ impl From<FormUseCaseError> for AppError {
                 "form/has-answers".to_string(),
                 message,
             ),
+            FormUseCaseError::UserNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form/user-not-found".to_string(),
+                message,
+            ),
             FormUseCaseError::ProjectUseCaseError(e) => e.into(),
             FormUseCaseError::DateTimeError(e) => e.into(),
             FormUseCaseError::FormRepositoryError(e) => e.into(),
@@ -80,6 +85,7 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::FormAnswerRepositoryError(e) => e.into(),
             FormUseCaseError::FileIdError(e) => e.into(),
             FormUseCaseError::ProjectRepositoryError(e) => e.into(),
+            FormUseCaseError::UserRepositoryError(e) => e.into(),
         }
     }
 }
@@ -266,6 +272,11 @@ impl From<NewsUseCaseError> for AppError {
                 "news/file-not-found".to_string(),
                 message,
             ),
+            NewsUseCaseError::UserNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "news/user-not-found".to_string(),
+                message,
+            ),
             NewsUseCaseError::ProjectUseCaseError(e) => e.into(),
             NewsUseCaseError::ContextError(e) => e.into(),
             NewsUseCaseError::NewsRepositoryError(e) => e.into(),
@@ -274,6 +285,8 @@ impl From<NewsUseCaseError> for AppError {
             NewsUseCaseError::InternalError(e) => e.into(),
             NewsUseCaseError::FileIdError(e) => e.into(),
             NewsUseCaseError::FileDataRepositoryError(e) => e.into(),
+            NewsUseCaseError::ProjectRepositoryError(e) => e.into(),
+            NewsUseCaseError::UserRepositoryError(e) => e.into(),
         }
     }
 }

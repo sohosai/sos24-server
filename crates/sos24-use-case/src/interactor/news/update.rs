@@ -10,17 +10,16 @@ use sos24_domain::{
     repository::{news::NewsRepository, Repositories},
 };
 
-use crate::{
-    context::Context,
-    dto::{news::UpdateNewsDto, ToEntity},
-};
+use crate::adapter::Adapters;
+use crate::context::ContextProvider;
+use crate::dto::{news::UpdateNewsDto, ToEntity};
 
 use super::{NewsUseCase, NewsUseCaseError};
 
-impl<R: Repositories> NewsUseCase<R> {
+impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
     pub async fn update(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         news_data: UpdateNewsDto,
     ) -> Result<(), NewsUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -95,7 +94,8 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        adapter::MockAdapters,
+        context::TestContext,
         dto::{news::UpdateNewsDto, FromEntity},
         interactor::news::{NewsUseCase, NewsUseCaseError},
     };
@@ -111,9 +111,10 @@ mod tests {
             .news_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = NewsUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -149,9 +150,10 @@ mod tests {
             .news_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = NewsUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,

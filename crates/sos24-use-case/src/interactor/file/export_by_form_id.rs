@@ -13,7 +13,7 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 use sos24_domain::{ensure, repository::file_data::FileDataRepository};
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::file::ArchiveToBeExportedDto;
 
 use super::{FileUseCase, FileUseCaseError};
@@ -21,7 +21,7 @@ use super::{FileUseCase, FileUseCaseError};
 impl<R: Repositories> FileUseCase<R> {
     pub async fn export_by_form_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         bucket: String,
         form_id: String,
     ) -> Result<ArchiveToBeExportedDto<impl AsyncRead>, FileUseCaseError> {

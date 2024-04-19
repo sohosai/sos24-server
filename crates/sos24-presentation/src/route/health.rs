@@ -6,11 +6,14 @@ pub async fn handle_get() -> Result<impl IntoResponse, StatusCode> {
 
 #[cfg(test)]
 mod test {
+    use std::sync::Arc;
+
     use axum::{
         body::Body,
         http::{Request, StatusCode},
     };
     use sos24_domain::test::repository::MockRepositories;
+    use sos24_use_case::adapter::MockAdapters;
     use tower::ServiceExt;
 
     use crate::{module, route::create_app};
@@ -18,8 +21,9 @@ mod test {
     #[tokio::test]
     async fn test_get_health() -> anyhow::Result<()> {
         let repositories = MockRepositories::default();
-        let modules = module::new_test(repositories).await.unwrap();
-        let app = create_app(modules);
+        let adapters = MockAdapters::default();
+        let modules = module::new_test(repositories, adapters).await.unwrap();
+        let app = create_app(Arc::new(modules));
 
         let resp = app
             .oneshot(Request::builder().uri("/health").body(Body::empty())?)

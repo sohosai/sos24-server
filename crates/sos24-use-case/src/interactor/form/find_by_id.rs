@@ -7,16 +7,18 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
-use crate::context::OwnedProject;
-use crate::{
-    context::Context,
-    dto::{form::FormDto, FromEntity},
-};
+use crate::adapter::Adapters;
+use crate::context::{ContextProvider, OwnedProject};
+use crate::dto::{form::FormDto, FromEntity};
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
-    pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<FormDto, FormUseCaseError> {
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
+    pub async fn find_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<FormDto, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
@@ -60,7 +62,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::Context, interactor::form::FormUseCase};
+    use crate::{adapter::MockAdapters, context::TestContext, interactor::form::FormUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーは申請を取得できる() {
@@ -81,9 +83,10 @@ mod tests {
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
             .returning(|_, _| Ok(None));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::form::id1().value().to_string())
             .await;

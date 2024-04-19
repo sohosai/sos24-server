@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::user::UserId;
+use sos24_domain::repository::user::UserRepositoryError;
 use thiserror::Error;
 
 use sos24_domain::entity::file_data::FileIdError;
@@ -15,9 +17,11 @@ use sos24_domain::{
     repository::{form::FormRepositoryError, form_answer::FormAnswerRepositoryError, Repositories},
 };
 
+use crate::adapter::Adapters;
 use crate::context::ContextError;
 use crate::interactor::project::ProjectUseCaseError;
 
+pub mod check_form_and_send_notify;
 pub mod create;
 pub mod delete_by_id;
 pub mod find_by_id;
@@ -33,7 +37,11 @@ pub enum FormUseCaseError {
     ProjectNotFound(ProjectId),
     #[error("Form has answers")]
     HasAnswers,
+    #[error("User not found: {0:?}")]
+    UserNotFound(UserId),
 
+    #[error(transparent)]
+    UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
     #[error(transparent)]
@@ -62,12 +70,16 @@ pub enum FormUseCaseError {
     InternalError(#[from] anyhow::Error),
 }
 
-pub struct FormUseCase<R: Repositories> {
+pub struct FormUseCase<R: Repositories, A: Adapters> {
     repositories: Arc<R>,
+    adapters: Arc<A>,
 }
 
-impl<R: Repositories> FormUseCase<R> {
-    pub fn new(repositories: Arc<R>) -> Self {
-        Self { repositories }
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
+    pub fn new(repositories: Arc<R>, adapters: Arc<A>) -> Self {
+        Self {
+            repositories,
+            adapters,
+        }
     }
 }

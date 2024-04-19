@@ -6,12 +6,16 @@ use sos24_domain::{
     repository::{news::NewsRepository, Repositories},
 };
 
-use crate::context::Context;
+use crate::{adapter::Adapters, context::ContextProvider};
 
 use super::{NewsUseCase, NewsUseCaseError};
 
-impl<R: Repositories> NewsUseCase<R> {
-    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), NewsUseCaseError> {
+impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
+    pub async fn delete_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<(), NewsUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
 
@@ -37,7 +41,8 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        adapter::MockAdapters,
+        context::TestContext,
         interactor::news::{NewsUseCase, NewsUseCaseError},
     };
 
@@ -52,9 +57,10 @@ mod tests {
             .news_repository_mut()
             .expect_delete_by_id()
             .returning(|_| Ok(()));
-        let use_case = NewsUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .delete_by_id(&ctx, fixture::news::id1().value().to_string())
             .await;
@@ -77,9 +83,10 @@ mod tests {
             .news_repository_mut()
             .expect_delete_by_id()
             .returning(|_| Ok(()));
-        let use_case = NewsUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .delete_by_id(&ctx, fixture::news::id1().value().to_string())
             .await;

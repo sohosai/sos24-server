@@ -8,7 +8,7 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::{Context, OwnedProject},
+    context::{ContextProvider, OwnedProject},
     dto::{form_answer::UpdateFormAnswerDto, ToEntity},
 };
 
@@ -17,7 +17,7 @@ use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn update(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_answer_data: UpdateFormAnswerDto,
     ) -> Result<(), FormAnswerUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -77,7 +77,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         dto::{
             form_answer::{FormAnswerItemDto, UpdateFormAnswerDto},
             FromEntity,
@@ -114,7 +114,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .update(
                 &ctx,
@@ -159,7 +159,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .update(
                 &ctx,
@@ -209,7 +209,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,
