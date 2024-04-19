@@ -444,6 +444,11 @@ impl From<FirebaseUserRepositoryError> for AppError {
                 "user/bad-credential".to_string(),
                 "Bad credential".to_string(),
             ),
+            FirebaseUserRepositoryError::WeakPassword => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "user/weak-password".to_string(),
+                "Weak password".to_string(),
+            ),
             FirebaseUserRepositoryError::InternalError(e) => e.into(),
         }
     }

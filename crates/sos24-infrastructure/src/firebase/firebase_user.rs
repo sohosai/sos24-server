@@ -45,6 +45,9 @@ impl FirebaseUserRepository for FirebaseUserRepositoryImpl {
                 ApiClientError::ServerError(err) if err.message.as_str() == "EMAIL_EXISTS" => Err(
                     FirebaseUserRepositoryError::EmailExists(new_firebase_user.email),
                 ),
+                ApiClientError::ServerError(err) if err.message.as_str() == "WEAK_PASSWORD" => {
+                    Err(FirebaseUserRepositoryError::WeakPassword)
+                }
                 _ => Err(anyhow::anyhow!("Failed to create firebase user: {err}").into()),
             },
         }
