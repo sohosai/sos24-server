@@ -24,7 +24,7 @@ mod module {
 
 pub struct Modules {
     config: Config,
-    form_use_case: FormUseCase<module::Repositories>,
+    form_use_case: FormUseCase<module::Repositories, module::Adapters>,
     form_answer_use_case: FormAnswerUseCase<module::Repositories>,
     invitation_use_case: InvitationUseCase<module::Repositories>,
     news_use_case: NewsUseCase<module::Repositories, module::Adapters>,
@@ -38,7 +38,7 @@ impl Modules {
         &self.config
     }
 
-    pub fn form_use_case(&self) -> &FormUseCase<module::Repositories> {
+    pub fn form_use_case(&self) -> &FormUseCase<module::Repositories, module::Adapters> {
         &self.form_use_case
     }
 
@@ -105,7 +105,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
 
     Ok(Modules {
         config,
-        form_use_case: FormUseCase::new(Arc::clone(&repositories)),
+        form_use_case: FormUseCase::new(Arc::clone(&repositories), Arc::clone(&adapters)),
         form_answer_use_case: FormAnswerUseCase::new(Arc::clone(&repositories)),
         invitation_use_case: InvitationUseCase::new(
             Arc::clone(&repositories),
@@ -130,7 +130,7 @@ pub async fn new_test(
 
     Ok(Modules {
         config: Config::default(),
-        form_use_case: FormUseCase::new(Arc::clone(&repositories)),
+        form_use_case: FormUseCase::new(Arc::clone(&repositories), Arc::clone(&adapters)),
         form_answer_use_case: FormAnswerUseCase::new(Arc::clone(&repositories)),
         invitation_use_case: InvitationUseCase::new(
             Arc::clone(&repositories),

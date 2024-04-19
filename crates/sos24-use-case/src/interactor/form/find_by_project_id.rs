@@ -8,12 +8,13 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
+use crate::adapter::Adapters;
 use crate::dto::form::FormSummaryDto;
 use crate::{context::Context, dto::FromEntity};
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn find_by_project_id(
         &self,
         ctx: &Context,
@@ -59,6 +60,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
+    use crate::adapter::MockAdapters;
     use crate::context::Context;
     use crate::interactor::form::{FormUseCase, FormUseCaseError};
 
@@ -77,7 +79,8 @@ mod tests {
             .form_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -97,7 +100,8 @@ mod tests {
                     fixture::user::id2(),
                 ))))
             });
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case
@@ -126,7 +130,8 @@ mod tests {
             .form_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
         let res = use_case

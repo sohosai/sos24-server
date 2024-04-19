@@ -67,6 +67,11 @@ impl From<FormUseCaseError> for AppError {
                 "form/has-answers".to_string(),
                 message,
             ),
+            FormUseCaseError::UserNotFound(_) => AppError::new(
+                StatusCode::NOT_FOUND,
+                "form/user-not-found".to_string(),
+                message,
+            ),
             FormUseCaseError::ProjectUseCaseError(e) => e.into(),
             FormUseCaseError::DateTimeError(e) => e.into(),
             FormUseCaseError::FormRepositoryError(e) => e.into(),
@@ -80,6 +85,7 @@ impl From<FormUseCaseError> for AppError {
             FormUseCaseError::FormAnswerRepositoryError(e) => e.into(),
             FormUseCaseError::FileIdError(e) => e.into(),
             FormUseCaseError::ProjectRepositoryError(e) => e.into(),
+            FormUseCaseError::UserRepositoryError(e) => e.into(),
         }
     }
 }

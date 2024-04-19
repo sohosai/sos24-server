@@ -1,4 +1,5 @@
 use crate::entity::file_data::FileId;
+use crate::entity::form::FormIsNotified;
 use crate::entity::{
     common::datetime::DateTime,
     form::{
@@ -35,6 +36,10 @@ pub fn categories1() -> ProjectCategories {
 
 pub fn attributes1() -> ProjectAttributes {
     ProjectAttributes::ACADEMIC
+}
+
+pub fn is_notified1() -> FormIsNotified {
+    FormIsNotified::new(false)
 }
 
 pub fn formitem_id1() -> FormItemId {
@@ -84,6 +89,7 @@ pub fn form1() -> Form {
         ends_at1(),
         categories1(),
         attributes1(),
+        is_notified1(),
         items1(),
         attachments1(),
     )
@@ -115,6 +121,10 @@ pub fn categories2() -> ProjectCategories {
 
 pub fn attributes2() -> ProjectAttributes {
     ProjectAttributes::OUTSIDE
+}
+
+pub fn is_notified2() -> FormIsNotified {
+    FormIsNotified::new(false)
 }
 
 pub fn formitem_id2() -> FormItemId {
@@ -160,6 +170,7 @@ pub fn form2() -> Form {
         ends_at2(),
         categories2(),
         attributes2(),
+        is_notified1(),
         items2(),
         attachments2(),
     )

@@ -6,12 +6,12 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
-use crate::dto::form::FormSummaryDto;
+use crate::{adapter::Adapters, dto::form::FormSummaryDto};
 use crate::{context::Context, dto::FromEntity};
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn list(&self, ctx: &Context) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
@@ -33,7 +33,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::Context, interactor::form::FormUseCase};
+    use crate::{adapter::MockAdapters, context::Context, interactor::form::FormUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーは申請一覧を取得できる() {
@@ -42,7 +42,8 @@ mod tests {
             .form_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
