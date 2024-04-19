@@ -8,7 +8,7 @@ use sos24_domain::{
 
 use crate::{
     adapter::Adapters,
-    context::Context,
+    context::ContextProvider,
     dto::{form::CreateFormDto, ToEntity},
 };
 
@@ -17,7 +17,7 @@ use super::{FormUseCase, FormUseCaseError};
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         raw_form: CreateFormDto,
     ) -> Result<String, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -41,7 +41,7 @@ mod tests {
 
     use crate::{
         adapter::MockAdapters,
-        context::Context,
+        context::TestContext,
         dto::{
             form::{CreateFormDto, FormItemKindDto, NewFormItemDto},
             FromEntity,
@@ -59,7 +59,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .create(
                 &ctx,
@@ -101,7 +101,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .create(
                 &ctx,

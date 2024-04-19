@@ -5,7 +5,7 @@ use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::{Context, OwnedProject};
+use crate::context::{ContextProvider, OwnedProject};
 use crate::dto::project::ProjectDto;
 use crate::dto::FromEntity;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
@@ -13,7 +13,7 @@ use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn find_owned(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
     ) -> Result<Option<ProjectDto>, ProjectUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         let project = ctx.project(Arc::clone(&self.repositories)).await?;

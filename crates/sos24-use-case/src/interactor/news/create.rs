@@ -14,7 +14,7 @@ use crate::{
         email::{Email, EmailSender, SendEmailCommand},
         Adapters,
     },
-    context::Context,
+    context::ContextProvider,
     dto::{news::CreateNewsDto, ToEntity},
 };
 
@@ -23,7 +23,7 @@ use super::{NewsUseCase, NewsUseCaseError};
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
     pub async fn create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         raw_news: CreateNewsDto,
     ) -> Result<String, NewsUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -121,7 +121,7 @@ mod tests {
 
     use crate::{
         adapter::MockAdapters,
-        context::Context,
+        context::TestContext,
         dto::{news::CreateNewsDto, FromEntity},
         interactor::news::{NewsUseCase, NewsUseCaseError},
     };
@@ -136,7 +136,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .create(
                 &ctx,
@@ -167,10 +167,22 @@ mod tests {
             .news_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let adapters = MockAdapters::default();
+        repositories
+            .project_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let mut adapters = MockAdapters::default();
+        adapters
+            .email_sender_mut()
+            .expect_opt_out_url()
+            .returning(|| String::new());
+        adapters
+            .email_sender_mut()
+            .expect_send_email()
+            .returning(|_| Ok(()));
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .create(
                 &ctx,

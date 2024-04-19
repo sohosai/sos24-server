@@ -10,7 +10,7 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::Context,
+    context::ContextProvider,
     dto::{invitation::CreateInvitationDto, ToEntity},
 };
 
@@ -19,7 +19,7 @@ use super::{InvitationUseCase, InvitationUseCaseError};
 impl<R: Repositories> InvitationUseCase<R> {
     pub async fn find_or_create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         raw_invitation: CreateInvitationDto,
     ) -> Result<String, InvitationUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -88,7 +88,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         dto::invitation::{CreateInvitationDto, InvitationPositionDto},
         interactor::invitation::{InvitationUseCase, InvitationUseCaseError},
     };
@@ -125,7 +125,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_or_create(
                 &ctx,
@@ -147,7 +147,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_or_create(
                 &ctx,
@@ -194,7 +194,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_or_create(
                 &ctx,
@@ -245,7 +245,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .find_or_create(
                 &ctx,
@@ -291,7 +291,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .find_or_create(
                 &ctx,

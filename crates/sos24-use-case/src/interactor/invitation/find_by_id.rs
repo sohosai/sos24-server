@@ -7,7 +7,7 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::Context,
+    context::ContextProvider,
     dto::{invitation::InvitationDto, FromEntity},
 };
 
@@ -16,7 +16,7 @@ use super::{InvitationUseCase, InvitationUseCaseError};
 impl<R: Repositories> InvitationUseCase<R> {
     pub async fn find_by_id(
         &self,
-        _ctx: &Context,
+        _ctx: &impl ContextProvider,
         id: String,
     ) -> Result<InvitationDto, InvitationUseCaseError> {
         let id = InvitationId::try_from(id)?;
@@ -60,7 +60,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::Context, interactor::invitation::InvitationUseCase};
+    use crate::{context::TestContext, interactor::invitation::InvitationUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーは自分の企画への招待を取得できる() {
@@ -96,7 +96,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;
@@ -137,7 +137,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;
@@ -178,7 +178,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;

@@ -1,16 +1,23 @@
 use std::sync::Arc;
 
 use sos24_domain::{
-    entity::invitation::{InvitationId, InvitationPosition},
+    entity::{
+        invitation::{InvitationId, InvitationPosition},
+        user::UserId,
+    },
     repository::{invitation::InvitationRepository, project::ProjectRepository, Repositories},
 };
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 
 use super::{InvitationUseCase, InvitationUseCaseError};
 
 impl<R: Repositories> InvitationUseCase<R> {
-    pub async fn receive(&self, ctx: &Context, id: String) -> Result<(), InvitationUseCaseError> {
+    pub async fn receive(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<(), InvitationUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
 
         if ctx.project(Arc::clone(&self.repositories)).await?.is_some() {
@@ -36,9 +43,10 @@ impl<R: Repositories> InvitationUseCase<R> {
             .ok_or(InvitationUseCaseError::ProjectNotFound(project_id))?;
 
         let mut new_project = project.value;
+        let user_id = UserId::new(ctx.user_id().clone());
         match invitation.value.position() {
-            InvitationPosition::Owner => new_project.set_owner_id(ctx.user_id().clone())?,
-            InvitationPosition::SubOwner => new_project.set_sub_owner_id(ctx.user_id().clone())?,
+            InvitationPosition::Owner => new_project.set_owner_id(user_id)?,
+            InvitationPosition::SubOwner => new_project.set_sub_owner_id(user_id)?,
         }
         self.repositories
             .project_repository()
@@ -65,7 +73,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::Context, interactor::invitation::InvitationUseCase};
+    use crate::{context::TestContext, interactor::invitation::InvitationUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーは招待を受けられる() {
@@ -109,7 +117,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .receive(&ctx, fixture::invitation::id().value().to_string())
             .await;

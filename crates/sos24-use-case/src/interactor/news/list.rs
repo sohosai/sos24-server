@@ -8,14 +8,14 @@ use sos24_domain::{
 
 use crate::{
     adapter::Adapters,
-    context::Context,
+    context::ContextProvider,
     dto::{news::NewsDto, FromEntity},
 };
 
 use super::{NewsUseCase, NewsUseCaseError};
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
-    pub async fn list(&self, ctx: &Context) -> Result<Vec<NewsDto>, NewsUseCaseError> {
+    pub async fn list(&self, ctx: &impl ContextProvider) -> Result<Vec<NewsDto>, NewsUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
 
@@ -34,7 +34,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{adapter::MockAdapters, context::Context, interactor::news::NewsUseCase};
+    use crate::{adapter::MockAdapters, context::TestContext, interactor::news::NewsUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーはお知らせ一覧を取得できる() {
@@ -46,7 +46,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
         assert!(res.is_ok());
     }

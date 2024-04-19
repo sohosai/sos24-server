@@ -9,7 +9,7 @@ use sos24_domain::{
     repository::Repositories,
 };
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::file::{FileDto, FileEntity};
 use crate::dto::FromEntity;
 
@@ -18,7 +18,7 @@ use super::{FileUseCase, FileUseCaseError};
 impl<R: Repositories> FileUseCase<R> {
     pub async fn find_by_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         bucket: String,
         id: String,
     ) -> Result<FileDto, FileUseCaseError> {
@@ -67,7 +67,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::file::{FileUseCase, FileUseCaseError};
 
     #[tokio::test]
@@ -87,7 +87,7 @@ mod tests {
             .returning(|_, _, _| Ok(fixture::file_object::signed_url()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(
                 &ctx,
@@ -124,7 +124,7 @@ mod tests {
             .returning(|_, _, _| Ok(fixture::file_object::signed_url()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(
                 &ctx,
@@ -157,7 +157,7 @@ mod tests {
             });
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(
                 &ctx,
@@ -199,7 +199,7 @@ mod tests {
             .returning(|_, _, _| Ok(fixture::file_object::signed_url()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_id(
                 &ctx,

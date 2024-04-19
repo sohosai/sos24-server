@@ -9,7 +9,7 @@ use sos24_domain::entity::project::{
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::project::UpdateProjectDto;
 use crate::dto::ToEntity;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
@@ -17,7 +17,7 @@ use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn update(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         project_data: UpdateProjectDto,
     ) -> Result<(), ProjectUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -80,7 +80,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::dto::project::{ProjectCategoryDto, UpdateProjectDto};
     use crate::dto::FromEntity;
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
@@ -105,7 +105,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -144,7 +144,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -186,7 +186,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -230,7 +230,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,
@@ -269,7 +269,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,

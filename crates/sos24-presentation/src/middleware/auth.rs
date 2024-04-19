@@ -14,9 +14,7 @@ use jsonwebtoken::{
 use reqwest::ClientBuilder;
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::context::Context;
-
-use crate::{error::AppError, module::Modules};
+use crate::{context::Context, error::AppError, module::Modules};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {

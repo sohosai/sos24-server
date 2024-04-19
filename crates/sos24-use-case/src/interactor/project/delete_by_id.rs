@@ -9,11 +9,15 @@ use sos24_domain::repository::invitation::InvitationRepository;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
 impl<R: Repositories> ProjectUseCase<R> {
-    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), ProjectUseCaseError> {
+    pub async fn delete_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<(), ProjectUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::DELETE_PROJECT_ALL));
 
@@ -57,7 +61,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
@@ -76,7 +80,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .delete_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -120,7 +124,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .delete_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;

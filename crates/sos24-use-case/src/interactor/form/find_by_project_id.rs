@@ -9,15 +9,16 @@ use sos24_domain::{
 };
 
 use crate::adapter::Adapters;
+use crate::context::ContextProvider;
 use crate::dto::form::FormSummaryDto;
-use crate::{context::Context, dto::FromEntity};
+use crate::dto::FromEntity;
 
 use super::{FormUseCase, FormUseCaseError};
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn find_by_project_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         project_id: String,
     ) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -61,7 +62,7 @@ mod tests {
     use sos24_domain::test::repository::MockRepositories;
 
     use crate::adapter::MockAdapters;
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::form::{FormUseCase, FormUseCaseError};
 
     #[tokio::test]
@@ -82,7 +83,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -103,7 +104,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -133,7 +134,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;

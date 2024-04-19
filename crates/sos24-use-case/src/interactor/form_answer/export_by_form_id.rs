@@ -12,7 +12,7 @@ use sos24_domain::{
     repository::{form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::form_answer::{FormAnswerToBeExportedDto, FormAnswerToBeExportedListDto};
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
@@ -20,7 +20,7 @@ use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn export_by_form_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_id: String,
     ) -> Result<FormAnswerToBeExportedListDto, FormAnswerUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;

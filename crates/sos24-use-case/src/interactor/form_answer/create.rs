@@ -12,18 +12,15 @@ use sos24_domain::{
     service::verify_form_answer,
 };
 
-use crate::context::OwnedProject;
-use crate::{
-    context::Context,
-    dto::{form_answer::CreateFormAnswerDto, ToEntity},
-};
+use crate::context::{ContextProvider, OwnedProject};
+use crate::dto::{form_answer::CreateFormAnswerDto, ToEntity};
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_answer: CreateFormAnswerDto,
     ) -> Result<String, FormAnswerUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -105,7 +102,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         dto::{
             form_answer::{CreateFormAnswerDto, FormAnswerItemDto},
             FromEntity,
@@ -146,7 +143,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .create(
                 &ctx,
@@ -175,7 +172,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .create(
                 &ctx,
@@ -228,7 +225,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .create(
                 &ctx,

@@ -4,12 +4,16 @@ use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{ensure, entity::file_data::FileId, repository::Repositories};
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 
 use super::{FileUseCase, FileUseCaseError};
 
 impl<R: Repositories> FileUseCase<R> {
-    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), FileUseCaseError> {
+    pub async fn delete_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<(), FileUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::DELETE_FILE_ALL));
 
@@ -38,7 +42,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::file::{FileUseCase, FileUseCaseError};
 
     #[tokio::test]
@@ -46,7 +50,7 @@ mod tests {
         let repositories = MockRepositories::default();
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .delete_by_id(&ctx, fixture::file_data::id().value().to_string())
             .await;
@@ -76,7 +80,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .delete_by_id(&ctx, fixture::file_data::id().value().to_string())
             .await;

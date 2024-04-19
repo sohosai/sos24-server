@@ -5,9 +5,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
 
-use sos24_use_case::context::Context;
 use sos24_use_case::dto::news::CreateNewsDto;
 
+use crate::context::Context;
 use crate::error::AppError;
 use crate::model::news::{
     ConvertToUpdateNewsDto, CreateNews, CreatedNews, News, NewsSummary, UpdateNews,

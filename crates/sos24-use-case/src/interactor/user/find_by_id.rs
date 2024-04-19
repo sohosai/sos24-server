@@ -7,13 +7,17 @@ use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::user::UserDto;
 use crate::dto::FromEntity;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
 impl<R: Repositories> UserUseCase<R> {
-    pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<UserDto, UserUseCaseError> {
+    pub async fn find_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<UserDto, UserUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
 
         let user_id = UserId::new(id);
@@ -66,7 +70,7 @@ mod tests {
     use sos24_domain::entity::user::UserRole;
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
@@ -90,7 +94,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_id(&ctx, fixture::user::id1().value())
             .await;
@@ -118,7 +122,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_id(&ctx, fixture::user::id2().value())
             .await;
@@ -151,7 +155,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .find_by_id(&ctx, fixture::user::id2().value())
             .await;

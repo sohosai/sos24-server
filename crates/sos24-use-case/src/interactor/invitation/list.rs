@@ -8,15 +8,16 @@ use sos24_domain::{
     repository::{invitation::InvitationRepository, Repositories},
 };
 
-use crate::{
-    context::Context,
-    dto::{invitation::InvitationDto, FromEntity},
-};
+use crate::context::ContextProvider;
+use crate::dto::{invitation::InvitationDto, FromEntity};
 
 use super::{InvitationUseCase, InvitationUseCaseError};
 
 impl<R: Repositories> InvitationUseCase<R> {
-    pub async fn list(&self, ctx: &Context) -> Result<Vec<InvitationDto>, InvitationUseCaseError> {
+    pub async fn list(
+        &self,
+        ctx: &impl ContextProvider,
+    ) -> Result<Vec<InvitationDto>, InvitationUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
         ensure!(actor.has_permission(Permissions::READ_INVITATION_ALL));
 
@@ -61,7 +62,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         interactor::invitation::{InvitationUseCase, InvitationUseCaseError},
     };
 
@@ -73,7 +74,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
@@ -95,7 +96,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
         assert!(matches!(res, Ok(list) if list.is_empty()));
     }

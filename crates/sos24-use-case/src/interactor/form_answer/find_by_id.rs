@@ -7,17 +7,15 @@ use sos24_domain::{
     repository::{form_answer::FormAnswerRepository, project::ProjectRepository, Repositories},
 };
 
-use crate::{
-    context::Context,
-    dto::{form_answer::FormAnswerDto, FromEntity},
-};
+use crate::context::ContextProvider;
+use crate::dto::{form_answer::FormAnswerDto, FromEntity};
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn find_by_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         id: String,
     ) -> Result<FormAnswerDto, FormAnswerUseCaseError> {
         let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
@@ -65,7 +63,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         interactor::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError},
     };
 
@@ -94,7 +92,7 @@ mod tests {
             .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::form_answer::id1().value().to_string())
             .await;
@@ -122,7 +120,7 @@ mod tests {
             });
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::form_answer::id1().value().to_string())
             .await;
@@ -159,7 +157,7 @@ mod tests {
             .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_id(&ctx, fixture::form_answer::id1().value().to_string())
             .await;
