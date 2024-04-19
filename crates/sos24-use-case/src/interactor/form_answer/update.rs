@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::form_answer::FormAnswerId,
@@ -20,14 +18,14 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         ctx: &impl ContextProvider,
         form_answer_data: UpdateFormAnswerDto,
     ) -> Result<(), FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-        let owned_project_id = ctx
-            .project(Arc::clone(&self.repositories))
-            .await?
-            .map(|project| match project {
-                OwnedProject::Owner(project) => project.value.id().clone(),
-                OwnedProject::SubOwner(project) => project.value.id().clone(),
-            });
+        let actor = ctx.actor(&*self.repositories).await?;
+        let owned_project_id =
+            ctx.project(&*self.repositories)
+                .await?
+                .map(|project| match project {
+                    OwnedProject::Owner(project) => project.value.id().clone(),
+                    OwnedProject::SubOwner(project) => project.value.id().clone(),
+                });
 
         let id = FormAnswerId::try_from(form_answer_data.id)?;
         let form_answer = self

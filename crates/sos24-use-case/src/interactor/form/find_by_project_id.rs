@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::project::ProjectId;
 use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::repository::project::ProjectRepository;
@@ -21,7 +19,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         ctx: &impl ContextProvider,
         project_id: String,
     ) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let project_id = ProjectId::try_from(project_id)?;
         let project = self

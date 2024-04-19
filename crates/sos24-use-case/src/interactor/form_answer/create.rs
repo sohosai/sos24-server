@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::form_answer::FormAnswerItemKind;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
@@ -23,10 +21,10 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         ctx: &impl ContextProvider,
         form_answer: CreateFormAnswerDto,
     ) -> Result<String, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
 
-        let project_id = match ctx.project(Arc::clone(&self.repositories)).await? {
+        let project_id = match ctx.project(&*self.repositories).await? {
             Some(OwnedProject::Owner(project)) => project.value.id().clone(),
             Some(OwnedProject::SubOwner(project)) => project.value.id().clone(),
             None => return Err(FormAnswerUseCaseError::NotProjectOwner),

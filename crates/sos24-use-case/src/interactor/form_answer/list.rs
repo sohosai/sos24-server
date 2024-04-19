@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::repository::form::FormRepository;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::{
@@ -18,7 +16,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         &self,
         ctx: &impl ContextProvider,
     ) -> Result<Vec<FormAnswerDto>, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ANSWER_ALL));
 
         let raw_form_answer_list = self.repositories.form_answer_repository().list().await?;

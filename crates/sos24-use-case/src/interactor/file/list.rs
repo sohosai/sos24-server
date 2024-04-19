@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::Repositories;
 use sos24_domain::{ensure, repository::file_data::FileDataRepository};
@@ -14,7 +12,7 @@ impl<R: Repositories> FileUseCase<R> {
         &self,
         ctx: &impl ContextProvider,
     ) -> Result<Vec<FileInfoDto>, FileUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FILE_ALL));
         let raw_file_data_list = self.repositories.file_data_repository().list().await?;
         Ok(raw_file_data_list

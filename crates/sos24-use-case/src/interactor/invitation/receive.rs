@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     entity::{
         invitation::{InvitationId, InvitationPosition},
@@ -18,9 +16,9 @@ impl<R: Repositories> InvitationUseCase<R> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<(), InvitationUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
-        if ctx.project(Arc::clone(&self.repositories)).await?.is_some() {
+        if ctx.project(&*self.repositories).await?.is_some() {
             return Err(InvitationUseCaseError::AlreadyOwnerOrSubOwner);
         }
 

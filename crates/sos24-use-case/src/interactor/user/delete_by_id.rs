@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::user::UserId;
 use sos24_domain::{
@@ -16,7 +14,7 @@ impl<R: Repositories> UserUseCase<R> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<(), UserUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::DELETE_USER_ALL));
 
         let id = UserId::new(id);

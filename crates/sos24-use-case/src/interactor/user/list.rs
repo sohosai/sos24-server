@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
@@ -14,7 +12,7 @@ use crate::{
 
 impl<R: Repositories> UserUseCase<R> {
     pub async fn list(&self, ctx: &impl ContextProvider) -> Result<Vec<UserDto>, UserUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_USER_ALL));
 
         let raw_user_list = self.repositories.user_repository().list().await?;

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::{
@@ -23,7 +21,7 @@ impl<R: Repositories> FileUseCase<R> {
         key_prefix: String,
         raw_file: CreateFileDto,
     ) -> Result<String, FileUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         let key = FileObjectKey::generate(key_prefix.as_str());
         let filename = FileName::sanitized(raw_file.filename);
         let owner = match raw_file.owner {

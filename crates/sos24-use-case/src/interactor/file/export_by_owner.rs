@@ -22,7 +22,7 @@ impl<R: Repositories> FileUseCase<R> {
         bucket: String,
         owner_project: String,
     ) -> Result<ArchiveToBeExportedDto<impl AsyncRead>, FileUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FILE_ALL));
 
         let owner_project = ProjectId::try_from(owner_project)?;

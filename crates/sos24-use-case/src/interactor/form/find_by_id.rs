@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::{
     ensure,
@@ -19,7 +17,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         ctx: &impl ContextProvider,
         id: String,
     ) -> Result<FormDto, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let form_id = FormId::try_from(id)?;
@@ -30,13 +28,13 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             .await?
             .ok_or(FormUseCaseError::NotFound(form_id.clone()))?;
 
-        let project =
-            ctx.project(Arc::clone(&self.repositories))
-                .await?
-                .map(|project| match project {
-                    OwnedProject::Owner(project) => project,
-                    OwnedProject::SubOwner(project) => project,
-                });
+        let project = ctx
+            .project(&*self.repositories)
+            .await?
+            .map(|project| match project {
+                OwnedProject::Owner(project) => project,
+                OwnedProject::SubOwner(project) => project,
+            });
         let project_id = project.map(|it| it.value.id().clone());
 
         let raw_form_answer = match project_id {

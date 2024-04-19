@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::ensure;
 use sos24_domain::entity::firebase_user::FirebaseUserId;
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
@@ -17,7 +15,7 @@ impl<R: Repositories> UserUseCase<R> {
         ctx: &impl ContextProvider,
         user_data: UpdateUserDto,
     ) -> Result<(), UserUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let id = UserId::new(user_data.id);
         let user = self

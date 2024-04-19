@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::user::UserRepository;
 use sos24_domain::{
@@ -18,7 +16,7 @@ impl<R: Repositories> InvitationUseCase<R> {
         &self,
         ctx: &impl ContextProvider,
     ) -> Result<Vec<InvitationDto>, InvitationUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_INVITATION_ALL));
 
         let raw_invitation_list = self.repositories.invitation_repository().list().await?;

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::file_data::FileId;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
@@ -22,7 +20,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         ctx: &impl ContextProvider,
         news_data: UpdateNewsDto,
     ) -> Result<(), NewsUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let id = NewsId::try_from(news_data.id)?;
         let news = self

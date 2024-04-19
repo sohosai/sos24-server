@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     entity::{
         actor::Actor,
@@ -47,7 +45,7 @@ pub trait ContextProvider: Send + Sync + 'static {
 
     async fn user<R: Repositories>(
         &self,
-        repositories: Arc<R>,
+        repositories: &R,
     ) -> Result<WithDate<User>, ContextError> {
         let user_id = UserId::new(self.user_id());
         repositories
@@ -57,7 +55,7 @@ pub trait ContextProvider: Send + Sync + 'static {
             .ok_or(ContextError::UserNotFound(user_id))
     }
 
-    async fn actor<R: Repositories>(&self, repositories: Arc<R>) -> Result<Actor, ContextError> {
+    async fn actor<R: Repositories>(&self, repositories: &R) -> Result<Actor, ContextError> {
         let user = self.user(repositories).await?;
         Ok(Actor::new(
             user.value.id().clone(),
@@ -67,7 +65,7 @@ pub trait ContextProvider: Send + Sync + 'static {
 
     async fn project<R: Repositories>(
         &self,
-        repositories: Arc<R>,
+        repositories: &R,
     ) -> Result<Option<OwnedProject>, ContextError> {
         let user_id = UserId::new(self.user_id());
         if let Some(project) = repositories
@@ -119,7 +117,7 @@ impl ContextProvider for TestContext {
         &self.config
     }
 
-    async fn actor<R: Repositories>(&self, _repositories: Arc<R>) -> Result<Actor, ContextError> {
+    async fn actor<R: Repositories>(&self, _repositories: &R) -> Result<Actor, ContextError> {
         Ok(self.actor.clone())
     }
 }
