@@ -75,8 +75,10 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
 {url}
 
 ※このメールは雙峰祭オンラインシステムが自動送信しています。
-※配信停止は以下のリンクからお手続きください。
-{optout_url}"#,
+＿＿＿
+筑波大学学園祭実行委員会
+Email : {email}
+電話 : 029-853-2899"#,
                     title = form.title().clone().value(),
                     starts_at = form
                         .starts_at()
@@ -95,7 +97,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
                         ctx.config().app_url,
                         form.id().clone().value()
                     ),
-                    optout_url = self.adapters.email_sender().opt_out_url(),
+                    email = ctx.config().email_reply_to_address.clone(),
                 ),
             };
             self.adapters.email_sender().send_email(command).await?;

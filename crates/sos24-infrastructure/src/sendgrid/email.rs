@@ -1,11 +1,10 @@
-use sendgrid::v3::{Content, Email, Message, Personalization, ASM};
+use sendgrid::v3::{Content, Email, Message, Personalization};
 use sos24_use_case::adapter::email::{self, EmailSender, SendEmailCommand};
 
 use super::SendGrid;
 
 pub struct SendGridEmailSender {
     sender: SendGrid,
-    group_id: u32,
 }
 
 trait EmailToSendGridEmail {
@@ -25,16 +24,12 @@ impl EmailToSendGridEmail for String {
 }
 
 impl SendGridEmailSender {
-    pub fn new(sender: SendGrid, group_id: u32) -> Self {
-        Self { sender, group_id }
+    pub fn new(sender: SendGrid) -> Self {
+        Self { sender }
     }
 }
 
 impl EmailSender for SendGridEmailSender {
-    fn opt_out_url(&self) -> String {
-        String::from("<%asm_group_unsubscribe_raw_url%>")
-    }
-
     async fn send_email(&self, command: SendEmailCommand) -> anyhow::Result<()> {
         tracing::info!(
             "メールを送信します: subject = {}, len(to) = {}",
@@ -54,7 +49,6 @@ impl EmailSender for SendGridEmailSender {
                     .set_content_type("text/plain")
                     .set_value(&command.body),
             )
-            .set_asm(ASM::new().set_group_id(self.group_id))
             .add_category("sos");
         if let Some(ref reply_to) = command.reply_to {
             message = message.set_reply_to(reply_to.into_email());

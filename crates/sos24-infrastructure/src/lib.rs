@@ -104,9 +104,9 @@ pub struct DefaultAdapters {
 }
 
 impl DefaultAdapters {
-    pub fn new(send_grid: SendGrid, group_id: u32) -> Self {
+    pub fn new(send_grid: SendGrid) -> Self {
         Self {
-            email_sender: SendGridEmailSender::new(send_grid, group_id),
+            email_sender: SendGridEmailSender::new(send_grid),
         }
     }
 }
