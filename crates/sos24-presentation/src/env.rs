@@ -81,3 +81,15 @@ pub fn s3_access_key_id() -> String {
 pub fn s3_secret_access_key() -> String {
     env::var("S3_SECRET_ACCESS_KEY").expect("Env `S3_SECRET_ACCESS_KEY` must be set")
 }
+
+pub fn send_grid_api_key() -> String {
+    env::var("SEND_GRID_API_KEY").expect("Env `SEND_GRID_API_KEY` must be set")
+}
+
+pub fn send_grid_group_id() -> u32 {
+    env::var("SEND_GRID_GROUP_ID")
+        .expect("Env `SEND_GRID_GROUP_ID` must be set")
+        .parse::<u32>()
+        .expect("Env `SEND_GRID_GROUP_ID` must be a number")
+}
+

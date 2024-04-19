@@ -1,5 +1,8 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::user::UserId;
+use sos24_domain::repository::project::ProjectRepositoryError;
+use sos24_domain::repository::user::UserRepositoryError;
 use thiserror::Error;
 
 use sos24_domain::entity::file_data::{FileId, FileIdError};
@@ -12,6 +15,7 @@ use sos24_domain::{
     repository::{news::NewsRepositoryError, Repositories},
 };
 
+use crate::adapter::Adapters;
 use crate::context::ContextError;
 use crate::interactor::project::ProjectUseCaseError;
 
@@ -27,7 +31,13 @@ pub enum NewsUseCaseError {
     NotFound(NewsId),
     #[error("File not found: {0:?}")]
     FileNotFound(FileId),
+    #[error("User not found: {0:?}")]
+    UserNotFound(UserId),
 
+    #[error(transparent)]
+    ProjectRepositoryError(#[from] ProjectRepositoryError),
+    #[error(transparent)]
+    UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
     FileDataRepositoryError(#[from] FileDataRepositoryError),
     #[error(transparent)]
@@ -46,12 +56,16 @@ pub enum NewsUseCaseError {
     InternalError(#[from] anyhow::Error),
 }
 
-pub struct NewsUseCase<R: Repositories> {
+pub struct NewsUseCase<R: Repositories, A: Adapters> {
     repositories: Arc<R>,
+    adapters: Arc<A>,
 }
 
-impl<R: Repositories> NewsUseCase<R> {
-    pub fn new(repositories: Arc<R>) -> Self {
-        Self { repositories }
+impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
+    pub fn new(repositories: Arc<R>, adapters: Arc<A>) -> Self {
+        Self {
+            repositories,
+            adapters,
+        }
     }
 }

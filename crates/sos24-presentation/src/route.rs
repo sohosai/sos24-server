@@ -22,9 +22,7 @@ pub mod project;
 pub mod project_application_period;
 pub mod user;
 
-pub fn create_app(modules: Modules) -> Router {
-    let modules = Arc::new(modules);
-
+pub fn create_app(modules: Arc<Modules>) -> Router {
     let news = Router::new()
         .route("/", get(news::handle_get))
         .route("/", post(news::handle_post))
@@ -102,7 +100,7 @@ pub fn create_app(modules: Modules) -> Router {
     Router::new()
         .nest("/", public_routes)
         .nest("/", private_routes)
-        .with_state(Arc::clone(&modules))
+        .with_state(modules)
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))

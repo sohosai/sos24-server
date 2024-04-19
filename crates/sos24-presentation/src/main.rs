@@ -21,8 +21,8 @@ async fn main() {
         // 1GB
         file_upload_limit: 1e+9 as usize,
     };
-    let modules = module::new(config).await.unwrap();
-    let app = create_app(modules);
+    let modules = Arc::new(module::new(config).await.unwrap());
+    let app = create_app(Arc::clone(&modules));
 
     tracing::info!("Server initialized");
 
