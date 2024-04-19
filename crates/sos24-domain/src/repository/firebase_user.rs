@@ -7,6 +7,8 @@ use crate::entity::firebase_user::{FirebaseUserEmail, FirebaseUserId, NewFirebas
 pub enum FirebaseUserRepositoryError {
     #[error("Email already exists: {0:?}")]
     EmailExists(FirebaseUserEmail),
+    #[error("Weak password")]
+    WeakPassword,
     #[error(transparent)]
     InternalError(#[from] anyhow::Error),
 }
