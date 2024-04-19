@@ -226,6 +226,10 @@ impl Form {
     pub fn find_item(&self, item_id: &FormItemId) -> Option<&FormItem> {
         self.items.iter().find(|item| item.id() == item_id)
     }
+
+    pub fn is_started(&self, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        &self.starts_at.clone().value() <= now
+    }
 }
 
 impl_value_object!(FormId(uuid::Uuid));

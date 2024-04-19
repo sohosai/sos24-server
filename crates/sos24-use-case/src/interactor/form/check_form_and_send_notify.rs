@@ -22,7 +22,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let form_list_to_notify = form_list
             .into_iter()
             .filter(|form| !form.value.is_notified().clone().value())
-            .filter(|form| &form.value.starts_at().clone().value() <= ctx.requested_at());
+            .filter(|form| form.value.is_started(ctx.requested_at()));
 
         let project_list = self.repositories.project_repository().list().await?;
         for form in form_list_to_notify {

@@ -35,7 +35,8 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let forms = self.repositories.form_repository().list().await?;
         let filtered_forms = forms
             .into_iter()
-            .filter(|form| form.value.is_sent_to(&project.value));
+            .filter(|form| form.value.is_sent_to(&project.value))
+            .filter(|form| form.value.is_started(ctx.requested_at()));
 
         // FIXME : N+1
         let mut form_list = vec![];
