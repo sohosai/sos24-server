@@ -61,7 +61,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
                 to: emails,
                 reply_to: Some(ctx.config().email_reply_to_address.clone()),
                 subject: format!(
-                    "申請「{title}」が公開されました - 雙峰祭オンラインシステム",
+                    "申請「{title}」が公開されました",
                     title = form.title().clone().value()
                 ),
                 body: format!(
@@ -71,6 +71,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
 回答開始時刻: {starts_at}
 回答終了時刻: {ends_at}
 
+詳細は以下のリンクから確認できます。
 {url}
 
 ※このメールは雙峰祭オンラインシステムが自動送信しています。

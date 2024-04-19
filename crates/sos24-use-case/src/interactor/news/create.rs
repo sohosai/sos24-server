@@ -80,7 +80,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
             to: emails,
             reply_to: Some(ctx.config().email_reply_to_address.clone()),
             subject: format!(
-                "お知らせ「{title}」が公開されました - 雙峰祭オンラインシステム",
+                "お知らせ「{title}」が公開されました",
                 title = news.title().clone().value()
             ),
             body: format!(
@@ -90,6 +90,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
 本文:
 {body}
 
+詳細は以下のリンクから確認できます。
 {url}
 
 ※このメールは雙峰祭オンラインシステムが自動送信しています。
