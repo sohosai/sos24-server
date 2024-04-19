@@ -93,3 +93,14 @@ pub fn send_grid_group_id() -> u32 {
         .expect("Env `SEND_GRID_GROUP_ID` must be a number")
 }
 
+pub fn email_sender_address() -> String {
+    env::var("EMAIL_SENDER_ADDRESS").expect("Env `EMAIL_SENDER_ADDRESS` must be set")
+}
+
+pub fn email_reply_to_address() -> String {
+    env::var("EMAIL_REPLY_TO_ADDRESS").expect("Env `EMAIL_REPLY_TO_ADDRESS` must be set")
+}
+
+pub fn app_url() -> String {
+    env::var("APP_URL").expect("Env `APP_URL` must be set")
+}

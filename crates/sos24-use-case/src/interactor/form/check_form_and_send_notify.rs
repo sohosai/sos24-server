@@ -3,9 +3,12 @@ use sos24_domain::repository::{
     form::FormRepository, project::ProjectRepository, user::UserRepository, Repositories,
 };
 
-use crate::adapter::{
-    email::{Email, EmailSender, SendEmailCommand},
-    Adapters,
+use crate::{
+    adapter::{
+        email::{Email, EmailSender, SendEmailCommand},
+        Adapters,
+    },
+    context::ContextProvider,
 };
 
 use super::{FormUseCase, FormUseCaseError};
@@ -13,13 +16,13 @@ use super::{FormUseCase, FormUseCaseError};
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn check_form_and_send_notify(
         &self,
-        now: chrono::DateTime<chrono::Utc>,
+        ctx: &impl ContextProvider,
     ) -> Result<(), FormUseCaseError> {
         let form_list = self.repositories.form_repository().list().await?;
         let form_list_to_notify = form_list
             .into_iter()
             .filter(|form| !form.value.is_notified().clone().value())
-            .filter(|form| form.value.starts_at().clone().value() <= now);
+            .filter(|form| &form.value.starts_at().clone().value() <= ctx.requested_at());
 
         let project_list = self.repositories.project_repository().list().await?;
         for form in form_list_to_notify {
@@ -52,11 +55,11 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
 
             let command = SendEmailCommand {
                 from: Email {
-                    address: String::from("system@sohosai.com"),
+                    address: ctx.config().email_sender_address.clone(),
                     name: String::from("雙峰祭オンラインシステム"),
                 },
                 to: emails,
-                reply_to: Some(String::from("project50th@sohosai.com")),
+                reply_to: Some(ctx.config().email_reply_to_address.clone()),
                 subject: format!(
                     "申請「{title}」が公開されました - 雙峰祭オンラインシステム",
                     title = form.title().clone().value()
@@ -87,7 +90,8 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
                         .with_timezone(&Tokyo)
                         .format("%Y年%m月%d日 %H:%M"),
                     url = format!(
-                        "https://entry.sohosai.com/forms/{}",
+                        "{}/forms/{}",
+                        ctx.config().app_url,
                         form.id().clone().value()
                     ),
                     optout_url = self.adapters.email_sender().opt_out_url(),

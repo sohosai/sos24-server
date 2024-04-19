@@ -32,10 +32,18 @@ pub enum OwnedProject {
     SubOwner(WithDate<Project>),
 }
 
+#[derive(Clone, Debug, Default)]
+pub struct Config {
+    pub email_sender_address: String,
+    pub email_reply_to_address: String,
+    pub app_url: String,
+}
+
 #[allow(async_fn_in_trait)]
 pub trait ContextProvider: Send + Sync + 'static {
     fn user_id(&self) -> String;
     fn requested_at(&self) -> &chrono::DateTime<chrono::Utc>;
+    fn config(&self) -> &Config;
 
     async fn user<R: Repositories>(
         &self,
@@ -85,6 +93,7 @@ pub trait ContextProvider: Send + Sync + 'static {
 pub struct TestContext {
     actor: Actor,
     requested_at: chrono::DateTime<chrono::Utc>,
+    config: Config,
 }
 
 impl TestContext {
@@ -92,6 +101,7 @@ impl TestContext {
         Self {
             actor,
             requested_at: chrono::Utc::now(),
+            config: Config::default(),
         }
     }
 }
@@ -103,6 +113,10 @@ impl ContextProvider for TestContext {
 
     fn requested_at(&self) -> &chrono::DateTime<chrono::Utc> {
         &self.requested_at
+    }
+
+    fn config(&self) -> &Config {
+        &self.config
     }
 
     async fn actor<R: Repositories>(&self, _repositories: Arc<R>) -> Result<Actor, ContextError> {

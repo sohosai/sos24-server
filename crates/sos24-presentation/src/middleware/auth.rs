@@ -81,7 +81,7 @@ pub(crate) async fn jwt_auth(
     }
 
     // もし user_id 以上のものを Extension に入れるなら、ここで渡す
-    let ctx = Context::new(token.claims.sub.clone());
+    let ctx = Context::new(token.claims.sub.clone(), modules.config().clone().into());
     request.extensions_mut().insert(ctx);
 
     tracing::info!("ユーザー認証が完了しました");

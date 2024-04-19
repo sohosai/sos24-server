@@ -74,11 +74,11 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
 
         let command = SendEmailCommand {
             from: Email {
-                address: String::from("system@sohosai.com"),
+                address: ctx.config().email_sender_address.clone(),
                 name: String::from("雙峰祭オンラインシステム"),
             },
             to: emails,
-            reply_to: Some(String::from("project50th@sohosai.com")),
+            reply_to: Some(ctx.config().email_reply_to_address.clone()),
             subject: format!(
                 "お知らせ「{title}」が公開されました - 雙峰祭オンラインシステム",
                 title = news.title().clone().value()
@@ -98,7 +98,8 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
                 title = news.title().clone().value(),
                 body = news.body().clone().value(),
                 url = format!(
-                    "https://entry.sohosai.com/news/{}",
+                    "{}/news/{}",
+                    ctx.config().app_url,
                     news.id().clone().value()
                 ),
                 optout_url = self.adapters.email_sender().opt_out_url(),
