@@ -24,20 +24,27 @@ impl<R: Repositories> ProjectUseCase<R> {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
 
-        if let Some(project) = ctx.project(&*self.repositories).await? {
-            let project_id = match project {
-                OwnedProject::Owner(project) => project.value.id().clone(),
-                OwnedProject::SubOwner(project) => project.value.id().clone(),
-            };
-            return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
-        }
+        let project_id = {
+            let lock = self.creation_lock.lock().await;
 
-        let project = raw_project.into_entity()?;
-        let project_id = project.id().clone();
-        self.repositories
-            .project_repository()
-            .create(project)
-            .await?;
+            if let Some(project) = ctx.project(&*self.repositories).await? {
+                let project_id = match project {
+                    OwnedProject::Owner(project) => project.value.id().clone(),
+                    OwnedProject::SubOwner(project) => project.value.id().clone(),
+                };
+                return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
+            }
+
+            let project = raw_project.into_entity()?;
+            let project_id = project.id().clone();
+            self.repositories
+                .project_repository()
+                .create(project)
+                .await?;
+
+            drop(lock);
+            project_id
+        };
 
         Ok(project_id.value().to_string())
     }
