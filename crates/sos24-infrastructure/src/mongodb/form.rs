@@ -26,8 +26,7 @@ use super::MongoDb;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormDoc {
-    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
-    _id: uuid::Uuid,
+    _id: String,
     title: String,
     description: String,
     starts_at: chrono::DateTime<chrono::Utc>,
@@ -46,7 +45,7 @@ impl From<Form> for FormDoc {
     fn from(form: Form) -> Self {
         let form = form.destruct();
         Self {
-            _id: form.id.value(),
+            _id: form.id.value().to_string(),
             title: form.title.value(),
             description: form.description.value(),
             starts_at: form.starts_at.value(),
@@ -72,7 +71,7 @@ impl TryFrom<FormDoc> for WithDate<Form> {
     fn try_from(value: FormDoc) -> Result<Self, Self::Error> {
         Ok(WithDate::new(
             Form::new(
-                FormId::new(value._id),
+                FormId::try_from(value._id)?,
                 FormTitle::new(value.title),
                 FormDescription::new(value.description),
                 DateTime::new(value.starts_at),
@@ -82,7 +81,11 @@ impl TryFrom<FormDoc> for WithDate<Form> {
                 ProjectAttributes::from_bits(value.attributes as u32)
                     .ok_or(anyhow!("cannot convert project attributes"))?,
                 FormIsNotified::new(value.is_notified),
-                value.items.into_iter().map(FormItemDoc::into).collect(),
+                value
+                    .items
+                    .into_iter()
+                    .map(FormItem::try_from)
+                    .collect::<Result<_, _>>()?,
                 value
                     .attachments
                     .into_iter()
@@ -98,8 +101,7 @@ impl TryFrom<FormDoc> for WithDate<Form> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormItemDoc {
-    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
-    _id: uuid::Uuid,
+    _id: String,
     name: String,
     description: Option<String>,
     required: bool,
@@ -110,7 +112,7 @@ impl From<FormItem> for FormItemDoc {
     fn from(value: FormItem) -> Self {
         let value = value.destruct();
         Self {
-            _id: value.id.value(),
+            _id: value.id.value().to_string(),
             name: value.name.value(),
             description: value.description.map(|it| it.value()),
             required: value.required.value(),
@@ -119,15 +121,16 @@ impl From<FormItem> for FormItemDoc {
     }
 }
 
-impl From<FormItemDoc> for FormItem {
-    fn from(value: FormItemDoc) -> Self {
-        FormItem::new(
-            FormItemId::new(value._id),
+impl TryFrom<FormItemDoc> for FormItem {
+    type Error = anyhow::Error;
+    fn try_from(value: FormItemDoc) -> Result<Self, Self::Error> {
+        Ok(FormItem::new(
+            FormItemId::try_from(value._id)?,
             FormItemName::new(value.name),
             value.description.map(FormItemDescription::new),
             FormItemRequired::new(value.required),
             FormItemKind::from(value.kind),
-        )
+        ))
     }
 }
 
