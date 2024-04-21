@@ -18,24 +18,6 @@ impl Postgresql {
 
         let pool = PgPoolOptions::new()
             .max_connections(8)
-            .after_connect(|_, _| {
-                Box::pin(async move {
-                    tracing::info!("after connect");
-                    Ok(())
-                })
-            })
-            .before_acquire(|_, _| {
-                Box::pin(async move {
-                    tracing::info!("before acquire");
-                    Ok(true)
-                })
-            })
-            .after_release(|_, _| {
-                Box::pin(async move {
-                    tracing::info!("after release");
-                    Ok(true)
-                })
-            })
             .connect(db_url)
             .await?;
 

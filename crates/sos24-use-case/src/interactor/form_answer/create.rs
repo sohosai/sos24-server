@@ -33,18 +33,6 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let project_id_str = project_id.value().to_string();
         let form_answer = (project_id_str, form_answer).into_entity()?;
 
-        let prev_form_answer = self
-            .repositories
-            .form_answer_repository()
-            .find_by_project_id_and_form_id(
-                form_answer.project_id().clone(),
-                form_answer.form_id().clone(),
-            )
-            .await?;
-        if prev_form_answer.is_some() {
-            return Err(FormAnswerUseCaseError::AlreadyAnswered);
-        }
-
         let project = self
             .repositories
             .project_repository()
@@ -80,11 +68,30 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         verify_form_answer::verify(&form.value, &form_answer)?;
 
-        let form_answer_id = form_answer.id().clone();
-        self.repositories
-            .form_answer_repository()
-            .create(form_answer)
-            .await?;
+        let form_answer_id = {
+            let lock = self.creation_lock.lock().await;
+
+            let prev_form_answer = self
+                .repositories
+                .form_answer_repository()
+                .find_by_project_id_and_form_id(
+                    form_answer.project_id().clone(),
+                    form_answer.form_id().clone(),
+                )
+                .await?;
+            if prev_form_answer.is_some() {
+                return Err(FormAnswerUseCaseError::AlreadyAnswered);
+            }
+
+            let form_answer_id = form_answer.id().clone();
+            self.repositories
+                .form_answer_repository()
+                .create(form_answer)
+                .await?;
+
+            drop(lock);
+            form_answer_id
+        };
 
         Ok(form_answer_id.value().to_string())
     }

@@ -65,6 +65,7 @@ pub enum ProjectUseCaseError {
 pub struct ProjectUseCase<R: Repositories> {
     repositories: Arc<R>,
     project_application_period: ProjectApplicationPeriod, // TODO
+    creation_lock: tokio::sync::Mutex<()>,                // FIXME
 }
 
 impl<R: Repositories> ProjectUseCase<R> {
@@ -72,6 +73,7 @@ impl<R: Repositories> ProjectUseCase<R> {
         Self {
             repositories,
             project_application_period,
+            creation_lock: tokio::sync::Mutex::new(()),
         }
     }
 }
