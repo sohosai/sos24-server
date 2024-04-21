@@ -294,7 +294,7 @@ impl FormRepository for MongoFormRepository {
         let form_doc = self
             .collection
             .find_one(
-                doc! { "_id": id.clone().value(),  "deleted_at": None::<String>  },
+                doc! { "_id": id.clone().value().to_string(),  "deleted_at": None::<String>  },
                 None,
             )
             .await
@@ -338,7 +338,7 @@ impl FormRepository for MongoFormRepository {
 
         self.collection
             .update_one(
-                doc! { "_id": id.clone().value(),  "deleted_at": None::<String> },
+                doc! { "_id": id.clone().value().to_string(),  "deleted_at": None::<String> },
                 doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
                 None,
             )
