@@ -213,7 +213,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
 
         let form_answer_doc = self
             .collection
-            .find_one(doc! { "_id": id.clone().value() }, None)
+            .find_one(doc! { "_id": id.clone().value().to_string() }, None)
             .await
             .context("Failed to find form answer")?;
 
@@ -230,7 +230,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         let form_answer_list = self
             .collection
             .aggregate(vec![
-                doc! { "$match": { "project_id": project_id.clone().value(),  "deleted_at": None::<String> } },
+                doc! { "$match": { "project_id": project_id.clone().value().to_string(),  "deleted_at": None::<String> } },
                 doc! { "$sort": { "created_at": 1 } },
             ], None)
             .await
@@ -254,7 +254,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .collection
             .aggregate(
                 vec![
-                    doc! { "$match": { "form_id": form_id.clone().value(), "deleted_at": None::<String> } },
+                    doc! { "$match": { "form_id": form_id.clone().value().to_string(), "deleted_at": None::<String> } },
                     doc! { "$sort": { "created_at": 1 } },
                 ],
                 None,
@@ -280,7 +280,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         let form_answer_doc = self
             .collection
             .find_one(
-                doc! { "project_id": project_id.clone().value(), "form_id": form_id.clone().value() },
+                doc! { "project_id": project_id.clone().value().to_string(), "form_id": form_id.clone().value().to_string() },
                 None,
             )
             .await
@@ -317,7 +317,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
     async fn delete_by_project_id(&self, id: ProjectId) -> Result<(), FormAnswerRepositoryError> {
         self.collection
             .update_many(
-                doc! { "project_id": id.value(),  "deleted_at": None::<String> },
+                doc! { "project_id": id.value().to_string(),  "deleted_at": None::<String> },
                 doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
                 None,
             )
