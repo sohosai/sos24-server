@@ -25,12 +25,9 @@ use super::MongoDb;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormAnswerDoc {
-    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
-    _id: uuid::Uuid,
-    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
-    project_id: uuid::Uuid,
-    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
-    form_id: uuid::Uuid,
+    _id: String,
+    project_id: String,
+    form_id: String,
     items: Vec<FormAnswerItemDoc>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
@@ -41,9 +38,9 @@ impl From<FormAnswer> for FormAnswerDoc {
     fn from(form_answer: FormAnswer) -> Self {
         let form_answer = form_answer.destruct();
         Self {
-            _id: form_answer.id.value(),
-            project_id: form_answer.project_id.value(),
-            form_id: form_answer.form_id.value(),
+            _id: form_answer.id.value().to_string(),
+            project_id: form_answer.project_id.value().to_string(),
+            form_id: form_answer.form_id.value().to_string(),
             items: form_answer
                 .items
                 .into_iter()
@@ -61,9 +58,9 @@ impl TryFrom<FormAnswerDoc> for WithDate<FormAnswer> {
     fn try_from(form_answer_doc: FormAnswerDoc) -> Result<Self, Self::Error> {
         Ok(WithDate::new(
             FormAnswer::new(
-                FormAnswerId::new(form_answer_doc._id),
-                ProjectId::new(form_answer_doc.project_id),
-                FormId::new(form_answer_doc.form_id),
+                FormAnswerId::try_from(form_answer_doc._id)?,
+                ProjectId::try_from(form_answer_doc.project_id)?,
+                FormId::try_from(form_answer_doc.form_id)?,
                 form_answer_doc
                     .items
                     .into_iter()
@@ -79,8 +76,7 @@ impl TryFrom<FormAnswerDoc> for WithDate<FormAnswer> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormAnswerItemDoc {
-    #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
-    item_id: uuid::Uuid,
+    item_id: String,
     kind: FormAnswerItemKindDoc,
 }
 
@@ -88,7 +84,7 @@ impl From<FormAnswerItem> for FormAnswerItemDoc {
     fn from(form_answer_item: FormAnswerItem) -> Self {
         let form_answer_item = form_answer_item.destruct();
         Self {
-            item_id: form_answer_item.item_id.value(),
+            item_id: form_answer_item.item_id.value().to_string(),
             kind: form_answer_item.kind.into(),
         }
     }
@@ -98,7 +94,7 @@ impl TryFrom<FormAnswerItemDoc> for FormAnswerItem {
     type Error = anyhow::Error;
     fn try_from(form_answer_item_doc: FormAnswerItemDoc) -> Result<Self, Self::Error> {
         Ok(FormAnswerItem::new(
-            FormItemId::new(form_answer_item_doc.item_id),
+            FormItemId::try_from(form_answer_item_doc.item_id)?,
             FormAnswerItemKind::try_from(form_answer_item_doc.kind)?,
         ))
     }
