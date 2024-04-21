@@ -1,12 +1,10 @@
-use std::sync::Arc;
-
 use sos24_domain::ensure;
 use sos24_domain::entity::firebase_user::FirebaseUserId;
 use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
 use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::user::UpdateUserDto;
 use crate::dto::ToEntity;
 use crate::interactor::user::{UserUseCase, UserUseCaseError};
@@ -14,10 +12,10 @@ use crate::interactor::user::{UserUseCase, UserUseCaseError};
 impl<R: Repositories> UserUseCase<R> {
     pub async fn update(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         user_data: UpdateUserDto,
     ) -> Result<(), UserUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let id = UserId::new(user_data.id);
         let user = self
@@ -71,7 +69,7 @@ mod tests {
     use sos24_domain::entity::user::UserRole;
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::dto::user::{UpdateUserDto, UserRoleDto};
     use crate::dto::FromEntity;
     use crate::interactor::user::{UserUseCase, UserUseCaseError};
@@ -97,7 +95,7 @@ mod tests {
             .returning(|_, _| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -131,7 +129,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -170,7 +168,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -209,7 +207,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,

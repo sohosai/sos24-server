@@ -6,9 +6,9 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::form::{FormItemExtension, FormItemId};
 use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
+use sos24_domain::entity::{file_data::FileId, form::FormIsNotified};
 use sos24_domain::{
     entity::{
         common::{date::WithDate, datetime::DateTime},
@@ -34,6 +34,7 @@ pub struct FormDoc {
     ends_at: chrono::DateTime<chrono::Utc>,
     categories: i32,
     attributes: i32,
+    is_notified: bool,
     items: Vec<FormItemDoc>,
     attachments: Vec<String>,
     created_at: chrono::DateTime<chrono::Utc>,
@@ -58,6 +59,7 @@ impl From<Form> for FormDoc {
                 .into_iter()
                 .map(|it| it.value().to_string())
                 .collect(),
+            is_notified: form.is_notified.value(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
             deleted_at: None,
@@ -79,6 +81,7 @@ impl TryFrom<FormDoc> for WithDate<Form> {
                     .ok_or(anyhow!("cannot convert project categories"))?,
                 ProjectAttributes::from_bits(value.attributes as u32)
                     .ok_or(anyhow!("cannot convert project attributes"))?,
+                FormIsNotified::new(value.is_notified),
                 value.items.into_iter().map(FormItemDoc::into).collect(),
                 value
                     .attachments
@@ -98,7 +101,7 @@ pub struct FormItemDoc {
     #[serde(with = "bson::serde_helpers::uuid_1_as_binary")]
     _id: uuid::Uuid,
     name: String,
-    description: String,
+    description: Option<String>,
     required: bool,
     kind: FormItemKindDoc,
 }
@@ -109,7 +112,7 @@ impl From<FormItem> for FormItemDoc {
         Self {
             _id: value.id.value(),
             name: value.name.value(),
-            description: value.description.value(),
+            description: value.description.map(|it| it.value()),
             required: value.required.value(),
             kind: FormItemKindDoc::from(value.kind),
         }
@@ -121,7 +124,7 @@ impl From<FormItemDoc> for FormItem {
         FormItem::new(
             FormItemId::new(value._id),
             FormItemName::new(value.name),
-            FormItemDescription::new(value.description),
+            value.description.map(FormItemDescription::new),
             FormItemRequired::new(value.required),
             FormItemKind::from(value.kind),
         )
@@ -313,6 +316,7 @@ impl FormRepository for MongoFormRepository {
                         "ends_at":bson::to_bson(&form_doc.ends_at).unwrap(),
                         "categories": bson::to_bson(&form_doc.categories).unwrap(),
                         "attributes": bson::to_bson(&form_doc.attributes).unwrap(),
+                        "is_notified": bson::to_bson(&form_doc.is_notified).unwrap(),
                         "items": bson::to_bson(&form_doc.items).unwrap(),
                         "updated_at": bson::to_bson(&form_doc.updated_at).unwrap(),
                     }

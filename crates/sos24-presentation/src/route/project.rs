@@ -7,16 +7,15 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
+use sos24_use_case::context::ContextProvider;
 
-use sos24_use_case::context::Context;
-
+use crate::context::Context;
 use crate::csv::serialize_to_csv;
 use crate::error::AppError;
-use crate::model::project::{CreatedProject, ProjectToBeExported};
+use crate::model::project::{ConvertToCreateProjectDto, CreatedProject, ProjectToBeExported};
 use crate::{
     model::project::{
-        ConvertToCreateProjectDto, ConvertToUpdateProjectDto, CreateProject, Project,
-        ProjectSummary, UpdateProject,
+        ConvertToUpdateProjectDto, CreateProject, Project, ProjectSummary, UpdateProject,
     },
     module::Modules,
 };
@@ -45,7 +44,7 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     Json(raw_project): Json<CreateProject>,
 ) -> Result<impl IntoResponse, AppError> {
-    let user_id = ctx.user_id().clone().value();
+    let user_id = ctx.user_id();
     let project = (raw_project, user_id).to_create_project_dto();
     let res = modules.project_use_case().create(&ctx, project).await;
     res.map(|id| (StatusCode::CREATED, Json(CreatedProject { id })))

@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::{Context, OwnedProject};
+use crate::context::{ContextProvider, OwnedProject};
 use crate::dto::project::CreateProjectDto;
 use crate::dto::ToEntity;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
@@ -13,10 +11,10 @@ use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         raw_project: CreateProjectDto,
     ) -> Result<String, ProjectUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
 
         if !self
@@ -26,20 +24,27 @@ impl<R: Repositories> ProjectUseCase<R> {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
 
-        if let Some(project) = ctx.project(Arc::clone(&self.repositories)).await? {
-            let project_id = match project {
-                OwnedProject::Owner(project) => project.value.id().clone(),
-                OwnedProject::SubOwner(project) => project.value.id().clone(),
-            };
-            return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
-        }
+        let project_id = {
+            let lock = self.creation_lock.lock().await;
 
-        let project = raw_project.into_entity()?;
-        let project_id = project.id().clone();
-        self.repositories
-            .project_repository()
-            .create(project)
-            .await?;
+            if let Some(project) = ctx.project(&*self.repositories).await? {
+                let project_id = match project {
+                    OwnedProject::Owner(project) => project.value.id().clone(),
+                    OwnedProject::SubOwner(project) => project.value.id().clone(),
+                };
+                return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
+            }
+
+            let project = raw_project.into_entity()?;
+            let project_id = project.id().clone();
+            self.repositories
+                .project_repository()
+                .create(project)
+                .await?;
+
+            drop(lock);
+            project_id
+        };
 
         Ok(project_id.value().to_string())
     }
@@ -53,7 +58,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::dto::project::{CreateProjectDto, ProjectCategoryDto};
     use crate::dto::FromEntity;
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
@@ -78,7 +83,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .create(
                 &ctx,
@@ -120,7 +125,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .create(
                 &ctx,
@@ -161,7 +166,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .create(
                 &ctx,
@@ -202,7 +207,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .create(
                 &ctx,

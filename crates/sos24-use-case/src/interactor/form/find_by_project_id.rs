@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::project::ProjectId;
 use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::repository::project::ProjectRepository;
@@ -8,18 +6,20 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
+use crate::adapter::Adapters;
+use crate::context::ContextProvider;
 use crate::dto::form::FormSummaryDto;
-use crate::{context::Context, dto::FromEntity};
+use crate::dto::FromEntity;
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn find_by_project_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         project_id: String,
     ) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let project_id = ProjectId::try_from(project_id)?;
         let project = self
@@ -33,7 +33,8 @@ impl<R: Repositories> FormUseCase<R> {
         let forms = self.repositories.form_repository().list().await?;
         let filtered_forms = forms
             .into_iter()
-            .filter(|form| form.value.is_sent_to(&project.value));
+            .filter(|form| form.value.is_sent_to(&project.value))
+            .filter(|form| form.value.is_started(ctx.requested_at()));
 
         // FIXME : N+1
         let mut form_list = vec![];
@@ -59,7 +60,8 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::adapter::MockAdapters;
+    use crate::context::TestContext;
     use crate::interactor::form::{FormUseCase, FormUseCaseError};
 
     #[tokio::test]
@@ -77,9 +79,10 @@ mod tests {
             .form_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -97,9 +100,10 @@ mod tests {
                     fixture::user::id2(),
                 ))))
             });
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -126,9 +130,10 @@ mod tests {
             .form_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;

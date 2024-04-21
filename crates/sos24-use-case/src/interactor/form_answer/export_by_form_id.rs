@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use chrono_tz::Asia::Tokyo;
 
 use sos24_domain::entity::form::FormId;
@@ -12,7 +10,7 @@ use sos24_domain::{
     repository::{form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::form_answer::{FormAnswerToBeExportedDto, FormAnswerToBeExportedListDto};
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
@@ -20,10 +18,10 @@ use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn export_by_form_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_id: String,
     ) -> Result<FormAnswerToBeExportedListDto, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ANSWER_ALL));
 
         let form_id = FormId::try_from(form_id.clone())?;

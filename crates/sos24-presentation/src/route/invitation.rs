@@ -6,13 +6,15 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
+use sos24_use_case::context::ContextProvider;
 
-use sos24_use_case::context::Context;
-
-use crate::model::invitation::CreatedInvitation;
+use crate::{
+    context::Context,
+    model::invitation::{ConvertToCreateInvitationDto, CreatedInvitation},
+};
 use crate::{
     error::AppError,
-    model::invitation::{ConvertToCreateInvitationDto, CreateInvitation, Invitation},
+    model::invitation::{CreateInvitation, Invitation},
     module::Modules,
 };
 
@@ -40,7 +42,7 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     Json(raw_invitation): Json<CreateInvitation>,
 ) -> Result<impl IntoResponse, AppError> {
-    let user_id = ctx.user_id().clone().value();
+    let user_id = ctx.user_id();
     let invitation = (raw_invitation, user_id).to_create_invitation_dto();
     let res = modules
         .invitation_use_case()

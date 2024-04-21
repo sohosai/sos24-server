@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::{
@@ -11,19 +9,19 @@ use sos24_domain::{
     repository::{file_data::FileDataRepository, file_object::FileObjectRepository, Repositories},
 };
 
-use crate::{context::Context, dto::file::CreateFileDto};
+use crate::{context::ContextProvider, dto::file::CreateFileDto};
 
 use super::{FileUseCase, FileUseCaseError};
 
 impl<R: Repositories> FileUseCase<R> {
     pub async fn create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         bucket: String,
         key_prefix: String,
         raw_file: CreateFileDto,
     ) -> Result<String, FileUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         let key = FileObjectKey::generate(key_prefix.as_str());
         let filename = FileName::sanitized(raw_file.filename);
         let owner = match raw_file.owner {
@@ -64,7 +62,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::dto::file::CreateFileDto;
     use crate::interactor::file::{FileUseCase, FileUseCaseError};
 
@@ -81,7 +79,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .create(
                 &ctx,
@@ -111,7 +109,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .create(
                 &ctx,
@@ -141,7 +139,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .create(
                 &ctx,
@@ -176,7 +174,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .create(
                 &ctx,

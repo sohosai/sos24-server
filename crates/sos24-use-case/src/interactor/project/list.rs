@@ -1,19 +1,20 @@
-use std::sync::Arc;
-
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::project::ProjectDto;
 use crate::dto::FromEntity;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
 impl<R: Repositories> ProjectUseCase<R> {
-    pub async fn list(&self, ctx: &Context) -> Result<Vec<ProjectDto>, ProjectUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+    pub async fn list(
+        &self,
+        ctx: &impl ContextProvider,
+    ) -> Result<Vec<ProjectDto>, ProjectUseCaseError> {
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_PROJECT_ALL));
 
         let raw_project_list = self.repositories.project_repository().list().await?;
@@ -59,7 +60,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
@@ -70,7 +71,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
@@ -92,7 +93,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
         assert!(matches!(res, Ok(list) if list.is_empty()));
     }

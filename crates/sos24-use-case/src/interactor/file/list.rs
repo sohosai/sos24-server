@@ -1,19 +1,18 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::Repositories;
 use sos24_domain::{ensure, repository::file_data::FileDataRepository};
 
-use crate::{
-    context::Context,
-    dto::{file::FileInfoDto, FromEntity},
-};
+use crate::context::ContextProvider;
+use crate::dto::{file::FileInfoDto, FromEntity};
 
 use super::{FileUseCase, FileUseCaseError};
 
 impl<R: Repositories> FileUseCase<R> {
-    pub async fn list(&self, ctx: &Context) -> Result<Vec<FileInfoDto>, FileUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+    pub async fn list(
+        &self,
+        ctx: &impl ContextProvider,
+    ) -> Result<Vec<FileInfoDto>, FileUseCaseError> {
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FILE_ALL));
         let raw_file_data_list = self.repositories.file_data_repository().list().await?;
         Ok(raw_file_data_list
@@ -32,7 +31,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::file::{FileUseCase, FileUseCaseError};
 
     #[tokio::test]
@@ -40,7 +39,7 @@ mod tests {
         let repositories = MockRepositories::default();
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case.list(&ctx).await;
 
         assert!(matches!(
@@ -60,7 +59,7 @@ mod tests {
             .returning(|| Ok(vec![]));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case.list(&ctx).await;
 
         assert!(res.is_ok());

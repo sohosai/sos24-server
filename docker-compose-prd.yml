@@ -22,6 +22,10 @@ services:
       - S3_BUCKET=${S3_BUCKET}
       - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
       - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - SEND_GRID_API_KEY=${SEND_GRID_API_KEY}
+      - EMAIL_SENDER_ADDRESS=${EMAIL_SENDER_ADDRESS}
+      - EMAIL_REPLY_TO_ADDRESS=${EMAIL_REPLY_TO_ADDRESS}
+      - APP_URL=${APP_URL}
     labels:
       - traefik.enable=true
       - traefik.docker.network=sos24-traefik

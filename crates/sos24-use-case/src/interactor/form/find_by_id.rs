@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::{
     ensure,
@@ -7,17 +5,19 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
-use crate::context::OwnedProject;
-use crate::{
-    context::Context,
-    dto::{form::FormDto, FromEntity},
-};
+use crate::adapter::Adapters;
+use crate::context::{ContextProvider, OwnedProject};
+use crate::dto::{form::FormDto, FromEntity};
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
-    pub async fn find_by_id(&self, ctx: &Context, id: String) -> Result<FormDto, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
+    pub async fn find_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<FormDto, FormUseCaseError> {
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let form_id = FormId::try_from(id)?;
@@ -28,13 +28,13 @@ impl<R: Repositories> FormUseCase<R> {
             .await?
             .ok_or(FormUseCaseError::NotFound(form_id.clone()))?;
 
-        let project =
-            ctx.project(Arc::clone(&self.repositories))
-                .await?
-                .map(|project| match project {
-                    OwnedProject::Owner(project) => project,
-                    OwnedProject::SubOwner(project) => project,
-                });
+        let project = ctx
+            .project(&*self.repositories)
+            .await?
+            .map(|project| match project {
+                OwnedProject::Owner(project) => project,
+                OwnedProject::SubOwner(project) => project,
+            });
         let project_id = project.map(|it| it.value.id().clone());
 
         let raw_form_answer = match project_id {
@@ -60,7 +60,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::Context, interactor::form::FormUseCase};
+    use crate::{adapter::MockAdapters, context::TestContext, interactor::form::FormUseCase};
 
     #[tokio::test]
     async fn 一般ユーザーは申請を取得できる() {
@@ -81,9 +81,10 @@ mod tests {
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
             .returning(|_, _| Ok(None));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::form::id1().value().to_string())
             .await;

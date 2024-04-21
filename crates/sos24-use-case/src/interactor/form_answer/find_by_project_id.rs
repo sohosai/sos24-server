@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::repository::form::FormRepository;
 use sos24_domain::{
     ensure,
@@ -7,20 +5,18 @@ use sos24_domain::{
     repository::{form_answer::FormAnswerRepository, project::ProjectRepository, Repositories},
 };
 
-use crate::{
-    context::Context,
-    dto::{form_answer::FormAnswerDto, FromEntity},
-};
+use crate::context::ContextProvider;
+use crate::dto::{form_answer::FormAnswerDto, FromEntity};
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn find_by_project_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         project_id: String,
     ) -> Result<Vec<FormAnswerDto>, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let project_id = ProjectId::try_from(project_id)?;
         let project = self
@@ -67,7 +63,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         interactor::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError},
     };
 
@@ -88,7 +84,7 @@ mod tests {
             .returning(|_| Ok(vec![]));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -112,7 +108,7 @@ mod tests {
             .returning(|_| Ok(vec![]));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -141,7 +137,7 @@ mod tests {
             .returning(|_| Ok(vec![]));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;

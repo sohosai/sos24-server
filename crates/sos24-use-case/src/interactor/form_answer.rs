@@ -73,10 +73,14 @@ pub enum FormAnswerUseCaseError {
 
 pub struct FormAnswerUseCase<R: Repositories> {
     repositories: Arc<R>,
+    creation_lock: tokio::sync::Mutex<()>, // FIXME
 }
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub fn new(repositories: Arc<R>) -> Self {
-        Self { repositories }
+        Self {
+            repositories,
+            creation_lock: tokio::sync::Mutex::new(()),
+        }
     }
 }

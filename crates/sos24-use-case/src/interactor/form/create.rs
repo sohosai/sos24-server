@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::permission::Permissions,
@@ -7,19 +5,20 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::Context,
+    adapter::Adapters,
+    context::ContextProvider,
     dto::{form::CreateFormDto, ToEntity},
 };
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         raw_form: CreateFormDto,
     ) -> Result<String, FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM));
 
         let form = raw_form.into_entity()?;
@@ -39,7 +38,8 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        adapter::MockAdapters,
+        context::TestContext,
         dto::{
             form::{CreateFormDto, FormItemKindDto, NewFormItemDto},
             FromEntity,
@@ -54,9 +54,10 @@ mod tests {
             .form_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .create(
                 &ctx,
@@ -69,7 +70,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes1()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name1().value(),
-                        fixture::form::description1().value(),
+                        Some(fixture::form::description1().value()),
                         fixture::form::formitem_required1().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
                     )],
@@ -95,9 +96,10 @@ mod tests {
             .form_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .create(
                 &ctx,
@@ -110,7 +112,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes1()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name1().value(),
-                        fixture::form::description1().value(),
+                        Some(fixture::form::description1().value()),
                         fixture::form::formitem_required1().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
                     )],

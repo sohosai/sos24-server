@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::file_data::FileId;
 use sos24_domain::{
     ensure,
@@ -11,20 +9,19 @@ use sos24_domain::{
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::{
-    context::Context,
-    dto::{form::UpdateFormDto, ToEntity},
-};
+use crate::adapter::Adapters;
+use crate::context::ContextProvider;
+use crate::dto::{form::UpdateFormDto, ToEntity};
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn update(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_data: UpdateFormDto,
     ) -> Result<(), FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::UPDATE_FORM_ALL));
 
         let id = FormId::try_from(form_data.id)?;
@@ -79,7 +76,8 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        adapter::MockAdapters,
+        context::TestContext,
         dto::{
             form::{FormItemKindDto, NewFormItemDto, UpdateFormDto},
             FromEntity,
@@ -90,9 +88,10 @@ mod tests {
     #[tokio::test]
     async fn 実委人は申請を更新できない() {
         let repositories = MockRepositories::default();
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .update(
                 &ctx,
@@ -106,7 +105,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes2()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
-                        fixture::form::description2().value(),
+                        Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
@@ -140,9 +139,10 @@ mod tests {
             .form_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,
@@ -156,7 +156,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes2()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
-                        fixture::form::description2().value(),
+                        Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
@@ -185,9 +185,10 @@ mod tests {
                     fixture::form_answer::form_answer1(fixture::project::id1()),
                 )])
             });
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,
@@ -201,7 +202,7 @@ mod tests {
                     Vec::from_entity(fixture::form::attributes2()),
                     vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
-                        fixture::form::description2().value(),
+                        Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],

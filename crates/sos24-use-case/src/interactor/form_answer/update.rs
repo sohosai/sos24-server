@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::form_answer::FormAnswerId,
@@ -8,7 +6,7 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::{Context, OwnedProject},
+    context::{ContextProvider, OwnedProject},
     dto::{form_answer::UpdateFormAnswerDto, ToEntity},
 };
 
@@ -17,17 +15,17 @@ use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn update(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_answer_data: UpdateFormAnswerDto,
     ) -> Result<(), FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
-        let owned_project_id = ctx
-            .project(Arc::clone(&self.repositories))
-            .await?
-            .map(|project| match project {
-                OwnedProject::Owner(project) => project.value.id().clone(),
-                OwnedProject::SubOwner(project) => project.value.id().clone(),
-            });
+        let actor = ctx.actor(&*self.repositories).await?;
+        let owned_project_id =
+            ctx.project(&*self.repositories)
+                .await?
+                .map(|project| match project {
+                    OwnedProject::Owner(project) => project.value.id().clone(),
+                    OwnedProject::SubOwner(project) => project.value.id().clone(),
+                });
 
         let id = FormAnswerId::try_from(form_answer_data.id)?;
         let form_answer = self
@@ -77,7 +75,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         dto::{
             form_answer::{FormAnswerItemDto, UpdateFormAnswerDto},
             FromEntity,
@@ -114,7 +112,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .update(
                 &ctx,
@@ -159,7 +157,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .update(
                 &ctx,
@@ -209,7 +207,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .update(
                 &ctx,

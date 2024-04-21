@@ -1,22 +1,20 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::{invitation::InvitationId, permission::Permissions},
     repository::{invitation::InvitationRepository, Repositories},
 };
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 
 use super::{InvitationUseCase, InvitationUseCaseError};
 
 impl<R: Repositories> InvitationUseCase<R> {
     pub async fn delete_by_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         id: String,
     ) -> Result<(), InvitationUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::DELETE_INVITATION_ALL));
 
         let id = InvitationId::try_from(id)?;
@@ -46,7 +44,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         interactor::invitation::{InvitationUseCase, InvitationUseCaseError},
     };
 
@@ -58,7 +56,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor2(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor2(UserRole::Committee));
         let res = use_case
             .delete_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;
@@ -92,7 +90,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .delete_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;

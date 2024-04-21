@@ -81,3 +81,19 @@ pub fn s3_access_key_id() -> String {
 pub fn s3_secret_access_key() -> String {
     env::var("S3_SECRET_ACCESS_KEY").expect("Env `S3_SECRET_ACCESS_KEY` must be set")
 }
+
+pub fn send_grid_api_key() -> String {
+    env::var("SEND_GRID_API_KEY").expect("Env `SEND_GRID_API_KEY` must be set")
+}
+
+pub fn email_sender_address() -> String {
+    env::var("EMAIL_SENDER_ADDRESS").expect("Env `EMAIL_SENDER_ADDRESS` must be set")
+}
+
+pub fn email_reply_to_address() -> String {
+    env::var("EMAIL_REPLY_TO_ADDRESS").expect("Env `EMAIL_REPLY_TO_ADDRESS` must be set")
+}
+
+pub fn app_url() -> String {
+    env::var("APP_URL").expect("Env `APP_URL` must be set")
+}

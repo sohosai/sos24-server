@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::ProjectId;
@@ -7,7 +5,7 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::Context;
+use crate::context::ContextProvider;
 use crate::dto::project::ProjectDto;
 use crate::dto::FromEntity;
 use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
@@ -15,10 +13,10 @@ use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn find_by_id(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         id: String,
     ) -> Result<ProjectDto, ProjectUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
 
         let id = ProjectId::try_from(id)?;
         let raw_project = self
@@ -68,7 +66,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::Context;
+    use crate::context::TestContext;
     use crate::interactor::project::{ProjectUseCase, ProjectUseCaseError};
 
     #[tokio::test]
@@ -95,7 +93,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -118,7 +116,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
@@ -154,7 +152,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;

@@ -34,6 +34,8 @@ pub struct Form {
     #[getset(get = "pub")]
     attributes: ProjectAttributes,
     #[getset(get = "pub")]
+    is_notified: FormIsNotified,
+    #[getset(get = "pub")]
     items: Vec<FormItem>,
     #[getset(get = "pub")]
     attachments: Vec<FileId>,
@@ -62,6 +64,7 @@ impl Form {
             ends_at,
             categories,
             attributes,
+            is_notified: FormIsNotified::new(false),
             items,
             attachments,
         })
@@ -76,6 +79,7 @@ impl Form {
         ends_at: DateTime,
         categories: ProjectCategories,
         attributes: ProjectAttributes,
+        is_notified: FormIsNotified,
         items: Vec<FormItem>,
         attachments: Vec<FileId>,
     ) -> Self {
@@ -87,6 +91,7 @@ impl Form {
             ends_at,
             categories,
             attributes,
+            is_notified,
             items,
             attachments,
         }
@@ -101,6 +106,7 @@ impl Form {
             ends_at: self.ends_at,
             categories: self.categories,
             attributes: self.attributes,
+            is_notified: self.is_notified,
             items: self.items,
             attachments: self.attachments,
         }
@@ -116,6 +122,7 @@ pub struct DestructedForm {
     pub ends_at: DateTime,
     pub categories: ProjectCategories,
     pub attributes: ProjectAttributes,
+    pub is_notified: FormIsNotified,
     pub items: Vec<FormItem>,
     pub attachments: Vec<FileId>,
 }
@@ -205,6 +212,11 @@ impl Form {
         Ok(())
     }
 
+    pub fn set_notified(&mut self) -> Result<(), PermissionDeniedError> {
+        self.is_notified = FormIsNotified::new(true);
+        Ok(())
+    }
+
     // この申請が引数に与えられた企画を対象にしたものであるかを返す
     pub fn is_sent_to(&self, project: &Project) -> bool {
         self.categories.matches(*project.category())
@@ -213,6 +225,10 @@ impl Form {
 
     pub fn find_item(&self, item_id: &FormItemId) -> Option<&FormItem> {
         self.items.iter().find(|item| item.id() == item_id)
+    }
+
+    pub fn is_started(&self, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        &self.starts_at.clone().value() <= now
     }
 }
 
@@ -233,6 +249,7 @@ impl TryFrom<String> for FormId {
 
 impl_value_object!(FormTitle(String));
 impl_value_object!(FormDescription(String));
+impl_value_object!(FormIsNotified(bool));
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
 pub struct FormItem {
@@ -241,7 +258,7 @@ pub struct FormItem {
     #[getset(get = "pub")]
     name: FormItemName,
     #[getset(get = "pub")]
-    description: FormItemDescription,
+    description: Option<FormItemDescription>,
     #[getset(get = "pub")]
     required: FormItemRequired,
     #[getset(get = "pub")]
@@ -251,7 +268,7 @@ pub struct FormItem {
 impl FormItem {
     pub fn create(
         name: FormItemName,
-        description: FormItemDescription,
+        description: Option<FormItemDescription>,
         required: FormItemRequired,
         kind: FormItemKind,
     ) -> Self {
@@ -267,7 +284,7 @@ impl FormItem {
     pub fn new(
         id: FormItemId,
         name: FormItemName,
-        description: FormItemDescription,
+        description: Option<FormItemDescription>,
         required: FormItemRequired,
         kind: FormItemKind,
     ) -> Self {
@@ -295,7 +312,7 @@ impl FormItem {
 pub struct DestructedFormItem {
     pub id: FormItemId,
     pub name: FormItemName,
-    pub description: FormItemDescription,
+    pub description: Option<FormItemDescription>,
     pub required: FormItemRequired,
     pub kind: FormItemKind,
 }

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use sos24_domain::entity::form_answer::FormAnswerItemKind;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
@@ -12,24 +10,21 @@ use sos24_domain::{
     service::verify_form_answer,
 };
 
-use crate::context::OwnedProject;
-use crate::{
-    context::Context,
-    dto::{form_answer::CreateFormAnswerDto, ToEntity},
-};
+use crate::context::{ContextProvider, OwnedProject};
+use crate::dto::{form_answer::CreateFormAnswerDto, ToEntity};
 
 use super::{FormAnswerUseCase, FormAnswerUseCaseError};
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn create(
         &self,
-        ctx: &Context,
+        ctx: &impl ContextProvider,
         form_answer: CreateFormAnswerDto,
     ) -> Result<String, FormAnswerUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
 
-        let project_id = match ctx.project(Arc::clone(&self.repositories)).await? {
+        let project_id = match ctx.project(&*self.repositories).await? {
             Some(OwnedProject::Owner(project)) => project.value.id().clone(),
             Some(OwnedProject::SubOwner(project)) => project.value.id().clone(),
             None => return Err(FormAnswerUseCaseError::NotProjectOwner),
@@ -37,18 +32,6 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         let project_id_str = project_id.value().to_string();
         let form_answer = (project_id_str, form_answer).into_entity()?;
-
-        let prev_form_answer = self
-            .repositories
-            .form_answer_repository()
-            .find_by_project_id_and_form_id(
-                form_answer.project_id().clone(),
-                form_answer.form_id().clone(),
-            )
-            .await?;
-        if prev_form_answer.is_some() {
-            return Err(FormAnswerUseCaseError::AlreadyAnswered);
-        }
 
         let project = self
             .repositories
@@ -85,11 +68,30 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         verify_form_answer::verify(&form.value, &form_answer)?;
 
-        let form_answer_id = form_answer.id().clone();
-        self.repositories
-            .form_answer_repository()
-            .create(form_answer)
-            .await?;
+        let form_answer_id = {
+            let lock = self.creation_lock.lock().await;
+
+            let prev_form_answer = self
+                .repositories
+                .form_answer_repository()
+                .find_by_project_id_and_form_id(
+                    form_answer.project_id().clone(),
+                    form_answer.form_id().clone(),
+                )
+                .await?;
+            if prev_form_answer.is_some() {
+                return Err(FormAnswerUseCaseError::AlreadyAnswered);
+            }
+
+            let form_answer_id = form_answer.id().clone();
+            self.repositories
+                .form_answer_repository()
+                .create(form_answer)
+                .await?;
+
+            drop(lock);
+            form_answer_id
+        };
 
         Ok(form_answer_id.value().to_string())
     }
@@ -105,7 +107,7 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        context::TestContext,
         dto::{
             form_answer::{CreateFormAnswerDto, FormAnswerItemDto},
             FromEntity,
@@ -146,7 +148,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .create(
                 &ctx,
@@ -175,7 +177,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .create(
                 &ctx,
@@ -228,7 +230,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::General));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
         let res = use_case
             .create(
                 &ctx,

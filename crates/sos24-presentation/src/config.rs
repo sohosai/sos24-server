@@ -6,4 +6,8 @@ pub struct Config {
     pub project_application_end_at: String,
     pub s3_bucket_name: String,
     pub file_upload_limit: usize,
+
+    pub email_sender_address: String,
+    pub email_reply_to_address: String,
+    pub app_url: String,
 }

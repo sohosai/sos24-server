@@ -1,18 +1,20 @@
-use std::sync::Arc;
-
 use sos24_domain::{
     ensure,
     entity::{form::FormId, permission::Permissions},
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::context::Context;
+use crate::{adapter::Adapters, context::ContextProvider};
 
 use super::{FormUseCase, FormUseCaseError};
 
-impl<R: Repositories> FormUseCase<R> {
-    pub async fn delete_by_id(&self, ctx: &Context, id: String) -> Result<(), FormUseCaseError> {
-        let actor = ctx.actor(Arc::clone(&self.repositories)).await?;
+impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
+    pub async fn delete_by_id(
+        &self,
+        ctx: &impl ContextProvider,
+        id: String,
+    ) -> Result<(), FormUseCaseError> {
+        let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::DELETE_FORM_ALL));
 
         let id = FormId::try_from(id)?;
@@ -46,16 +48,18 @@ mod tests {
     };
 
     use crate::{
-        context::Context,
+        adapter::MockAdapters,
+        context::TestContext,
         interactor::form::{FormUseCase, FormUseCaseError},
     };
 
     #[tokio::test]
     async fn 実委人は申請を削除できない() {
         let repositories = MockRepositories::default();
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
         let res = use_case
             .delete_by_id(&ctx, fixture::form::id1().value().to_string())
             .await;
@@ -82,9 +86,10 @@ mod tests {
             .form_repository_mut()
             .expect_delete_by_id()
             .returning(|_| Ok(()));
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .delete_by_id(&ctx, fixture::form::id1().value().to_string())
             .await;
@@ -106,9 +111,10 @@ mod tests {
                     fixture::form_answer::form_answer1(fixture::project::id1()),
                 )])
             });
-        let use_case = FormUseCase::new(Arc::new(repositories));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = Context::with_actor(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
         let res = use_case
             .delete_by_id(&ctx, fixture::form::id1().value().to_string())
             .await;

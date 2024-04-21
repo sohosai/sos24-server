@@ -9,7 +9,10 @@ use postgresql::project::PgProjectRepository;
 use postgresql::user::PgUserRepository;
 use s3::file_object::S3FileObjectRepository;
 use s3::S3;
+use sendgrid::email::SendGridEmailSender;
+use sendgrid::SendGrid;
 use sos24_domain::repository::Repositories;
+use sos24_use_case::adapter::Adapters;
 
 use crate::postgresql::news::PgNewsRepository;
 use crate::postgresql::Postgresql;
@@ -18,6 +21,7 @@ pub mod firebase;
 pub mod mongodb;
 pub mod postgresql;
 pub mod s3;
+pub mod sendgrid;
 
 pub struct DefaultRepositories {
     firebase_user_repository: FirebaseUserRepositoryImpl,
@@ -92,5 +96,25 @@ impl Repositories for DefaultRepositories {
 
     fn user_repository(&self) -> &Self::UserRepositoryImpl {
         &self.user_repository
+    }
+}
+
+pub struct DefaultAdapters {
+    email_sender: SendGridEmailSender,
+}
+
+impl DefaultAdapters {
+    pub fn new(send_grid: SendGrid) -> Self {
+        Self {
+            email_sender: SendGridEmailSender::new(send_grid),
+        }
+    }
+}
+
+impl Adapters for DefaultAdapters {
+    type EmailSenderImpl = SendGridEmailSender;
+
+    fn email_sender(&self) -> &Self::EmailSenderImpl {
+        &self.email_sender
     }
 }

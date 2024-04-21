@@ -1,4 +1,5 @@
 use crate::entity::file_data::FileId;
+use crate::entity::form::FormIsNotified;
 use crate::entity::{
     common::datetime::DateTime,
     form::{
@@ -37,6 +38,10 @@ pub fn attributes1() -> ProjectAttributes {
     ProjectAttributes::ACADEMIC
 }
 
+pub fn is_notified1() -> FormIsNotified {
+    FormIsNotified::new(false)
+}
+
 pub fn formitem_id1() -> FormItemId {
     FormItemId::new(uuid::Uuid::from_u128(1))
 }
@@ -65,7 +70,7 @@ pub fn items1() -> Vec<FormItem> {
     vec![FormItem::new(
         formitem_id1(),
         formitem_name1(),
-        formitem_description1(),
+        Some(formitem_description1()),
         formitem_required1(),
         formitem_kind1(),
     )]
@@ -84,6 +89,7 @@ pub fn form1() -> Form {
         ends_at1(),
         categories1(),
         attributes1(),
+        is_notified1(),
         items1(),
         attachments1(),
     )
@@ -117,6 +123,10 @@ pub fn attributes2() -> ProjectAttributes {
     ProjectAttributes::OUTSIDE
 }
 
+pub fn is_notified2() -> FormIsNotified {
+    FormIsNotified::new(false)
+}
+
 pub fn formitem_id2() -> FormItemId {
     FormItemId::new(uuid::Uuid::from_u128(2))
 }
@@ -141,7 +151,7 @@ pub fn items2() -> Vec<FormItem> {
     vec![FormItem::new(
         formitem_id2(),
         formitem_name2(),
-        formitem_description2(),
+        Some(formitem_description2()),
         formitem_required2(),
         formitem_kind2(),
     )]
@@ -160,6 +170,7 @@ pub fn form2() -> Form {
         ends_at2(),
         categories2(),
         attributes2(),
+        is_notified1(),
         items2(),
         attachments2(),
     )

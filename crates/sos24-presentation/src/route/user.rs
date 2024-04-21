@@ -8,8 +8,10 @@ use axum::{
     Extension, Json,
 };
 
-use sos24_use_case::{context::Context, dto::user::CreateUserDto};
+use sos24_use_case::context::ContextProvider;
+use sos24_use_case::dto::user::CreateUserDto;
 
+use crate::context::Context;
 use crate::csv::serialize_to_csv;
 use crate::error::AppError;
 use crate::model::user::CreatedUser;
@@ -106,7 +108,7 @@ pub async fn handle_get_me(
 ) -> Result<impl IntoResponse, AppError> {
     let user = modules
         .user_use_case()
-        .find_by_id(&ctx, ctx.user_id().clone().value())
+        .find_by_id(&ctx, ctx.user_id())
         .await;
     match user {
         Ok(user) => Ok((StatusCode::OK, Json(User::from(user)))),

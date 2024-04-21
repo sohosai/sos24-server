@@ -5,6 +5,7 @@ use crate::entity::file_data::FileId;
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
 use crate::{ensure, impl_value_object};
 
+use super::project::Project;
 use super::{
     actor::Actor,
     permission::{PermissionDeniedError, Permissions},
@@ -137,6 +138,12 @@ impl News {
         ensure!(self.is_updatable_by(actor));
         self.attributes = attributes;
         Ok(())
+    }
+
+    // このお知らせが引数に与えられた企画を対象にしたものであるかを返す
+    pub fn is_sent_to(&self, project: &Project) -> bool {
+        self.categories.matches(*project.category())
+            && self.attributes.matches(*project.attributes())
     }
 }
 
