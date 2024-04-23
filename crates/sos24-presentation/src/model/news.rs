@@ -2,13 +2,15 @@ use serde::{Deserialize, Serialize};
 
 use sos24_use_case::dto::news::{CreateNewsDto, NewsDto, UpdateNewsDto};
 use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
+use utoipa::ToSchema;
 
 use crate::model::project::{ProjectAttribute, ProjectCategory};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateNews {
     title: String,
     body: String,
+    #[schema(format = "uuid")]
     attachments: Vec<String>,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
@@ -32,15 +34,17 @@ impl From<CreateNews> for CreateNewsDto {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct CreatedNews {
+    #[schema(format = "uuid")]
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UpdateNews {
     title: String,
     body: String,
+    #[schema(format = "uuid")]
     attachments: Vec<String>,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
@@ -70,16 +74,21 @@ impl ConvertToUpdateNewsDto for (String, UpdateNews) {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct News {
+    #[schema(format = "uuid")]
     pub id: String,
     pub title: String,
     pub body: String,
+    #[schema(format = "uuid")]
     pub attachments: Vec<String>,
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
+    #[schema(format = "date-time")]
     pub created_at: String,
+    #[schema(format = "date-time")]
     pub updated_at: String,
+    #[schema(format = "date-time")]
     pub deleted_at: Option<String>,
 }
 
@@ -107,12 +116,14 @@ impl From<NewsDto> for News {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct NewsSummary {
+    #[schema(format = "uuid")]
     id: String,
     title: String,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
+    #[schema(format = "date-time")]
     updated_at: String,
 }
 

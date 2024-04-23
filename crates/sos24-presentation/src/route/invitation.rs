@@ -18,6 +18,20 @@ use crate::{
     module::Modules,
 };
 
+/// 招待一覧の取得
+#[utoipa::path(
+    get,
+    path = "/invitations",
+    operation_id = "getInvitations",
+    tag = "invitations",
+    responses(
+        (status = 200, description = "OK", body = Vec<Invitation>),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get(
     Extension(ctx): Extension<Context>,
     State(modules): State<Arc<Modules>>,
@@ -37,6 +51,23 @@ pub async fn handle_get(
         })
 }
 
+/// 招待の作成
+#[utoipa::path(
+    post,
+    path = "/invitations",
+    operation_id = "postInvitation",
+    tag = "invitations",
+    request_body(content = CreateInvitation),
+    responses(
+        (status = 201, description = "Created", body = CreatedInvitation),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -55,6 +86,22 @@ pub async fn handle_post(
         })
 }
 
+/// 特定のIDの招待の取得
+#[utoipa::path(
+    get,
+    path = "/invitations/{invitation_id}",
+    operation_id = "getInvitationById",
+    tag = "invitations",
+    params(("invitation_id" = String, Path, format="uuid")),
+    responses(
+        (status = 200, description = "OK", body = Invitation),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,
@@ -70,6 +117,22 @@ pub async fn handle_get_id(
     }
 }
 
+/// 特定のIDの招待の受諾
+#[utoipa::path(
+    post,
+    path = "/invitations/{invitation_id}",
+    operation_id = "postInvitationById",
+    tag = "invitations",
+    params(("invitation_id" = String, Path, format="uuid")),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_post_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
@@ -82,6 +145,22 @@ pub async fn handle_post_id(
     })
 }
 
+/// 特定のIDの招待の削除
+#[utoipa::path(
+    delete,
+    path = "/invitations/{invitation_id}",
+    operation_id = "deleteInvitationById",
+    tag = "invitations",
+    params(("invitation_id" = String, Path, format="uuid")),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_delete_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,

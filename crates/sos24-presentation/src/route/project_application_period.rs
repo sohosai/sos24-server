@@ -9,6 +9,19 @@ use crate::error::AppError;
 use crate::model::project_application_period::ProjectApplicationPeriod;
 use crate::module::Modules;
 
+/// 企画募集期間を取得する
+#[utoipa::path(
+    get,
+    path = "/project-application-period",
+    operation_id = "getProjectApplicationPeriod",
+    tag = "projects",
+    responses(
+        (status = 200, description = "OK", body = ProjectApplicationPeriod),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(()),
+)]
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
 ) -> Result<impl IntoResponse, AppError> {

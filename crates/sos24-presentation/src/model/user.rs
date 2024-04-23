@@ -2,12 +2,14 @@ use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::dto::user::{CreateUserDto, UpdateUserDto, UserDto, UserRoleDto};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateUser {
     pub name: String,
     pub kana_name: String,
     pub email: String,
+    #[schema(format = "password")]
     pub password: String,
     pub phone_number: String,
 }
@@ -24,12 +26,12 @@ impl From<CreateUser> for CreateUserDto {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct CreatedUser {
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UpdateUser {
     pub name: String,
     pub kana_name: String,
@@ -56,7 +58,7 @@ impl ConvertToUpdateUserDto for (String, UpdateUser) {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct User {
     pub id: String,
     pub name: String,
@@ -64,10 +66,14 @@ pub struct User {
     pub email: String,
     pub phone_number: String,
     pub role: UserRole,
+    #[schema(format = "uuid")]
     pub owned_project_id: Option<String>,
     pub owned_project_title: Option<String>,
+    #[schema(format = "date-time")]
     pub created_at: String,
+    #[schema(format = "date-time")]
     pub updated_at: String,
+    #[schema(format = "date-time")]
     pub deleted_at: Option<String>,
 }
 
@@ -89,7 +95,7 @@ impl From<UserDto> for User {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct UserSummary {
     id: String,
     name: String,
@@ -137,7 +143,7 @@ impl From<UserDto> for UserTobeExported {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum UserRole {
     Administrator,
