@@ -4,9 +4,11 @@ use sos24_use_case::dto::form_answer::{
     CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
     UpdateFormAnswerDto,
 };
+use utoipa::{IntoParams, ToSchema};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateFormAnswer {
+    #[schema(format = "uuid")]
     form_id: String,
     items: Vec<FormAnswerItem>,
 }
@@ -24,12 +26,13 @@ impl From<CreateFormAnswer> for CreateFormAnswerDto {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct CreatedFormAnswer {
+    #[schema(format = "uuid")]
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UpdateFormAnswer {
     items: Vec<FormAnswerItem>,
 }
@@ -52,27 +55,36 @@ impl ConvertToUpdateFormAnswerDto for (UpdateFormAnswer, String) {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 pub struct FormAnswerQuery {
+    #[param(format = "uuid")]
     pub project_id: Option<String>,
+    #[param(format = "uuid")]
     pub form_id: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 pub struct ExportFormAnswerQuery {
+    #[param(format = "uuid")]
     pub form_id: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct FormAnswer {
+    #[schema(format = "uuid")]
     id: String,
+    #[schema(format = "uuid")]
     project_id: String,
     project_title: String,
+    #[schema(format = "uuid")]
     form_id: String,
     form_title: String,
     items: Vec<FormAnswerItem>,
+    #[schema(format = "date-time")]
     created_at: String,
+    #[schema(format = "date-time")]
     updated_at: String,
+    #[schema(format = "date-time")]
     deleted_at: Option<String>,
 }
 
@@ -96,13 +108,17 @@ impl From<FormAnswerDto> for FormAnswer {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct FormAnswerSummary {
+    #[schema(format = "uuid")]
     id: String,
+    #[schema(format = "uuid")]
     project_id: String,
     project_title: String,
+    #[schema(format = "uuid")]
     form_id: String,
     form_title: String,
+    #[schema(format = "date-time")]
     updated_at: String,
 }
 
@@ -119,14 +135,35 @@ impl From<FormAnswerDto> for FormAnswerSummary {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FormAnswerItem {
-    String { item_id: String, value: String },
-    Int { item_id: String, value: i32 },
-    ChooseOne { item_id: String, value: String },
-    ChooseMany { item_id: String, value: Vec<String> },
-    File { item_id: String, value: Vec<String> },
+    String {
+        #[schema(format = "uuid")]
+        item_id: String,
+        value: String,
+    },
+    Int {
+        #[schema(format = "uuid")]
+        item_id: String,
+        value: i32,
+    },
+    ChooseOne {
+        #[schema(format = "uuid")]
+        item_id: String,
+        value: String,
+    },
+    ChooseMany {
+        #[schema(format = "uuid")]
+        item_id: String,
+        value: Vec<String>,
+    },
+    File {
+        #[schema(format = "uuid")]
+        item_id: String,
+        #[schema(format = "uuid")]
+        value: Vec<String>,
+    },
 }
 
 impl From<FormAnswerItem> for FormAnswerItemDto {

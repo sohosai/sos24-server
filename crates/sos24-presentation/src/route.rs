@@ -9,6 +9,8 @@ use axum::{
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
 use tracing::Level;
+use utoipa::openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme};
+use utoipa::{Modify, OpenApi};
 
 use crate::{middleware::auth, module::Modules};
 
@@ -114,4 +116,144 @@ pub fn create_app(modules: Arc<Modules>) -> Router {
                 .allow_methods([Method::GET, Method::PUT, Method::POST, Method::DELETE])
                 .allow_origin(Any),
         )
+}
+
+use crate::{error, model, route};
+#[derive(OpenApi)]
+#[openapi(
+    info(title = "Sohosai Online System"),
+    servers((url = "https://api.sos24.sohosai.com")),
+    tags(
+        (name = "projects", description = "企画関連の操作"),
+        (name = "users", description = "ユーザー関連の操作"),
+        (name = "news", description = "お知らせ関連の操作"),
+        (name = "files", description = "ファイル関連の操作"),
+        (name = "forms", description = "申請関連の操作"),
+        (name = "form-answers", description = "申請回答関連の操作"),
+        (name = "invitations", description = "招待関連の操作"),
+        (name = "meta", description = "状態確認関連の操作"),
+    ),
+    paths(
+        route::file::handle_get,
+        route::file::handle_post,
+        route::file::handle_export,
+        route::file::handle_get_id,
+        route::file::handle_delete_id,
+        route::form::handle_get,
+        route::form::handle_post,
+        route::form::handle_get_id,
+        route::form::handle_put_id,
+        route::form::handle_delete_id,
+        route::form_answer::handle_get,
+        route::form_answer::handle_post,
+        route::form_answer::handle_export,
+        route::form_answer::handle_get_id,
+        route::form_answer::handle_put_id,
+        route::health::handle_get,
+        route::invitation::handle_get,
+        route::invitation::handle_post,
+        route::invitation::handle_get_id,
+        route::invitation::handle_post_id,
+        route::invitation::handle_delete_id,
+        route::news::handle_get,
+        route::news::handle_post,
+        route::news::handle_get_id,
+        route::news::handle_delete_id,
+        route::news::handle_put_id,
+        route::project::handle_get,
+        route::project::handle_post,
+        route::project::handle_export,
+        route::project::handle_get_me,
+        route::project::handle_get_id,
+        route::project::handle_delete_id,
+        route::project::handle_put_id,
+        route::project_application_period::handle_get,
+        route::user::handle_get,
+        route::user::handle_post,
+        route::user::handle_export,
+        route::user::handle_get_me,
+        route::user::handle_get_id,
+        route::user::handle_delete_id,
+        route::user::handle_put_id,
+    ),
+    components(schemas(
+        model::file::CreatedFile,
+        model::file::File,
+        model::file::FileInfo,
+        model::form::CreateForm,
+        model::form::CreatedForm,
+        model::form::UpdateForm,
+        model::form::NewFormItem,
+        model::form::Form,
+        model::form::FormItem,
+        model::form::FormItemKind,
+        model::form::FormSummary,
+        model::form_answer::CreateFormAnswer,
+        model::form_answer::CreatedFormAnswer,
+        model::form_answer::UpdateFormAnswer,
+        model::form_answer::FormAnswer,
+        model::form_answer::FormAnswerItem,
+        model::form_answer::FormAnswerSummary,
+        model::invitation::CreateInvitation,
+        model::invitation::CreatedInvitation,
+        model::invitation::Invitation,
+        model::invitation::InvitationPosition,
+        model::news::CreateNews,
+        model::news::CreatedNews,
+        model::news::UpdateNews,
+        model::news::News,
+        model::news::NewsSummary,
+        model::project::CreateProject,
+        model::project::CreatedProject,
+        model::project::UpdateProject,
+        model::project::Project,
+        model::project::ProjectCategory,
+        model::project::ProjectAttribute,
+        model::project::ProjectSummary,
+        model::project_application_period::ProjectApplicationPeriod,
+        model::user::CreateUser,
+        model::user::CreatedUser,
+        model::user::UpdateUser,
+        model::user::User,
+        model::user::UserRole,
+        model::user::UserSummary,
+        error::ErrorResponse,
+    )),
+    modifiers(&SecurityAddon),
+)]
+pub struct ApiDoc;
+
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        let Some(schema) = openapi.components.as_mut() else {
+            return;
+        };
+        schema.add_security_scheme(
+            "jwt_token",
+            SecurityScheme::Http(
+                HttpBuilder::new()
+                    .scheme(HttpAuthScheme::Bearer)
+                    .bearer_format("JWT")
+                    .build(),
+            ),
+        );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use utoipa::OpenApi;
+
+    use super::ApiDoc;
+
+    #[test]
+    fn test_openapi_document() {
+        let current_schema = include_str!("../../../schema.yml");
+        let new_schema = ApiDoc::openapi().to_yaml().unwrap();
+        if current_schema != new_schema {
+            panic!("APIエンドポイントが更新されています。\nターミナルで cargo run --bin gen-openapi > schema.yml を実行し、スキーマを更新してください。")
+        }
+    }
 }

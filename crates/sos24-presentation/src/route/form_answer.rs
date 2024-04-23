@@ -27,6 +27,21 @@ use crate::{
     module::Modules,
 };
 
+/// 申請回答一覧を取得
+#[utoipa::path(
+    get,
+    path = "/form-answers",
+    operation_id = "getFormAnswers",
+    tag = "form-answers",
+    params(FormAnswerQuery),
+    responses(
+        (status = 200, description = "OK", body = Vec<FormAnswerSummary>),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Query(query): Query<FormAnswerQuery>,
@@ -69,6 +84,25 @@ pub async fn handle_get(
         })
 }
 
+/// 申請回答を作成
+#[utoipa::path(
+    post,
+    path = "/form-answers",
+    operation_id = "postFormAnswer",
+    tag = "form-answers",
+    request_body(
+        content = CreateFormAnswer,
+    ),
+    responses(
+        (status = 201, description = "Created", body = CreatedFormAnswer),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -86,6 +120,21 @@ pub async fn handle_post(
         })
 }
 
+/// 申請回答一覧のエクスポート
+#[utoipa::path(
+    get,
+    path = "/form-answers/export",
+    operation_id = "getFormAnswersExport",
+    tag = "form-answers",
+    params(ExportFormAnswerQuery),
+    responses(
+        (status = 200, description = "OK", content_type = "text/csv", body = String),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_export(
     State(modules): State<Arc<Modules>>,
     Query(query): Query<ExportFormAnswerQuery>,
@@ -163,6 +212,22 @@ pub async fn handle_export(
         })
 }
 
+/// 特定のIDの申請回答を取得
+#[utoipa::path(
+    get,
+    path = "/form-answers/{form_answer_id}",
+    operation_id = "getFormAnswerById",
+    tag = "form-answers",
+    params(("form_answer_id" = String, Path, format="uuid")),
+    responses(
+        (status = 200, description = "OK", body = FormAnswer),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
@@ -178,6 +243,25 @@ pub async fn handle_get_id(
     }
 }
 
+/// 特定のIDの申請回答を更新
+#[utoipa::path(
+    put,
+    path = "/form-answers/{form_answer_id}",
+    operation_id = "putFormAnswerById",
+    tag = "form-answers",
+    params(("form_answer_id" = String, Path, format="uuid")),
+    request_body(content = UpdateFormAnswer),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_put_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,

@@ -5,18 +5,22 @@ use sos24_use_case::dto::form::{
     UpdateFormDto,
 };
 use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
+use utoipa::{IntoParams, ToSchema};
 
 use crate::model::project::{ProjectAttribute, ProjectCategory};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateForm {
     title: String,
     description: String,
+    #[schema(format = "date-time")]
     starts_at: String,
+    #[schema(format = "date-time")]
     ends_at: String,
     categories: Vec<ProjectCategory>,
     attributes: Vec<ProjectAttribute>,
     items: Vec<NewFormItem>,
+    #[schema(format = "uuid")]
     attachments: Vec<String>,
 }
 
@@ -47,7 +51,7 @@ impl From<CreateForm> for CreateFormDto {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct NewFormItem {
     name: String,
     description: Option<String>,
@@ -67,20 +71,24 @@ impl From<NewFormItem> for NewFormItemDto {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct CreatedForm {
+    #[schema(format = "uuid")]
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UpdateForm {
     pub title: String,
     pub description: String,
+    #[schema(format = "date-time")]
     pub starts_at: String,
+    #[schema(format = "date-time")]
     pub ends_at: String,
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
     pub items: Vec<NewFormItem>,
+    #[schema(format = "uuid")]
     pub attachments: Vec<String>,
 }
 
@@ -111,21 +119,30 @@ impl ConvertToUpdateFormDto for (String, UpdateForm) {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct Form {
+    #[schema(format = "uuid")]
     pub id: String,
     pub title: String,
     pub description: String,
+    #[schema(format = "date-time")]
     pub starts_at: String,
+    #[schema(format = "date-time")]
     pub ends_at: String,
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
     pub items: Vec<FormItem>,
+    #[schema(format = "uuid")]
     pub attachments: Vec<String>,
+    #[schema(format = "uuid")]
     pub answer_id: Option<String>,
+    #[schema(format = "date-time")]
     pub answered_at: Option<String>,
+    #[schema(format = "date-time")]
     pub created_at: String,
+    #[schema(format = "date-time")]
     pub updated_at: String,
+    #[schema(format = "date-time")]
     pub deleted_at: Option<String>,
 }
 
@@ -158,17 +175,23 @@ impl From<FormDto> for Form {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct FormSummary {
+    #[schema(format = "uuid")]
     pub id: String,
     pub title: String,
     pub description: String,
+    #[schema(format = "date-time")]
     pub starts_at: String,
+    #[schema(format = "date-time")]
     pub ends_at: String,
     pub categories: Vec<ProjectCategory>,
     pub attributes: Vec<ProjectAttribute>,
+    #[schema(format = "uuid")]
     pub answer_id: Option<String>,
+    #[schema(format = "date-time")]
     pub answered_at: Option<String>,
+    #[schema(format = "date-time")]
     pub updated_at: String,
 }
 
@@ -197,13 +220,15 @@ impl From<FormSummaryDto> for FormSummary {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 pub struct FormQuery {
+    #[param(format = "uuid")]
     pub project_id: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct FormItem {
+    #[schema(format = "uuid")]
     pub id: String,
     pub name: String,
     pub description: Option<String>,
@@ -224,7 +249,7 @@ impl From<FormItemDto> for FormItem {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FormItemKind {
     String {

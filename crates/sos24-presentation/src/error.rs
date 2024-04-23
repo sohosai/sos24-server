@@ -4,6 +4,7 @@ use axum::{
     Json,
 };
 use serde::Serialize;
+use utoipa::ToSchema;
 
 pub mod convert_error;
 
@@ -23,7 +24,8 @@ impl AppError {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
+#[schema(as = Error)]
 pub struct ErrorResponse {
     code: String,
     message: String,
