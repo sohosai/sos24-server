@@ -29,6 +29,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: develop
+      - uses: docker-practice/actions-setup-docker@master
+        timeout-minutes: 12
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v5
@@ -133,7 +135,7 @@ jobs:
   notify:
     runs-on: [self-hosted, garm]
     needs: [push-image, deploy]
-    if: always() && !failure() && !cancelled()
+    if: always() && !cancelled()
     steps:
       - name: Notify
         uses: sarisia/actions-status-discord@v1
