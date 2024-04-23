@@ -125,7 +125,7 @@ jobs:
   notify:
     runs-on: [self-hosted, garm]
     needs: [push-image, deploy]
-    if: always() && !failure() && !cancelled()
+    if: always() && !cancelled()
     steps:
       - name: Notify
         uses: sarisia/actions-status-discord@v1
