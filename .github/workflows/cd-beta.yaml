@@ -81,6 +81,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: develop
+      - name: ubuntu mirror
+        run: sudo sed -i.bak -r 's@http://(jp\.)?archive\.ubuntu\.com/ubuntu/?@https://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
+      - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: sudo apt-get update && sudo apt-get install -y jq
       - name: Deploy to Portainer
         run: |
           # List stacks
