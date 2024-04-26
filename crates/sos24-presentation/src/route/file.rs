@@ -60,7 +60,7 @@ pub async fn handle_get(
         content_type = "multipart/form-data",
     ),
     responses(
-        (status = 200, description = "OK", body = CreatedFile),
+        (status = 201, description = "Created", body = CreatedFile),
         (status = 400, description = "Bad Request", body = Error),
         (status = 401, description = "Unauthorized", body = Error),
         (status = 403, description = "Forbidden", body = Error),
