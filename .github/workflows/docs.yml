@@ -10,7 +10,7 @@ on:
       # https://docs.github.com/actions/using-workflows/events-that-trigger-workflows
       - main
     paths:
-      - "schema/**"
+      - "schema.yml"
   workflow_dispatch:
 
 jobs:
@@ -23,4 +23,4 @@ jobs:
       - name: Run `openapi` command 🚀
         uses: readmeio/rdme@v8
         with:
-          rdme: openapi api.yml --workingDirectory=schema --key=${{ secrets.README_API_KEY }} --id=${{ vars.README_ID }}
+          rdme: openapi schema.yml --key=${{ secrets.README_API_KEY }} --id=${{ vars.README_ID }}
