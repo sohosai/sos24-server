@@ -33,23 +33,6 @@ pub struct CreateNewsCommand {
     pub attributes: Vec<ProjectAttributeDto>,
 }
 
-impl ToEntity for CreateNewsCommand {
-    type Entity = News;
-    type Error = NewsUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(News::create(
-            NewsTitle::new(self.title),
-            NewsBody::new(self.body),
-            self.attachments
-                .into_iter()
-                .map(FileId::try_from)
-                .collect::<Result<_, _>>()?,
-            self.categories.into_entity()?,
-            self.attributes.into_entity()?,
-        ))
-    }
-}
-
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
     pub async fn create(
         &self,
@@ -59,7 +42,18 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_NEWS));
 
-        let news = raw_news.into_entity()?;
+        let news = News::create(
+            NewsTitle::new(raw_news.title),
+            NewsBody::new(raw_news.body),
+            raw_news
+                .attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<_, _>>()?,
+            raw_news.categories.into_entity()?,
+            raw_news.attributes.into_entity()?,
+        );
+
         for file_id in news.attachments() {
             let _ = self
                 .repositories

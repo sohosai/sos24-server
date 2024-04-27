@@ -28,29 +28,6 @@ pub struct CreateFormCommand {
     pub attachments: Vec<String>,
 }
 
-impl ToEntity for CreateFormCommand {
-    type Entity = Form;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(Form::create(
-            FormTitle::new(self.title),
-            FormDescription::new(self.description),
-            DateTime::try_from(self.starts_at)?,
-            DateTime::try_from(self.ends_at)?,
-            self.categories.into_entity()?,
-            self.attributes.into_entity()?,
-            self.items
-                .into_iter()
-                .map(NewFormItemDto::into_entity)
-                .collect::<Result<Vec<_>, _>>()?,
-            self.attachments
-                .into_iter()
-                .map(FileId::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
-        )?)
-    }
-}
-
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn create(
         &self,
@@ -60,7 +37,25 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM));
 
-        let form = raw_form.into_entity()?;
+        let form = Form::create(
+            FormTitle::new(raw_form.title),
+            FormDescription::new(raw_form.description),
+            DateTime::try_from(raw_form.starts_at)?,
+            DateTime::try_from(raw_form.ends_at)?,
+            raw_form.categories.into_entity()?,
+            raw_form.attributes.into_entity()?,
+            raw_form
+                .items
+                .into_iter()
+                .map(NewFormItemDto::into_entity)
+                .collect::<Result<Vec<_>, _>>()?,
+            raw_form
+                .attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
+        )?;
+
         let form_id = form.id().clone();
         self.repositories.form_repository().create(form).await?;
         Ok(form_id.value().to_string())

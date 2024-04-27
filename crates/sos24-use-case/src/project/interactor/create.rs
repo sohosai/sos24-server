@@ -27,23 +27,6 @@ pub struct CreateProjectCommand {
     pub owner_id: String,
 }
 
-impl ToEntity for CreateProjectCommand {
-    type Entity = Project;
-    type Error = ProjectUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(Project::create(
-            ProjectTitle::try_from(self.title).map_err(ProjectUseCaseError::ProjectTitleError)?,
-            ProjectKanaTitle::new(self.kana_title),
-            ProjectGroupName::try_from(self.group_name)
-                .map_err(ProjectUseCaseError::ProjectGroupNameError)?,
-            ProjectKanaGroupName::new(self.kana_group_name),
-            self.category.into_entity()?,
-            self.attributes.into_entity()?,
-            UserId::new(self.owner_id),
-        ))
-    }
-}
-
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn create(
         &self,
@@ -71,7 +54,18 @@ impl<R: Repositories> ProjectUseCase<R> {
                 return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
             }
 
-            let project = raw_project.into_entity()?;
+            let project = Project::create(
+                ProjectTitle::try_from(raw_project.title)
+                    .map_err(ProjectUseCaseError::ProjectTitleError)?,
+                ProjectKanaTitle::new(raw_project.kana_title),
+                ProjectGroupName::try_from(raw_project.group_name)
+                    .map_err(ProjectUseCaseError::ProjectGroupNameError)?,
+                ProjectKanaGroupName::new(raw_project.kana_group_name),
+                raw_project.category.into_entity()?,
+                raw_project.attributes.into_entity()?,
+                UserId::new(raw_project.owner_id),
+            );
+
             let project_id = project.id().clone();
             self.repositories
                 .project_repository()

@@ -5,6 +5,7 @@ use crate::{ensure, impl_value_object};
 use super::{
     actor::Actor,
     common::email::{Email, EmailError},
+    firebase_user::FirebaseUserId,
     permission::{PermissionDeniedError, Permissions},
 };
 
@@ -141,6 +142,13 @@ impl User {
 }
 
 impl_value_object!(UserId(String));
+
+impl From<FirebaseUserId> for UserId {
+    fn from(value: FirebaseUserId) -> Self {
+        Self(value.value())
+    }
+}
+
 impl_value_object!(UserName(String));
 impl_value_object!(UserKanaName(String));
 impl_value_object!(UserPhoneNumber(String)); // ガバガバだが、電話番号が弾かれる事によってjsysの作業が増えることを鑑みて許容する

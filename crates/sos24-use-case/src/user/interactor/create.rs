@@ -8,7 +8,6 @@ use sos24_domain::{
 };
 
 use crate::user::{UserUseCase, UserUseCaseError};
-use crate::ToEntity;
 
 #[derive(Debug)]
 pub struct CreateUserCommand {
@@ -17,21 +16,6 @@ pub struct CreateUserCommand {
     pub email: String,
     pub password: String,
     pub phone_number: String,
-}
-
-impl ToEntity for (String, CreateUserCommand) {
-    type Entity = User;
-    type Error = UserUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        let (id, user) = self;
-        Ok(User::new_general(
-            UserId::new(id),
-            UserName::new(user.name),
-            UserKanaName::new(user.kana_name),
-            UserEmail::try_from(user.email)?,
-            UserPhoneNumber::new(user.phone_number),
-        ))
-    }
 }
 
 impl<R: Repositories> UserUseCase<R> {
@@ -46,7 +30,14 @@ impl<R: Repositories> UserUseCase<R> {
             .create(firebase_user)
             .await?;
 
-        let user = (firebase_user_id.clone().value(), raw_user).into_entity()?;
+        let user = User::new_general(
+            UserId::from(firebase_user_id.clone()),
+            UserName::new(raw_user.name),
+            UserKanaName::new(raw_user.kana_name),
+            UserEmail::try_from(raw_user.email)?,
+            UserPhoneNumber::new(raw_user.phone_number),
+        );
+
         let user_id = user.id().clone();
         let res = self.repositories.user_repository().create(user).await;
 

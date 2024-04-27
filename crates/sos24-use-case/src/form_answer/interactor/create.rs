@@ -1,6 +1,5 @@
 use sos24_domain::entity::form::FormId;
 use sos24_domain::entity::form_answer::{FormAnswer, FormAnswerItemKind};
-use sos24_domain::entity::project::ProjectId;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     ensure,
@@ -12,7 +11,6 @@ use sos24_domain::{
     service::verify_form_answer,
 };
 
-use crate::form::FormUseCaseError;
 use crate::form_answer::dto::FormAnswerItemDto;
 use crate::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError};
 use crate::shared::context::{ContextProvider, OwnedProject};
@@ -22,23 +20,6 @@ use crate::ToEntity;
 pub struct CreateFormAnswerCommand {
     pub form_id: String,
     pub items: Vec<FormAnswerItemDto>,
-}
-
-impl ToEntity for (String, CreateFormAnswerCommand) {
-    type Entity = FormAnswer;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        let (project_id, form_answer) = self;
-        Ok(FormAnswer::create(
-            ProjectId::try_from(project_id)?,
-            FormId::try_from(form_answer.form_id)?,
-            form_answer
-                .items
-                .into_iter()
-                .map(FormAnswerItemDto::into_entity)
-                .collect::<Result<_, _>>()?,
-        ))
-    }
 }
 
 impl<R: Repositories> FormAnswerUseCase<R> {
@@ -56,8 +37,15 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             None => return Err(FormAnswerUseCaseError::NotProjectOwner),
         };
 
-        let project_id_str = project_id.value().to_string();
-        let form_answer = (project_id_str, form_answer).into_entity()?;
+        let form_answer = FormAnswer::create(
+            project_id,
+            FormId::try_from(form_answer.form_id)?,
+            form_answer
+                .items
+                .into_iter()
+                .map(FormAnswerItemDto::into_entity)
+                .collect::<Result<_, _>>()?,
+        );
 
         let project = self
             .repositories
