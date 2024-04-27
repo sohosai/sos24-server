@@ -24,7 +24,7 @@ on:
 jobs:
   push-image:
     if: github.event.pull_request.merged == true || github.event.inputs.deploy-only == 'false'
-    runs-on: [self-hosted, portainer]
+    runs-on: [self-hosted, garm]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -72,7 +72,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    runs-on: [self-hosted, portainer]
+    runs-on: [self-hosted, garm]
     needs: push-image
     if: |
       (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) ||
@@ -81,6 +81,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: develop
+      - name: ubuntu mirror
+        run: sudo sed -i.bak -r 's@http://(jp\.)?archive\.ubuntu\.com/ubuntu/?@https://ftp.udx.icscoe.jp/Linux/ubuntu/@g' /etc/apt/sources.list
+      - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: sudo apt-get update && sudo apt-get install -y jq
       - name: Deploy to Portainer
         run: |
           # List stacks
@@ -122,9 +128,9 @@ jobs:
           VERIFY_SSL: "true"
 
   notify:
-    runs-on: [self-hosted, portainer]
+    runs-on: [self-hosted, garm]
     needs: [push-image, deploy]
-    if: always() && !failure() && !cancelled()
+    if: always() && !cancelled()
     steps:
       - name: Notify
         uses: sarisia/actions-status-discord@v1

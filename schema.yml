@@ -1,0 +1,2865 @@
+openapi: 3.0.3
+info:
+  title: Sohosai Online System
+  description: ''
+  license:
+    name: ''
+  version: 0.1.0
+servers:
+- url: https://api.sos24.sohosai.com
+paths:
+  /files:
+    get:
+      tags:
+      - files
+      summary: ファイル一覧の取得
+      description: ファイル一覧の取得
+      operationId: getFiles
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - files
+      summary: ファイルの作成
+      description: ファイルの作成
+      operationId: postFiles
+      parameters:
+      - name: visibility
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - private
+          - public
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedFile'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /files/export:
+    get:
+      tags:
+      - files
+      summary: ファイル一覧のエクスポート
+      description: ファイル一覧のエクスポート
+      operationId: getFilesExport
+      parameters:
+      - name: project_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      - name: form_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/zip:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /files/{file_id}:
+    get:
+      tags:
+      - files
+      summary: 特定のIDのファイルの取得
+      description: 特定のIDのファイルの取得
+      operationId: getFileById
+      parameters:
+      - name: file_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    delete:
+      tags:
+      - files
+      summary: 特定のIDのファイルの削除
+      description: 特定のIDのファイルの削除
+      operationId: deleteFileById
+      parameters:
+      - name: file_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /form-answers:
+    get:
+      tags:
+      - form-answers
+      summary: 申請回答一覧を取得
+      description: 申請回答一覧を取得
+      operationId: getFormAnswers
+      parameters:
+      - name: project_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      - name: form_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FormAnswerSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - form-answers
+      summary: 申請回答を作成
+      description: 申請回答を作成
+      operationId: postFormAnswer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFormAnswer'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedFormAnswer'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /form-answers/export:
+    get:
+      tags:
+      - form-answers
+      summary: 申請回答一覧のエクスポート
+      description: 申請回答一覧のエクスポート
+      operationId: getFormAnswersExport
+      parameters:
+      - name: form_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      responses:
+        '200':
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /form-answers/{form_answer_id}:
+    get:
+      tags:
+      - form-answers
+      summary: 特定のIDの申請回答を取得
+      description: 特定のIDの申請回答を取得
+      operationId: getFormAnswerById
+      parameters:
+      - name: form_answer_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormAnswer'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    put:
+      tags:
+      - form-answers
+      summary: 特定のIDの申請回答を更新
+      description: 特定のIDの申請回答を更新
+      operationId: putFormAnswerById
+      parameters:
+      - name: form_answer_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFormAnswer'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /forms:
+    get:
+      tags:
+      - forms
+      summary: 申請一覧の取得
+      description: 申請一覧の取得
+      operationId: getForms
+      parameters:
+      - name: project_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+          nullable: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FormSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - forms
+      summary: 申請の作成
+      description: 申請の作成
+      operationId: postForm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateForm'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedForm'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /forms/{form_id}:
+    get:
+      tags:
+      - forms
+      summary: 特定のIDの申請を取得
+      description: 特定のIDの申請を取得
+      operationId: getFormById
+      parameters:
+      - name: form_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Form'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    put:
+      tags:
+      - forms
+      summary: 特定のIDの申請を更新
+      description: 特定のIDの申請を更新
+      operationId: putFormById
+      parameters:
+      - name: form_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    delete:
+      tags:
+      - forms
+      summary: 特定のIDの申請を削除
+      description: 特定のIDの申請を削除
+      operationId: deleteFormById
+      parameters:
+      - name: form_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /health:
+    get:
+      tags:
+      - meta
+      summary: サーバーの状態を確認する
+      description: サーバーの状態を確認する
+      operationId: getHealth
+      responses:
+        '200':
+          description: OK
+      security:
+      - {}
+  /invitations:
+    get:
+      tags:
+      - invitations
+      summary: 招待一覧の取得
+      description: 招待一覧の取得
+      operationId: getInvitations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invitation'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - invitations
+      summary: 招待の作成
+      description: 招待の作成
+      operationId: postInvitation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvitation'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedInvitation'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /invitations/{invitation_id}:
+    get:
+      tags:
+      - invitations
+      summary: 特定のIDの招待の取得
+      description: 特定のIDの招待の取得
+      operationId: getInvitationById
+      parameters:
+      - name: invitation_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - invitations
+      summary: 特定のIDの招待の受諾
+      description: 特定のIDの招待の受諾
+      operationId: postInvitationById
+      parameters:
+      - name: invitation_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    delete:
+      tags:
+      - invitations
+      summary: 特定のIDの招待の削除
+      description: 特定のIDの招待の削除
+      operationId: deleteInvitationById
+      parameters:
+      - name: invitation_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /news:
+    get:
+      tags:
+      - news
+      summary: お知らせ一覧の取得
+      description: お知らせ一覧の取得
+      operationId: getNews
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NewsSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - news
+      summary: お知らせの作成
+      description: お知らせの作成
+      operationId: postNews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNews'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedNews'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /news/{news_id}:
+    get:
+      tags:
+      - news
+      summary: 特定のIDのお知らせの取得
+      description: 特定のIDのお知らせの取得
+      operationId: getNewsById
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/News'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    put:
+      tags:
+      - news
+      summary: 特定のIDのお知らせを更新
+      description: 特定のIDのお知らせを更新
+      operationId: putNewsById
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNews'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    delete:
+      tags:
+      - news
+      summary: 特定のIDのお知らせの削除
+      description: 特定のIDのお知らせの削除
+      operationId: deleteNewsById
+      parameters:
+      - name: news_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /project-application-period:
+    get:
+      tags:
+      - projects
+      summary: 企画募集期間を取得する
+      description: 企画募集期間を取得する
+      operationId: getProjectApplicationPeriod
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectApplicationPeriod'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - {}
+  /projects:
+    get:
+      tags:
+      - projects
+      summary: 企画一覧の取得
+      description: 企画一覧の取得
+      operationId: getProjects
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - projects
+      summary: 企画の作成
+      description: 企画の作成
+      operationId: postProject
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProject'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedProject'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /projects/export:
+    get:
+      tags:
+      - projects
+      summary: 企画一覧のエクスポート
+      description: 企画一覧のエクスポート
+      operationId: getProjectsExport
+      responses:
+        '200':
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /projects/me:
+    get:
+      tags:
+      - projects
+      summary: 自分が企画責任者・副企画責任者になっている企画の取得
+      description: 自分が企画責任者・副企画責任者になっている企画の取得
+      operationId: getMyProject
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /projects/{project_id}:
+    get:
+      tags:
+      - projects
+      summary: 特定のIDの企画の取得
+      description: 特定のIDの企画の取得
+      operationId: getProjectById
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    put:
+      tags:
+      - projects
+      summary: 特定のIDの企画を更新
+      description: 特定のIDの企画を更新
+      operationId: putProjectById
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProject'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    delete:
+      tags:
+      - projects
+      summary: 特定のIDの企画の削除
+      description: 特定のIDの企画の削除
+      operationId: deleteProjectById
+      parameters:
+      - name: project_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /users:
+    get:
+      tags:
+      - users
+      summary: ユーザー一覧の取得
+      description: ユーザー一覧の取得
+      operationId: getUsers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    post:
+      tags:
+      - users
+      summary: ユーザーの作成
+      description: ユーザーの作成
+      operationId: postUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUser'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - {}
+  /users/export:
+    get:
+      tags:
+      - users
+      summary: ユーザー一覧のエクスポート
+      description: ユーザー一覧のエクスポート
+      operationId: getUsersExport
+      responses:
+        '200':
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /users/me:
+    get:
+      tags:
+      - users
+      summary: 自分のユーザーの取得
+      description: 自分のユーザーの取得
+      operationId: getMyUser
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+  /users/{user_id}:
+    get:
+      tags:
+      - users
+      summary: 特定のIDのユーザーの取得
+      description: 特定のIDのユーザーの取得
+      operationId: getUserById
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    put:
+      tags:
+      - users
+      summary: 特定のIDのユーザーの更新
+      description: 特定のIDのユーザーの更新
+      operationId: putUserById
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+    delete:
+      tags:
+      - users
+      summary: 特定のIDのユーザーの削除
+      description: 特定のIDのユーザーの削除
+      operationId: deleteUserById
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - jwt_token: []
+components:
+  schemas:
+    CreateForm:
+      type: object
+      required:
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - categories
+      - attributes
+      - items
+      - attachments
+      properties:
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        description:
+          type: string
+        ends_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewFormItem'
+        starts_at:
+          type: string
+          format: date-time
+        title:
+          type: string
+    CreateFormAnswer:
+      type: object
+      required:
+      - form_id
+      - items
+      properties:
+        form_id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormAnswerItem'
+    CreateInvitation:
+      type: object
+      required:
+      - project_id
+      - position
+      properties:
+        position:
+          $ref: '#/components/schemas/InvitationPosition'
+        project_id:
+          type: string
+          format: uuid
+    CreateNews:
+      type: object
+      required:
+      - title
+      - body
+      - attachments
+      - categories
+      - attributes
+      properties:
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        body:
+          type: string
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        title:
+          type: string
+    CreateProject:
+      type: object
+      required:
+      - title
+      - kana_title
+      - group_name
+      - kana_group_name
+      - category
+      - attributes
+      properties:
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        category:
+          $ref: '#/components/schemas/ProjectCategory'
+        group_name:
+          type: string
+        kana_group_name:
+          type: string
+        kana_title:
+          type: string
+        title:
+          type: string
+    CreateUser:
+      type: object
+      required:
+      - name
+      - kana_name
+      - email
+      - password
+      - phone_number
+      properties:
+        email:
+          type: string
+        kana_name:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+          format: password
+        phone_number:
+          type: string
+    CreatedFile:
+      type: object
+      required:
+      - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    CreatedForm:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    CreatedFormAnswer:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    CreatedInvitation:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    CreatedNews:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    CreatedProject:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    CreatedUser:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+    Error:
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    File:
+      type: object
+      required:
+      - id
+      - url
+      - name
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        owner:
+          type: string
+          format: uuid
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+        url:
+          type: string
+          format: uri
+    FileInfo:
+      type: object
+      required:
+      - id
+      - filename
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        filename:
+          type: string
+        id:
+          type: string
+          format: uuid
+        owner:
+          type: string
+          format: uuid
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+    Form:
+      type: object
+      required:
+      - id
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - categories
+      - attributes
+      - items
+      - attachments
+      - created_at
+      - updated_at
+      properties:
+        answer_id:
+          type: string
+          format: uuid
+          nullable: true
+        answered_at:
+          type: string
+          format: date-time
+          nullable: true
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        description:
+          type: string
+        ends_at:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItem'
+        starts_at:
+          type: string
+          format: date-time
+        title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    FormAnswer:
+      type: object
+      required:
+      - id
+      - project_id
+      - project_title
+      - form_id
+      - form_title
+      - items
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        form_id:
+          type: string
+          format: uuid
+        form_title:
+          type: string
+        id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormAnswerItem'
+        project_id:
+          type: string
+          format: uuid
+        project_title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    FormAnswerItem:
+      oneOf:
+      - type: object
+        required:
+        - item_id
+        - value
+        - type
+        properties:
+          item_id:
+            type: string
+            format: uuid
+          type:
+            type: string
+            enum:
+            - string
+          value:
+            type: string
+      - type: object
+        required:
+        - item_id
+        - value
+        - type
+        properties:
+          item_id:
+            type: string
+            format: uuid
+          type:
+            type: string
+            enum:
+            - int
+          value:
+            type: integer
+            format: int32
+      - type: object
+        required:
+        - item_id
+        - value
+        - type
+        properties:
+          item_id:
+            type: string
+            format: uuid
+          type:
+            type: string
+            enum:
+            - choose_one
+          value:
+            type: string
+      - type: object
+        required:
+        - item_id
+        - value
+        - type
+        properties:
+          item_id:
+            type: string
+            format: uuid
+          type:
+            type: string
+            enum:
+            - choose_many
+          value:
+            type: array
+            items:
+              type: string
+      - type: object
+        required:
+        - item_id
+        - value
+        - type
+        properties:
+          item_id:
+            type: string
+            format: uuid
+          type:
+            type: string
+            enum:
+            - file
+          value:
+            type: array
+            items:
+              type: string
+              format: uuid
+      discriminator:
+        propertyName: type
+    FormAnswerSummary:
+      type: object
+      required:
+      - id
+      - project_id
+      - project_title
+      - form_id
+      - form_title
+      - updated_at
+      properties:
+        form_id:
+          type: string
+          format: uuid
+        form_title:
+          type: string
+        id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+        project_title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    FormItem:
+      allOf:
+      - $ref: '#/components/schemas/FormItemKind'
+      - type: object
+        required:
+        - id
+        - name
+        - required
+        properties:
+          description:
+            type: string
+            nullable: true
+          id:
+            type: string
+            format: uuid
+          name:
+            type: string
+          required:
+            type: boolean
+    FormItemKind:
+      oneOf:
+      - type: object
+        required:
+        - allow_newline
+        - type
+        properties:
+          allow_newline:
+            type: boolean
+          max_length:
+            type: integer
+            format: int32
+            nullable: true
+          min_length:
+            type: integer
+            format: int32
+            nullable: true
+          type:
+            type: string
+            enum:
+            - string
+      - type: object
+        required:
+        - type
+        properties:
+          max:
+            type: integer
+            format: int32
+            nullable: true
+          min:
+            type: integer
+            format: int32
+            nullable: true
+          type:
+            type: string
+            enum:
+            - int
+      - type: object
+        required:
+        - options
+        - type
+        properties:
+          options:
+            type: array
+            items:
+              type: string
+          type:
+            type: string
+            enum:
+            - choose_one
+      - type: object
+        required:
+        - options
+        - type
+        properties:
+          max_selection:
+            type: integer
+            format: int32
+            nullable: true
+          min_selection:
+            type: integer
+            format: int32
+            nullable: true
+          options:
+            type: array
+            items:
+              type: string
+          type:
+            type: string
+            enum:
+            - choose_many
+      - type: object
+        required:
+        - type
+        properties:
+          extensions:
+            type: array
+            items:
+              type: string
+            nullable: true
+          limit:
+            type: integer
+            format: int32
+            nullable: true
+          type:
+            type: string
+            enum:
+            - file
+      discriminator:
+        propertyName: type
+    FormSummary:
+      type: object
+      required:
+      - id
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - categories
+      - attributes
+      - updated_at
+      properties:
+        answer_id:
+          type: string
+          format: uuid
+          nullable: true
+        answered_at:
+          type: string
+          format: date-time
+          nullable: true
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        description:
+          type: string
+        ends_at:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        starts_at:
+          type: string
+          format: date-time
+        title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    Invitation:
+      type: object
+      required:
+      - id
+      - inviter
+      - inviter_name
+      - project_id
+      - project_title
+      - position
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        id:
+          type: string
+          format: uuid
+        inviter:
+          type: string
+        inviter_name:
+          type: string
+        position:
+          $ref: '#/components/schemas/InvitationPosition'
+        project_id:
+          type: string
+          format: uuid
+        project_title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        used_by:
+          type: string
+          nullable: true
+    InvitationPosition:
+      type: string
+      enum:
+      - owner
+      - sub_owner
+    NewFormItem:
+      allOf:
+      - $ref: '#/components/schemas/FormItemKind'
+      - type: object
+        required:
+        - name
+        - required
+        properties:
+          description:
+            type: string
+            nullable: true
+          name:
+            type: string
+          required:
+            type: boolean
+    News:
+      type: object
+      required:
+      - id
+      - title
+      - body
+      - attachments
+      - categories
+      - attributes
+      - created_at
+      - updated_at
+      properties:
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        body:
+          type: string
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    NewsSummary:
+      type: object
+      required:
+      - id
+      - title
+      - categories
+      - attributes
+      - updated_at
+      properties:
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    Project:
+      type: object
+      required:
+      - id
+      - index
+      - title
+      - kana_title
+      - group_name
+      - kana_group_name
+      - category
+      - attributes
+      - owner_id
+      - owner_name
+      - owner_email
+      - created_at
+      - updated_at
+      properties:
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        category:
+          $ref: '#/components/schemas/ProjectCategory'
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        group_name:
+          type: string
+        id:
+          type: string
+          format: uuid
+        index:
+          type: integer
+          format: int32
+        kana_group_name:
+          type: string
+        kana_title:
+          type: string
+        owner_email:
+          type: string
+        owner_id:
+          type: string
+        owner_name:
+          type: string
+        remarks:
+          type: string
+          nullable: true
+        sub_owner_email:
+          type: string
+          nullable: true
+        sub_owner_id:
+          type: string
+          nullable: true
+        sub_owner_name:
+          type: string
+          nullable: true
+        title:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+    ProjectApplicationPeriod:
+      type: object
+      required:
+      - start_at
+      - end_at
+      properties:
+        end_at:
+          type: string
+          format: date-time
+        start_at:
+          type: string
+          format: date-time
+    ProjectAttribute:
+      type: string
+      enum:
+      - academic
+      - art
+      - official
+      - inside
+      - outside
+    ProjectCategory:
+      type: string
+      enum:
+      - general
+      - foods_with_kitchen
+      - foods_without_kitchen
+      - foods_without_cooking
+      - stage_1a
+      - stage_university_hall
+      - stage_united
+    ProjectSummary:
+      type: object
+      required:
+      - id
+      - index
+      - title
+      - category
+      - attributes
+      - owner_id
+      - owner_name
+      - owner_email
+      properties:
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        category:
+          $ref: '#/components/schemas/ProjectCategory'
+        id:
+          type: string
+          format: uuid
+        index:
+          type: integer
+          format: int32
+        owner_email:
+          type: string
+        owner_id:
+          type: string
+        owner_name:
+          type: string
+        title:
+          type: string
+    UpdateForm:
+      type: object
+      required:
+      - title
+      - description
+      - starts_at
+      - ends_at
+      - categories
+      - attributes
+      - items
+      - attachments
+      properties:
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        description:
+          type: string
+        ends_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewFormItem'
+        starts_at:
+          type: string
+          format: date-time
+        title:
+          type: string
+    UpdateFormAnswer:
+      type: object
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormAnswerItem'
+    UpdateNews:
+      type: object
+      required:
+      - title
+      - body
+      - attachments
+      - categories
+      - attributes
+      properties:
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uuid
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        body:
+          type: string
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectCategory'
+        title:
+          type: string
+    UpdateProject:
+      type: object
+      required:
+      - title
+      - kana_title
+      - group_name
+      - kana_group_name
+      - category
+      - attributes
+      properties:
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAttribute'
+        category:
+          $ref: '#/components/schemas/ProjectCategory'
+        group_name:
+          type: string
+        kana_group_name:
+          type: string
+        kana_title:
+          type: string
+        remarks:
+          type: string
+          nullable: true
+        title:
+          type: string
+    UpdateUser:
+      type: object
+      required:
+      - name
+      - kana_name
+      - email
+      - phone_number
+      - role
+      properties:
+        email:
+          type: string
+        kana_name:
+          type: string
+        name:
+          type: string
+        phone_number:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+    User:
+      type: object
+      required:
+      - id
+      - name
+      - kana_name
+      - email
+      - phone_number
+      - role
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+        email:
+          type: string
+        id:
+          type: string
+        kana_name:
+          type: string
+        name:
+          type: string
+        owned_project_id:
+          type: string
+          format: uuid
+          nullable: true
+        owned_project_title:
+          type: string
+          nullable: true
+        phone_number:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        updated_at:
+          type: string
+          format: date-time
+    UserRole:
+      type: string
+      enum:
+      - administrator
+      - committee_operator
+      - committee
+      - general
+    UserSummary:
+      type: object
+      required:
+      - id
+      - name
+      - email
+      - role
+      properties:
+        email:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+  securitySchemes:
+    jwt_token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: projects
+  description: 企画関連の操作
+- name: users
+  description: ユーザー関連の操作
+- name: news
+  description: お知らせ関連の操作
+- name: files
+  description: ファイル関連の操作
+- name: forms
+  description: 申請関連の操作
+- name: form-answers
+  description: 申請回答関連の操作
+- name: invitations
+  description: 招待関連の操作
+- name: meta
+  description: 状態確認関連の操作

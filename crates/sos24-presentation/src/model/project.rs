@@ -6,8 +6,9 @@ use sos24_use_case::dto::{
     project::{CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto},
     user::UserDto,
 };
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateProject {
     title: String,
     kana_title: String,
@@ -40,12 +41,13 @@ impl ConvertToCreateProjectDto for (CreateProject, String) {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct CreatedProject {
+    #[schema(format = "uuid")]
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UpdateProject {
     title: String,
     kana_title: String,
@@ -80,8 +82,9 @@ impl ConvertToUpdateProjectDto for (UpdateProject, String) {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct Project {
+    #[schema(format = "uuid")]
     id: String,
     index: i32,
     title: String,
@@ -97,8 +100,11 @@ pub struct Project {
     sub_owner_name: Option<String>,
     sub_owner_email: Option<String>,
     remarks: Option<String>,
+    #[schema(format = "date-time")]
     created_at: String,
+    #[schema(format = "date-time")]
     updated_at: String,
+    #[schema(format = "date-time")]
     deleted_at: Option<String>,
 }
 
@@ -189,8 +195,9 @@ impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct ProjectSummary {
+    #[schema(format = "uuid")]
     id: String,
     index: i32,
     title: String,
@@ -220,7 +227,7 @@ impl From<ProjectDto> for ProjectSummary {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ProjectCategory {
     General,
@@ -261,7 +268,7 @@ impl From<ProjectCategoryDto> for ProjectCategory {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ProjectAttribute {
     Academic,

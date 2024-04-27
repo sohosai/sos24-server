@@ -1,5 +1,14 @@
 use axum::{http::StatusCode, response::IntoResponse};
 
+/// サーバーの状態を確認する
+#[utoipa::path(
+    get,
+    path = "/health",
+    operation_id = "getHealth",
+    tag = "meta",
+    responses((status = 200, description = "OK")),
+    security(()),
+)]
 pub async fn handle_get() -> Result<impl IntoResponse, StatusCode> {
     Ok("OK")
 }

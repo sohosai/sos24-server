@@ -14,6 +14,19 @@ use crate::model::news::{
 };
 use crate::module::Modules;
 
+/// お知らせ一覧の取得
+#[utoipa::path(
+    get,
+    path = "/news",
+    operation_id = "getNews",
+    tag = "news",
+    responses(
+        (status = 200, description = "OK", body = Vec<NewsSummary>),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -31,6 +44,23 @@ pub async fn handle_get(
         })
 }
 
+/// お知らせの作成
+#[utoipa::path(
+    post,
+    path = "/news",
+    operation_id = "postNews",
+    tag = "news",
+    request_body(content = CreateNews),
+    responses(
+        (status = 201, description = "Created", body = CreatedNews),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -45,6 +75,21 @@ pub async fn handle_post(
         })
 }
 
+/// 特定のIDのお知らせの取得
+#[utoipa::path(
+    get,
+    path = "/news/{news_id}",
+    operation_id = "getNewsById",
+    tag = "news",
+    params(("news_id" = String, Path, format="uuid")),
+    responses(
+        (status = 200, description = "OK", body = News),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,
@@ -60,6 +105,22 @@ pub async fn handle_get_id(
     }
 }
 
+/// 特定のIDのお知らせの削除
+#[utoipa::path(
+    delete,
+    path = "/news/{news_id}",
+    operation_id = "deleteNewsById",
+    tag = "news",
+    params(("news_id" = String, Path, format="uuid")),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_delete_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,
@@ -72,6 +133,25 @@ pub async fn handle_delete_id(
     })
 }
 
+/// 特定のIDのお知らせを更新
+#[utoipa::path(
+    put,
+    path = "/news/{news_id}",
+    operation_id = "putNewsById",
+    tag = "news",
+    params(("news_id" = String, Path, format="uuid")),
+    request_body(content = UpdateNews),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_put_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,

@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::dto::invitation::{CreateInvitationDto, InvitationDto, InvitationPositionDto};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateInvitation {
+    #[schema(format = "uuid")]
     project_id: String,
     position: InvitationPosition,
 }
@@ -23,22 +25,28 @@ impl ConvertToCreateInvitationDto for (CreateInvitation, String) {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct CreatedInvitation {
+    #[schema(format = "uuid")]
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct Invitation {
+    #[schema(format = "uuid")]
     id: String,
     inviter: String,
     inviter_name: String,
+    #[schema(format = "uuid")]
     project_id: String,
     project_title: String,
     position: InvitationPosition,
     used_by: Option<String>,
+    #[schema(format = "date-time")]
     created_at: String,
+    #[schema(format = "date-time")]
     updated_at: String,
+    #[schema(format = "date-time")]
     deleted_at: Option<String>,
 }
 
@@ -59,7 +67,7 @@ impl From<InvitationDto> for Invitation {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum InvitationPosition {
     Owner,

@@ -22,6 +22,20 @@ use crate::{
     module::Modules,
 };
 
+/// ユーザー一覧の取得
+#[utoipa::path(
+    get,
+    path = "/users",
+    operation_id = "getUsers",
+    tag = "users",
+    responses(
+        (status = 200, description = "OK", body = Vec<UserSummary>),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -39,6 +53,20 @@ pub async fn handle_get(
         })
 }
 
+/// ユーザー一覧のエクスポート
+#[utoipa::path(
+    get,
+    path = "/users/export",
+    operation_id = "getUsersExport",
+    tag = "users",
+    responses(
+        (status = 200, description = "OK", content_type = "text/csv", body = String),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_export(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -74,6 +102,21 @@ pub async fn handle_export(
         })
 }
 
+/// ユーザーの作成
+#[utoipa::path(
+    post,
+    path = "/users",
+    operation_id = "postUser",
+    tag = "users",
+    request_body(content = CreateUser),
+    responses(
+        (status = 201, description = "Created", body = CreatedUser),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(()),
+)]
 pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Json(raw_user): Json<CreateUser>,
@@ -87,6 +130,21 @@ pub async fn handle_post(
         })
 }
 
+/// 特定のIDのユーザーの取得
+#[utoipa::path(
+    get,
+    path = "/users/{user_id}",
+    operation_id = "getUserById",
+    tag = "users",
+    responses(
+        (status = 200, description = "OK", body = User),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,
@@ -102,6 +160,19 @@ pub async fn handle_get_id(
     }
 }
 
+/// 自分のユーザーの取得
+#[utoipa::path(
+    get,
+    path = "/users/me",
+    operation_id = "getMyUser",
+    tag = "users",
+    responses(
+        (status = 200, description = "OK", body = User),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get_me(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -119,6 +190,22 @@ pub async fn handle_get_me(
     }
 }
 
+/// 特定のIDのユーザーの削除
+#[utoipa::path(
+    delete,
+    path = "/users/{user_id}",
+    operation_id = "deleteUserById",
+    tag = "users",
+    params(("user_id" = String, Path,)),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_delete_id(
     Path(id): Path<String>,
     Extension(ctx): Extension<Context>,
@@ -131,6 +218,25 @@ pub async fn handle_delete_id(
     })
 }
 
+/// 特定のIDのユーザーの更新
+#[utoipa::path(
+    put,
+    path = "/users/{user_id}",
+    operation_id = "putUserById",
+    tag = "users",
+    params(("user_id" = String, Path,)),
+    request_body(content = UpdateUser),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 404, description = "Not Found", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_put_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,

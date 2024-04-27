@@ -11,13 +11,27 @@ use tokio_util::io::ReaderStream;
 use sos24_use_case::dto::file::CreateFileDto;
 
 use crate::context::Context;
-use crate::model::file::{CreatedFile, ExportFileQuery};
+use crate::model::file::{CreateFile, CreatedFile, ExportFileQuery};
 use crate::{
     error::AppError,
     model::file::{CreateFileQuery, File, FileInfo, Visibility},
     module::Modules,
 };
 
+/// ファイル一覧の取得
+#[utoipa::path(
+    get,
+    path = "/files",
+    operation_id = "getFiles",
+    tag = "files",
+    responses(
+        (status = 200, description = "OK", body = Vec<FileInfo>),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get(
     State(modules): State<Arc<Modules>>,
     Extension(ctx): Extension<Context>,
@@ -34,6 +48,27 @@ pub async fn handle_get(
         })
 }
 
+/// ファイルの作成
+#[utoipa::path(
+    post,
+    path = "/files",
+    operation_id = "postFiles",
+    tag = "files",
+    params(CreateFileQuery),
+    request_body(
+        content = inline(CreateFile),
+        content_type = "multipart/form-data",
+    ),
+    responses(
+        (status = 201, description = "Created", body = CreatedFile),
+        (status = 400, description = "Bad Request", body = Error),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 422, description = "Unprocessable Entity", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_post(
     Query(query): Query<CreateFileQuery>,
     State(modules): State<Arc<Modules>>,
@@ -133,6 +168,21 @@ pub async fn handle_post(
     ))
 }
 
+/// ファイル一覧のエクスポート
+#[utoipa::path(
+    get,
+    path = "/files/export",
+    operation_id = "getFilesExport",
+    tag = "files",
+    params(ExportFileQuery),
+    responses(
+        (status = 200, description = "OK", content_type = "application/zip", body = String),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_export(
     State(modules): State<Arc<Modules>>,
     Query(query): Query<ExportFileQuery>,
@@ -198,6 +248,21 @@ pub async fn handle_export(
     }
 }
 
+/// 特定のIDのファイルの取得
+#[utoipa::path(
+    get,
+    path = "/files/{file_id}",
+    operation_id = "getFileById",
+    tag = "files",
+    params(("file_id" = String, Path, format = "uuid")),
+    responses(
+        (status = 200, description = "OK", body = File),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_get_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
@@ -216,6 +281,21 @@ pub async fn handle_get_id(
     }
 }
 
+/// 特定のIDのファイルの削除
+#[utoipa::path(
+    delete,
+    path = "/files/{file_id}",
+    operation_id = "deleteFileById",
+    tag = "files",
+    params(("file_id" = String, Path, format = "uuid")),
+    responses(
+        (status = 200, description = "OK"),
+        (status = 401, description = "Unauthorized", body = Error),
+        (status = 403, description = "Forbidden", body = Error),
+        (status = 500, description = "Internal Server Error", body = Error),
+    ),
+    security(("jwt_token" = [])),
+)]
 pub async fn handle_delete_id(
     Path(id): Path<String>,
     State(modules): State<Arc<Modules>>,
