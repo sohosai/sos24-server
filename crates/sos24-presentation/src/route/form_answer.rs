@@ -11,8 +11,7 @@ use axum::{
 };
 use csv::Writer;
 use percent_encoding::NON_ALPHANUMERIC;
-
-use sos24_use_case::dto::form_answer::CreateFormAnswerDto;
+use sos24_use_case::form_answer::interactor::create::CreateFormAnswerCommand;
 
 use crate::context::Context;
 use crate::csv::CsvSerializationError;
@@ -108,7 +107,7 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     Json(raw_form_answer): Json<CreateFormAnswer>,
 ) -> Result<impl IntoResponse, AppError> {
-    let form_answer = CreateFormAnswerDto::from(raw_form_answer);
+    let form_answer = CreateFormAnswerCommand::from(raw_form_answer);
     let res = modules
         .form_answer_use_case()
         .create(&ctx, form_answer)

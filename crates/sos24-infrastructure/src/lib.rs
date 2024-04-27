@@ -12,7 +12,7 @@ use s3::S3;
 use sendgrid::email::SendGridEmailSender;
 use sendgrid::SendGrid;
 use sos24_domain::repository::Repositories;
-use sos24_use_case::adapter::Adapters;
+use sos24_use_case::shared::adapter::Adapters;
 
 use crate::postgresql::news::PgNewsRepository;
 use crate::postgresql::Postgresql;

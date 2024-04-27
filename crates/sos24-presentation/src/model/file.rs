@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::file::{FileDto, FileInfoDto};
+use sos24_use_case::file::dto::{FileDto, FileInfoDto};
 use utoipa::{IntoParams, ToSchema};
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]

@@ -4,8 +4,7 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{Extension, Json};
-
-use sos24_use_case::dto::news::CreateNewsDto;
+use sos24_use_case::news::interactor::create::CreateNewsCommand;
 
 use crate::context::Context;
 use crate::error::AppError;
@@ -66,7 +65,7 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     Json(raw_news): Json<CreateNews>,
 ) -> Result<impl IntoResponse, AppError> {
-    let news = CreateNewsDto::from(raw_news);
+    let news = CreateNewsCommand::from(raw_news);
     let res = modules.news_use_case().create(&ctx, news).await;
     res.map(|id| (StatusCode::CREATED, Json(CreatedNews { id })))
         .map_err(|err| {

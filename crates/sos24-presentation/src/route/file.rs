@@ -6,9 +6,8 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
 use percent_encoding::NON_ALPHANUMERIC;
+use sos24_use_case::file::interactor::create::CreateFileCommand;
 use tokio_util::io::ReaderStream;
-
-use sos24_use_case::dto::file::CreateFileDto;
 
 use crate::context::Context;
 use crate::model::file::{CreateFile, CreatedFile, ExportFileQuery};
@@ -75,7 +74,7 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
-    let mut filelist: Vec<CreateFileDto> = vec![];
+    let mut filelist: Vec<CreateFileCommand> = vec![];
 
     let owner: Option<String> = match query.visibility {
         Visibility::Private => Some(
@@ -122,11 +121,11 @@ pub async fn handle_post(
                         e.body_text(),
                     ))?,
                 };
-                filelist.push(CreateFileDto::new(
+                filelist.push(CreateFileCommand {
                     filename,
-                    filebytes.into(),
-                    owner.clone(),
-                ));
+                    file: filebytes.into(),
+                    owner: owner.clone(),
+                });
             }
             _ => {
                 return Err(AppError::new(

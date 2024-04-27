@@ -1,7 +1,10 @@
 use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::user::{CreateUserDto, UpdateUserDto, UserDto, UserRoleDto};
+use sos24_use_case::user::{
+    dto::{UserDto, UserRoleDto},
+    interactor::{create::CreateUserCommand, update::UpdateUserCommand},
+};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -14,15 +17,15 @@ pub struct CreateUser {
     pub phone_number: String,
 }
 
-impl From<CreateUser> for CreateUserDto {
+impl From<CreateUser> for CreateUserCommand {
     fn from(value: CreateUser) -> Self {
-        CreateUserDto::new(
-            value.name,
-            value.kana_name,
-            value.email,
-            value.password,
-            value.phone_number,
-        )
+        CreateUserCommand {
+            name: value.name,
+            kana_name: value.kana_name,
+            email: value.email,
+            password: value.password,
+            phone_number: value.phone_number,
+        }
     }
 }
 
@@ -41,20 +44,20 @@ pub struct UpdateUser {
 }
 
 pub trait ConvertToUpdateUserDto {
-    fn to_update_user_dto(self) -> UpdateUserDto;
+    fn to_update_user_dto(self) -> UpdateUserCommand;
 }
 
 impl ConvertToUpdateUserDto for (String, UpdateUser) {
-    fn to_update_user_dto(self) -> UpdateUserDto {
+    fn to_update_user_dto(self) -> UpdateUserCommand {
         let (id, user) = self;
-        UpdateUserDto::new(
+        UpdateUserCommand {
             id,
-            user.name,
-            user.kana_name,
-            user.email,
-            user.phone_number,
-            UserRoleDto::from(user.role),
-        )
+            name: user.name,
+            kana_name: user.kana_name,
+            email: user.email,
+            phone_number: user.phone_number,
+            role: UserRoleDto::from(user.role),
+        }
     }
 }
 

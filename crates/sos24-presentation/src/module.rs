@@ -4,8 +4,8 @@ use std::sync::Arc;
 
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
-use sos24_use_case::interactor::file::FileUseCase;
-use sos24_use_case::interactor::{
+use sos24_use_case::file::FileUseCase;
+use sos24_use_case::{
     form::FormUseCase, form_answer::FormAnswerUseCase, invitation::InvitationUseCase,
     news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
 };
@@ -19,7 +19,7 @@ mod module {
 #[cfg(test)]
 mod module {
     pub type Repositories = sos24_domain::test::repository::MockRepositories;
-    pub type Adapters = sos24_use_case::adapter::MockAdapters;
+    pub type Adapters = sos24_use_case::shared::adapter::MockAdapters;
 }
 
 pub struct Modules {
@@ -118,7 +118,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
 #[cfg(test)]
 pub async fn new_test(
     repositories: sos24_domain::test::repository::MockRepositories,
-    adapters: sos24_use_case::adapter::MockAdapters,
+    adapters: sos24_use_case::shared::adapter::MockAdapters,
 ) -> anyhow::Result<Modules> {
     let repositories = Arc::new(repositories);
     let adapters = Arc::new(adapters);

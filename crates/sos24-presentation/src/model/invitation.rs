@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::invitation::{CreateInvitationDto, InvitationDto, InvitationPositionDto};
+use sos24_use_case::invitation::{
+    dto::{InvitationDto, InvitationPositionDto},
+    interactor::find_or_create::CreateInvitationCommand,
+};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -11,13 +14,13 @@ pub struct CreateInvitation {
 }
 
 pub trait ConvertToCreateInvitationDto {
-    fn to_create_invitation_dto(self) -> CreateInvitationDto;
+    fn to_create_invitation_dto(self) -> CreateInvitationCommand;
 }
 
 impl ConvertToCreateInvitationDto for (CreateInvitation, String) {
-    fn to_create_invitation_dto(self) -> CreateInvitationDto {
+    fn to_create_invitation_dto(self) -> CreateInvitationCommand {
         let (invitation, inviter) = self;
-        CreateInvitationDto {
+        CreateInvitationCommand {
             inviter,
             project_id: invitation.project_id,
             position: InvitationPositionDto::from(invitation.position),

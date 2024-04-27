@@ -1,10 +1,15 @@
 use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::project::ProjectAttributeDto;
-use sos24_use_case::dto::{
-    project::{CreateProjectDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto},
-    user::UserDto,
+use sos24_use_case::{
+    project::{
+        dto::{
+            ProjectAttributeDto, ProjectAttributesDto, ProjectCategoriesDto, ProjectCategoryDto,
+            ProjectDto,
+        },
+        interactor::{create::CreateProjectCommand, update::UpdateProjectCommand},
+    },
+    user::dto::UserDto,
 };
 use utoipa::ToSchema;
 
@@ -15,29 +20,25 @@ pub struct CreateProject {
     group_name: String,
     kana_group_name: String,
     category: ProjectCategory,
-    attributes: Vec<ProjectAttribute>,
+    attributes: ProjectAttributes,
 }
 
 pub trait ConvertToCreateProjectDto {
-    fn to_create_project_dto(self) -> CreateProjectDto;
+    fn to_create_project_dto(self) -> CreateProjectCommand;
 }
 
 impl ConvertToCreateProjectDto for (CreateProject, String) {
-    fn to_create_project_dto(self) -> CreateProjectDto {
+    fn to_create_project_dto(self) -> CreateProjectCommand {
         let (project, owner_id) = self;
-        CreateProjectDto::new(
-            project.title,
-            project.kana_title,
-            project.group_name,
-            project.kana_group_name,
-            ProjectCategoryDto::from(project.category),
-            project
-                .attributes
-                .into_iter()
-                .map(ProjectAttributeDto::from)
-                .collect(),
+        CreateProjectCommand {
+            title: project.title,
+            kana_title: project.kana_title,
+            group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
+            category: ProjectCategoryDto::from(project.category),
+            attributes: ProjectAttributesDto::from(project.attributes),
             owner_id,
-        )
+        }
     }
 }
 
@@ -54,31 +55,27 @@ pub struct UpdateProject {
     group_name: String,
     kana_group_name: String,
     category: ProjectCategory,
-    attributes: Vec<ProjectAttribute>,
+    attributes: ProjectAttributes,
     remarks: Option<String>,
 }
 
 pub trait ConvertToUpdateProjectDto {
-    fn to_update_project_dto(self) -> UpdateProjectDto;
+    fn to_update_project_dto(self) -> UpdateProjectCommand;
 }
 
 impl ConvertToUpdateProjectDto for (UpdateProject, String) {
-    fn to_update_project_dto(self) -> UpdateProjectDto {
+    fn to_update_project_dto(self) -> UpdateProjectCommand {
         let (project, id) = self;
-        UpdateProjectDto::new(
+        UpdateProjectCommand {
             id,
-            project.title,
-            project.kana_title,
-            project.group_name,
-            project.kana_group_name,
-            ProjectCategoryDto::from(project.category),
-            project
-                .attributes
-                .into_iter()
-                .map(ProjectAttributeDto::from)
-                .collect(),
-            project.remarks,
-        )
+            title: project.title,
+            kana_title: project.kana_title,
+            group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
+            category: ProjectCategoryDto::from(project.category),
+            attributes: ProjectAttributesDto::from(project.attributes),
+            remarks: project.remarks,
+        }
     }
 }
 
@@ -92,7 +89,7 @@ pub struct Project {
     group_name: String,
     kana_group_name: String,
     category: ProjectCategory,
-    attributes: Vec<ProjectAttribute>,
+    attributes: ProjectAttributes,
     owner_id: String,
     owner_name: String,
     owner_email: String,
@@ -118,11 +115,7 @@ impl From<ProjectDto> for Project {
             group_name: project.group_name,
             kana_group_name: project.kana_group_name,
             category: ProjectCategory::from(project.category),
-            attributes: project
-                .attributes
-                .into_iter()
-                .map(ProjectAttribute::from)
-                .collect(),
+            attributes: ProjectAttributes::from(project.attributes),
             owner_id: project.owner_id,
             owner_name: project.owner_name,
             owner_email: project.owner_email,
@@ -185,6 +178,7 @@ impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
             category: project.category.to_string(),
             attributes: project
                 .attributes
+                .0
                 .iter()
                 .map(ToString::to_string)
                 .collect::<Vec<String>>()
@@ -202,7 +196,7 @@ pub struct ProjectSummary {
     index: i32,
     title: String,
     category: ProjectCategory,
-    attributes: Vec<ProjectAttribute>,
+    attributes: ProjectAttributes,
     owner_id: String,
     owner_name: String,
     owner_email: String,
@@ -215,11 +209,7 @@ impl From<ProjectDto> for ProjectSummary {
             index: project.index,
             title: project.title,
             category: ProjectCategory::from(project.category),
-            attributes: project
-                .attributes
-                .into_iter()
-                .map(ProjectAttribute::from)
-                .collect(),
+            attributes: ProjectAttributes::from(project.attributes),
             owner_id: project.owner_id,
             owner_name: project.owner_name,
             owner_email: project.owner_email,
@@ -269,6 +259,21 @@ impl From<ProjectCategoryDto> for ProjectCategory {
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct ProjectCategories(pub Vec<ProjectCategory>);
+
+impl From<ProjectCategories> for ProjectCategoriesDto {
+    fn from(value: ProjectCategories) -> Self {
+        ProjectCategoriesDto(value.0.into_iter().map(ProjectCategoryDto::from).collect())
+    }
+}
+
+impl From<ProjectCategoriesDto> for ProjectCategories {
+    fn from(value: ProjectCategoriesDto) -> Self {
+        ProjectCategories(value.0.into_iter().map(ProjectCategory::from).collect())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ProjectAttribute {
     Academic,
@@ -299,5 +304,20 @@ impl From<ProjectAttributeDto> for ProjectAttribute {
             ProjectAttributeDto::Inside => ProjectAttribute::Inside,
             ProjectAttributeDto::Outside => ProjectAttribute::Outside,
         }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct ProjectAttributes(pub Vec<ProjectAttribute>);
+
+impl From<ProjectAttributes> for ProjectAttributesDto {
+    fn from(value: ProjectAttributes) -> Self {
+        ProjectAttributesDto(value.0.into_iter().map(ProjectAttributeDto::from).collect())
+    }
+}
+
+impl From<ProjectAttributesDto> for ProjectAttributes {
+    fn from(value: ProjectAttributesDto) -> Self {
+        ProjectAttributes(value.0.into_iter().map(ProjectAttribute::from).collect())
     }
 }
