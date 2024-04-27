@@ -6,23 +6,6 @@ use sos24_domain::entity::{
 
 use crate::FromEntity;
 
-#[derive(Debug)]
-pub struct CreateFileDto {
-    pub filename: String,
-    pub file: Vec<u8>,
-    pub owner: Option<String>,
-}
-
-impl CreateFileDto {
-    pub fn new(filename: String, file: Vec<u8>, owner: Option<String>) -> Self {
-        Self {
-            filename,
-            file,
-            owner,
-        }
-    }
-}
-
 #[derive(Debug, PartialEq, Eq)]
 pub struct FileDto {
     pub id: String,

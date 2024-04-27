@@ -1,7 +1,7 @@
 use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::user::dto::{CreateUserDto, UpdateUserDto, UserDto, UserRoleDto};
+use sos24_use_case::user::dto::{CreateUserCommand, UpdateUserCommand, UserDto, UserRoleDto};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -14,9 +14,9 @@ pub struct CreateUser {
     pub phone_number: String,
 }
 
-impl From<CreateUser> for CreateUserDto {
+impl From<CreateUser> for CreateUserCommand {
     fn from(value: CreateUser) -> Self {
-        CreateUserDto::new(
+        CreateUserCommand::new(
             value.name,
             value.kana_name,
             value.email,
@@ -41,13 +41,13 @@ pub struct UpdateUser {
 }
 
 pub trait ConvertToUpdateUserDto {
-    fn to_update_user_dto(self) -> UpdateUserDto;
+    fn to_update_user_dto(self) -> UpdateUserCommand;
 }
 
 impl ConvertToUpdateUserDto for (String, UpdateUser) {
-    fn to_update_user_dto(self) -> UpdateUserDto {
+    fn to_update_user_dto(self) -> UpdateUserCommand {
         let (id, user) = self;
-        UpdateUserDto::new(
+        UpdateUserCommand::new(
             id,
             user.name,
             user.kana_name,

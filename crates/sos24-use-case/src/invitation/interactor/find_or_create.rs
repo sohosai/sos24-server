@@ -1,6 +1,6 @@
 use sos24_domain::{
     ensure,
-    entity::permission::Permissions,
+    entity::{invitation::Invitation, permission::Permissions, project::ProjectId, user::UserId},
     repository::{
         invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
         Repositories,
@@ -8,16 +8,35 @@ use sos24_domain::{
 };
 
 use crate::{
-    invitation::{dto::CreateInvitationDto, InvitationUseCase, InvitationUseCaseError},
+    invitation::{dto::InvitationPositionDto, InvitationUseCase, InvitationUseCaseError},
     shared::context::ContextProvider,
     ToEntity,
 };
+
+#[derive(Debug)]
+pub struct CreateInvitationCommand {
+    pub inviter: String,
+    pub project_id: String,
+    pub position: InvitationPositionDto,
+}
+
+impl ToEntity for CreateInvitationCommand {
+    type Entity = Invitation;
+    type Error = InvitationUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(Invitation::create(
+            UserId::new(self.inviter),
+            ProjectId::try_from(self.project_id)?,
+            self.position.into_entity()?,
+        ))
+    }
+}
 
 impl<R: Repositories> InvitationUseCase<R> {
     pub async fn find_or_create(
         &self,
         ctx: &impl ContextProvider,
-        raw_invitation: CreateInvitationDto,
+        raw_invitation: CreateInvitationCommand,
     ) -> Result<String, InvitationUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_INVITATION));
@@ -86,7 +105,7 @@ mod tests {
 
     use crate::{
         invitation::{
-            dto::{CreateInvitationDto, InvitationPositionDto},
+            dto::InvitationPositionDto, interactor::find_or_create::CreateInvitationCommand,
             InvitationUseCase, InvitationUseCaseError,
         },
         shared::context::TestContext,
@@ -128,7 +147,7 @@ mod tests {
         let res = use_case
             .find_or_create(
                 &ctx,
-                CreateInvitationDto {
+                CreateInvitationCommand {
                     inviter: fixture::user::id1().value().to_string(),
                     project_id: fixture::project::id1().value().to_string(),
                     position: InvitationPositionDto::SubOwner,
@@ -150,7 +169,7 @@ mod tests {
         let res = use_case
             .find_or_create(
                 &ctx,
-                CreateInvitationDto {
+                CreateInvitationCommand {
                     inviter: fixture::user::id1().value().to_string(),
                     project_id: fixture::project::id1().value().to_string(),
                     position: InvitationPositionDto::SubOwner,
@@ -197,7 +216,7 @@ mod tests {
         let res = use_case
             .find_or_create(
                 &ctx,
-                CreateInvitationDto {
+                CreateInvitationCommand {
                     inviter: fixture::user::id1().value().to_string(),
                     project_id: fixture::project::id1().value().to_string(),
                     position: InvitationPositionDto::SubOwner,
@@ -248,7 +267,7 @@ mod tests {
         let res = use_case
             .find_or_create(
                 &ctx,
-                CreateInvitationDto {
+                CreateInvitationCommand {
                     inviter: fixture::user::id1().value().to_string(),
                     project_id: fixture::project::id1().value().to_string(),
                     position: InvitationPositionDto::SubOwner,
@@ -294,7 +313,7 @@ mod tests {
         let res = use_case
             .find_or_create(
                 &ctx,
-                CreateInvitationDto {
+                CreateInvitationCommand {
                     inviter: fixture::user::id1().value().to_string(),
                     project_id: fixture::project::id1().value().to_string(),
                     position: InvitationPositionDto::SubOwner,

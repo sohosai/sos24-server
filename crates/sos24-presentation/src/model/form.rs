@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::form::dto::{
-    CreateFormDto, FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
-    UpdateFormDto,
+    FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
 };
+use sos24_use_case::form::interactor::create::CreateFormCommand;
+use sos24_use_case::form::interactor::update::UpdateFormCommand;
 use sos24_use_case::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use utoipa::{IntoParams, ToSchema};
 
@@ -24,9 +25,9 @@ pub struct CreateForm {
     attachments: Vec<String>,
 }
 
-impl From<CreateForm> for CreateFormDto {
+impl From<CreateForm> for CreateFormCommand {
     fn from(create_form: CreateForm) -> Self {
-        CreateFormDto::new(
+        CreateFormCommand::new(
             create_form.title,
             create_form.description,
             create_form.starts_at,
@@ -93,13 +94,13 @@ pub struct UpdateForm {
 }
 
 pub trait ConvertToUpdateFormDto {
-    fn to_update_form_dto(self) -> UpdateFormDto;
+    fn to_update_form_dto(self) -> UpdateFormCommand;
 }
 
 impl ConvertToUpdateFormDto for (String, UpdateForm) {
-    fn to_update_form_dto(self) -> UpdateFormDto {
+    fn to_update_form_dto(self) -> UpdateFormCommand {
         let (id, form) = self;
-        UpdateFormDto::new(
+        UpdateFormCommand::new(
             id,
             form.title,
             form.description,

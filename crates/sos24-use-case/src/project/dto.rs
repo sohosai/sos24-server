@@ -4,102 +4,11 @@ use std::fmt::Formatter;
 use sos24_domain::entity::user::User;
 use sos24_domain::entity::{
     common::date::WithDate,
-    project::{
-        Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectKanaGroupName,
-        ProjectKanaTitle, ProjectTitle,
-    },
-    user::UserId,
+    project::{Project, ProjectAttributes, ProjectCategory},
 };
 
 use crate::project::ProjectUseCaseError;
 use crate::{FromEntity, ToEntity};
-
-#[derive(Debug)]
-pub struct CreateProjectDto {
-    title: String,
-    kana_title: String,
-    group_name: String,
-    kana_group_name: String,
-    category: ProjectCategoryDto,
-    attributes: Vec<ProjectAttributeDto>,
-    owner_id: String,
-}
-
-impl CreateProjectDto {
-    pub fn new(
-        title: String,
-        kana_title: String,
-        group_name: String,
-        kana_group_name: String,
-        category: ProjectCategoryDto,
-        attributes: Vec<ProjectAttributeDto>,
-        owner_id: String,
-    ) -> Self {
-        Self {
-            title,
-            kana_title,
-            group_name,
-            kana_group_name,
-            category,
-            attributes,
-            owner_id,
-        }
-    }
-}
-
-impl ToEntity for CreateProjectDto {
-    type Entity = Project;
-    type Error = ProjectUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(Project::create(
-            ProjectTitle::try_from(self.title).map_err(ProjectUseCaseError::ProjectTitleError)?,
-            ProjectKanaTitle::new(self.kana_title),
-            ProjectGroupName::try_from(self.group_name)
-                .map_err(ProjectUseCaseError::ProjectGroupNameError)?,
-            ProjectKanaGroupName::new(self.kana_group_name),
-            self.category.into_entity()?,
-            self.attributes.into_entity()?,
-            UserId::new(self.owner_id),
-        ))
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct UpdateProjectDto {
-    pub id: String,
-    pub title: String,
-    pub kana_title: String,
-    pub group_name: String,
-    pub kana_group_name: String,
-    pub category: ProjectCategoryDto,
-    pub attributes: Vec<ProjectAttributeDto>,
-    pub remarks: Option<String>,
-}
-
-impl UpdateProjectDto {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        id: String,
-        title: String,
-        kana_title: String,
-        group_name: String,
-        kana_group_name: String,
-        category: ProjectCategoryDto,
-        attributes: Vec<ProjectAttributeDto>,
-        remarks: Option<String>,
-    ) -> Self {
-        Self {
-            id,
-            title,
-            kana_title,
-            group_name,
-            kana_group_name,
-            category,
-            attributes,
-            remarks,
-        }
-    }
-}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ProjectDto {

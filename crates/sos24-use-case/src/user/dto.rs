@@ -9,7 +9,7 @@ use crate::{FromEntity, ToEntity};
 use super::UserUseCaseError;
 
 #[derive(Debug)]
-pub struct CreateUserDto {
+pub struct CreateUserCommand {
     pub name: String,
     pub kana_name: String,
     pub email: String,
@@ -17,7 +17,7 @@ pub struct CreateUserDto {
     pub phone_number: String,
 }
 
-impl CreateUserDto {
+impl CreateUserCommand {
     pub fn new(
         name: String,
         kana_name: String,
@@ -35,7 +35,7 @@ impl CreateUserDto {
     }
 }
 
-impl ToEntity for (String, CreateUserDto) {
+impl ToEntity for (String, CreateUserCommand) {
     type Entity = User;
     type Error = UserUseCaseError;
     fn into_entity(self) -> Result<Self::Entity, Self::Error> {
@@ -51,7 +51,7 @@ impl ToEntity for (String, CreateUserDto) {
 }
 
 #[derive(Debug)]
-pub struct UpdateUserDto {
+pub struct UpdateUserCommand {
     pub id: String,
     pub name: String,
     pub kana_name: String,
@@ -60,7 +60,7 @@ pub struct UpdateUserDto {
     pub role: UserRoleDto,
 }
 
-impl UpdateUserDto {
+impl UpdateUserCommand {
     pub fn new(
         id: String,
         name: String,

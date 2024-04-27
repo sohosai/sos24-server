@@ -1,4 +1,5 @@
 use sos24_domain::entity::file_data::FileId;
+use sos24_domain::entity::news::News;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     entity::{
@@ -8,17 +9,65 @@ use sos24_domain::{
     repository::{news::NewsRepository, Repositories},
 };
 
-use crate::news::dto::UpdateNewsDto;
 use crate::news::{NewsUseCase, NewsUseCaseError};
+use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
 use crate::ToEntity;
+
+#[derive(Debug)]
+pub struct UpdateNewsCommand {
+    pub id: String,
+    pub title: String,
+    pub body: String,
+    pub attachments: Vec<String>,
+    pub categories: Vec<ProjectCategoryDto>,
+    pub attributes: Vec<ProjectAttributeDto>,
+}
+
+impl UpdateNewsCommand {
+    pub fn new(
+        id: String,
+        title: String,
+        body: String,
+        attachments: Vec<String>,
+        categories: Vec<ProjectCategoryDto>,
+        attributes: Vec<ProjectAttributeDto>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            body,
+            attachments,
+            categories,
+            attributes,
+        }
+    }
+}
+
+impl ToEntity for UpdateNewsCommand {
+    type Entity = News;
+    type Error = NewsUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(News::new(
+            NewsId::try_from(self.id)?,
+            NewsTitle::new(self.title),
+            NewsBody::new(self.body),
+            self.attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<_, _>>()?,
+            self.categories.into_entity()?,
+            self.attributes.into_entity()?,
+        ))
+    }
+}
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
     pub async fn update(
         &self,
         ctx: &impl ContextProvider,
-        news_data: UpdateNewsDto,
+        news_data: UpdateNewsCommand,
     ) -> Result<(), NewsUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
 
@@ -92,9 +141,8 @@ mod tests {
     };
 
     use crate::{
-        news::{dto::UpdateNewsDto, NewsUseCase, NewsUseCaseError},
-        shared::adapter::MockAdapters,
-        shared::context::TestContext,
+        news::{interactor::update::UpdateNewsCommand, NewsUseCase, NewsUseCaseError},
+        shared::{adapter::MockAdapters, context::TestContext},
         FromEntity,
     };
 
@@ -116,7 +164,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateNewsDto::new(
+                UpdateNewsCommand::new(
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),
@@ -155,7 +203,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateNewsDto::new(
+                UpdateNewsCommand::new(
                     fixture::news::id1().value().to_string(),
                     fixture::news::title2().value(),
                     fixture::news::body2().value(),

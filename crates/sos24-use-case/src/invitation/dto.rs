@@ -3,31 +3,10 @@ use sos24_domain::entity::user::User;
 use sos24_domain::entity::{
     common::date::WithDate,
     invitation::{Invitation, InvitationPosition},
-    project::ProjectId,
-    user::UserId,
 };
 
 use crate::invitation::InvitationUseCaseError;
 use crate::{FromEntity, ToEntity};
-
-#[derive(Debug)]
-pub struct CreateInvitationDto {
-    pub inviter: String,
-    pub project_id: String,
-    pub position: InvitationPositionDto,
-}
-
-impl ToEntity for CreateInvitationDto {
-    type Entity = Invitation;
-    type Error = InvitationUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(Invitation::create(
-            UserId::new(self.inviter),
-            ProjectId::try_from(self.project_id)?,
-            self.position.into_entity()?,
-        ))
-    }
-}
 
 #[derive(Debug)]
 pub struct InvitationDto {

@@ -6,16 +6,27 @@ use sos24_domain::{
 };
 
 use crate::{
-    form_answer::{dto::UpdateFormAnswerDto, FormAnswerUseCase, FormAnswerUseCaseError},
+    form_answer::{dto::FormAnswerItemDto, FormAnswerUseCase, FormAnswerUseCaseError},
     shared::context::{ContextProvider, OwnedProject},
     ToEntity,
 };
+
+pub struct UpdateFormAnswerCommand {
+    pub id: String,
+    pub items: Vec<FormAnswerItemDto>,
+}
+
+impl UpdateFormAnswerCommand {
+    pub fn new(id: String, items: Vec<FormAnswerItemDto>) -> Self {
+        Self { id, items }
+    }
+}
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn update(
         &self,
         ctx: &impl ContextProvider,
-        form_answer_data: UpdateFormAnswerDto,
+        form_answer_data: UpdateFormAnswerCommand,
     ) -> Result<(), FormAnswerUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         let owned_project_id =
@@ -75,8 +86,8 @@ mod tests {
 
     use crate::{
         form_answer::{
-            dto::{FormAnswerItemDto, UpdateFormAnswerDto},
-            FormAnswerUseCase, FormAnswerUseCaseError,
+            dto::FormAnswerItemDto, interactor::update::UpdateFormAnswerCommand, FormAnswerUseCase,
+            FormAnswerUseCaseError,
         },
         shared::context::TestContext,
         FromEntity,
@@ -115,7 +126,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormAnswerDto::new(
+                UpdateFormAnswerCommand::new(
                     fixture::form_answer::id1().value().to_string(),
                     fixture::form_answer::items2()
                         .into_iter()
@@ -160,7 +171,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormAnswerDto::new(
+                UpdateFormAnswerCommand::new(
                     fixture::form_answer::id1().value().to_string(),
                     fixture::form_answer::items2()
                         .into_iter()
@@ -210,7 +221,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormAnswerDto::new(
+                UpdateFormAnswerCommand::new(
                     fixture::form_answer::id1().value().to_string(),
                     fixture::form_answer::items2()
                         .into_iter()

@@ -1,78 +1,17 @@
-use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::form::FormItemExtension;
 use sos24_domain::entity::form_answer::FormAnswer;
 use sos24_domain::entity::{
-    common::{date::WithDate, datetime::DateTime},
+    common::date::WithDate,
     form::{
-        Form, FormDescription, FormItem, FormItemAllowNewline, FormItemDescription, FormItemKind,
-        FormItemLimit, FormItemMax, FormItemMaxLength, FormItemMaxSelection, FormItemMin,
-        FormItemMinLength, FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired,
-        FormTitle,
+        Form, FormItem, FormItemAllowNewline, FormItemDescription, FormItemKind, FormItemLimit,
+        FormItemMax, FormItemMaxLength, FormItemMaxSelection, FormItemMin, FormItemMinLength,
+        FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired,
     },
 };
 
 use crate::form::FormUseCaseError;
 use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::{FromEntity, ToEntity};
-
-#[derive(Debug)]
-pub struct CreateFormDto {
-    title: String,
-    description: String,
-    starts_at: String,
-    ends_at: String,
-    categories: Vec<ProjectCategoryDto>,
-    attributes: Vec<ProjectAttributeDto>,
-    items: Vec<NewFormItemDto>,
-    attachments: Vec<String>,
-}
-
-impl CreateFormDto {
-    pub fn new(
-        title: String,
-        description: String,
-        starts_at: String,
-        ends_at: String,
-        categories: Vec<ProjectCategoryDto>,
-        attributes: Vec<ProjectAttributeDto>,
-        items: Vec<NewFormItemDto>,
-        attachments: Vec<String>,
-    ) -> Self {
-        Self {
-            title,
-            description,
-            starts_at,
-            ends_at,
-            categories,
-            attributes,
-            items,
-            attachments,
-        }
-    }
-}
-
-impl ToEntity for CreateFormDto {
-    type Entity = Form;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(Form::create(
-            FormTitle::new(self.title),
-            FormDescription::new(self.description),
-            DateTime::try_from(self.starts_at)?,
-            DateTime::try_from(self.ends_at)?,
-            self.categories.into_entity()?,
-            self.attributes.into_entity()?,
-            self.items
-                .into_iter()
-                .map(NewFormItemDto::into_entity)
-                .collect::<Result<Vec<_>, _>>()?,
-            self.attachments
-                .into_iter()
-                .map(FileId::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
-        )?)
-    }
-}
 
 #[derive(Debug)]
 pub struct NewFormItemDto {
@@ -108,46 +47,6 @@ impl ToEntity for NewFormItemDto {
             FormItemRequired::new(self.required),
             self.kind.into_entity()?,
         ))
-    }
-}
-
-#[derive(Debug)]
-pub struct UpdateFormDto {
-    pub id: String,
-    pub title: String,
-    pub description: String,
-    pub starts_at: String,
-    pub ends_at: String,
-    pub categories: Vec<ProjectCategoryDto>,
-    pub attributes: Vec<ProjectAttributeDto>,
-    pub items: Vec<NewFormItemDto>,
-    pub attachments: Vec<String>,
-}
-
-impl UpdateFormDto {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        id: String,
-        title: String,
-        description: String,
-        starts_at: String,
-        ends_at: String,
-        categories: Vec<ProjectCategoryDto>,
-        attributes: Vec<ProjectAttributeDto>,
-        items: Vec<NewFormItemDto>,
-        attachments: Vec<String>,
-    ) -> Self {
-        Self {
-            id,
-            title,
-            description,
-            starts_at,
-            ends_at,
-            categories,
-            attributes,
-            items,
-            attachments,
-        }
     }
 }
 

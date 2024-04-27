@@ -1,4 +1,6 @@
-use sos24_domain::entity::form_answer::FormAnswerItemKind;
+use sos24_domain::entity::form::FormId;
+use sos24_domain::entity::form_answer::{FormAnswer, FormAnswerItemKind};
+use sos24_domain::entity::project::ProjectId;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     ensure,
@@ -10,16 +12,46 @@ use sos24_domain::{
     service::verify_form_answer,
 };
 
-use crate::form_answer::dto::CreateFormAnswerDto;
+use crate::form::FormUseCaseError;
+use crate::form_answer::dto::FormAnswerItemDto;
 use crate::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError};
 use crate::shared::context::{ContextProvider, OwnedProject};
 use crate::ToEntity;
+
+#[derive(Debug)]
+pub struct CreateFormAnswerCommand {
+    form_id: String,
+    items: Vec<FormAnswerItemDto>,
+}
+
+impl CreateFormAnswerCommand {
+    pub fn new(form_id: String, items: Vec<FormAnswerItemDto>) -> Self {
+        Self { form_id, items }
+    }
+}
+
+impl ToEntity for (String, CreateFormAnswerCommand) {
+    type Entity = FormAnswer;
+    type Error = FormUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        let (project_id, form_answer) = self;
+        Ok(FormAnswer::create(
+            ProjectId::try_from(project_id)?,
+            FormId::try_from(form_answer.form_id)?,
+            form_answer
+                .items
+                .into_iter()
+                .map(FormAnswerItemDto::into_entity)
+                .collect::<Result<_, _>>()?,
+        ))
+    }
+}
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn create(
         &self,
         ctx: &impl ContextProvider,
-        form_answer: CreateFormAnswerDto,
+        form_answer: CreateFormAnswerCommand,
     ) -> Result<String, FormAnswerUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
@@ -108,8 +140,8 @@ mod tests {
 
     use crate::{
         form_answer::{
-            dto::{CreateFormAnswerDto, FormAnswerItemDto},
-            FormAnswerUseCase, FormAnswerUseCaseError,
+            dto::FormAnswerItemDto, interactor::create::CreateFormAnswerCommand, FormAnswerUseCase,
+            FormAnswerUseCaseError,
         },
         shared::context::TestContext,
         FromEntity,
@@ -152,7 +184,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormAnswerDto::new(
+                CreateFormAnswerCommand::new(
                     fixture::form::id1().value().to_string(),
                     fixture::form_answer::items1()
                         .into_iter()
@@ -181,7 +213,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormAnswerDto::new(
+                CreateFormAnswerCommand::new(
                     fixture::form::id1().value().to_string(),
                     fixture::form_answer::items1()
                         .into_iter()
@@ -234,7 +266,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormAnswerDto::new(
+                CreateFormAnswerCommand::new(
                     fixture::form::id1().value().to_string(),
                     fixture::form_answer::items1()
                         .into_iter()

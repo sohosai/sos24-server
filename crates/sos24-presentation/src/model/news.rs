@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::news::dto::{CreateNewsDto, NewsDto, UpdateNewsDto};
+use sos24_use_case::news::dto::NewsDto;
+use sos24_use_case::news::interactor::create::CreateNewsCommand;
+use sos24_use_case::news::interactor::update::UpdateNewsCommand;
 use sos24_use_case::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use utoipa::ToSchema;
 
@@ -16,9 +18,9 @@ pub struct CreateNews {
     attributes: Vec<ProjectAttribute>,
 }
 
-impl From<CreateNews> for CreateNewsDto {
+impl From<CreateNews> for CreateNewsCommand {
     fn from(news: CreateNews) -> Self {
-        CreateNewsDto::new(
+        CreateNewsCommand::new(
             news.title,
             news.body,
             news.attachments,
@@ -51,13 +53,13 @@ pub struct UpdateNews {
 }
 
 pub trait ConvertToUpdateNewsDto {
-    fn to_update_news_dto(self) -> UpdateNewsDto;
+    fn to_update_news_dto(self) -> UpdateNewsCommand;
 }
 
 impl ConvertToUpdateNewsDto for (String, UpdateNews) {
-    fn to_update_news_dto(self) -> UpdateNewsDto {
+    fn to_update_news_dto(self) -> UpdateNewsCommand {
         let (id, news) = self;
-        UpdateNewsDto::new(
+        UpdateNewsCommand::new(
             id,
             news.title,
             news.body,

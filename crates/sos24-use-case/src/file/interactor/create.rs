@@ -10,9 +10,26 @@ use sos24_domain::{
 };
 
 use crate::{
-    file::{dto::CreateFileDto, FileUseCase, FileUseCaseError},
+    file::{FileUseCase, FileUseCaseError},
     shared::context::ContextProvider,
 };
+
+#[derive(Debug)]
+pub struct CreateFileCommand {
+    pub filename: String,
+    pub file: Vec<u8>,
+    pub owner: Option<String>,
+}
+
+impl CreateFileCommand {
+    pub fn new(filename: String, file: Vec<u8>, owner: Option<String>) -> Self {
+        Self {
+            filename,
+            file,
+            owner,
+        }
+    }
+}
 
 impl<R: Repositories> FileUseCase<R> {
     pub async fn create(
@@ -20,7 +37,7 @@ impl<R: Repositories> FileUseCase<R> {
         ctx: &impl ContextProvider,
         bucket: String,
         key_prefix: String,
-        raw_file: CreateFileDto,
+        raw_file: CreateFileCommand,
     ) -> Result<String, FileUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         let key = FileObjectKey::generate(key_prefix.as_str());
@@ -63,7 +80,7 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::file::dto::CreateFileDto;
+    use crate::file::interactor::create::CreateFileCommand;
     use crate::file::{FileUseCase, FileUseCaseError};
     use crate::shared::context::TestContext;
 
@@ -86,7 +103,7 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileDto::new(
+                CreateFileCommand::new(
                     fixture::file_data::filename().value(),
                     fixture::file_object::data(),
                     Some(fixture::project::id1().value().to_string()),
@@ -116,7 +133,7 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileDto::new(
+                CreateFileCommand::new(
                     fixture::file_data::filename().value(),
                     fixture::file_object::data(),
                     Some(fixture::project::id2().value().to_string()),
@@ -146,7 +163,7 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileDto::new(
+                CreateFileCommand::new(
                     fixture::file_data::filename().value(),
                     fixture::file_object::data(),
                     None,
@@ -181,7 +198,7 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileDto::new(
+                CreateFileCommand::new(
                     fixture::file_data::filename().value(),
                     fixture::file_object::data(),
                     None,

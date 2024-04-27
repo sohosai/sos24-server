@@ -1,21 +1,85 @@
 use sos24_domain::{
     ensure,
-    entity::permission::Permissions,
+    entity::{
+        common::datetime::DateTime,
+        file_data::FileId,
+        form::{Form, FormDescription, FormTitle},
+        permission::Permissions,
+    },
     repository::{form::FormRepository, Repositories},
 };
 
 use crate::{
-    form::{dto::CreateFormDto, FormUseCase, FormUseCaseError},
-    shared::adapter::Adapters,
-    shared::context::ContextProvider,
+    form::{dto::NewFormItemDto, FormUseCase, FormUseCaseError},
+    project::dto::{ProjectAttributeDto, ProjectCategoryDto},
+    shared::{adapter::Adapters, context::ContextProvider},
     ToEntity,
 };
+
+#[derive(Debug)]
+pub struct CreateFormCommand {
+    title: String,
+    description: String,
+    starts_at: String,
+    ends_at: String,
+    categories: Vec<ProjectCategoryDto>,
+    attributes: Vec<ProjectAttributeDto>,
+    items: Vec<NewFormItemDto>,
+    attachments: Vec<String>,
+}
+
+impl CreateFormCommand {
+    pub fn new(
+        title: String,
+        description: String,
+        starts_at: String,
+        ends_at: String,
+        categories: Vec<ProjectCategoryDto>,
+        attributes: Vec<ProjectAttributeDto>,
+        items: Vec<NewFormItemDto>,
+        attachments: Vec<String>,
+    ) -> Self {
+        Self {
+            title,
+            description,
+            starts_at,
+            ends_at,
+            categories,
+            attributes,
+            items,
+            attachments,
+        }
+    }
+}
+
+impl ToEntity for CreateFormCommand {
+    type Entity = Form;
+    type Error = FormUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(Form::create(
+            FormTitle::new(self.title),
+            FormDescription::new(self.description),
+            DateTime::try_from(self.starts_at)?,
+            DateTime::try_from(self.ends_at)?,
+            self.categories.into_entity()?,
+            self.attributes.into_entity()?,
+            self.items
+                .into_iter()
+                .map(NewFormItemDto::into_entity)
+                .collect::<Result<Vec<_>, _>>()?,
+            self.attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
+        )?)
+    }
+}
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn create(
         &self,
         ctx: &impl ContextProvider,
-        raw_form: CreateFormDto,
+        raw_form: CreateFormCommand,
     ) -> Result<String, FormUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM));
@@ -38,11 +102,11 @@ mod tests {
 
     use crate::{
         form::{
-            dto::{CreateFormDto, FormItemKindDto, NewFormItemDto},
+            dto::{FormItemKindDto, NewFormItemDto},
+            interactor::create::CreateFormCommand,
             FormUseCase, FormUseCaseError,
         },
-        shared::adapter::MockAdapters,
-        shared::context::TestContext,
+        shared::{adapter::MockAdapters, context::TestContext},
         FromEntity,
     };
 
@@ -60,7 +124,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormDto::new(
+                CreateFormCommand::new(
                     fixture::form::title1().value(),
                     fixture::form::description1().value(),
                     fixture::form::starts_at1().value().to_rfc3339(),
@@ -102,7 +166,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormDto::new(
+                CreateFormCommand::new(
                     fixture::form::title1().value(),
                     fixture::form::description1().value(),
                     fixture::form::starts_at1().value().to_rfc3339(),

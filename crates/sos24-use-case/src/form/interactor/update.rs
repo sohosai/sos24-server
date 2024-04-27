@@ -9,17 +9,58 @@ use sos24_domain::{
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::form::dto::UpdateFormDto;
+use crate::form::dto::NewFormItemDto;
 use crate::form::{FormUseCase, FormUseCaseError};
+use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
 use crate::ToEntity;
+
+#[derive(Debug)]
+pub struct UpdateFormCommand {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub categories: Vec<ProjectCategoryDto>,
+    pub attributes: Vec<ProjectAttributeDto>,
+    pub items: Vec<NewFormItemDto>,
+    pub attachments: Vec<String>,
+}
+
+impl UpdateFormCommand {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: String,
+        title: String,
+        description: String,
+        starts_at: String,
+        ends_at: String,
+        categories: Vec<ProjectCategoryDto>,
+        attributes: Vec<ProjectAttributeDto>,
+        items: Vec<NewFormItemDto>,
+        attachments: Vec<String>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            description,
+            starts_at,
+            ends_at,
+            categories,
+            attributes,
+            items,
+            attachments,
+        }
+    }
+}
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn update(
         &self,
         ctx: &impl ContextProvider,
-        form_data: UpdateFormDto,
+        form_data: UpdateFormCommand,
     ) -> Result<(), FormUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::UPDATE_FORM_ALL));
@@ -77,11 +118,11 @@ mod tests {
 
     use crate::{
         form::{
-            dto::{FormItemKindDto, NewFormItemDto, UpdateFormDto},
+            dto::{FormItemKindDto, NewFormItemDto},
+            interactor::update::UpdateFormCommand,
             FormUseCase, FormUseCaseError,
         },
-        shared::adapter::MockAdapters,
-        shared::context::TestContext,
+        shared::{adapter::MockAdapters, context::TestContext},
         FromEntity,
     };
 
@@ -95,7 +136,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormDto::new(
+                UpdateFormCommand::new(
                     fixture::form::id1().value().to_string(),
                     fixture::form::title2().value(),
                     fixture::form::description2().value(),
@@ -146,7 +187,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormDto::new(
+                UpdateFormCommand::new(
                     fixture::form::id1().value().to_string(),
                     fixture::form::title2().value(),
                     fixture::form::description2().value(),
@@ -192,7 +233,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormDto::new(
+                UpdateFormCommand::new(
                     fixture::form::id1().value().to_string(),
                     fixture::form::title2().value(),
                     fixture::form::description2().value(),

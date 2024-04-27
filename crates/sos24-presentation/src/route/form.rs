@@ -7,8 +7,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-
-use sos24_use_case::form::dto::CreateFormDto;
+use sos24_use_case::form::interactor::create::CreateFormCommand;
 
 use crate::context::Context;
 use crate::model::form::{CreatedForm, Form, FormQuery, FormSummary};
@@ -82,7 +81,7 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     Json(raw_form): Json<CreateForm>,
 ) -> Result<impl IntoResponse, AppError> {
-    let form = CreateFormDto::from(raw_form);
+    let form = CreateFormCommand::from(raw_form);
     let res = module.form_use_case().create(&ctx, form).await;
     res.map(|id| (StatusCode::CREATED, Json(CreatedForm { id })))
         .map_err(|err| {

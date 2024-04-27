@@ -1,6 +1,10 @@
 use sos24_domain::{
     ensure,
-    entity::permission::Permissions,
+    entity::{
+        file_data::FileId,
+        news::{News, NewsBody, NewsTitle},
+        permission::Permissions,
+    },
     repository::{
         file_data::FileDataRepository, news::NewsRepository, project::ProjectRepository,
         user::UserRepository, Repositories,
@@ -8,20 +12,67 @@ use sos24_domain::{
 };
 
 use crate::{
-    news::{dto::CreateNewsDto, NewsUseCase, NewsUseCaseError},
-    shared::adapter::{
-        email::{Email, EmailSender, SendEmailCommand},
-        Adapters,
+    news::{NewsUseCase, NewsUseCaseError},
+    project::dto::{ProjectAttributeDto, ProjectCategoryDto},
+    shared::{
+        adapter::{
+            email::{Email, EmailSender, SendEmailCommand},
+            Adapters,
+        },
+        context::ContextProvider,
     },
-    shared::context::ContextProvider,
     ToEntity,
 };
+
+#[derive(Debug)]
+pub struct CreateNewsCommand {
+    pub title: String,
+    pub body: String,
+    pub attachments: Vec<String>,
+    pub categories: Vec<ProjectCategoryDto>,
+    pub attributes: Vec<ProjectAttributeDto>,
+}
+
+impl CreateNewsCommand {
+    pub fn new(
+        title: String,
+        body: String,
+        attachments: Vec<String>,
+        categories: Vec<ProjectCategoryDto>,
+        attributes: Vec<ProjectAttributeDto>,
+    ) -> Self {
+        Self {
+            title,
+            body,
+            attachments,
+            categories,
+            attributes,
+        }
+    }
+}
+
+impl ToEntity for CreateNewsCommand {
+    type Entity = News;
+    type Error = NewsUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(News::create(
+            NewsTitle::new(self.title),
+            NewsBody::new(self.body),
+            self.attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<_, _>>()?,
+            self.categories.into_entity()?,
+            self.attributes.into_entity()?,
+        ))
+    }
+}
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
     pub async fn create(
         &self,
         ctx: &impl ContextProvider,
-        raw_news: CreateNewsDto,
+        raw_news: CreateNewsCommand,
     ) -> Result<String, NewsUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_NEWS));
@@ -121,9 +172,8 @@ mod tests {
     };
 
     use crate::{
-        news::{dto::CreateNewsDto, NewsUseCase, NewsUseCaseError},
-        shared::adapter::MockAdapters,
-        shared::context::TestContext,
+        news::{interactor::create::CreateNewsCommand, NewsUseCase, NewsUseCaseError},
+        shared::{adapter::MockAdapters, context::TestContext},
         FromEntity,
     };
 
@@ -141,7 +191,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateNewsDto::new(
+                CreateNewsCommand::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
                     fixture::news::attachments1()
@@ -183,7 +233,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateNewsDto::new(
+                CreateNewsCommand::new(
                     fixture::news::title1().value(),
                     fixture::news::body1().value(),
                     fixture::news::attachments1()

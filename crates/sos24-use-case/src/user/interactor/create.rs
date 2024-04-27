@@ -4,12 +4,12 @@ use sos24_domain::{
     repository::{firebase_user::FirebaseUserRepository, user::UserRepository, Repositories},
 };
 
-use crate::user::dto::CreateUserDto;
+use crate::user::dto::CreateUserCommand;
 use crate::user::{UserUseCase, UserUseCaseError};
 use crate::ToEntity;
 
 impl<R: Repositories> UserUseCase<R> {
-    pub async fn create(&self, raw_user: CreateUserDto) -> Result<String, UserUseCaseError> {
+    pub async fn create(&self, raw_user: CreateUserCommand) -> Result<String, UserUseCaseError> {
         let firebase_user = NewFirebaseUser::new(
             FirebaseUserEmail::try_from(raw_user.email.clone())?,
             FirebaseUserPassword::new(raw_user.password.clone()),
@@ -48,7 +48,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::user::{dto::CreateUserDto, UserUseCase, UserUseCaseError};
+    use crate::user::{dto::CreateUserCommand, UserUseCase, UserUseCaseError};
 
     #[tokio::test]
     async fn 誰でもユーザーを作成できる() {
@@ -64,7 +64,7 @@ mod tests {
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let res = use_case
-            .create(CreateUserDto::new(
+            .create(CreateUserCommand::new(
                 fixture::user::name1().value(),
                 fixture::user::kana_name1().value(),
                 fixture::user::email1().value(),
@@ -94,7 +94,7 @@ mod tests {
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let res = use_case
-            .create(CreateUserDto::new(
+            .create(CreateUserCommand::new(
                 fixture::user::name1().value(),
                 fixture::user::kana_name1().value(),
                 fixture::user::email1().value(),

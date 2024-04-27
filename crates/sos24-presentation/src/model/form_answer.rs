@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::form_answer::dto::{
-    CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
-    UpdateFormAnswerDto,
+use sos24_use_case::form_answer::{
+    dto::{FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto},
+    interactor::{create::CreateFormAnswerCommand, update::UpdateFormAnswerCommand},
 };
 use utoipa::{IntoParams, ToSchema};
 
@@ -13,9 +13,9 @@ pub struct CreateFormAnswer {
     items: Vec<FormAnswerItem>,
 }
 
-impl From<CreateFormAnswer> for CreateFormAnswerDto {
+impl From<CreateFormAnswer> for CreateFormAnswerCommand {
     fn from(create_form_answer: CreateFormAnswer) -> Self {
-        CreateFormAnswerDto::new(
+        CreateFormAnswerCommand::new(
             create_form_answer.form_id,
             create_form_answer
                 .items
@@ -38,13 +38,13 @@ pub struct UpdateFormAnswer {
 }
 
 pub trait ConvertToUpdateFormAnswerDto {
-    fn to_update_form_answer_dto(self) -> UpdateFormAnswerDto;
+    fn to_update_form_answer_dto(self) -> UpdateFormAnswerCommand;
 }
 
 impl ConvertToUpdateFormAnswerDto for (UpdateFormAnswer, String) {
-    fn to_update_form_answer_dto(self) -> UpdateFormAnswerDto {
+    fn to_update_form_answer_dto(self) -> UpdateFormAnswerCommand {
         let (update_form_answer, id) = self;
-        UpdateFormAnswerDto::new(
+        UpdateFormAnswerCommand::new(
             id,
             update_form_answer
                 .items

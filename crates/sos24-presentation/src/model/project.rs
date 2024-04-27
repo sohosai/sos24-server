@@ -2,8 +2,9 @@ use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::{
-    project::dto::{
-        CreateProjectDto, ProjectAttributeDto, ProjectCategoryDto, ProjectDto, UpdateProjectDto,
+    project::{
+        dto::{ProjectAttributeDto, ProjectCategoryDto, ProjectDto},
+        interactor::{create::CreateProjectCommand, update::UpdateProjectCommand},
     },
     user::dto::UserDto,
 };
@@ -20,13 +21,13 @@ pub struct CreateProject {
 }
 
 pub trait ConvertToCreateProjectDto {
-    fn to_create_project_dto(self) -> CreateProjectDto;
+    fn to_create_project_dto(self) -> CreateProjectCommand;
 }
 
 impl ConvertToCreateProjectDto for (CreateProject, String) {
-    fn to_create_project_dto(self) -> CreateProjectDto {
+    fn to_create_project_dto(self) -> CreateProjectCommand {
         let (project, owner_id) = self;
-        CreateProjectDto::new(
+        CreateProjectCommand::new(
             project.title,
             project.kana_title,
             project.group_name,
@@ -60,13 +61,13 @@ pub struct UpdateProject {
 }
 
 pub trait ConvertToUpdateProjectDto {
-    fn to_update_project_dto(self) -> UpdateProjectDto;
+    fn to_update_project_dto(self) -> UpdateProjectCommand;
 }
 
 impl ConvertToUpdateProjectDto for (UpdateProject, String) {
-    fn to_update_project_dto(self) -> UpdateProjectDto {
+    fn to_update_project_dto(self) -> UpdateProjectCommand {
         let (project, id) = self;
-        UpdateProjectDto::new(
+        UpdateProjectCommand::new(
             id,
             project.title,
             project.kana_title,

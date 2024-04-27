@@ -1,58 +1,17 @@
 use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::form::Form;
+use sos24_domain::entity::form::FormItemId;
 use sos24_domain::entity::project::Project;
 use sos24_domain::entity::{
     common::date::WithDate,
-    form::{FormId, FormItemId},
     form_answer::{
         FormAnswer, FormAnswerItem, FormAnswerItemChooseMany, FormAnswerItemChooseOne,
         FormAnswerItemFile, FormAnswerItemInt, FormAnswerItemKind, FormAnswerItemString,
     },
-    project::ProjectId,
 };
 
 use crate::form::FormUseCaseError;
 use crate::{FromEntity, ToEntity};
-
-#[derive(Debug)]
-pub struct CreateFormAnswerDto {
-    form_id: String,
-    items: Vec<FormAnswerItemDto>,
-}
-
-impl CreateFormAnswerDto {
-    pub fn new(form_id: String, items: Vec<FormAnswerItemDto>) -> Self {
-        Self { form_id, items }
-    }
-}
-
-impl ToEntity for (String, CreateFormAnswerDto) {
-    type Entity = FormAnswer;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        let (project_id, form_answer) = self;
-        Ok(FormAnswer::create(
-            ProjectId::try_from(project_id)?,
-            FormId::try_from(form_answer.form_id)?,
-            form_answer
-                .items
-                .into_iter()
-                .map(FormAnswerItemDto::into_entity)
-                .collect::<Result<_, _>>()?,
-        ))
-    }
-}
-
-pub struct UpdateFormAnswerDto {
-    pub id: String,
-    pub items: Vec<FormAnswerItemDto>,
-}
-
-impl UpdateFormAnswerDto {
-    pub fn new(id: String, items: Vec<FormAnswerItemDto>) -> Self {
-        Self { id, items }
-    }
-}
 
 #[derive(Debug)]
 pub struct FormAnswerDto {

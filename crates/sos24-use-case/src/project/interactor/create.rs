@@ -1,19 +1,76 @@
-use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
+use sos24_domain::entity::project::{
+    ProjectGroupName, ProjectKanaGroupName, ProjectKanaTitle, ProjectTitle,
+};
+use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
+use sos24_domain::{ensure, entity::project::Project};
 
 use crate::{
-    project::{dto::CreateProjectDto, ProjectUseCase, ProjectUseCaseError},
+    project::{
+        dto::{ProjectAttributeDto, ProjectCategoryDto},
+        ProjectUseCase, ProjectUseCaseError,
+    },
     shared::context::{ContextProvider, OwnedProject},
     ToEntity,
 };
+
+#[derive(Debug)]
+pub struct CreateProjectCommand {
+    title: String,
+    kana_title: String,
+    group_name: String,
+    kana_group_name: String,
+    category: ProjectCategoryDto,
+    attributes: Vec<ProjectAttributeDto>,
+    owner_id: String,
+}
+
+impl CreateProjectCommand {
+    pub fn new(
+        title: String,
+        kana_title: String,
+        group_name: String,
+        kana_group_name: String,
+        category: ProjectCategoryDto,
+        attributes: Vec<ProjectAttributeDto>,
+        owner_id: String,
+    ) -> Self {
+        Self {
+            title,
+            kana_title,
+            group_name,
+            kana_group_name,
+            category,
+            attributes,
+            owner_id,
+        }
+    }
+}
+
+impl ToEntity for CreateProjectCommand {
+    type Entity = Project;
+    type Error = ProjectUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        Ok(Project::create(
+            ProjectTitle::try_from(self.title).map_err(ProjectUseCaseError::ProjectTitleError)?,
+            ProjectKanaTitle::new(self.kana_title),
+            ProjectGroupName::try_from(self.group_name)
+                .map_err(ProjectUseCaseError::ProjectGroupNameError)?,
+            ProjectKanaGroupName::new(self.kana_group_name),
+            self.category.into_entity()?,
+            self.attributes.into_entity()?,
+            UserId::new(self.owner_id),
+        ))
+    }
+}
 
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn create(
         &self,
         ctx: &impl ContextProvider,
-        raw_project: CreateProjectDto,
+        raw_project: CreateProjectCommand,
     ) -> Result<String, ProjectUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_PROJECT));
@@ -59,7 +116,8 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::project::dto::{CreateProjectDto, ProjectCategoryDto};
+    use crate::project::dto::ProjectCategoryDto;
+    use crate::project::interactor::create::CreateProjectCommand;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
     use crate::shared::context::TestContext;
     use crate::FromEntity;
@@ -88,7 +146,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectDto::new(
+                CreateProjectCommand::new(
                     fixture::project::title1().value(),
                     fixture::project::kana_title1().value(),
                     fixture::project::group_name1().value(),
@@ -130,7 +188,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectDto::new(
+                CreateProjectCommand::new(
                     fixture::project::title1().value(),
                     fixture::project::kana_title1().value(),
                     fixture::project::group_name1().value(),
@@ -171,7 +229,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectDto::new(
+                CreateProjectCommand::new(
                     fixture::project::title1().value(),
                     fixture::project::kana_title1().value(),
                     fixture::project::group_name1().value(),
@@ -212,7 +270,7 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectDto::new(
+                CreateProjectCommand::new(
                     fixture::project::title1().value(),
                     fixture::project::kana_title1().value(),
                     fixture::project::group_name1().value(),

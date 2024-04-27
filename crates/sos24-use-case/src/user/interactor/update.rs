@@ -5,7 +5,7 @@ use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
 use crate::shared::context::ContextProvider;
-use crate::user::dto::UpdateUserDto;
+use crate::user::dto::UpdateUserCommand;
 use crate::user::{UserUseCase, UserUseCaseError};
 use crate::ToEntity;
 
@@ -13,7 +13,7 @@ impl<R: Repositories> UserUseCase<R> {
     pub async fn update(
         &self,
         ctx: &impl ContextProvider,
-        user_data: UpdateUserDto,
+        user_data: UpdateUserCommand,
     ) -> Result<(), UserUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
 
@@ -70,7 +70,7 @@ mod tests {
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
     use crate::shared::context::TestContext;
-    use crate::user::dto::{UpdateUserDto, UserRoleDto};
+    use crate::user::dto::{UpdateUserCommand, UserRoleDto};
     use crate::user::{UserUseCase, UserUseCaseError};
     use crate::FromEntity;
 
@@ -99,7 +99,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserDto::new(
+                UpdateUserCommand::new(
                     fixture::user::id1().value(),
                     fixture::user::name2().value(),
                     fixture::user::kana_name2().value(),
@@ -133,7 +133,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserDto::new(
+                UpdateUserCommand::new(
                     fixture::user::id1().value(),
                     fixture::user::name1().value(),
                     fixture::user::kana_name1().value(),
@@ -172,7 +172,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserDto::new(
+                UpdateUserCommand::new(
                     fixture::user::id2().value(),
                     fixture::user::name2().value(),
                     fixture::user::kana_name2().value(),
@@ -211,7 +211,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserDto::new(
+                UpdateUserCommand::new(
                     fixture::user::id1().value(),
                     fixture::user::name2().value(),
                     fixture::user::kana_name2().value(),

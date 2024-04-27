@@ -7,16 +7,53 @@ use sos24_domain::entity::project::{
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::project::dto::UpdateProjectDto;
+use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
 use crate::shared::context::ContextProvider;
 use crate::ToEntity;
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct UpdateProjectCommand {
+    pub id: String,
+    pub title: String,
+    pub kana_title: String,
+    pub group_name: String,
+    pub kana_group_name: String,
+    pub category: ProjectCategoryDto,
+    pub attributes: Vec<ProjectAttributeDto>,
+    pub remarks: Option<String>,
+}
+
+impl UpdateProjectCommand {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        id: String,
+        title: String,
+        kana_title: String,
+        group_name: String,
+        kana_group_name: String,
+        category: ProjectCategoryDto,
+        attributes: Vec<ProjectAttributeDto>,
+        remarks: Option<String>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            kana_title,
+            group_name,
+            kana_group_name,
+            category,
+            attributes,
+            remarks,
+        }
+    }
+}
 
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn update(
         &self,
         ctx: &impl ContextProvider,
-        project_data: UpdateProjectDto,
+        project_data: UpdateProjectCommand,
     ) -> Result<(), ProjectUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
 
@@ -78,7 +115,8 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::project::dto::{ProjectCategoryDto, UpdateProjectDto};
+    use crate::project::dto::ProjectCategoryDto;
+    use crate::project::interactor::update::UpdateProjectCommand;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
     use crate::shared::context::TestContext;
     use crate::FromEntity;
@@ -107,7 +145,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectDto::new(
+                UpdateProjectCommand::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),
                     fixture::project::kana_title2().value(),
@@ -146,7 +184,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectDto::new(
+                UpdateProjectCommand::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),
                     fixture::project::kana_title2().value(),
@@ -188,7 +226,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectDto::new(
+                UpdateProjectCommand::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),
                     fixture::project::kana_title2().value(),
@@ -232,7 +270,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectDto::new(
+                UpdateProjectCommand::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),
                     fixture::project::kana_title2().value(),
@@ -271,7 +309,7 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectDto::new(
+                UpdateProjectCommand::new(
                     fixture::project::id2().value().to_string(),
                     fixture::project::title2().value(),
                     fixture::project::kana_title2().value(),
