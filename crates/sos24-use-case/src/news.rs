@@ -15,9 +15,9 @@ use sos24_domain::{
     repository::{news::NewsRepositoryError, Repositories},
 };
 
-use crate::adapter::Adapters;
-use crate::context::ContextError;
 use crate::project::ProjectUseCaseError;
+use crate::shared::adapter::Adapters;
+use crate::shared::context::ContextError;
 
 pub mod dto;
 pub mod interactor;

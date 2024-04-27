@@ -8,8 +8,8 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::ContextProvider,
     invitation::{dto::CreateInvitationDto, InvitationUseCase, InvitationUseCaseError},
+    shared::context::ContextProvider,
     ToEntity,
 };
 
@@ -85,11 +85,11 @@ mod tests {
     };
 
     use crate::{
-        context::TestContext,
         invitation::{
             dto::{CreateInvitationDto, InvitationPositionDto},
             InvitationUseCase, InvitationUseCaseError,
         },
+        shared::context::TestContext,
     };
 
     #[tokio::test]

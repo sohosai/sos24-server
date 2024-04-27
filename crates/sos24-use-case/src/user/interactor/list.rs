@@ -5,7 +5,7 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::ContextProvider,
+    shared::context::ContextProvider,
     user::{dto::UserDto, UserUseCase, UserUseCaseError},
     FromEntity,
 };
@@ -33,7 +33,7 @@ mod tests {
     };
 
     use crate::{
-        context::TestContext,
+        shared::context::TestContext,
         user::{UserUseCase, UserUseCaseError},
     };
 

@@ -8,12 +8,12 @@ use sos24_domain::{
 };
 
 use crate::{
-    adapter::{
+    news::{dto::CreateNewsDto, NewsUseCase, NewsUseCaseError},
+    shared::adapter::{
         email::{Email, EmailSender, SendEmailCommand},
         Adapters,
     },
-    context::ContextProvider,
-    news::{dto::CreateNewsDto, NewsUseCase, NewsUseCaseError},
+    shared::context::ContextProvider,
     ToEntity,
 };
 
@@ -121,9 +121,9 @@ mod tests {
     };
 
     use crate::{
-        adapter::MockAdapters,
-        context::TestContext,
         news::{dto::CreateNewsDto, NewsUseCase, NewsUseCaseError},
+        shared::adapter::MockAdapters,
+        shared::context::TestContext,
         FromEntity,
     };
 

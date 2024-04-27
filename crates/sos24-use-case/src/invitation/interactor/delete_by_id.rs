@@ -5,8 +5,8 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::ContextProvider,
     invitation::{InvitationUseCase, InvitationUseCaseError},
+    shared::context::ContextProvider,
 };
 
 impl<R: Repositories> InvitationUseCase<R> {
@@ -45,8 +45,8 @@ mod tests {
     };
 
     use crate::{
-        context::TestContext,
         invitation::{InvitationUseCase, InvitationUseCaseError},
+        shared::context::TestContext,
     };
 
     #[tokio::test]

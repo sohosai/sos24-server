@@ -5,9 +5,9 @@ use sos24_domain::{
 };
 
 use crate::{
-    adapter::Adapters,
-    context::ContextProvider,
     form::{dto::CreateFormDto, FormUseCase, FormUseCaseError},
+    shared::adapter::Adapters,
+    shared::context::ContextProvider,
     ToEntity,
 };
 
@@ -37,12 +37,12 @@ mod tests {
     };
 
     use crate::{
-        adapter::MockAdapters,
-        context::TestContext,
         form::{
             dto::{CreateFormDto, FormItemKindDto, NewFormItemDto},
             FormUseCase, FormUseCaseError,
         },
+        shared::adapter::MockAdapters,
+        shared::context::TestContext,
         FromEntity,
     };
 

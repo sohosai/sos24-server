@@ -9,10 +9,10 @@ use sos24_domain::{
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::adapter::Adapters;
-use crate::context::ContextProvider;
 use crate::form::dto::UpdateFormDto;
 use crate::form::{FormUseCase, FormUseCaseError};
+use crate::shared::adapter::Adapters;
+use crate::shared::context::ContextProvider;
 use crate::ToEntity;
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
@@ -76,12 +76,12 @@ mod tests {
     };
 
     use crate::{
-        adapter::MockAdapters,
-        context::TestContext,
         form::{
             dto::{FormItemKindDto, NewFormItemDto, UpdateFormDto},
             FormUseCase, FormUseCaseError,
         },
+        shared::adapter::MockAdapters,
+        shared::context::TestContext,
         FromEntity,
     };
 

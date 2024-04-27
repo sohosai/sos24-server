@@ -18,7 +18,7 @@ use sos24_domain::{
     service::verify_form_answer::VerifyFormAnswerError,
 };
 
-use crate::context::ContextError;
+use crate::shared::context::ContextError;
 
 use super::form::FormUseCaseError;
 

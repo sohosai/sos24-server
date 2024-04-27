@@ -5,7 +5,7 @@ use sos24_domain::{
     repository::{user::UserRepository, Repositories},
 };
 
-use crate::context::ContextProvider;
+use crate::shared::context::ContextProvider;
 use crate::user::{UserUseCase, UserUseCaseError};
 
 impl<R: Repositories> UserUseCase<R> {
@@ -37,7 +37,7 @@ mod tests {
     use sos24_domain::entity::user::UserRole;
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
-    use crate::context::TestContext;
+    use crate::shared::context::TestContext;
     use crate::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]

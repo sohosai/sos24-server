@@ -4,7 +4,7 @@ use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, User
 use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
-use crate::context::ContextProvider;
+use crate::shared::context::ContextProvider;
 use crate::user::dto::UpdateUserDto;
 use crate::user::{UserUseCase, UserUseCaseError};
 use crate::ToEntity;
@@ -69,7 +69,7 @@ mod tests {
     use sos24_domain::entity::user::UserRole;
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
-    use crate::context::TestContext;
+    use crate::shared::context::TestContext;
     use crate::user::dto::{UpdateUserDto, UserRoleDto};
     use crate::user::{UserUseCase, UserUseCaseError};
     use crate::FromEntity;

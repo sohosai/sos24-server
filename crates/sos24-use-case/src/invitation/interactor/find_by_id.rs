@@ -7,8 +7,8 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::ContextProvider,
     invitation::{dto::InvitationDto, InvitationUseCase, InvitationUseCaseError},
+    shared::context::ContextProvider,
     FromEntity,
 };
 
@@ -59,7 +59,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::TestContext, invitation::InvitationUseCase};
+    use crate::{invitation::InvitationUseCase, shared::context::TestContext};
 
     #[tokio::test]
     async fn 一般ユーザーは自分の企画への招待を取得できる() {

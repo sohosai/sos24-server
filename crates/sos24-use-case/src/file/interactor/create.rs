@@ -10,8 +10,8 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::ContextProvider,
     file::{dto::CreateFileDto, FileUseCase, FileUseCaseError},
+    shared::context::ContextProvider,
 };
 
 impl<R: Repositories> FileUseCase<R> {
@@ -63,9 +63,9 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::TestContext;
     use crate::file::dto::CreateFileDto;
     use crate::file::{FileUseCase, FileUseCaseError};
+    use crate::shared::context::TestContext;
 
     #[tokio::test]
     async fn 実委人は自分の企画向けのファイルを作成できる() {

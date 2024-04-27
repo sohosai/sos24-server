@@ -6,8 +6,8 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::{ContextProvider, OwnedProject},
     form_answer::{dto::UpdateFormAnswerDto, FormAnswerUseCase, FormAnswerUseCaseError},
+    shared::context::{ContextProvider, OwnedProject},
     ToEntity,
 };
 
@@ -74,11 +74,11 @@ mod tests {
     };
 
     use crate::{
-        context::TestContext,
         form_answer::{
             dto::{FormAnswerItemDto, UpdateFormAnswerDto},
             FormAnswerUseCase, FormAnswerUseCaseError,
         },
+        shared::context::TestContext,
         FromEntity,
     };
 

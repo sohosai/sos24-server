@@ -17,7 +17,7 @@ use sos24_domain::{
     repository::{project::ProjectRepositoryError, Repositories},
 };
 
-use crate::context::ContextError;
+use crate::shared::context::ContextError;
 
 pub mod dto;
 pub mod interactor;

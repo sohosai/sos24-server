@@ -5,9 +5,9 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::ContextProvider;
 use crate::project::dto::ProjectDto;
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
+use crate::shared::context::ContextProvider;
 use crate::FromEntity;
 
 impl<R: Repositories> ProjectUseCase<R> {
@@ -66,8 +66,8 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::TestContext;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::context::TestContext;
 
     #[tokio::test]
     async fn 一般ユーザーは自分の企画を取得できる() {

@@ -5,9 +5,9 @@ use sos24_domain::{
 };
 
 use crate::{
-    adapter::Adapters,
-    context::ContextProvider,
     news::{dto::NewsDto, NewsUseCase, NewsUseCaseError},
+    shared::adapter::Adapters,
+    shared::context::ContextProvider,
     FromEntity,
 };
 
@@ -40,7 +40,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{adapter::MockAdapters, context::TestContext, news::NewsUseCase};
+    use crate::{news::NewsUseCase, shared::adapter::MockAdapters, shared::context::TestContext};
 
     #[tokio::test]
     async fn 一般ユーザーはお知らせを取得できる() {

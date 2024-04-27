@@ -27,8 +27,8 @@ use sos24_use_case::file::FileUseCaseError;
 use sos24_use_case::form::FormUseCaseError;
 use sos24_use_case::form_answer::FormAnswerUseCaseError;
 use sos24_use_case::{
-    context::ContextError, invitation::InvitationUseCaseError, news::NewsUseCaseError,
-    project::ProjectUseCaseError, user::UserUseCaseError,
+    invitation::InvitationUseCaseError, news::NewsUseCaseError, project::ProjectUseCaseError,
+    shared::context::ContextError, user::UserUseCaseError,
 };
 
 use crate::csv::CsvSerializationError;

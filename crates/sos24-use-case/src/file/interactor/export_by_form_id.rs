@@ -13,9 +13,9 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 use sos24_domain::{ensure, repository::file_data::FileDataRepository};
 
-use crate::context::ContextProvider;
 use crate::file::dto::ArchiveToBeExportedDto;
 use crate::file::{FileUseCase, FileUseCaseError};
+use crate::shared::context::ContextProvider;
 
 impl<R: Repositories> FileUseCase<R> {
     pub async fn export_by_form_id(

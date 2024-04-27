@@ -10,9 +10,9 @@ use sos24_domain::{
     service::verify_form_answer,
 };
 
-use crate::context::{ContextProvider, OwnedProject};
 use crate::form_answer::dto::CreateFormAnswerDto;
 use crate::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError};
+use crate::shared::context::{ContextProvider, OwnedProject};
 use crate::ToEntity;
 
 impl<R: Repositories> FormAnswerUseCase<R> {
@@ -107,11 +107,11 @@ mod tests {
     };
 
     use crate::{
-        context::TestContext,
         form_answer::{
             dto::{CreateFormAnswerDto, FormAnswerItemDto},
             FormAnswerUseCase, FormAnswerUseCaseError,
         },
+        shared::context::TestContext,
         FromEntity,
     };
 

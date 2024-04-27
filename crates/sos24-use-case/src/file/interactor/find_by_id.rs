@@ -7,9 +7,9 @@ use sos24_domain::{
     repository::Repositories,
 };
 
-use crate::context::ContextProvider;
 use crate::file::dto::{FileDto, FileEntity};
 use crate::file::{FileUseCase, FileUseCaseError};
+use crate::shared::context::ContextProvider;
 use crate::FromEntity;
 
 impl<R: Repositories> FileUseCase<R> {
@@ -64,8 +64,8 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::TestContext;
     use crate::file::{FileUseCase, FileUseCaseError};
+    use crate::shared::context::TestContext;
 
     #[tokio::test]
     async fn 一般ユーザーは一般公開のファイルを取得できる() {

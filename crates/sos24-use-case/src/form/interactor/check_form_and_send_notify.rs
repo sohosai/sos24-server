@@ -4,12 +4,12 @@ use sos24_domain::repository::{
 };
 
 use crate::{
-    adapter::{
+    form::{FormUseCase, FormUseCaseError},
+    shared::adapter::{
         email::{Email, EmailSender, SendEmailCommand},
         Adapters,
     },
-    context::ContextProvider,
-    form::{FormUseCase, FormUseCaseError},
+    shared::context::ContextProvider,
 };
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {

@@ -7,8 +7,8 @@ use sos24_domain::{
 };
 
 use crate::{
-    context::ContextProvider,
     invitation::{InvitationUseCase, InvitationUseCaseError},
+    shared::context::ContextProvider,
 };
 
 impl<R: Repositories> InvitationUseCase<R> {
@@ -72,7 +72,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{context::TestContext, invitation::InvitationUseCase};
+    use crate::{invitation::InvitationUseCase, shared::context::TestContext};
 
     #[tokio::test]
     async fn 一般ユーザーは招待を受けられる() {

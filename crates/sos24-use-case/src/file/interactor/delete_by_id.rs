@@ -2,8 +2,8 @@ use sos24_domain::entity::permission::Permissions;
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{ensure, entity::file_data::FileId, repository::Repositories};
 
-use crate::context::ContextProvider;
 use crate::file::{FileUseCase, FileUseCaseError};
+use crate::shared::context::ContextProvider;
 
 impl<R: Repositories> FileUseCase<R> {
     pub async fn delete_by_id(
@@ -39,8 +39,8 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::TestContext;
     use crate::file::{FileUseCase, FileUseCaseError};
+    use crate::shared::context::TestContext;
 
     #[tokio::test]
     async fn 実委人はファイルを削除できない() {

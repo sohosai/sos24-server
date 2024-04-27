@@ -5,9 +5,9 @@ use sos24_domain::{
 };
 
 use crate::{
-    adapter::Adapters,
-    context::ContextProvider,
     form::{dto::FormSummaryDto, FormUseCase, FormUseCaseError},
+    shared::adapter::Adapters,
+    shared::context::ContextProvider,
     FromEntity,
 };
 
@@ -36,7 +36,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{adapter::MockAdapters, context::TestContext, form::FormUseCase};
+    use crate::{form::FormUseCase, shared::adapter::MockAdapters, shared::context::TestContext};
 
     #[tokio::test]
     async fn 一般ユーザーは申請一覧を取得できる() {

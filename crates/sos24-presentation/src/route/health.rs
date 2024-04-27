@@ -22,7 +22,7 @@ mod test {
         http::{Request, StatusCode},
     };
     use sos24_domain::test::repository::MockRepositories;
-    use sos24_use_case::adapter::MockAdapters;
+    use sos24_use_case::shared::adapter::MockAdapters;
     use tower::ServiceExt;
 
     use crate::{module, route::create_app};

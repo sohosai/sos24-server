@@ -4,8 +4,8 @@ use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::{
-    context::{ContextProvider, OwnedProject},
     project::{dto::ProjectDto, ProjectUseCase, ProjectUseCaseError},
+    shared::context::{ContextProvider, OwnedProject},
     FromEntity,
 };
 

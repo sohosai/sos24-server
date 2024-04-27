@@ -8,7 +8,7 @@ use axum::{
     Extension, Json,
 };
 
-use sos24_use_case::context::ContextProvider;
+use sos24_use_case::shared::context::ContextProvider;
 use sos24_use_case::user::dto::CreateUserDto;
 
 use crate::context::Context;

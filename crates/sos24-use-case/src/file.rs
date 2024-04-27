@@ -12,7 +12,7 @@ use sos24_domain::repository::form_answer::FormAnswerRepositoryError;
 use sos24_domain::repository::project::ProjectRepositoryError;
 use sos24_domain::{entity::permission::PermissionDeniedError, repository::Repositories};
 
-use crate::context::ContextError;
+use crate::shared::context::ContextError;
 
 pub mod dto;
 pub mod interactor;

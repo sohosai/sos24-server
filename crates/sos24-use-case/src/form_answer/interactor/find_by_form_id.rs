@@ -5,9 +5,9 @@ use sos24_domain::{
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::context::ContextProvider;
 use crate::form_answer::dto::FormAnswerDto;
 use crate::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError};
+use crate::shared::context::ContextProvider;
 use crate::FromEntity;
 
 impl<R: Repositories> FormAnswerUseCase<R> {
@@ -63,8 +63,8 @@ mod tests {
     };
 
     use crate::{
-        context::TestContext,
         form_answer::{FormAnswerUseCase, FormAnswerUseCaseError},
+        shared::context::TestContext,
     };
 
     #[tokio::test]

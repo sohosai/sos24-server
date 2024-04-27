@@ -1,4 +1,4 @@
-use sos24_use_case::context::{self, ContextProvider};
+use sos24_use_case::shared::context::{self, ContextProvider};
 
 use crate::config::Config;
 

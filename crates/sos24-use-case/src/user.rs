@@ -10,7 +10,7 @@ use sos24_domain::repository::project::ProjectRepositoryError;
 use sos24_domain::repository::user::UserRepositoryError;
 use sos24_domain::repository::Repositories;
 
-use crate::context::ContextError;
+use crate::shared::context::ContextError;
 
 pub mod dto;
 pub mod interactor;

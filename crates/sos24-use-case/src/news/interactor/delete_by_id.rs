@@ -5,9 +5,9 @@ use sos24_domain::{
 };
 
 use crate::{
-    adapter::Adapters,
-    context::ContextProvider,
     news::{NewsUseCase, NewsUseCaseError},
+    shared::adapter::Adapters,
+    shared::context::ContextProvider,
 };
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
@@ -41,9 +41,9 @@ mod tests {
     };
 
     use crate::{
-        adapter::MockAdapters,
-        context::TestContext,
         news::{NewsUseCase, NewsUseCaseError},
+        shared::adapter::MockAdapters,
+        shared::context::TestContext,
     };
 
     #[tokio::test]

@@ -7,8 +7,8 @@ use sos24_domain::repository::invitation::InvitationRepository;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::ContextProvider;
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
+use crate::shared::context::ContextProvider;
 
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn delete_by_id(
@@ -59,8 +59,8 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::TestContext;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::context::TestContext;
 
     #[tokio::test]
     async fn 実委人は企画を削除できない() {

@@ -4,8 +4,8 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::{
-    context::{ContextProvider, OwnedProject},
     project::{dto::CreateProjectDto, ProjectUseCase, ProjectUseCaseError},
+    shared::context::{ContextProvider, OwnedProject},
     ToEntity,
 };
 
@@ -59,9 +59,9 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::TestContext;
     use crate::project::dto::{CreateProjectDto, ProjectCategoryDto};
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::context::TestContext;
     use crate::FromEntity;
 
     #[tokio::test]

@@ -5,10 +5,10 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
-use crate::adapter::Adapters;
-use crate::context::{ContextProvider, OwnedProject};
 use crate::form::dto::FormDto;
 use crate::form::{FormUseCase, FormUseCaseError};
+use crate::shared::adapter::Adapters;
+use crate::shared::context::{ContextProvider, OwnedProject};
 use crate::FromEntity;
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
@@ -60,7 +60,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::{adapter::MockAdapters, context::TestContext, form::FormUseCase};
+    use crate::{form::FormUseCase, shared::adapter::MockAdapters, shared::context::TestContext};
 
     #[tokio::test]
     async fn 一般ユーザーは申請を取得できる() {

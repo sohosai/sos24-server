@@ -6,10 +6,10 @@ use sos24_domain::{
     repository::{form::FormRepository, Repositories},
 };
 
-use crate::adapter::Adapters;
-use crate::context::ContextProvider;
 use crate::form::dto::FormSummaryDto;
 use crate::form::{FormUseCase, FormUseCaseError};
+use crate::shared::adapter::Adapters;
+use crate::shared::context::ContextProvider;
 use crate::FromEntity;
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
@@ -59,9 +59,9 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::adapter::MockAdapters;
-    use crate::context::TestContext;
     use crate::form::{FormUseCase, FormUseCaseError};
+    use crate::shared::adapter::MockAdapters;
+    use crate::shared::context::TestContext;
 
     #[tokio::test]
     async fn 一般ユーザーは自分の企画を対象にした申請一覧を取得できる() {

@@ -7,9 +7,9 @@ use sos24_domain::entity::project::{
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::context::ContextProvider;
 use crate::project::dto::UpdateProjectDto;
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
+use crate::shared::context::ContextProvider;
 use crate::ToEntity;
 
 impl<R: Repositories> ProjectUseCase<R> {
@@ -78,9 +78,9 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::context::TestContext;
     use crate::project::dto::{ProjectCategoryDto, UpdateProjectDto};
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::context::TestContext;
     use crate::FromEntity;
 
     #[tokio::test]

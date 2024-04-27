@@ -6,9 +6,9 @@ use sos24_domain::{
     repository::{invitation::InvitationRepository, Repositories},
 };
 
-use crate::context::ContextProvider;
 use crate::invitation::dto::InvitationDto;
 use crate::invitation::{InvitationUseCase, InvitationUseCaseError};
+use crate::shared::context::ContextProvider;
 use crate::FromEntity;
 
 impl<R: Repositories> InvitationUseCase<R> {
@@ -60,8 +60,8 @@ mod tests {
     };
 
     use crate::{
-        context::TestContext,
         invitation::{InvitationUseCase, InvitationUseCaseError},
+        shared::context::TestContext,
     };
 
     #[tokio::test]

@@ -17,7 +17,7 @@ use sos24_domain::{
     },
 };
 
-use crate::context::ContextError;
+use crate::shared::context::ContextError;
 
 pub mod dto;
 pub mod interactor;
