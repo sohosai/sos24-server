@@ -6,7 +6,6 @@ use sos24_domain::repository::Repositories;
 use crate::{
     project::{dto::ProjectDto, ProjectUseCase, ProjectUseCaseError},
     shared::context::{ContextProvider, OwnedProject},
-    FromEntity,
 };
 
 impl<R: Repositories> ProjectUseCase<R> {
@@ -45,7 +44,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             None => None,
         };
 
-        let mut project = ProjectDto::from_entity((raw_project, raw_owner, raw_sub_owner));
+        let mut project = ProjectDto::from((raw_project, raw_owner, raw_sub_owner));
         if !actor.has_permission(Permissions::READ_PROJECT_ALL) {
             project.remarks = None;
         }

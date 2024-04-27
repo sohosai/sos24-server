@@ -10,7 +10,6 @@ use crate::form::dto::FormSummaryDto;
 use crate::form::{FormUseCase, FormUseCaseError};
 use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
-use crate::FromEntity;
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn find_by_project_id(
@@ -44,7 +43,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
                 .form_answer_repository()
                 .find_by_project_id_and_form_id(project_id.clone(), form_id)
                 .await?;
-            form_list.push(FormSummaryDto::from_entity((form, form_answer)));
+            form_list.push(FormSummaryDto::from((form, form_answer)));
         }
         Ok(form_list)
     }

@@ -10,7 +10,6 @@ use sos24_domain::entity::{
 };
 
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
-use crate::FromEntity;
 
 #[derive(Debug)]
 pub struct NewFormItemDto {
@@ -65,9 +64,10 @@ pub struct FormDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for FormDto {
-    type Entity = (WithDate<Form>, Option<WithDate<FormAnswer>>);
-    fn from_entity((form_entity, form_answer_entity): Self::Entity) -> Self {
+impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormDto {
+    fn from(
+        (form_entity, form_answer_entity): (WithDate<Form>, Option<WithDate<FormAnswer>>),
+    ) -> Self {
         let form = form_entity.value.destruct();
         let (answer_id, answered_at) = form_answer_entity
             .map(|form_answer_entity| {
@@ -84,11 +84,7 @@ impl FromEntity for FormDto {
             ends_at: form.ends_at.value(),
             categories: ProjectCategoriesDto::from(form.categories),
             attributes: ProjectAttributesDto::from(form.attributes),
-            items: form
-                .items
-                .into_iter()
-                .map(FormItemDto::from_entity)
-                .collect(),
+            items: form.items.into_iter().map(FormItemDto::from).collect(),
             attachments: form
                 .attachments
                 .into_iter()
@@ -117,9 +113,10 @@ pub struct FormSummaryDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl FromEntity for FormSummaryDto {
-    type Entity = (WithDate<Form>, Option<WithDate<FormAnswer>>);
-    fn from_entity((form_entity, form_answer_entity): Self::Entity) -> Self {
+impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormSummaryDto {
+    fn from(
+        (form_entity, form_answer_entity): (WithDate<Form>, Option<WithDate<FormAnswer>>),
+    ) -> Self {
         let form = form_entity.value.destruct();
         let (answer_id, answered_at) = form_answer_entity
             .map(|form_answer_entity| {
@@ -181,16 +178,15 @@ impl From<FormItemDto> for FormItem {
     }
 }
 
-impl FromEntity for FormItemDto {
-    type Entity = FormItem;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<FormItem> for FormItemDto {
+    fn from(entity: FormItem) -> Self {
         let entity = entity.destruct();
         Self::new(
             entity.id.value().to_string(),
             entity.name.value(),
             entity.description.map(|it| it.value()),
             entity.required.value(),
-            FormItemKindDto::from_entity(entity.kind),
+            FormItemKindDto::from(entity.kind),
         )
     }
 }
@@ -255,9 +251,8 @@ impl From<FormItemKindDto> for FormItemKind {
     }
 }
 
-impl FromEntity for FormItemKindDto {
-    type Entity = FormItemKind;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<FormItemKind> for FormItemKindDto {
+    fn from(entity: FormItemKind) -> Self {
         match entity {
             FormItemKind::String(item) => {
                 let item = item.destruct();

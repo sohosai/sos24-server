@@ -8,7 +8,6 @@ use sos24_domain::repository::Repositories;
 use crate::project::dto::ProjectDto;
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
 use crate::shared::context::ContextProvider;
-use crate::FromEntity;
 
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn find_by_id(
@@ -48,7 +47,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             None => None,
         };
 
-        let mut project = ProjectDto::from_entity((raw_project, raw_owner, raw_sub_owner));
+        let mut project = ProjectDto::from((raw_project, raw_owner, raw_sub_owner));
         if !actor.has_permission(Permissions::READ_PROJECT_ALL) {
             project.remarks = None;
         }

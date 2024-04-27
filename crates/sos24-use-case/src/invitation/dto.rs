@@ -5,8 +5,6 @@ use sos24_domain::entity::{
     invitation::{Invitation, InvitationPosition},
 };
 
-use crate::FromEntity;
-
 #[derive(Debug)]
 pub struct InvitationDto {
     pub id: String,
@@ -21,9 +19,14 @@ pub struct InvitationDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for InvitationDto {
-    type Entity = (WithDate<Invitation>, WithDate<User>, WithDate<Project>);
-    fn from_entity((invitation_entity, user_entity, project_entity): Self::Entity) -> Self {
+impl From<(WithDate<Invitation>, WithDate<User>, WithDate<Project>)> for InvitationDto {
+    fn from(
+        (invitation_entity, user_entity, project_entity): (
+            WithDate<Invitation>,
+            WithDate<User>,
+            WithDate<Project>,
+        ),
+    ) -> Self {
         let invitation = invitation_entity.value.destruct();
         let inviter = user_entity.value.destruct();
         let project = project_entity.value.destruct();
@@ -34,7 +37,7 @@ impl FromEntity for InvitationDto {
             inviter_name: inviter.name.value().to_string(),
             project_id: invitation.project_id.value().to_string(),
             project_title: project.title.value().to_string(),
-            position: InvitationPositionDto::from_entity(invitation.position),
+            position: InvitationPositionDto::from(invitation.position),
             used_by: invitation.used_by.map(|id| id.value().to_string()),
             created_at: invitation_entity.created_at,
             updated_at: invitation_entity.updated_at,
@@ -58,9 +61,8 @@ impl From<InvitationPositionDto> for InvitationPosition {
     }
 }
 
-impl FromEntity for InvitationPositionDto {
-    type Entity = InvitationPosition;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<InvitationPosition> for InvitationPositionDto {
+    fn from(entity: InvitationPosition) -> Self {
         match entity {
             InvitationPosition::Owner => Self::Owner,
             InvitationPosition::SubOwner => Self::SubOwner,

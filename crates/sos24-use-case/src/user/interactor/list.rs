@@ -7,7 +7,6 @@ use sos24_domain::{
 use crate::{
     shared::context::ContextProvider,
     user::{dto::UserDto, UserUseCase, UserUseCaseError},
-    FromEntity,
 };
 
 impl<R: Repositories> UserUseCase<R> {
@@ -18,7 +17,7 @@ impl<R: Repositories> UserUseCase<R> {
         let raw_user_list = self.repositories.user_repository().list().await?;
         let user_list = raw_user_list
             .into_iter()
-            .map(|raw_user| UserDto::from_entity((raw_user, None)));
+            .map(|raw_user| UserDto::from((raw_user, None)));
         Ok(user_list.collect())
     }
 }

@@ -4,8 +4,6 @@ use sos24_domain::entity::{
     user::{User, UserRole},
 };
 
-use crate::FromEntity;
-
 #[derive(Debug)]
 pub struct UserDto {
     pub id: String,
@@ -21,9 +19,8 @@ pub struct UserDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for UserDto {
-    type Entity = (WithDate<User>, Option<WithDate<Project>>);
-    fn from_entity((user_entity, project_entity): Self::Entity) -> Self {
+impl From<(WithDate<User>, Option<WithDate<Project>>)> for UserDto {
+    fn from((user_entity, project_entity): (WithDate<User>, Option<WithDate<Project>>)) -> Self {
         let user = user_entity.value.destruct();
         let (project_id, project_title) = match project_entity {
             Some(project) => {
@@ -39,7 +36,7 @@ impl FromEntity for UserDto {
             kana_name: user.kana_name.value(),
             email: user.email.value(),
             phone_number: user.phone_number.value(),
-            role: UserRoleDto::from_entity(user.role),
+            role: UserRoleDto::from(user.role),
             owned_project_id: project_id.map(|id| id.to_string()),
             owned_project_title: project_title,
             created_at: user_entity.created_at,
@@ -68,9 +65,8 @@ impl From<UserRoleDto> for UserRole {
     }
 }
 
-impl FromEntity for UserRoleDto {
-    type Entity = UserRole;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<UserRole> for UserRoleDto {
+    fn from(entity: UserRole) -> Self {
         match entity {
             UserRole::Administrator => UserRoleDto::Administrator,
             UserRole::CommitteeOperator => UserRoleDto::CommitteeOperator,

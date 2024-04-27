@@ -9,7 +9,6 @@ use crate::form::dto::FormDto;
 use crate::form::{FormUseCase, FormUseCaseError};
 use crate::shared::adapter::Adapters;
 use crate::shared::context::{ContextProvider, OwnedProject};
-use crate::FromEntity;
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn find_by_id(
@@ -47,7 +46,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             None => None,
         };
 
-        Ok(FormDto::from_entity((raw_form, raw_form_answer)))
+        Ok(FormDto::from((raw_form, raw_form_answer)))
     }
 }
 

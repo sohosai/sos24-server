@@ -4,8 +4,6 @@ use sos24_domain::entity::{
     common::date::WithDate, file_data::FileData, file_object::FileSignedUrl,
 };
 
-use crate::FromEntity;
-
 #[derive(Debug, PartialEq, Eq)]
 pub struct FileDto {
     pub id: String,
@@ -26,9 +24,8 @@ pub struct FileInfoDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for FileInfoDto {
-    type Entity = WithDate<FileData>;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<WithDate<FileData>> for FileInfoDto {
+    fn from(entity: WithDate<FileData>) -> Self {
         let filedata = entity.value.destruct();
         Self {
             id: filedata.id.value().to_string(),
@@ -41,30 +38,17 @@ impl FromEntity for FileInfoDto {
     }
 }
 
-pub struct FileEntity {
-    url: FileSignedUrl,
-    data: WithDate<FileData>,
-}
-
-impl FileEntity {
-    pub fn new(url: FileSignedUrl, data: WithDate<FileData>) -> Self {
-        Self { url, data }
-    }
-}
-
-impl FromEntity for FileDto {
-    type Entity = FileEntity;
-    fn from_entity(entity: Self::Entity) -> Self {
-        let file_data = entity.data.value.destruct();
-        let url = entity.url;
+impl From<(FileSignedUrl, WithDate<FileData>)> for FileDto {
+    fn from((url, file_data_entity): (FileSignedUrl, WithDate<FileData>)) -> Self {
+        let file_data = file_data_entity.value.destruct();
         Self {
             id: file_data.id.value().to_string(),
             filename: file_data.name.value().to_string(),
             url: url.value().to_string(),
             owner: file_data.owner.map(|it| it.value().to_string()),
-            created_at: entity.data.created_at,
-            updated_at: entity.data.updated_at,
-            deleted_at: entity.data.deleted_at,
+            created_at: file_data_entity.created_at,
+            updated_at: file_data_entity.updated_at,
+            deleted_at: file_data_entity.deleted_at,
         }
     }
 }

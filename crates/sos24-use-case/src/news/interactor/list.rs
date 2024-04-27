@@ -8,7 +8,6 @@ use crate::{
     news::{dto::NewsDto, NewsUseCase, NewsUseCaseError},
     shared::adapter::Adapters,
     shared::context::ContextProvider,
-    FromEntity,
 };
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
@@ -17,7 +16,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
 
         let raw_news_list = self.repositories.news_repository().list().await?;
-        let news_list = raw_news_list.into_iter().map(NewsDto::from_entity);
+        let news_list = raw_news_list.into_iter().map(NewsDto::from);
         Ok(news_list.collect())
     }
 }

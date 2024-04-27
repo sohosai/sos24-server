@@ -10,8 +10,6 @@ use sos24_domain::entity::{
     },
 };
 
-use crate::FromEntity;
-
 use super::FormAnswerUseCaseError;
 
 #[derive(Debug)]
@@ -27,9 +25,14 @@ pub struct FormAnswerDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for FormAnswerDto {
-    type Entity = (WithDate<FormAnswer>, WithDate<Project>, WithDate<Form>);
-    fn from_entity((form_answer_entity, project_entity, form_entity): Self::Entity) -> Self {
+impl From<(WithDate<FormAnswer>, WithDate<Project>, WithDate<Form>)> for FormAnswerDto {
+    fn from(
+        (form_answer_entity, project_entity, form_entity): (
+            WithDate<FormAnswer>,
+            WithDate<Project>,
+            WithDate<Form>,
+        ),
+    ) -> Self {
         let form_answer = form_answer_entity.value.destruct();
         let project = project_entity.value.destruct();
         let form = form_entity.value.destruct();
@@ -43,7 +46,7 @@ impl FromEntity for FormAnswerDto {
             items: form_answer
                 .items
                 .into_iter()
-                .map(FormAnswerItemDto::from_entity)
+                .map(FormAnswerItemDto::from)
                 .collect(),
             created_at: form_answer_entity.created_at,
             updated_at: form_answer_entity.updated_at,
@@ -74,13 +77,12 @@ impl TryFrom<FormAnswerItemDto> for FormAnswerItem {
     }
 }
 
-impl FromEntity for FormAnswerItemDto {
-    type Entity = FormAnswerItem;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<FormAnswerItem> for FormAnswerItemDto {
+    fn from(entity: FormAnswerItem) -> Self {
         let entity = entity.destruct();
         Self::new(
             entity.item_id.value().to_string(),
-            FormAnswerItemKindDto::from_entity(entity.kind),
+            FormAnswerItemKindDto::from(entity.kind),
         )
     }
 }
@@ -122,9 +124,8 @@ impl TryFrom<FormAnswerItemKindDto> for FormAnswerItemKind {
     }
 }
 
-impl FromEntity for FormAnswerItemKindDto {
-    type Entity = FormAnswerItemKind;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<FormAnswerItemKind> for FormAnswerItemKindDto {
+    fn from(entity: FormAnswerItemKind) -> Self {
         match entity {
             FormAnswerItemKind::String(value) => {
                 FormAnswerItemKindDto::String(value.value().to_string())

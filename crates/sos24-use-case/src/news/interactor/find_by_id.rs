@@ -8,7 +8,6 @@ use crate::{
     news::{dto::NewsDto, NewsUseCase, NewsUseCaseError},
     shared::adapter::Adapters,
     shared::context::ContextProvider,
-    FromEntity,
 };
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
@@ -27,7 +26,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
             .find_by_id(id.clone())
             .await?
             .ok_or(NewsUseCaseError::NotFound(id))?;
-        Ok(NewsDto::from_entity(raw_news))
+        Ok(NewsDto::from(raw_news))
     }
 }
 

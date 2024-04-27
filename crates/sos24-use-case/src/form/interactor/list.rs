@@ -8,7 +8,6 @@ use crate::{
     form::{dto::FormSummaryDto, FormUseCase, FormUseCaseError},
     shared::adapter::Adapters,
     shared::context::ContextProvider,
-    FromEntity,
 };
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
@@ -22,7 +21,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let raw_form_list = self.repositories.form_repository().list().await?;
         let form_list = raw_form_list
             .into_iter()
-            .map(|raw_form| FormSummaryDto::from_entity((raw_form, None)));
+            .map(|raw_form| FormSummaryDto::from((raw_form, None)));
         Ok(form_list.collect())
     }
 }

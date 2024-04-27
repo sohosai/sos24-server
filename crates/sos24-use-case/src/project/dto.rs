@@ -8,8 +8,6 @@ use sos24_domain::entity::{
     project::{Project, ProjectAttributes, ProjectCategory},
 };
 
-use crate::FromEntity;
-
 #[derive(Debug)]
 pub struct ProjectDto {
     pub id: String,
@@ -32,9 +30,8 @@ pub struct ProjectDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for ProjectDto {
-    type Entity = (WithDate<Project>, WithDate<User>, Option<WithDate<User>>);
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<(WithDate<Project>, WithDate<User>, Option<WithDate<User>>)> for ProjectDto {
+    fn from(entity: (WithDate<Project>, WithDate<User>, Option<WithDate<User>>)) -> Self {
         let (project_entity, owner_entity, sub_owner_entity) = entity;
         let project = project_entity.value.destruct();
         let owner = owner_entity.value.destruct();

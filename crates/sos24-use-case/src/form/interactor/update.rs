@@ -94,7 +94,6 @@ mod tests {
         },
         project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
         shared::{adapter::MockAdapters, context::TestContext},
-        FromEntity,
     };
 
     #[tokio::test]
@@ -119,7 +118,7 @@ mod tests {
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
-                        FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
+                        FormItemKindDto::from(fixture::form::formitem_kind2()),
                     )],
                     attachments: fixture::form::attachments2()
                         .into_iter()
@@ -170,7 +169,7 @@ mod tests {
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
-                        FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
+                        FormItemKindDto::from(fixture::form::formitem_kind2()),
                     )],
                     attachments: fixture::form::attachments2()
                         .into_iter()
@@ -216,7 +215,7 @@ mod tests {
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
-                        FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
+                        FormItemKindDto::from(fixture::form::formitem_kind2()),
                     )],
                     attachments: fixture::form::attachments2()
                         .into_iter()

@@ -83,7 +83,6 @@ mod tests {
             FormAnswerUseCaseError,
         },
         shared::context::TestContext,
-        FromEntity,
     };
 
     #[tokio::test]
@@ -123,7 +122,7 @@ mod tests {
                     id: fixture::form_answer::id1().value().to_string(),
                     items: fixture::form_answer::items2()
                         .into_iter()
-                        .map(FormAnswerItemDto::from_entity)
+                        .map(FormAnswerItemDto::from)
                         .collect(),
                 },
             )
@@ -168,7 +167,7 @@ mod tests {
                     id: fixture::form_answer::id1().value().to_string(),
                     items: fixture::form_answer::items2()
                         .into_iter()
-                        .map(FormAnswerItemDto::from_entity)
+                        .map(FormAnswerItemDto::from)
                         .collect(),
                 },
             )
@@ -218,7 +217,7 @@ mod tests {
                     id: fixture::form_answer::id1().value().to_string(),
                     items: fixture::form_answer::items2()
                         .into_iter()
-                        .map(FormAnswerItemDto::from_entity)
+                        .map(FormAnswerItemDto::from)
                         .collect(),
                 },
             )

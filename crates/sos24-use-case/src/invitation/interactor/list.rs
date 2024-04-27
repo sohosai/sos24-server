@@ -9,7 +9,6 @@ use sos24_domain::{
 use crate::invitation::dto::InvitationDto;
 use crate::invitation::{InvitationUseCase, InvitationUseCaseError};
 use crate::shared::context::ContextProvider;
-use crate::FromEntity;
 
 impl<R: Repositories> InvitationUseCase<R> {
     pub async fn list(
@@ -39,7 +38,7 @@ impl<R: Repositories> InvitationUseCase<R> {
                 .await?
                 .ok_or(InvitationUseCaseError::ProjectNotFound(project_id.clone()))?;
 
-            invitation_list.push(InvitationDto::from_entity((
+            invitation_list.push(InvitationDto::from((
                 raw_invitation,
                 raw_inviter,
                 raw_project,

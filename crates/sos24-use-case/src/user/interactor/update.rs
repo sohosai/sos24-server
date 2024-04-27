@@ -84,7 +84,6 @@ mod tests {
     use crate::user::dto::UserRoleDto;
     use crate::user::interactor::update::UpdateUserCommand;
     use crate::user::{UserUseCase, UserUseCaseError};
-    use crate::FromEntity;
 
     #[tokio::test]
     async fn 実委人は自分のユーザーを更新できる() {
@@ -117,7 +116,7 @@ mod tests {
                     kana_name: fixture::user::kana_name2().value(),
                     email: fixture::user::email2().value(),
                     phone_number: fixture::user::phone_number2().value(),
-                    role: UserRoleDto::from_entity(UserRole::General),
+                    role: UserRoleDto::from(UserRole::General),
                 },
             )
             .await;
@@ -151,7 +150,7 @@ mod tests {
                     kana_name: fixture::user::kana_name1().value(),
                     email: fixture::user::email1().value(),
                     phone_number: fixture::user::phone_number1().value(),
-                    role: UserRoleDto::from_entity(UserRole::Administrator),
+                    role: UserRoleDto::from(UserRole::Administrator),
                 },
             )
             .await;
@@ -190,7 +189,7 @@ mod tests {
                     kana_name: fixture::user::kana_name2().value(),
                     email: fixture::user::email2().value(),
                     phone_number: fixture::user::phone_number2().value(),
-                    role: UserRoleDto::from_entity(UserRole::General),
+                    role: UserRoleDto::from(UserRole::General),
                 },
             )
             .await;
@@ -229,7 +228,7 @@ mod tests {
                     kana_name: fixture::user::kana_name2().value(),
                     email: fixture::user::email2().value(),
                     phone_number: fixture::user::phone_number2().value(),
-                    role: UserRoleDto::from_entity(UserRole::Administrator),
+                    role: UserRoleDto::from(UserRole::Administrator),
                 },
             )
             .await;

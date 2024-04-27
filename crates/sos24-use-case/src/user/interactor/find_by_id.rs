@@ -8,7 +8,6 @@ use sos24_domain::repository::{user::UserRepository, Repositories};
 use crate::shared::context::ContextProvider;
 use crate::user::dto::UserDto;
 use crate::user::{UserUseCase, UserUseCaseError};
-use crate::FromEntity;
 
 impl<R: Repositories> UserUseCase<R> {
     pub async fn find_by_id(
@@ -28,7 +27,7 @@ impl<R: Repositories> UserUseCase<R> {
 
         if raw_user.value.is_visible_to(&actor) {
             let raw_project = find_owned_project(user_id.clone(), &*self.repositories).await?;
-            Ok(UserDto::from_entity((raw_user, raw_project)))
+            Ok(UserDto::from((raw_user, raw_project)))
         } else {
             Err(UserUseCaseError::PermissionDeniedError(
                 PermissionDeniedError,

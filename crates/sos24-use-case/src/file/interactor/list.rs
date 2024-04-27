@@ -5,7 +5,6 @@ use sos24_domain::{ensure, repository::file_data::FileDataRepository};
 use crate::file::dto::FileInfoDto;
 use crate::file::{FileUseCase, FileUseCaseError};
 use crate::shared::context::ContextProvider;
-use crate::FromEntity;
 
 impl<R: Repositories> FileUseCase<R> {
     pub async fn list(
@@ -17,7 +16,7 @@ impl<R: Repositories> FileUseCase<R> {
         let raw_file_data_list = self.repositories.file_data_repository().list().await?;
         Ok(raw_file_data_list
             .into_iter()
-            .map(FileInfoDto::from_entity)
+            .map(FileInfoDto::from)
             .collect())
     }
 }

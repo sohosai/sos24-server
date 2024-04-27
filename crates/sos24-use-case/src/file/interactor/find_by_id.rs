@@ -7,10 +7,9 @@ use sos24_domain::{
     repository::Repositories,
 };
 
-use crate::file::dto::{FileDto, FileEntity};
+use crate::file::dto::FileDto;
 use crate::file::{FileUseCase, FileUseCaseError};
 use crate::shared::context::ContextProvider;
-use crate::FromEntity;
 
 impl<R: Repositories> FileUseCase<R> {
     pub async fn find_by_id(
@@ -48,10 +47,7 @@ impl<R: Repositories> FileUseCase<R> {
                 )),
             )
             .await?;
-        Ok(FileDto::from_entity(FileEntity::new(
-            signed_url,
-            raw_file_data,
-        )))
+        Ok(FileDto::from((signed_url, raw_file_data)))
     }
 }
 

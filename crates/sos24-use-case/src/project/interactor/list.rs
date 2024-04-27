@@ -7,7 +7,6 @@ use sos24_domain::repository::Repositories;
 use crate::project::dto::ProjectDto;
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
 use crate::shared::context::ContextProvider;
-use crate::FromEntity;
 
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn list(
@@ -41,11 +40,7 @@ impl<R: Repositories> ProjectUseCase<R> {
                 None => None,
             };
 
-            project_list.push(ProjectDto::from_entity((
-                raw_project,
-                raw_owner,
-                raw_sub_owner,
-            )));
+            project_list.push(ProjectDto::from((raw_project, raw_owner, raw_sub_owner)));
         }
         Ok(project_list)
     }

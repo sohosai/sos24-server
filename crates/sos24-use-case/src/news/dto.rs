@@ -1,7 +1,6 @@
 use sos24_domain::entity::{common::date::WithDate, news::News};
 
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
-use crate::FromEntity;
 
 #[derive(Debug)]
 pub struct NewsDto {
@@ -16,9 +15,8 @@ pub struct NewsDto {
     pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl FromEntity for NewsDto {
-    type Entity = WithDate<News>;
-    fn from_entity(entity: Self::Entity) -> Self {
+impl From<WithDate<News>> for NewsDto {
+    fn from(entity: WithDate<News>) -> Self {
         let news = entity.value.destruct();
         Self {
             id: news.id.value().to_string(),

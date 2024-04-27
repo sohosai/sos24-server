@@ -9,7 +9,6 @@ use sos24_domain::{
 use crate::form_answer::dto::FormAnswerDto;
 use crate::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError};
 use crate::shared::context::ContextProvider;
-use crate::FromEntity;
 
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn list(
@@ -39,7 +38,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 .await?
                 .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
 
-            form_answer_list.push(FormAnswerDto::from_entity((
+            form_answer_list.push(FormAnswerDto::from((
                 raw_form_answer,
                 raw_project,
                 raw_form,
