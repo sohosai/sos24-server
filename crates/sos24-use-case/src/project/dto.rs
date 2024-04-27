@@ -2,6 +2,7 @@ use std::fmt;
 use std::fmt::Formatter;
 
 use sos24_domain::entity::project::ProjectCategories;
+use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
 use sos24_domain::entity::user::User;
 use sos24_domain::entity::{
     common::date::WithDate,
@@ -221,5 +222,20 @@ impl From<ProjectAttributes> for ProjectAttributesDto {
                 })
                 .collect(),
         )
+    }
+}
+
+#[derive(Debug)]
+pub struct ProjectApplicationPeriodDto {
+    pub start_at: String,
+    pub end_at: String,
+}
+
+impl From<ProjectApplicationPeriod> for ProjectApplicationPeriodDto {
+    fn from(entity: ProjectApplicationPeriod) -> Self {
+        Self {
+            start_at: entity.start_at().to_rfc3339(),
+            end_at: entity.end_at().to_rfc3339(),
+        }
     }
 }

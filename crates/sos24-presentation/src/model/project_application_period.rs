@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use sos24_use_case::project_application_period::dto::ProjectApplicationPeriodDto;
+use sos24_use_case::project::dto::ProjectApplicationPeriodDto;
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, ToSchema)]
