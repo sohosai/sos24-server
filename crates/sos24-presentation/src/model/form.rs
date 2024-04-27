@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::form::{
+use sos24_use_case::form::dto::{
     CreateFormDto, FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
     UpdateFormDto,
 };
-use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
+use sos24_use_case::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use utoipa::{IntoParams, ToSchema};
 
 use crate::model::project::{ProjectAttribute, ProjectCategory};

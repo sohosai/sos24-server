@@ -12,7 +12,7 @@ use axum::{
 use csv::Writer;
 use percent_encoding::NON_ALPHANUMERIC;
 
-use sos24_use_case::dto::form_answer::CreateFormAnswerDto;
+use sos24_use_case::form_answer::dto::CreateFormAnswerDto;
 
 use crate::context::Context;
 use crate::csv::CsvSerializationError;

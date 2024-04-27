@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::news::{CreateNewsDto, NewsDto, UpdateNewsDto};
-use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
+use sos24_use_case::news::dto::{CreateNewsDto, NewsDto, UpdateNewsDto};
+use sos24_use_case::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
 use utoipa::ToSchema;
 
 use crate::model::project::{ProjectAttribute, ProjectCategory};

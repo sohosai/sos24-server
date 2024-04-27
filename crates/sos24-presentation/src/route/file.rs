@@ -8,7 +8,7 @@ use axum::{Extension, Json};
 use percent_encoding::NON_ALPHANUMERIC;
 use tokio_util::io::ReaderStream;
 
-use sos24_use_case::dto::file::CreateFileDto;
+use sos24_use_case::file::dto::CreateFileDto;
 
 use crate::context::Context;
 use crate::model::file::{CreateFile, CreatedFile, ExportFileQuery};

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::form_answer::{
+use sos24_use_case::form_answer::dto::{
     CreateFormAnswerDto, FormAnswerDto, FormAnswerItemDto, FormAnswerItemKindDto,
     UpdateFormAnswerDto,
 };

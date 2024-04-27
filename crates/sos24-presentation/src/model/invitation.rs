@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::invitation::{CreateInvitationDto, InvitationDto, InvitationPositionDto};
+use sos24_use_case::invitation::dto::{CreateInvitationDto, InvitationDto, InvitationPositionDto};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]

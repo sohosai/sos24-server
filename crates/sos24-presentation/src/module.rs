@@ -4,8 +4,8 @@ use std::sync::Arc;
 
 use crate::config::Config;
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
-use sos24_use_case::interactor::file::FileUseCase;
-use sos24_use_case::interactor::{
+use sos24_use_case::file::FileUseCase;
+use sos24_use_case::{
     form::FormUseCase, form_answer::FormAnswerUseCase, invitation::InvitationUseCase,
     news::NewsUseCase, project::ProjectUseCase, user::UserUseCase,
 };

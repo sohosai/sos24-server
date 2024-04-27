@@ -9,7 +9,7 @@ use axum::{
 };
 
 use sos24_use_case::context::ContextProvider;
-use sos24_use_case::dto::user::CreateUserDto;
+use sos24_use_case::user::dto::CreateUserDto;
 
 use crate::context::Context;
 use crate::csv::serialize_to_csv;

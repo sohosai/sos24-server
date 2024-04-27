@@ -1,7 +1,7 @@
 use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::user::{CreateUserDto, UpdateUserDto, UserDto, UserRoleDto};
+use sos24_use_case::user::dto::{CreateUserDto, UpdateUserDto, UserDto, UserRoleDto};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
