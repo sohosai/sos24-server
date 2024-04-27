@@ -27,28 +27,28 @@ pub struct CreateForm {
 
 impl From<CreateForm> for CreateFormCommand {
     fn from(create_form: CreateForm) -> Self {
-        CreateFormCommand::new(
-            create_form.title,
-            create_form.description,
-            create_form.starts_at,
-            create_form.ends_at,
-            create_form
+        CreateFormCommand {
+            title: create_form.title,
+            description: create_form.description,
+            starts_at: create_form.starts_at,
+            ends_at: create_form.ends_at,
+            categories: create_form
                 .categories
                 .into_iter()
                 .map(ProjectCategoryDto::from)
                 .collect(),
-            create_form
+            attributes: create_form
                 .attributes
                 .into_iter()
                 .map(ProjectAttributeDto::from)
                 .collect(),
-            create_form
+            items: create_form
                 .items
                 .into_iter()
                 .map(NewFormItemDto::from)
                 .collect(),
-            create_form.attachments,
-        )
+            attachments: create_form.attachments,
+        }
     }
 }
 
@@ -100,23 +100,25 @@ pub trait ConvertToUpdateFormDto {
 impl ConvertToUpdateFormDto for (String, UpdateForm) {
     fn to_update_form_dto(self) -> UpdateFormCommand {
         let (id, form) = self;
-        UpdateFormCommand::new(
+        UpdateFormCommand {
             id,
-            form.title,
-            form.description,
-            form.starts_at,
-            form.ends_at,
-            form.categories
+            title: form.title,
+            description: form.description,
+            starts_at: form.starts_at,
+            ends_at: form.ends_at,
+            categories: form
+                .categories
                 .into_iter()
                 .map(ProjectCategoryDto::from)
                 .collect(),
-            form.attributes
+            attributes: form
+                .attributes
                 .into_iter()
                 .map(ProjectAttributeDto::from)
                 .collect(),
-            form.items.into_iter().map(NewFormItemDto::from).collect(),
-            form.attachments,
-        )
+            items: form.items.into_iter().map(NewFormItemDto::from).collect(),
+            attachments: form.attachments,
+        }
     }
 }
 

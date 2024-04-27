@@ -25,26 +25,6 @@ pub struct UpdateNewsCommand {
     pub attributes: Vec<ProjectAttributeDto>,
 }
 
-impl UpdateNewsCommand {
-    pub fn new(
-        id: String,
-        title: String,
-        body: String,
-        attachments: Vec<String>,
-        categories: Vec<ProjectCategoryDto>,
-        attributes: Vec<ProjectAttributeDto>,
-    ) -> Self {
-        Self {
-            id,
-            title,
-            body,
-            attachments,
-            categories,
-            attributes,
-        }
-    }
-}
-
 impl ToEntity for UpdateNewsCommand {
     type Entity = News;
     type Error = NewsUseCaseError;
@@ -164,17 +144,17 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateNewsCommand::new(
-                    fixture::news::id1().value().to_string(),
-                    fixture::news::title2().value(),
-                    fixture::news::body2().value(),
-                    fixture::news::attachments2()
+                UpdateNewsCommand {
+                    id: fixture::news::id1().value().to_string(),
+                    title: fixture::news::title2().value(),
+                    body: fixture::news::body2().value(),
+                    attachments: fixture::news::attachments2()
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    Vec::from_entity(fixture::news::categories2()),
-                    Vec::from_entity(fixture::news::attributes2()),
-                ),
+                    categories: Vec::from_entity(fixture::news::categories2()),
+                    attributes: Vec::from_entity(fixture::news::attributes2()),
+                },
             )
             .await;
         assert!(matches!(
@@ -203,17 +183,17 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateNewsCommand::new(
-                    fixture::news::id1().value().to_string(),
-                    fixture::news::title2().value(),
-                    fixture::news::body2().value(),
-                    fixture::news::attachments2()
+                UpdateNewsCommand {
+                    id: fixture::news::id1().value().to_string(),
+                    title: fixture::news::title2().value(),
+                    body: fixture::news::body2().value(),
+                    attachments: fixture::news::attachments2()
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    Vec::from_entity(fixture::news::categories2()),
-                    Vec::from_entity(fixture::news::attributes2()),
-                ),
+                    categories: Vec::from_entity(fixture::news::categories2()),
+                    attributes: Vec::from_entity(fixture::news::attributes2()),
+                },
             )
             .await;
         assert!(res.is_ok());

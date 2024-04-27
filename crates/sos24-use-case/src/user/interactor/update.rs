@@ -5,9 +5,19 @@ use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
 use crate::shared::context::ContextProvider;
-use crate::user::dto::UpdateUserCommand;
+use crate::user::dto::UserRoleDto;
 use crate::user::{UserUseCase, UserUseCaseError};
 use crate::ToEntity;
+
+#[derive(Debug)]
+pub struct UpdateUserCommand {
+    pub id: String,
+    pub name: String,
+    pub kana_name: String,
+    pub email: String,
+    pub phone_number: String,
+    pub role: UserRoleDto,
+}
 
 impl<R: Repositories> UserUseCase<R> {
     pub async fn update(
@@ -70,7 +80,8 @@ mod tests {
     use sos24_domain::test::{fixture, repository::MockRepositories};
 
     use crate::shared::context::TestContext;
-    use crate::user::dto::{UpdateUserCommand, UserRoleDto};
+    use crate::user::dto::UserRoleDto;
+    use crate::user::interactor::update::UpdateUserCommand;
     use crate::user::{UserUseCase, UserUseCaseError};
     use crate::FromEntity;
 
@@ -99,14 +110,14 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserCommand::new(
-                    fixture::user::id1().value(),
-                    fixture::user::name2().value(),
-                    fixture::user::kana_name2().value(),
-                    fixture::user::email2().value(),
-                    fixture::user::phone_number2().value(),
-                    UserRoleDto::from_entity(UserRole::General),
-                ),
+                UpdateUserCommand {
+                    id: fixture::user::id1().value(),
+                    name: fixture::user::name2().value(),
+                    kana_name: fixture::user::kana_name2().value(),
+                    email: fixture::user::email2().value(),
+                    phone_number: fixture::user::phone_number2().value(),
+                    role: UserRoleDto::from_entity(UserRole::General),
+                },
             )
             .await;
         assert!(matches!(res, Ok(())));
@@ -133,14 +144,14 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserCommand::new(
-                    fixture::user::id1().value(),
-                    fixture::user::name1().value(),
-                    fixture::user::kana_name1().value(),
-                    fixture::user::email1().value(),
-                    fixture::user::phone_number1().value(),
-                    UserRoleDto::from_entity(UserRole::Administrator),
-                ),
+                UpdateUserCommand {
+                    id: fixture::user::id1().value(),
+                    name: fixture::user::name1().value(),
+                    kana_name: fixture::user::kana_name1().value(),
+                    email: fixture::user::email1().value(),
+                    phone_number: fixture::user::phone_number1().value(),
+                    role: UserRoleDto::from_entity(UserRole::Administrator),
+                },
             )
             .await;
         assert!(matches!(
@@ -172,14 +183,14 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserCommand::new(
-                    fixture::user::id2().value(),
-                    fixture::user::name2().value(),
-                    fixture::user::kana_name2().value(),
-                    fixture::user::email2().value(),
-                    fixture::user::phone_number2().value(),
-                    UserRoleDto::from_entity(UserRole::General),
-                ),
+                UpdateUserCommand {
+                    id: fixture::user::id2().value(),
+                    name: fixture::user::name2().value(),
+                    kana_name: fixture::user::kana_name2().value(),
+                    email: fixture::user::email2().value(),
+                    phone_number: fixture::user::phone_number2().value(),
+                    role: UserRoleDto::from_entity(UserRole::General),
+                },
             )
             .await;
         assert!(matches!(
@@ -211,14 +222,14 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateUserCommand::new(
-                    fixture::user::id1().value(),
-                    fixture::user::name2().value(),
-                    fixture::user::kana_name2().value(),
-                    fixture::user::email2().value(),
-                    fixture::user::phone_number2().value(),
-                    UserRoleDto::from_entity(UserRole::Administrator),
-                ),
+                UpdateUserCommand {
+                    id: fixture::user::id1().value(),
+                    name: fixture::user::name2().value(),
+                    kana_name: fixture::user::kana_name2().value(),
+                    email: fixture::user::email2().value(),
+                    phone_number: fixture::user::phone_number2().value(),
+                    role: UserRoleDto::from_entity(UserRole::Administrator),
+                },
             )
             .await;
         assert!(matches!(res, Ok(())));

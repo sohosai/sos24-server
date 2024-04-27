@@ -18,35 +18,13 @@ use crate::{
 
 #[derive(Debug)]
 pub struct CreateProjectCommand {
-    title: String,
-    kana_title: String,
-    group_name: String,
-    kana_group_name: String,
-    category: ProjectCategoryDto,
-    attributes: Vec<ProjectAttributeDto>,
-    owner_id: String,
-}
-
-impl CreateProjectCommand {
-    pub fn new(
-        title: String,
-        kana_title: String,
-        group_name: String,
-        kana_group_name: String,
-        category: ProjectCategoryDto,
-        attributes: Vec<ProjectAttributeDto>,
-        owner_id: String,
-    ) -> Self {
-        Self {
-            title,
-            kana_title,
-            group_name,
-            kana_group_name,
-            category,
-            attributes,
-            owner_id,
-        }
-    }
+    pub title: String,
+    pub kana_title: String,
+    pub group_name: String,
+    pub kana_group_name: String,
+    pub category: ProjectCategoryDto,
+    pub attributes: Vec<ProjectAttributeDto>,
+    pub owner_id: String,
 }
 
 impl ToEntity for CreateProjectCommand {
@@ -146,15 +124,15 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectCommand::new(
-                    fixture::project::title1().value(),
-                    fixture::project::kana_title1().value(),
-                    fixture::project::group_name1().value(),
-                    fixture::project::kana_group_name1().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    Vec::from_entity(fixture::project::attributes1()),
-                    fixture::user::id1().value(),
-                ),
+                CreateProjectCommand {
+                    title: fixture::project::title1().value(),
+                    kana_title: fixture::project::kana_title1().value(),
+                    group_name: fixture::project::group_name1().value(),
+                    kana_group_name: fixture::project::kana_group_name1().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    owner_id: fixture::user::id1().value(),
+                },
             )
             .await;
         assert!(res.is_ok());
@@ -188,15 +166,15 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectCommand::new(
-                    fixture::project::title1().value(),
-                    fixture::project::kana_title1().value(),
-                    fixture::project::group_name1().value(),
-                    fixture::project::kana_group_name1().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    Vec::from_entity(fixture::project::attributes1()),
-                    fixture::user::id1().value(),
-                ),
+                CreateProjectCommand {
+                    title: fixture::project::title1().value(),
+                    kana_title: fixture::project::kana_title1().value(),
+                    group_name: fixture::project::group_name1().value(),
+                    kana_group_name: fixture::project::kana_group_name1().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    owner_id: fixture::user::id1().value(),
+                },
             )
             .await;
         assert!(matches!(
@@ -229,15 +207,15 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectCommand::new(
-                    fixture::project::title1().value(),
-                    fixture::project::kana_title1().value(),
-                    fixture::project::group_name1().value(),
-                    fixture::project::kana_group_name1().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    Vec::from_entity(fixture::project::attributes1()),
-                    fixture::user::id1().value(),
-                ),
+                CreateProjectCommand {
+                    title: fixture::project::title1().value(),
+                    kana_title: fixture::project::kana_title1().value(),
+                    group_name: fixture::project::group_name1().value(),
+                    kana_group_name: fixture::project::kana_group_name1().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    owner_id: fixture::user::id1().value(),
+                },
             )
             .await;
         assert!(matches!(
@@ -270,15 +248,15 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateProjectCommand::new(
-                    fixture::project::title1().value(),
-                    fixture::project::kana_title1().value(),
-                    fixture::project::group_name1().value(),
-                    fixture::project::kana_group_name1().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    Vec::from_entity(fixture::project::attributes1()),
-                    fixture::user::id1().value(),
-                ),
+                CreateProjectCommand {
+                    title: fixture::project::title1().value(),
+                    kana_title: fixture::project::kana_title1().value(),
+                    group_name: fixture::project::group_name1().value(),
+                    kana_group_name: fixture::project::kana_group_name1().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
+                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    owner_id: fixture::user::id1().value(),
+                },
             )
             .await;
         assert!(res.is_ok());

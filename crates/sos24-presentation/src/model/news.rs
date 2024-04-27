@@ -20,19 +20,21 @@ pub struct CreateNews {
 
 impl From<CreateNews> for CreateNewsCommand {
     fn from(news: CreateNews) -> Self {
-        CreateNewsCommand::new(
-            news.title,
-            news.body,
-            news.attachments,
-            news.categories
+        CreateNewsCommand {
+            title: news.title,
+            body: news.body,
+            attachments: news.attachments,
+            categories: news
+                .categories
                 .into_iter()
                 .map(ProjectCategoryDto::from)
                 .collect(),
-            news.attributes
+            attributes: news
+                .attributes
                 .into_iter()
                 .map(ProjectAttributeDto::from)
                 .collect(),
-        )
+        }
     }
 }
 
@@ -59,20 +61,22 @@ pub trait ConvertToUpdateNewsDto {
 impl ConvertToUpdateNewsDto for (String, UpdateNews) {
     fn to_update_news_dto(self) -> UpdateNewsCommand {
         let (id, news) = self;
-        UpdateNewsCommand::new(
+        UpdateNewsCommand {
             id,
-            news.title,
-            news.body,
-            news.attachments,
-            news.categories
+            title: news.title,
+            body: news.body,
+            attachments: news.attachments,
+            categories: news
+                .categories
                 .into_iter()
                 .map(ProjectCategoryDto::from)
                 .collect(),
-            news.attributes
+            attributes: news
+                .attributes
                 .into_iter()
                 .map(ProjectAttributeDto::from)
                 .collect(),
-        )
+        }
     }
 }
 

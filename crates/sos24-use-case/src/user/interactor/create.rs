@@ -1,12 +1,38 @@
 use sos24_domain::entity::firebase_user::FirebaseUserEmail;
+use sos24_domain::entity::user::{
+    User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber,
+};
 use sos24_domain::{
     entity::firebase_user::{FirebaseUserPassword, NewFirebaseUser},
     repository::{firebase_user::FirebaseUserRepository, user::UserRepository, Repositories},
 };
 
-use crate::user::dto::CreateUserCommand;
 use crate::user::{UserUseCase, UserUseCaseError};
 use crate::ToEntity;
+
+#[derive(Debug)]
+pub struct CreateUserCommand {
+    pub name: String,
+    pub kana_name: String,
+    pub email: String,
+    pub password: String,
+    pub phone_number: String,
+}
+
+impl ToEntity for (String, CreateUserCommand) {
+    type Entity = User;
+    type Error = UserUseCaseError;
+    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+        let (id, user) = self;
+        Ok(User::new_general(
+            UserId::new(id),
+            UserName::new(user.name),
+            UserKanaName::new(user.kana_name),
+            UserEmail::try_from(user.email)?,
+            UserPhoneNumber::new(user.phone_number),
+        ))
+    }
+}
 
 impl<R: Repositories> UserUseCase<R> {
     pub async fn create(&self, raw_user: CreateUserCommand) -> Result<String, UserUseCaseError> {
@@ -48,7 +74,7 @@ mod tests {
         test::{fixture, repository::MockRepositories},
     };
 
-    use crate::user::{dto::CreateUserCommand, UserUseCase, UserUseCaseError};
+    use crate::user::{interactor::create::CreateUserCommand, UserUseCase, UserUseCaseError};
 
     #[tokio::test]
     async fn 誰でもユーザーを作成できる() {
@@ -64,13 +90,13 @@ mod tests {
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let res = use_case
-            .create(CreateUserCommand::new(
-                fixture::user::name1().value(),
-                fixture::user::kana_name1().value(),
-                fixture::user::email1().value(),
-                fixture::firebase_user::password1().value(),
-                fixture::user::phone_number1().value(),
-            ))
+            .create(CreateUserCommand {
+                name: fixture::user::name1().value(),
+                kana_name: fixture::user::kana_name1().value(),
+                email: fixture::user::email1().value(),
+                password: fixture::firebase_user::password1().value(),
+                phone_number: fixture::user::phone_number1().value(),
+            })
             .await;
         assert!(res.is_ok());
     }
@@ -94,13 +120,13 @@ mod tests {
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let res = use_case
-            .create(CreateUserCommand::new(
-                fixture::user::name1().value(),
-                fixture::user::kana_name1().value(),
-                fixture::user::email1().value(),
-                fixture::firebase_user::password1().value(),
-                fixture::user::phone_number1().value(),
-            ))
+            .create(CreateUserCommand {
+                name: fixture::user::name1().value(),
+                kana_name: fixture::user::kana_name1().value(),
+                email: fixture::user::email1().value(),
+                password: fixture::firebase_user::password1().value(),
+                phone_number: fixture::user::phone_number1().value(),
+            })
             .await;
         assert!(matches!(
             res,

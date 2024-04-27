@@ -21,16 +21,6 @@ pub struct CreateFileCommand {
     pub owner: Option<String>,
 }
 
-impl CreateFileCommand {
-    pub fn new(filename: String, file: Vec<u8>, owner: Option<String>) -> Self {
-        Self {
-            filename,
-            file,
-            owner,
-        }
-    }
-}
-
 impl<R: Repositories> FileUseCase<R> {
     pub async fn create(
         &self,
@@ -103,11 +93,11 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileCommand::new(
-                    fixture::file_data::filename().value(),
-                    fixture::file_object::data(),
-                    Some(fixture::project::id1().value().to_string()),
-                ),
+                CreateFileCommand {
+                    filename: fixture::file_data::filename().value(),
+                    file: fixture::file_object::data(),
+                    owner: Some(fixture::project::id1().value().to_string()),
+                },
             )
             .await;
 
@@ -133,11 +123,11 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileCommand::new(
-                    fixture::file_data::filename().value(),
-                    fixture::file_object::data(),
-                    Some(fixture::project::id2().value().to_string()),
-                ),
+                CreateFileCommand {
+                    filename: fixture::file_data::filename().value(),
+                    file: fixture::file_object::data(),
+                    owner: Some(fixture::project::id2().value().to_string()),
+                },
             )
             .await;
 
@@ -163,11 +153,11 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileCommand::new(
-                    fixture::file_data::filename().value(),
-                    fixture::file_object::data(),
-                    None,
-                ),
+                CreateFileCommand {
+                    filename: fixture::file_data::filename().value(),
+                    file: fixture::file_object::data(),
+                    owner: None,
+                },
             )
             .await;
 
@@ -198,11 +188,11 @@ mod tests {
                 &ctx,
                 String::new(),
                 String::new(),
-                CreateFileCommand::new(
-                    fixture::file_data::filename().value(),
-                    fixture::file_object::data(),
-                    None,
-                ),
+                CreateFileCommand {
+                    filename: fixture::file_data::filename().value(),
+                    file: fixture::file_object::data(),
+                    owner: None,
+                },
             )
             .await;
 

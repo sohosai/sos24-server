@@ -18,38 +18,14 @@ use crate::{
 
 #[derive(Debug)]
 pub struct CreateFormCommand {
-    title: String,
-    description: String,
-    starts_at: String,
-    ends_at: String,
-    categories: Vec<ProjectCategoryDto>,
-    attributes: Vec<ProjectAttributeDto>,
-    items: Vec<NewFormItemDto>,
-    attachments: Vec<String>,
-}
-
-impl CreateFormCommand {
-    pub fn new(
-        title: String,
-        description: String,
-        starts_at: String,
-        ends_at: String,
-        categories: Vec<ProjectCategoryDto>,
-        attributes: Vec<ProjectAttributeDto>,
-        items: Vec<NewFormItemDto>,
-        attachments: Vec<String>,
-    ) -> Self {
-        Self {
-            title,
-            description,
-            starts_at,
-            ends_at,
-            categories,
-            attributes,
-            items,
-            attachments,
-        }
-    }
+    pub title: String,
+    pub description: String,
+    pub starts_at: String,
+    pub ends_at: String,
+    pub categories: Vec<ProjectCategoryDto>,
+    pub attributes: Vec<ProjectAttributeDto>,
+    pub items: Vec<NewFormItemDto>,
+    pub attachments: Vec<String>,
 }
 
 impl ToEntity for CreateFormCommand {
@@ -124,24 +100,24 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormCommand::new(
-                    fixture::form::title1().value(),
-                    fixture::form::description1().value(),
-                    fixture::form::starts_at1().value().to_rfc3339(),
-                    fixture::form::ends_at1().value().to_rfc3339(),
-                    Vec::from_entity(fixture::form::categories1()),
-                    Vec::from_entity(fixture::form::attributes1()),
-                    vec![NewFormItemDto::new(
+                CreateFormCommand {
+                    title: fixture::form::title1().value(),
+                    description: fixture::form::description1().value(),
+                    starts_at: fixture::form::starts_at1().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at1().value().to_rfc3339(),
+                    categories: Vec::from_entity(fixture::form::categories1()),
+                    attributes: Vec::from_entity(fixture::form::attributes1()),
+                    items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name1().value(),
                         Some(fixture::form::description1().value()),
                         fixture::form::formitem_required1().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
                     )],
-                    fixture::form::attachments1()
+                    attachments: fixture::form::attachments1()
                         .into_iter()
                         .map(|it| it.value().to_string())
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(
@@ -166,24 +142,24 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormCommand::new(
-                    fixture::form::title1().value(),
-                    fixture::form::description1().value(),
-                    fixture::form::starts_at1().value().to_rfc3339(),
-                    fixture::form::ends_at1().value().to_rfc3339(),
-                    Vec::from_entity(fixture::form::categories1()),
-                    Vec::from_entity(fixture::form::attributes1()),
-                    vec![NewFormItemDto::new(
+                CreateFormCommand {
+                    title: fixture::form::title1().value(),
+                    description: fixture::form::description1().value(),
+                    starts_at: fixture::form::starts_at1().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at1().value().to_rfc3339(),
+                    categories: Vec::from_entity(fixture::form::categories1()),
+                    attributes: Vec::from_entity(fixture::form::attributes1()),
+                    items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name1().value(),
                         Some(fixture::form::description1().value()),
                         fixture::form::formitem_required1().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind1()),
                     )],
-                    fixture::form::attachments1()
+                    attachments: fixture::form::attachments1()
                         .into_iter()
                         .map(|it| it.value().to_string())
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(res.is_ok());

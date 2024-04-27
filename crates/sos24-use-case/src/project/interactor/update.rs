@@ -24,31 +24,6 @@ pub struct UpdateProjectCommand {
     pub remarks: Option<String>,
 }
 
-impl UpdateProjectCommand {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        id: String,
-        title: String,
-        kana_title: String,
-        group_name: String,
-        kana_group_name: String,
-        category: ProjectCategoryDto,
-        attributes: Vec<ProjectAttributeDto>,
-        remarks: Option<String>,
-    ) -> Self {
-        Self {
-            id,
-            title,
-            kana_title,
-            group_name,
-            kana_group_name,
-            category,
-            attributes,
-            remarks,
-        }
-    }
-}
-
 impl<R: Repositories> ProjectUseCase<R> {
     pub async fn update(
         &self,
@@ -145,16 +120,16 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectCommand::new(
-                    fixture::project::id2().value().to_string(),
-                    fixture::project::title2().value(),
-                    fixture::project::kana_title2().value(),
-                    fixture::project::group_name2().value(),
-                    fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    Vec::from_entity(fixture::project::attributes2()),
-                    None,
-                ),
+                UpdateProjectCommand {
+                    id: fixture::project::id2().value().to_string(),
+                    title: fixture::project::title2().value(),
+                    kana_title: fixture::project::kana_title2().value(),
+                    group_name: fixture::project::group_name2().value(),
+                    kana_group_name: fixture::project::kana_group_name2().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    remarks: None,
+                },
             )
             .await;
         assert!(res.is_ok());
@@ -184,16 +159,16 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectCommand::new(
-                    fixture::project::id2().value().to_string(),
-                    fixture::project::title2().value(),
-                    fixture::project::kana_title2().value(),
-                    fixture::project::group_name2().value(),
-                    fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    Vec::from_entity(fixture::project::attributes2()),
-                    None,
-                ),
+                UpdateProjectCommand {
+                    id: fixture::project::id2().value().to_string(),
+                    title: fixture::project::title2().value(),
+                    kana_title: fixture::project::kana_title2().value(),
+                    group_name: fixture::project::group_name2().value(),
+                    kana_group_name: fixture::project::kana_group_name2().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    remarks: None,
+                },
             )
             .await;
         assert!(matches!(
@@ -226,16 +201,16 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectCommand::new(
-                    fixture::project::id2().value().to_string(),
-                    fixture::project::title2().value(),
-                    fixture::project::kana_title2().value(),
-                    fixture::project::group_name2().value(),
-                    fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    Vec::from_entity(fixture::project::attributes2()),
-                    None,
-                ),
+                UpdateProjectCommand {
+                    id: fixture::project::id2().value().to_string(),
+                    title: fixture::project::title2().value(),
+                    kana_title: fixture::project::kana_title2().value(),
+                    group_name: fixture::project::group_name2().value(),
+                    kana_group_name: fixture::project::kana_group_name2().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    remarks: None,
+                },
             )
             .await;
         assert!(matches!(
@@ -270,16 +245,16 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectCommand::new(
-                    fixture::project::id2().value().to_string(),
-                    fixture::project::title2().value(),
-                    fixture::project::kana_title2().value(),
-                    fixture::project::group_name2().value(),
-                    fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    Vec::from_entity(fixture::project::attributes2()),
-                    None,
-                ),
+                UpdateProjectCommand {
+                    id: fixture::project::id2().value().to_string(),
+                    title: fixture::project::title2().value(),
+                    kana_title: fixture::project::kana_title2().value(),
+                    group_name: fixture::project::group_name2().value(),
+                    kana_group_name: fixture::project::kana_group_name2().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    remarks: None,
+                },
             )
             .await;
         assert!(res.is_ok());
@@ -309,16 +284,16 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateProjectCommand::new(
-                    fixture::project::id2().value().to_string(),
-                    fixture::project::title2().value(),
-                    fixture::project::kana_title2().value(),
-                    fixture::project::group_name2().value(),
-                    fixture::project::kana_group_name2().value(),
-                    ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    Vec::from_entity(fixture::project::attributes2()),
-                    None,
-                ),
+                UpdateProjectCommand {
+                    id: fixture::project::id2().value().to_string(),
+                    title: fixture::project::title2().value(),
+                    kana_title: fixture::project::kana_title2().value(),
+                    group_name: fixture::project::group_name2().value(),
+                    kana_group_name: fixture::project::kana_group_name2().value(),
+                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
+                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    remarks: None,
+                },
             )
             .await;
         assert!(res.is_ok());

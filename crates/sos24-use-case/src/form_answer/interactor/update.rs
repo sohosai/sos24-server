@@ -16,12 +16,6 @@ pub struct UpdateFormAnswerCommand {
     pub items: Vec<FormAnswerItemDto>,
 }
 
-impl UpdateFormAnswerCommand {
-    pub fn new(id: String, items: Vec<FormAnswerItemDto>) -> Self {
-        Self { id, items }
-    }
-}
-
 impl<R: Repositories> FormAnswerUseCase<R> {
     pub async fn update(
         &self,
@@ -126,13 +120,13 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormAnswerCommand::new(
-                    fixture::form_answer::id1().value().to_string(),
-                    fixture::form_answer::items2()
+                UpdateFormAnswerCommand {
+                    id: fixture::form_answer::id1().value().to_string(),
+                    items: fixture::form_answer::items2()
                         .into_iter()
                         .map(FormAnswerItemDto::from_entity)
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(res, Ok(())));
@@ -171,13 +165,13 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormAnswerCommand::new(
-                    fixture::form_answer::id1().value().to_string(),
-                    fixture::form_answer::items2()
+                UpdateFormAnswerCommand {
+                    id: fixture::form_answer::id1().value().to_string(),
+                    items: fixture::form_answer::items2()
                         .into_iter()
                         .map(FormAnswerItemDto::from_entity)
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(
@@ -221,13 +215,13 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormAnswerCommand::new(
-                    fixture::form_answer::id1().value().to_string(),
-                    fixture::form_answer::items2()
+                UpdateFormAnswerCommand {
+                    id: fixture::form_answer::id1().value().to_string(),
+                    items: fixture::form_answer::items2()
                         .into_iter()
                         .map(FormAnswerItemDto::from_entity)
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(res, Ok(())));

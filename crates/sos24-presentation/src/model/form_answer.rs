@@ -15,14 +15,14 @@ pub struct CreateFormAnswer {
 
 impl From<CreateFormAnswer> for CreateFormAnswerCommand {
     fn from(create_form_answer: CreateFormAnswer) -> Self {
-        CreateFormAnswerCommand::new(
-            create_form_answer.form_id,
-            create_form_answer
+        CreateFormAnswerCommand {
+            form_id: create_form_answer.form_id,
+            items: create_form_answer
                 .items
                 .into_iter()
                 .map(FormAnswerItemDto::from)
                 .collect(),
-        )
+        }
     }
 }
 
@@ -44,14 +44,14 @@ pub trait ConvertToUpdateFormAnswerDto {
 impl ConvertToUpdateFormAnswerDto for (UpdateFormAnswer, String) {
     fn to_update_form_answer_dto(self) -> UpdateFormAnswerCommand {
         let (update_form_answer, id) = self;
-        UpdateFormAnswerCommand::new(
+        UpdateFormAnswerCommand {
             id,
-            update_form_answer
+            items: update_form_answer
                 .items
                 .into_iter()
                 .map(FormAnswerItemDto::from)
                 .collect(),
-        )
+        }
     }
 }
 

@@ -29,33 +29,6 @@ pub struct UpdateFormCommand {
     pub attachments: Vec<String>,
 }
 
-impl UpdateFormCommand {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        id: String,
-        title: String,
-        description: String,
-        starts_at: String,
-        ends_at: String,
-        categories: Vec<ProjectCategoryDto>,
-        attributes: Vec<ProjectAttributeDto>,
-        items: Vec<NewFormItemDto>,
-        attachments: Vec<String>,
-    ) -> Self {
-        Self {
-            id,
-            title,
-            description,
-            starts_at,
-            ends_at,
-            categories,
-            attributes,
-            items,
-            attachments,
-        }
-    }
-}
-
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn update(
         &self,
@@ -136,25 +109,25 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormCommand::new(
-                    fixture::form::id1().value().to_string(),
-                    fixture::form::title2().value(),
-                    fixture::form::description2().value(),
-                    fixture::form::starts_at2().value().to_rfc3339(),
-                    fixture::form::ends_at2().value().to_rfc3339(),
-                    Vec::from_entity(fixture::form::categories2()),
-                    Vec::from_entity(fixture::form::attributes2()),
-                    vec![NewFormItemDto::new(
+                UpdateFormCommand {
+                    id: fixture::form::id1().value().to_string(),
+                    title: fixture::form::title2().value(),
+                    description: fixture::form::description2().value(),
+                    starts_at: fixture::form::starts_at2().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at2().value().to_rfc3339(),
+                    categories: Vec::from_entity(fixture::form::categories2()),
+                    attributes: Vec::from_entity(fixture::form::attributes2()),
+                    items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
-                    fixture::form::attachments2()
+                    attachments: fixture::form::attachments2()
                         .into_iter()
                         .map(|it| it.value().to_string())
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(
@@ -187,25 +160,25 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormCommand::new(
-                    fixture::form::id1().value().to_string(),
-                    fixture::form::title2().value(),
-                    fixture::form::description2().value(),
-                    fixture::form::starts_at2().value().to_rfc3339(),
-                    fixture::form::ends_at2().value().to_rfc3339(),
-                    Vec::from_entity(fixture::form::categories2()),
-                    Vec::from_entity(fixture::form::attributes2()),
-                    vec![NewFormItemDto::new(
+                UpdateFormCommand {
+                    id: fixture::form::id1().value().to_string(),
+                    title: fixture::form::title2().value(),
+                    description: fixture::form::description2().value(),
+                    starts_at: fixture::form::starts_at2().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at2().value().to_rfc3339(),
+                    categories: Vec::from_entity(fixture::form::categories2()),
+                    attributes: Vec::from_entity(fixture::form::attributes2()),
+                    items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
-                    fixture::form::attachments2()
+                    attachments: fixture::form::attachments2()
                         .into_iter()
                         .map(|it| it.value().to_string())
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(res, Ok(())));
@@ -233,25 +206,25 @@ mod tests {
         let res = use_case
             .update(
                 &ctx,
-                UpdateFormCommand::new(
-                    fixture::form::id1().value().to_string(),
-                    fixture::form::title2().value(),
-                    fixture::form::description2().value(),
-                    fixture::form::starts_at2().value().to_rfc3339(),
-                    fixture::form::ends_at2().value().to_rfc3339(),
-                    Vec::from_entity(fixture::form::categories2()),
-                    Vec::from_entity(fixture::form::attributes2()),
-                    vec![NewFormItemDto::new(
+                UpdateFormCommand {
+                    id: fixture::form::id1().value().to_string(),
+                    title: fixture::form::title2().value(),
+                    description: fixture::form::description2().value(),
+                    starts_at: fixture::form::starts_at2().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at2().value().to_rfc3339(),
+                    categories: Vec::from_entity(fixture::form::categories2()),
+                    attributes: Vec::from_entity(fixture::form::attributes2()),
+                    items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
                         fixture::form::formitem_required2().value(),
                         FormItemKindDto::from_entity(fixture::form::formitem_kind2()),
                     )],
-                    fixture::form::attachments2()
+                    attachments: fixture::form::attachments2()
                         .into_iter()
                         .map(|it| it.value().to_string())
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(res, Err(FormUseCaseError::HasAnswers)));

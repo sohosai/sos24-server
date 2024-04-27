@@ -1,84 +1,12 @@
 use sos24_domain::entity::project::Project;
 use sos24_domain::entity::{
     common::date::WithDate,
-    user::{User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole},
+    user::{User, UserRole},
 };
 
 use crate::{FromEntity, ToEntity};
 
 use super::UserUseCaseError;
-
-#[derive(Debug)]
-pub struct CreateUserCommand {
-    pub name: String,
-    pub kana_name: String,
-    pub email: String,
-    pub password: String,
-    pub phone_number: String,
-}
-
-impl CreateUserCommand {
-    pub fn new(
-        name: String,
-        kana_name: String,
-        email: String,
-        password: String,
-        phone_number: String,
-    ) -> Self {
-        Self {
-            name,
-            kana_name,
-            email,
-            password,
-            phone_number,
-        }
-    }
-}
-
-impl ToEntity for (String, CreateUserCommand) {
-    type Entity = User;
-    type Error = UserUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        let (id, user) = self;
-        Ok(User::new_general(
-            UserId::new(id),
-            UserName::new(user.name),
-            UserKanaName::new(user.kana_name),
-            UserEmail::try_from(user.email)?,
-            UserPhoneNumber::new(user.phone_number),
-        ))
-    }
-}
-
-#[derive(Debug)]
-pub struct UpdateUserCommand {
-    pub id: String,
-    pub name: String,
-    pub kana_name: String,
-    pub email: String,
-    pub phone_number: String,
-    pub role: UserRoleDto,
-}
-
-impl UpdateUserCommand {
-    pub fn new(
-        id: String,
-        name: String,
-        kana_name: String,
-        email: String,
-        phone_number: String,
-        role: UserRoleDto,
-    ) -> Self {
-        Self {
-            id,
-            name,
-            kana_name,
-            email,
-            phone_number,
-            role,
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct UserDto {

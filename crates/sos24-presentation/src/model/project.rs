@@ -27,19 +27,19 @@ pub trait ConvertToCreateProjectDto {
 impl ConvertToCreateProjectDto for (CreateProject, String) {
     fn to_create_project_dto(self) -> CreateProjectCommand {
         let (project, owner_id) = self;
-        CreateProjectCommand::new(
-            project.title,
-            project.kana_title,
-            project.group_name,
-            project.kana_group_name,
-            ProjectCategoryDto::from(project.category),
-            project
+        CreateProjectCommand {
+            title: project.title,
+            kana_title: project.kana_title,
+            group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
+            category: ProjectCategoryDto::from(project.category),
+            attributes: project
                 .attributes
                 .into_iter()
                 .map(ProjectAttributeDto::from)
                 .collect(),
             owner_id,
-        )
+        }
     }
 }
 
@@ -67,20 +67,20 @@ pub trait ConvertToUpdateProjectDto {
 impl ConvertToUpdateProjectDto for (UpdateProject, String) {
     fn to_update_project_dto(self) -> UpdateProjectCommand {
         let (project, id) = self;
-        UpdateProjectCommand::new(
+        UpdateProjectCommand {
             id,
-            project.title,
-            project.kana_title,
-            project.group_name,
-            project.kana_group_name,
-            ProjectCategoryDto::from(project.category),
-            project
+            title: project.title,
+            kana_title: project.kana_title,
+            group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
+            category: ProjectCategoryDto::from(project.category),
+            attributes: project
                 .attributes
                 .into_iter()
                 .map(ProjectAttributeDto::from)
                 .collect(),
-            project.remarks,
-        )
+            remarks: project.remarks,
+        }
     }
 }
 

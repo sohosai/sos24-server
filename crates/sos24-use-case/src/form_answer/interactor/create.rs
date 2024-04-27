@@ -20,14 +20,8 @@ use crate::ToEntity;
 
 #[derive(Debug)]
 pub struct CreateFormAnswerCommand {
-    form_id: String,
-    items: Vec<FormAnswerItemDto>,
-}
-
-impl CreateFormAnswerCommand {
-    pub fn new(form_id: String, items: Vec<FormAnswerItemDto>) -> Self {
-        Self { form_id, items }
-    }
+    pub form_id: String,
+    pub items: Vec<FormAnswerItemDto>,
 }
 
 impl ToEntity for (String, CreateFormAnswerCommand) {
@@ -184,13 +178,13 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormAnswerCommand::new(
-                    fixture::form::id1().value().to_string(),
-                    fixture::form_answer::items1()
+                CreateFormAnswerCommand {
+                    form_id: fixture::form::id1().value().to_string(),
+                    items: fixture::form_answer::items1()
                         .into_iter()
                         .map(FormAnswerItemDto::from_entity)
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(res.is_ok());
@@ -213,13 +207,13 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormAnswerCommand::new(
-                    fixture::form::id1().value().to_string(),
-                    fixture::form_answer::items1()
+                CreateFormAnswerCommand {
+                    form_id: fixture::form::id1().value().to_string(),
+                    items: fixture::form_answer::items1()
                         .into_iter()
                         .map(FormAnswerItemDto::from_entity)
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(res, Err(FormAnswerUseCaseError::NotProjectOwner)));
@@ -266,13 +260,13 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateFormAnswerCommand::new(
-                    fixture::form::id1().value().to_string(),
-                    fixture::form_answer::items1()
+                CreateFormAnswerCommand {
+                    form_id: fixture::form::id1().value().to_string(),
+                    items: fixture::form_answer::items1()
                         .into_iter()
                         .map(FormAnswerItemDto::from_entity)
                         .collect(),
-                ),
+                },
             )
             .await;
         assert!(matches!(res, Err(FormAnswerUseCaseError::AlreadyAnswered)));

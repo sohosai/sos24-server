@@ -33,24 +33,6 @@ pub struct CreateNewsCommand {
     pub attributes: Vec<ProjectAttributeDto>,
 }
 
-impl CreateNewsCommand {
-    pub fn new(
-        title: String,
-        body: String,
-        attachments: Vec<String>,
-        categories: Vec<ProjectCategoryDto>,
-        attributes: Vec<ProjectAttributeDto>,
-    ) -> Self {
-        Self {
-            title,
-            body,
-            attachments,
-            categories,
-            attributes,
-        }
-    }
-}
-
 impl ToEntity for CreateNewsCommand {
     type Entity = News;
     type Error = NewsUseCaseError;
@@ -191,16 +173,16 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateNewsCommand::new(
-                    fixture::news::title1().value(),
-                    fixture::news::body1().value(),
-                    fixture::news::attachments1()
+                CreateNewsCommand {
+                    title: fixture::news::title1().value(),
+                    body: fixture::news::body1().value(),
+                    attachments: fixture::news::attachments1()
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    Vec::from_entity(fixture::news::categories1()),
-                    Vec::from_entity(fixture::news::attributes1()),
-                ),
+                    categories: Vec::from_entity(fixture::news::categories1()),
+                    attributes: Vec::from_entity(fixture::news::attributes1()),
+                },
             )
             .await;
         assert!(matches!(
@@ -233,16 +215,16 @@ mod tests {
         let res = use_case
             .create(
                 &ctx,
-                CreateNewsCommand::new(
-                    fixture::news::title1().value(),
-                    fixture::news::body1().value(),
-                    fixture::news::attachments1()
+                CreateNewsCommand {
+                    title: fixture::news::title1().value(),
+                    body: fixture::news::body1().value(),
+                    attachments: fixture::news::attachments1()
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    Vec::from_entity(fixture::news::categories1()),
-                    Vec::from_entity(fixture::news::attributes1()),
-                ),
+                    categories: Vec::from_entity(fixture::news::categories1()),
+                    attributes: Vec::from_entity(fixture::news::attributes1()),
+                },
             )
             .await;
         assert!(res.is_ok());

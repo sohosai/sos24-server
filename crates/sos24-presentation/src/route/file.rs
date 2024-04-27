@@ -121,11 +121,11 @@ pub async fn handle_post(
                         e.body_text(),
                     ))?,
                 };
-                filelist.push(CreateFileCommand::new(
+                filelist.push(CreateFileCommand {
                     filename,
-                    filebytes.into(),
-                    owner.clone(),
-                ));
+                    file: filebytes.into(),
+                    owner: owner.clone(),
+                });
             }
             _ => {
                 return Err(AppError::new(
