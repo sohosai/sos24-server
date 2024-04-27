@@ -1,18 +1,17 @@
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::{
-    ProjectGroupName, ProjectId, ProjectKanaGroupName, ProjectKanaTitle, ProjectRemarks,
-    ProjectTitle,
+    ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectKanaGroupName,
+    ProjectKanaTitle, ProjectRemarks, ProjectTitle,
 };
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
-use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
+use crate::project::dto::{ProjectAttributesDto, ProjectCategoryDto};
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
 use crate::shared::context::ContextProvider;
-use crate::ToEntity;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct UpdateProjectCommand {
     pub id: String,
     pub title: String,
@@ -20,7 +19,7 @@ pub struct UpdateProjectCommand {
     pub group_name: String,
     pub kana_group_name: String,
     pub category: ProjectCategoryDto,
-    pub attributes: Vec<ProjectAttributeDto>,
+    pub attributes: ProjectAttributesDto,
     pub remarks: Option<String>,
 }
 
@@ -67,8 +66,8 @@ impl<R: Repositories> ProjectUseCase<R> {
             &actor,
             ProjectKanaGroupName::new(project_data.kana_group_name),
         )?;
-        new_project.set_category(&actor, project_data.category.into_entity()?)?;
-        new_project.set_attributes(&actor, project_data.attributes.into_entity()?)?;
+        new_project.set_category(&actor, ProjectCategory::from(project_data.category))?;
+        new_project.set_attributes(&actor, ProjectAttributes::from(project_data.attributes))?;
         if let Some(remarks) = project_data.remarks {
             new_project.set_remarks(&actor, ProjectRemarks::new(remarks))?;
         }
@@ -90,11 +89,10 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::project::dto::ProjectCategoryDto;
+    use crate::project::dto::{ProjectAttributesDto, ProjectCategoryDto};
     use crate::project::interactor::update::UpdateProjectCommand;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
     use crate::shared::context::TestContext;
-    use crate::FromEntity;
 
     #[tokio::test]
     async fn 実委人は企画募集期間内に自分の企画を更新できる() {
@@ -126,8 +124,8 @@ mod tests {
                     kana_title: fixture::project::kana_title2().value(),
                     group_name: fixture::project::group_name2().value(),
                     kana_group_name: fixture::project::kana_group_name2().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    category: ProjectCategoryDto::from(fixture::project::category2()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
                 },
             )
@@ -165,8 +163,8 @@ mod tests {
                     kana_title: fixture::project::kana_title2().value(),
                     group_name: fixture::project::group_name2().value(),
                     kana_group_name: fixture::project::kana_group_name2().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    category: ProjectCategoryDto::from(fixture::project::category2()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
                 },
             )
@@ -207,8 +205,8 @@ mod tests {
                     kana_title: fixture::project::kana_title2().value(),
                     group_name: fixture::project::group_name2().value(),
                     kana_group_name: fixture::project::kana_group_name2().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    category: ProjectCategoryDto::from(fixture::project::category2()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
                 },
             )
@@ -251,8 +249,8 @@ mod tests {
                     kana_title: fixture::project::kana_title2().value(),
                     group_name: fixture::project::group_name2().value(),
                     kana_group_name: fixture::project::kana_group_name2().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    category: ProjectCategoryDto::from(fixture::project::category2()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
                 },
             )
@@ -290,8 +288,8 @@ mod tests {
                     kana_title: fixture::project::kana_title2().value(),
                     group_name: fixture::project::group_name2().value(),
                     kana_group_name: fixture::project::kana_group_name2().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category2()),
-                    attributes: Vec::from_entity(fixture::project::attributes2()),
+                    category: ProjectCategoryDto::from(fixture::project::category2()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
                 },
             )

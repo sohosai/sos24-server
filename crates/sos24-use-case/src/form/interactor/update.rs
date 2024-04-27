@@ -1,4 +1,6 @@
 use sos24_domain::entity::file_data::FileId;
+use sos24_domain::entity::form::FormItem;
+use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::{
     ensure,
     entity::{
@@ -11,10 +13,9 @@ use sos24_domain::{
 
 use crate::form::dto::NewFormItemDto;
 use crate::form::{FormUseCase, FormUseCaseError};
-use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
+use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
-use crate::ToEntity;
 
 #[derive(Debug)]
 pub struct UpdateFormCommand {
@@ -23,8 +24,8 @@ pub struct UpdateFormCommand {
     pub description: String,
     pub starts_at: String,
     pub ends_at: String,
-    pub categories: Vec<ProjectCategoryDto>,
-    pub attributes: Vec<ProjectAttributeDto>,
+    pub categories: ProjectCategoriesDto,
+    pub attributes: ProjectAttributesDto,
     pub items: Vec<NewFormItemDto>,
     pub attachments: Vec<String>,
 }
@@ -60,13 +61,9 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         new_form.set_description(&actor, FormDescription::new(form_data.description))?;
         new_form.set_starts_at(&actor, DateTime::try_from(form_data.starts_at)?)?;
         new_form.set_ends_at(&actor, DateTime::try_from(form_data.ends_at)?)?;
-        new_form.set_categories(&actor, form_data.categories.into_entity()?)?;
-        new_form.set_attributes(&actor, form_data.attributes.into_entity()?)?;
-        let new_items = form_data
-            .items
-            .into_iter()
-            .map(|item| item.into_entity())
-            .collect::<Result<_, _>>()?;
+        new_form.set_categories(&actor, ProjectCategories::from(form_data.categories))?;
+        new_form.set_attributes(&actor, ProjectAttributes::from(form_data.attributes))?;
+        let new_items = form_data.items.into_iter().map(FormItem::from).collect();
         new_form.set_items(&actor, new_items)?;
         let new_attachments = form_data
             .attachments
@@ -95,6 +92,7 @@ mod tests {
             interactor::update::UpdateFormCommand,
             FormUseCase, FormUseCaseError,
         },
+        project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
         shared::{adapter::MockAdapters, context::TestContext},
         FromEntity,
     };
@@ -115,8 +113,8 @@ mod tests {
                     description: fixture::form::description2().value(),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
-                    categories: Vec::from_entity(fixture::form::categories2()),
-                    attributes: Vec::from_entity(fixture::form::attributes2()),
+                    categories: ProjectCategoriesDto::from(fixture::form::categories2()),
+                    attributes: ProjectAttributesDto::from(fixture::form::attributes2()),
                     items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
@@ -166,8 +164,8 @@ mod tests {
                     description: fixture::form::description2().value(),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
-                    categories: Vec::from_entity(fixture::form::categories2()),
-                    attributes: Vec::from_entity(fixture::form::attributes2()),
+                    categories: ProjectCategoriesDto::from(fixture::form::categories2()),
+                    attributes: ProjectAttributesDto::from(fixture::form::attributes2()),
                     items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),
@@ -212,8 +210,8 @@ mod tests {
                     description: fixture::form::description2().value(),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
-                    categories: Vec::from_entity(fixture::form::categories2()),
-                    attributes: Vec::from_entity(fixture::form::attributes2()),
+                    categories: ProjectCategoriesDto::from(fixture::form::categories2()),
+                    attributes: ProjectAttributesDto::from(fixture::form::attributes2()),
                     items: vec![NewFormItemDto::new(
                         fixture::form::formitem_name2().value(),
                         Some(fixture::form::description2().value()),

@@ -1,6 +1,6 @@
 use sos24_domain::{
     ensure,
-    entity::form_answer::FormAnswerId,
+    entity::form_answer::{FormAnswerId, FormAnswerItem},
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
     service::verify_form_answer,
 };
@@ -8,7 +8,6 @@ use sos24_domain::{
 use crate::{
     form_answer::{dto::FormAnswerItemDto, FormAnswerUseCase, FormAnswerUseCaseError},
     shared::context::{ContextProvider, OwnedProject},
-    ToEntity,
 };
 
 pub struct UpdateFormAnswerCommand {
@@ -47,7 +46,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let new_items = form_answer_data
             .items
             .into_iter()
-            .map(|item| item.into_entity())
+            .map(FormAnswerItem::try_from)
             .collect::<Result<_, _>>()?;
         new_form_answer.set_items(&actor, owned_project_id, new_items)?;
 

@@ -133,6 +133,8 @@ impl From<FormAnswerUseCaseError> for AppError {
             FormAnswerUseCaseError::VerifyFormAnswerError(e) => e.into(),
             FormAnswerUseCaseError::FormAnswerIdError(e) => e.into(),
             FormAnswerUseCaseError::FileDataRepositoryError(e) => e.into(),
+            FormAnswerUseCaseError::FileIdError(e) => e.into(),
+            FormAnswerUseCaseError::FormItemIdError(e) => e.into(),
         }
     }
 }

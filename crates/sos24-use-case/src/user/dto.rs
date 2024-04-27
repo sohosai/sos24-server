@@ -4,9 +4,7 @@ use sos24_domain::entity::{
     user::{User, UserRole},
 };
 
-use crate::{FromEntity, ToEntity};
-
-use super::UserUseCaseError;
+use crate::FromEntity;
 
 #[derive(Debug)]
 pub struct UserDto {
@@ -59,16 +57,14 @@ pub enum UserRoleDto {
     General,
 }
 
-impl ToEntity for UserRoleDto {
-    type Entity = UserRole;
-    type Error = UserUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(match self {
+impl From<UserRoleDto> for UserRole {
+    fn from(value: UserRoleDto) -> Self {
+        match value {
             UserRoleDto::Administrator => UserRole::Administrator,
             UserRoleDto::CommitteeOperator => UserRole::CommitteeOperator,
             UserRoleDto::Committee => UserRole::Committee,
             UserRoleDto::General => UserRole::General,
-        })
+        }
     }
 }
 

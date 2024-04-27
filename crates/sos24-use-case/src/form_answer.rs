@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
+use sos24_domain::entity::form::FormItemIdError;
 use thiserror::Error;
 
-use sos24_domain::entity::file_data::FileId;
+use sos24_domain::entity::file_data::{FileId, FileIdError};
 use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::{
     entity::{
@@ -41,9 +42,13 @@ pub enum FormAnswerUseCaseError {
     NotProjectOwner,
 
     #[error(transparent)]
+    FileIdError(#[from] FileIdError),
+    #[error(transparent)]
     FileDataRepositoryError(#[from] FileDataRepositoryError),
     #[error(transparent)]
     FormIdError(#[from] FormIdError),
+    #[error(transparent)]
+    FormItemIdError(#[from] FormItemIdError),
     #[error(transparent)]
     ProjectIdError(#[from] ProjectIdError),
     #[error(transparent)]

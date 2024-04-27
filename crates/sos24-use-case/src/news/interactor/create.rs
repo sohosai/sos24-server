@@ -4,6 +4,7 @@ use sos24_domain::{
         file_data::FileId,
         news::{News, NewsBody, NewsTitle},
         permission::Permissions,
+        project::{ProjectAttributes, ProjectCategories},
     },
     repository::{
         file_data::FileDataRepository, news::NewsRepository, project::ProjectRepository,
@@ -13,7 +14,7 @@ use sos24_domain::{
 
 use crate::{
     news::{NewsUseCase, NewsUseCaseError},
-    project::dto::{ProjectAttributeDto, ProjectCategoryDto},
+    project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
     shared::{
         adapter::{
             email::{Email, EmailSender, SendEmailCommand},
@@ -21,7 +22,6 @@ use crate::{
         },
         context::ContextProvider,
     },
-    ToEntity,
 };
 
 #[derive(Debug)]
@@ -29,8 +29,8 @@ pub struct CreateNewsCommand {
     pub title: String,
     pub body: String,
     pub attachments: Vec<String>,
-    pub categories: Vec<ProjectCategoryDto>,
-    pub attributes: Vec<ProjectAttributeDto>,
+    pub categories: ProjectCategoriesDto,
+    pub attributes: ProjectAttributesDto,
 }
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
@@ -50,8 +50,8 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
                 .into_iter()
                 .map(FileId::try_from)
                 .collect::<Result<_, _>>()?,
-            raw_news.categories.into_entity()?,
-            raw_news.attributes.into_entity()?,
+            ProjectCategories::from(raw_news.categories),
+            ProjectAttributes::from(raw_news.attributes),
         );
 
         for file_id in news.attachments() {
@@ -149,8 +149,8 @@ mod tests {
 
     use crate::{
         news::{interactor::create::CreateNewsCommand, NewsUseCase, NewsUseCaseError},
+        project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
         shared::{adapter::MockAdapters, context::TestContext},
-        FromEntity,
     };
 
     #[tokio::test]
@@ -174,8 +174,8 @@ mod tests {
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    categories: Vec::from_entity(fixture::news::categories1()),
-                    attributes: Vec::from_entity(fixture::news::attributes1()),
+                    categories: ProjectCategoriesDto::from(fixture::news::categories1()),
+                    attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
                 },
             )
             .await;
@@ -216,8 +216,8 @@ mod tests {
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    categories: Vec::from_entity(fixture::news::categories1()),
-                    attributes: Vec::from_entity(fixture::news::attributes1()),
+                    categories: ProjectCategoriesDto::from(fixture::news::categories1()),
+                    attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
                 },
             )
             .await;

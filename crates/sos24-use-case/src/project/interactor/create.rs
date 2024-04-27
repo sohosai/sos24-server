@@ -1,19 +1,17 @@
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::{
-    ProjectGroupName, ProjectKanaGroupName, ProjectKanaTitle, ProjectTitle,
+    ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectKanaGroupName, ProjectKanaTitle,
+    ProjectTitle,
 };
 use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 use sos24_domain::{ensure, entity::project::Project};
 
+use crate::project::dto::ProjectAttributesDto;
 use crate::{
-    project::{
-        dto::{ProjectAttributeDto, ProjectCategoryDto},
-        ProjectUseCase, ProjectUseCaseError,
-    },
+    project::{dto::ProjectCategoryDto, ProjectUseCase, ProjectUseCaseError},
     shared::context::{ContextProvider, OwnedProject},
-    ToEntity,
 };
 
 #[derive(Debug)]
@@ -23,7 +21,7 @@ pub struct CreateProjectCommand {
     pub group_name: String,
     pub kana_group_name: String,
     pub category: ProjectCategoryDto,
-    pub attributes: Vec<ProjectAttributeDto>,
+    pub attributes: ProjectAttributesDto,
     pub owner_id: String,
 }
 
@@ -61,8 +59,8 @@ impl<R: Repositories> ProjectUseCase<R> {
                 ProjectGroupName::try_from(raw_project.group_name)
                     .map_err(ProjectUseCaseError::ProjectGroupNameError)?,
                 ProjectKanaGroupName::new(raw_project.kana_group_name),
-                raw_project.category.into_entity()?,
-                raw_project.attributes.into_entity()?,
+                ProjectCategory::from(raw_project.category),
+                ProjectAttributes::from(raw_project.attributes),
                 UserId::new(raw_project.owner_id),
             );
 
@@ -88,11 +86,10 @@ mod tests {
     use sos24_domain::test::fixture;
     use sos24_domain::test::repository::MockRepositories;
 
-    use crate::project::dto::ProjectCategoryDto;
+    use crate::project::dto::{ProjectAttributesDto, ProjectCategoryDto};
     use crate::project::interactor::create::CreateProjectCommand;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
     use crate::shared::context::TestContext;
-    use crate::FromEntity;
 
     #[tokio::test]
     async fn 一般ユーザーは企画を作成できる() {
@@ -123,8 +120,8 @@ mod tests {
                     kana_title: fixture::project::kana_title1().value(),
                     group_name: fixture::project::group_name1().value(),
                     kana_group_name: fixture::project::kana_group_name1().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    category: ProjectCategoryDto::from(fixture::project::category1()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes1()),
                     owner_id: fixture::user::id1().value(),
                 },
             )
@@ -165,8 +162,8 @@ mod tests {
                     kana_title: fixture::project::kana_title1().value(),
                     group_name: fixture::project::group_name1().value(),
                     kana_group_name: fixture::project::kana_group_name1().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    category: ProjectCategoryDto::from(fixture::project::category1()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes1()),
                     owner_id: fixture::user::id1().value(),
                 },
             )
@@ -206,8 +203,8 @@ mod tests {
                     kana_title: fixture::project::kana_title1().value(),
                     group_name: fixture::project::group_name1().value(),
                     kana_group_name: fixture::project::kana_group_name1().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    category: ProjectCategoryDto::from(fixture::project::category1()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes1()),
                     owner_id: fixture::user::id1().value(),
                 },
             )
@@ -247,8 +244,8 @@ mod tests {
                     kana_title: fixture::project::kana_title1().value(),
                     group_name: fixture::project::group_name1().value(),
                     kana_group_name: fixture::project::kana_group_name1().value(),
-                    category: ProjectCategoryDto::from_entity(fixture::project::category1()),
-                    attributes: Vec::from_entity(fixture::project::attributes1()),
+                    category: ProjectCategoryDto::from(fixture::project::category1()),
+                    attributes: ProjectAttributesDto::from(fixture::project::attributes1()),
                     owner_id: fixture::user::id1().value(),
                 },
             )

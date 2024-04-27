@@ -1,13 +1,14 @@
 use sos24_domain::ensure;
 use sos24_domain::entity::firebase_user::FirebaseUserId;
-use sos24_domain::entity::user::{UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber};
+use sos24_domain::entity::user::{
+    UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
+};
 use sos24_domain::repository::firebase_user::FirebaseUserRepository;
 use sos24_domain::repository::{user::UserRepository, Repositories};
 
 use crate::shared::context::ContextProvider;
 use crate::user::dto::UserRoleDto;
 use crate::user::{UserUseCase, UserUseCaseError};
-use crate::ToEntity;
 
 #[derive(Debug)]
 pub struct UpdateUserCommand {
@@ -41,7 +42,7 @@ impl<R: Repositories> UserUseCase<R> {
         new_user.set_name(&actor, UserName::new(user_data.name))?;
         new_user.set_kana_name(&actor, UserKanaName::new(user_data.kana_name))?;
         new_user.set_phone_number(&actor, UserPhoneNumber::new(user_data.phone_number))?;
-        new_user.set_role(&actor, user_data.role.into_entity()?)?;
+        new_user.set_role(&actor, UserRole::from(user_data.role))?;
 
         let firebase_user_id: FirebaseUserId = new_user.id().clone().into();
 

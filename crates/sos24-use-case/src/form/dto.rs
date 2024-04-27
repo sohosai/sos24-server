@@ -9,9 +9,8 @@ use sos24_domain::entity::{
     },
 };
 
-use crate::form::FormUseCaseError;
-use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
-use crate::{FromEntity, ToEntity};
+use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
+use crate::FromEntity;
 
 #[derive(Debug)]
 pub struct NewFormItemDto {
@@ -37,16 +36,14 @@ impl NewFormItemDto {
     }
 }
 
-impl ToEntity for NewFormItemDto {
-    type Entity = FormItem;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(FormItem::create(
-            FormItemName::new(self.name),
-            self.description.map(FormItemDescription::new),
-            FormItemRequired::new(self.required),
-            self.kind.into_entity()?,
-        ))
+impl From<NewFormItemDto> for FormItem {
+    fn from(value: NewFormItemDto) -> Self {
+        FormItem::create(
+            FormItemName::new(value.name),
+            value.description.map(FormItemDescription::new),
+            FormItemRequired::new(value.required),
+            FormItemKind::from(value.kind),
+        )
     }
 }
 
@@ -57,8 +54,8 @@ pub struct FormDto {
     pub description: String,
     pub starts_at: chrono::DateTime<chrono::Utc>,
     pub ends_at: chrono::DateTime<chrono::Utc>,
-    pub categories: Vec<ProjectCategoryDto>,
-    pub attributes: Vec<ProjectAttributeDto>,
+    pub categories: ProjectCategoriesDto,
+    pub attributes: ProjectAttributesDto,
     pub items: Vec<FormItemDto>,
     pub attachments: Vec<String>,
     pub answer_id: Option<String>,
@@ -85,8 +82,8 @@ impl FromEntity for FormDto {
             description: form.description.value(),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
-            categories: Vec::from_entity(form.categories),
-            attributes: Vec::from_entity(form.attributes),
+            categories: ProjectCategoriesDto::from(form.categories),
+            attributes: ProjectAttributesDto::from(form.attributes),
             items: form
                 .items
                 .into_iter()
@@ -113,8 +110,8 @@ pub struct FormSummaryDto {
     pub description: String,
     pub starts_at: chrono::DateTime<chrono::Utc>,
     pub ends_at: chrono::DateTime<chrono::Utc>,
-    pub categories: Vec<ProjectCategoryDto>,
-    pub attributes: Vec<ProjectAttributeDto>,
+    pub categories: ProjectCategoriesDto,
+    pub attributes: ProjectAttributesDto,
     pub answer_id: Option<String>,
     pub answered_at: Option<chrono::DateTime<chrono::Utc>>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
@@ -137,8 +134,8 @@ impl FromEntity for FormSummaryDto {
             description: form.description.value(),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
-            categories: Vec::from_entity(form.categories),
-            attributes: Vec::from_entity(form.attributes),
+            categories: ProjectCategoriesDto::from(form.categories),
+            attributes: ProjectAttributesDto::from(form.attributes),
             answer_id: answer_id.map(|it| it.value().to_string()),
             answered_at,
             updated_at: form_entity.updated_at,
@@ -173,16 +170,14 @@ impl FormItemDto {
     }
 }
 
-impl ToEntity for FormItemDto {
-    type Entity = FormItem;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(FormItem::create(
-            FormItemName::new(self.name),
-            self.description.map(FormItemDescription::new),
-            FormItemRequired::new(self.required),
-            self.kind.into_entity()?,
-        ))
+impl From<FormItemDto> for FormItem {
+    fn from(value: FormItemDto) -> Self {
+        FormItem::create(
+            FormItemName::new(value.name),
+            value.description.map(FormItemDescription::new),
+            FormItemRequired::new(value.required),
+            FormItemKind::from(value.kind),
+        )
     }
 }
 
@@ -225,40 +220,37 @@ pub enum FormItemKindDto {
     },
 }
 
-impl ToEntity for FormItemKindDto {
-    type Entity = FormItemKind;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        match self {
+impl From<FormItemKindDto> for FormItemKind {
+    fn from(value: FormItemKindDto) -> Self {
+        match value {
             FormItemKindDto::String {
                 min_length,
                 max_length,
                 allow_newline,
-            } => Ok(FormItemKind::new_string(
+            } => FormItemKind::new_string(
                 min_length.map(FormItemMinLength::new),
                 max_length.map(FormItemMaxLength::new),
                 FormItemAllowNewline::new(allow_newline),
-            )),
-            FormItemKindDto::Int { min, max } => Ok(FormItemKind::new_int(
-                min.map(FormItemMin::new),
-                max.map(FormItemMax::new),
-            )),
-            FormItemKindDto::ChooseOne { options } => Ok(FormItemKind::new_choose_one(
-                options.into_iter().map(FormItemOption::new).collect(),
-            )),
+            ),
+            FormItemKindDto::Int { min, max } => {
+                FormItemKind::new_int(min.map(FormItemMin::new), max.map(FormItemMax::new))
+            }
+            FormItemKindDto::ChooseOne { options } => {
+                FormItemKind::new_choose_one(options.into_iter().map(FormItemOption::new).collect())
+            }
             FormItemKindDto::ChooseMany {
                 options,
                 min_selection,
                 max_selection,
-            } => Ok(FormItemKind::new_choose_many(
+            } => FormItemKind::new_choose_many(
                 options.into_iter().map(FormItemOption::new).collect(),
                 min_selection.map(FormItemMinSelection::new),
                 max_selection.map(FormItemMaxSelection::new),
-            )),
-            FormItemKindDto::File { extensions, limit } => Ok(FormItemKind::new_file(
+            ),
+            FormItemKindDto::File { extensions, limit } => FormItemKind::new_file(
                 extensions.map(|it| it.into_iter().map(FormItemExtension::new).collect()),
                 limit.map(FormItemLimit::new),
-            )),
+            ),
         }
     }
 }

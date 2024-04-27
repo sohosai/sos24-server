@@ -10,8 +10,9 @@ use sos24_domain::entity::{
     },
 };
 
-use crate::form::FormUseCaseError;
-use crate::{FromEntity, ToEntity};
+use crate::FromEntity;
+
+use super::FormAnswerUseCaseError;
 
 #[derive(Debug)]
 pub struct FormAnswerDto {
@@ -63,13 +64,12 @@ impl FormAnswerItemDto {
     }
 }
 
-impl ToEntity for FormAnswerItemDto {
-    type Entity = FormAnswerItem;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
+impl TryFrom<FormAnswerItemDto> for FormAnswerItem {
+    type Error = FormAnswerUseCaseError;
+    fn try_from(value: FormAnswerItemDto) -> Result<Self, Self::Error> {
         Ok(FormAnswerItem::new(
-            FormItemId::try_from(self.item_id)?,
-            self.kind.into_entity()?,
+            FormItemId::try_from(value.item_id)?,
+            FormAnswerItemKind::try_from(value.kind)?,
         ))
     }
 }
@@ -94,11 +94,10 @@ pub enum FormAnswerItemKindDto {
     File(Vec<String>),
 }
 
-impl ToEntity for FormAnswerItemKindDto {
-    type Entity = FormAnswerItemKind;
-    type Error = FormUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        match self {
+impl TryFrom<FormAnswerItemKindDto> for FormAnswerItemKind {
+    type Error = FormAnswerUseCaseError;
+    fn try_from(value: FormAnswerItemKindDto) -> Result<Self, Self::Error> {
+        match value {
             FormAnswerItemKindDto::String(value) => {
                 Ok(FormAnswerItemKind::String(FormAnswerItemString::new(value)))
             }

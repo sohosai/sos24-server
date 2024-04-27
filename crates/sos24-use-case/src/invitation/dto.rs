@@ -5,8 +5,7 @@ use sos24_domain::entity::{
     invitation::{Invitation, InvitationPosition},
 };
 
-use crate::invitation::InvitationUseCaseError;
-use crate::{FromEntity, ToEntity};
+use crate::FromEntity;
 
 #[derive(Debug)]
 pub struct InvitationDto {
@@ -50,13 +49,11 @@ pub enum InvitationPositionDto {
     SubOwner,
 }
 
-impl ToEntity for InvitationPositionDto {
-    type Entity = InvitationPosition;
-    type Error = InvitationUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        match self {
-            Self::Owner => Ok(InvitationPosition::Owner),
-            Self::SubOwner => Ok(InvitationPosition::SubOwner),
+impl From<InvitationPositionDto> for InvitationPosition {
+    fn from(value: InvitationPositionDto) -> Self {
+        match value {
+            InvitationPositionDto::Owner => Self::Owner,
+            InvitationPositionDto::SubOwner => Self::SubOwner,
         }
     }
 }

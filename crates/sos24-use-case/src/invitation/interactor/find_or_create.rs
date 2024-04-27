@@ -1,6 +1,11 @@
 use sos24_domain::{
     ensure,
-    entity::{invitation::Invitation, permission::Permissions, project::ProjectId, user::UserId},
+    entity::{
+        invitation::{Invitation, InvitationPosition},
+        permission::Permissions,
+        project::ProjectId,
+        user::UserId,
+    },
     repository::{
         invitation::InvitationRepository, project::ProjectRepository, user::UserRepository,
         Repositories,
@@ -10,7 +15,6 @@ use sos24_domain::{
 use crate::{
     invitation::{dto::InvitationPositionDto, InvitationUseCase, InvitationUseCaseError},
     shared::context::ContextProvider,
-    ToEntity,
 };
 
 #[derive(Debug)]
@@ -18,18 +22,6 @@ pub struct CreateInvitationCommand {
     pub inviter: String,
     pub project_id: String,
     pub position: InvitationPositionDto,
-}
-
-impl ToEntity for CreateInvitationCommand {
-    type Entity = Invitation;
-    type Error = InvitationUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(Invitation::create(
-            UserId::new(self.inviter),
-            ProjectId::try_from(self.project_id)?,
-            self.position.into_entity()?,
-        ))
-    }
 }
 
 impl<R: Repositories> InvitationUseCase<R> {
@@ -41,7 +33,11 @@ impl<R: Repositories> InvitationUseCase<R> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_INVITATION));
 
-        let new_invitation = raw_invitation.into_entity()?;
+        let new_invitation = Invitation::create(
+            UserId::new(raw_invitation.inviter),
+            ProjectId::try_from(raw_invitation.project_id)?,
+            InvitationPosition::from(raw_invitation.position),
+        );
 
         ensure!(
             self.project_application_period

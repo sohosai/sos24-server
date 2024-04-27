@@ -1798,13 +1798,9 @@ components:
             type: string
             format: uuid
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         description:
           type: string
         ends_at:
@@ -1858,15 +1854,11 @@ components:
             type: string
             format: uuid
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         body:
           type: string
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         title:
           type: string
     CreateProject:
@@ -1880,9 +1872,7 @@ components:
       - attributes
       properties:
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         category:
           $ref: '#/components/schemas/ProjectCategory'
         group_name:
@@ -2067,13 +2057,9 @@ components:
             type: string
             format: uuid
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         created_at:
           type: string
           format: date-time
@@ -2381,13 +2367,9 @@ components:
           format: date-time
           nullable: true
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         description:
           type: string
         ends_at:
@@ -2481,15 +2463,11 @@ components:
             type: string
             format: uuid
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         body:
           type: string
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         created_at:
           type: string
           format: date-time
@@ -2515,13 +2493,9 @@ components:
       - updated_at
       properties:
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         id:
           type: string
           format: uuid
@@ -2548,9 +2522,7 @@ components:
       - updated_at
       properties:
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         category:
           $ref: '#/components/schemas/ProjectCategory'
         created_at:
@@ -2615,6 +2587,14 @@ components:
       - official
       - inside
       - outside
+    ProjectAttributes:
+      type: array
+      items:
+        $ref: '#/components/schemas/ProjectAttribute'
+    ProjectCategories:
+      type: array
+      items:
+        $ref: '#/components/schemas/ProjectCategory'
     ProjectCategory:
       type: string
       enum:
@@ -2638,9 +2618,7 @@ components:
       - owner_email
       properties:
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         category:
           $ref: '#/components/schemas/ProjectCategory'
         id:
@@ -2675,13 +2653,9 @@ components:
             type: string
             format: uuid
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         description:
           type: string
         ends_at:
@@ -2720,15 +2694,11 @@ components:
             type: string
             format: uuid
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         body:
           type: string
         categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCategory'
+          $ref: '#/components/schemas/ProjectCategories'
         title:
           type: string
     UpdateProject:
@@ -2742,9 +2712,7 @@ components:
       - attributes
       properties:
         attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectAttribute'
+          $ref: '#/components/schemas/ProjectAttributes'
         category:
           $ref: '#/components/schemas/ProjectCategory'
         group_name:

@@ -1,5 +1,5 @@
 use sos24_domain::entity::file_data::FileId;
-use sos24_domain::entity::news::News;
+use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     entity::{
@@ -10,10 +10,9 @@ use sos24_domain::{
 };
 
 use crate::news::{NewsUseCase, NewsUseCaseError};
-use crate::project::dto::{ProjectAttributeDto, ProjectCategoryDto};
+use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
-use crate::ToEntity;
 
 #[derive(Debug)]
 pub struct UpdateNewsCommand {
@@ -21,26 +20,8 @@ pub struct UpdateNewsCommand {
     pub title: String,
     pub body: String,
     pub attachments: Vec<String>,
-    pub categories: Vec<ProjectCategoryDto>,
-    pub attributes: Vec<ProjectAttributeDto>,
-}
-
-impl ToEntity for UpdateNewsCommand {
-    type Entity = News;
-    type Error = NewsUseCaseError;
-    fn into_entity(self) -> Result<Self::Entity, Self::Error> {
-        Ok(News::new(
-            NewsId::try_from(self.id)?,
-            NewsTitle::new(self.title),
-            NewsBody::new(self.body),
-            self.attachments
-                .into_iter()
-                .map(FileId::try_from)
-                .collect::<Result<_, _>>()?,
-            self.categories.into_entity()?,
-            self.attributes.into_entity()?,
-        ))
-    }
+    pub categories: ProjectCategoriesDto,
+    pub attributes: ProjectAttributesDto,
 }
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
@@ -68,15 +49,8 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
 
         let mut new_news = news.value;
 
-        let new_title = NewsTitle::new(news_data.title);
-        if new_news.title() != &new_title {
-            new_news.set_title(&actor, new_title)?;
-        }
-
-        let new_body = NewsBody::new(news_data.body);
-        if new_news.body() != &new_body {
-            new_news.set_body(&actor, new_body)?;
-        }
+        new_news.set_title(&actor, NewsTitle::new(news_data.title))?;
+        new_news.set_body(&actor, NewsBody::new(news_data.body))?;
 
         let new_attachments = news_data
             .attachments
@@ -96,15 +70,8 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
             new_news.set_attachments(&actor, new_attachments)?;
         }
 
-        let new_categories = news_data.categories.into_entity()?;
-        if new_news.categories() != &new_categories {
-            new_news.set_categories(&actor, new_categories)?;
-        }
-
-        let new_attributes = news_data.attributes.into_entity()?;
-        if new_news.attributes() != &new_attributes {
-            new_news.set_attributes(&actor, new_attributes)?;
-        }
+        new_news.set_categories(&actor, ProjectCategories::from(news_data.categories))?;
+        new_news.set_attributes(&actor, ProjectAttributes::from(news_data.attributes))?;
 
         self.repositories.news_repository().update(new_news).await?;
         Ok(())
@@ -122,8 +89,8 @@ mod tests {
 
     use crate::{
         news::{interactor::update::UpdateNewsCommand, NewsUseCase, NewsUseCaseError},
+        project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
         shared::{adapter::MockAdapters, context::TestContext},
-        FromEntity,
     };
 
     #[tokio::test]
@@ -152,8 +119,8 @@ mod tests {
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    categories: Vec::from_entity(fixture::news::categories2()),
-                    attributes: Vec::from_entity(fixture::news::attributes2()),
+                    categories: ProjectCategoriesDto::from(fixture::news::categories2()),
+                    attributes: ProjectAttributesDto::from(fixture::news::attributes2()),
                 },
             )
             .await;
@@ -191,8 +158,8 @@ mod tests {
                         .into_iter()
                         .map(|id| id.value().to_string())
                         .collect(),
-                    categories: Vec::from_entity(fixture::news::categories2()),
-                    attributes: Vec::from_entity(fixture::news::attributes2()),
+                    categories: ProjectCategoriesDto::from(fixture::news::categories2()),
+                    attributes: ProjectAttributesDto::from(fixture::news::attributes2()),
                 },
             )
             .await;

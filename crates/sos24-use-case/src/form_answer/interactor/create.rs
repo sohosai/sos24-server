@@ -1,5 +1,5 @@
 use sos24_domain::entity::form::FormId;
-use sos24_domain::entity::form_answer::{FormAnswer, FormAnswerItemKind};
+use sos24_domain::entity::form_answer::{FormAnswer, FormAnswerItem, FormAnswerItemKind};
 use sos24_domain::repository::file_data::FileDataRepository;
 use sos24_domain::{
     ensure,
@@ -14,7 +14,6 @@ use sos24_domain::{
 use crate::form_answer::dto::FormAnswerItemDto;
 use crate::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError};
 use crate::shared::context::{ContextProvider, OwnedProject};
-use crate::ToEntity;
 
 #[derive(Debug)]
 pub struct CreateFormAnswerCommand {
@@ -43,7 +42,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             form_answer
                 .items
                 .into_iter()
-                .map(FormAnswerItemDto::into_entity)
+                .map(FormAnswerItem::try_from)
                 .collect::<Result<_, _>>()?,
         );
 
