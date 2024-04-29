@@ -11,7 +11,7 @@ use sos24_domain::{ensure, entity::project::Project};
 use crate::project::dto::ProjectAttributesDto;
 use crate::{
     project::{dto::ProjectCategoryDto, ProjectUseCase, ProjectUseCaseError},
-    shared::context::{ContextProvider, OwnedProject},
+    shared::context::ContextProvider,
 };
 
 #[derive(Debug)]
@@ -44,13 +44,10 @@ impl<R: Repositories> ProjectUseCase<R> {
         let project_id = {
             let lock = self.creation_lock.lock().await;
 
-            if let Some(project) = ctx.project(&*self.repositories).await? {
-                let project_id = match project {
-                    OwnedProject::Owner(project) => project.id().clone(),
-                    OwnedProject::SubOwner(project) => project.id().clone(),
-                };
+            if let Some(project_with_owners) = ctx.project(&*self.repositories).await? {
+                let project_id = project_with_owners.project.id().clone();
                 return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
-            }
+            };
 
             let project = Project::create(
                 ProjectTitle::try_from(raw_project.title)
@@ -139,7 +136,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .project_repository_mut()
             .expect_find_by_sub_owner_id()

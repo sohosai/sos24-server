@@ -1,4 +1,4 @@
-use sos24_domain::entity::permission::PermissionDeniedError;
+use sos24_domain::ensure;
 use sos24_domain::entity::project::Project;
 use sos24_domain::entity::user::UserId;
 use sos24_domain::repository::project::ProjectRepository;
@@ -23,15 +23,10 @@ impl<R: Repositories> UserUseCase<R> {
             .find_by_id(user_id.clone())
             .await?
             .ok_or(UserUseCaseError::NotFound(user_id.clone()))?;
+        ensure!(raw_user.is_visible_to(&actor));
 
-        if raw_user.is_visible_to(&actor) {
-            let raw_project = find_owned_project(user_id.clone(), &*self.repositories).await?;
-            Ok(UserDto::from((raw_user, raw_project)))
-        } else {
-            Err(UserUseCaseError::PermissionDeniedError(
-                PermissionDeniedError,
-            ))
-        }
+        let raw_project = find_owned_project(user_id.clone(), &*self.repositories).await?;
+        Ok(UserDto::from((raw_user, raw_project)))
     }
 }
 
@@ -39,20 +34,20 @@ async fn find_owned_project(
     user_id: UserId,
     repositories: &impl Repositories,
 ) -> Result<Option<Project>, UserUseCaseError> {
-    if let Some(project) = repositories
+    if let Some(project_with_owners) = repositories
         .project_repository()
         .find_by_owner_id(user_id.clone())
         .await?
     {
-        return Ok(Some(project));
+        return Ok(Some(project_with_owners.project));
     }
 
-    if let Some(project) = repositories
+    if let Some(project_with_owners) = repositories
         .project_repository()
         .find_by_sub_owner_id(user_id.clone())
         .await?
     {
-        return Ok(Some(project));
+        return Ok(Some(project_with_owners.project));
     }
 
     Ok(None)

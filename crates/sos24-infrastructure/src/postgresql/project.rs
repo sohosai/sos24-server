@@ -9,50 +9,119 @@ use sos24_domain::{
             Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectIndex,
             ProjectKanaGroupName, ProjectKanaTitle, ProjectRemarks, ProjectTitle,
         },
-        user::UserId,
+        user::{User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber},
     },
-    repository::project::{ProjectRepository, ProjectRepositoryError},
+    repository::project::{ProjectRepository, ProjectRepositoryError, ProjectWithOwners},
 };
 
-use super::Postgresql;
+use super::{user::UserRoleRow, Postgresql};
 
 #[derive(FromRow)]
-pub struct ProjectRow {
-    id: uuid::Uuid,
-    index: i32,
-    title: String,
-    kana_title: String,
-    group_name: String,
-    kana_group_name: String,
-    category: ProjectCategoryRow,
-    attributes: i32,
-    owner_id: String,
-    sub_owner_id: Option<String>,
-    remarks: Option<String>,
+pub struct ProjectWithOwnersRow {
+    // project
+    project_id: uuid::Uuid,
+    project_index: i32,
+    project_title: String,
+    project_kana_title: String,
+    project_group_name: String,
+    project_kana_group_name: String,
+    project_category: ProjectCategoryRow,
+    project_attributes: i32,
+    project_owner_id: String,
+    project_sub_owner_id: Option<String>,
+    project_remarks: Option<String>,
+    project_created_at: chrono::DateTime<chrono::Utc>,
+    project_updated_at: chrono::DateTime<chrono::Utc>,
 
-    created_at: chrono::DateTime<chrono::Utc>,
-    updated_at: chrono::DateTime<chrono::Utc>,
+    // owner
+    owner_id: String,
+    owner_name: String,
+    owner_kana_name: String,
+    owner_email: String,
+    owner_phone_number: String,
+    owner_role: UserRoleRow,
+    owner_created_at: chrono::DateTime<chrono::Utc>,
+    owner_updated_at: chrono::DateTime<chrono::Utc>,
+
+    // sub_owner
+    sub_owner_id: Option<String>,
+    sub_owner_name: Option<String>,
+    sub_owner_kana_name: Option<String>,
+    sub_owner_email: Option<String>,
+    sub_owner_phone_number: Option<String>,
+    sub_owner_role: Option<UserRoleRow>,
+    sub_owner_created_at: Option<chrono::DateTime<chrono::Utc>>,
+    sub_owner_updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl TryFrom<ProjectRow> for Project {
+impl TryFrom<ProjectWithOwnersRow> for ProjectWithOwners {
     type Error = anyhow::Error;
-    fn try_from(value: ProjectRow) -> Result<Self, Self::Error> {
-        Ok(Project::new(
-            ProjectId::new(value.id),
-            ProjectIndex::new(value.index),
-            ProjectTitle::try_from(value.title)?,
-            ProjectKanaTitle::new(value.kana_title),
-            ProjectGroupName::try_from(value.group_name)?,
-            ProjectKanaGroupName::new(value.kana_group_name),
-            value.category.into(),
-            ProjectAttributes::from_bits(value.attributes as u32)
+    fn try_from(value: ProjectWithOwnersRow) -> Result<Self, Self::Error> {
+        let project = Project::new(
+            ProjectId::new(value.project_id),
+            ProjectIndex::new(value.project_index),
+            ProjectTitle::try_from(value.project_title)?,
+            ProjectKanaTitle::new(value.project_kana_title),
+            ProjectGroupName::try_from(value.project_group_name)?,
+            ProjectKanaGroupName::new(value.project_kana_group_name),
+            value.project_category.into(),
+            ProjectAttributes::from_bits(value.project_attributes as u32)
                 .ok_or(anyhow!("cannot convert project attributes"))?,
+            UserId::new(value.project_owner_id),
+            value.project_sub_owner_id.map(UserId::new),
+            value.project_remarks.map(ProjectRemarks::new),
+            DateTime::new(value.project_created_at),
+            DateTime::new(value.project_updated_at),
+        );
+
+        let owner = User::new(
             UserId::new(value.owner_id),
-            value.sub_owner_id.map(UserId::new),
-            value.remarks.map(ProjectRemarks::new),
-            DateTime::new(value.created_at),
-            DateTime::new(value.updated_at),
-        ))
+            UserName::new(value.owner_name),
+            UserKanaName::new(value.owner_kana_name),
+            UserEmail::try_from(value.owner_email)?,
+            UserPhoneNumber::new(value.owner_phone_number),
+            value.owner_role.into(),
+            DateTime::new(value.owner_created_at),
+            DateTime::new(value.owner_updated_at),
+        );
+
+        let sub_owner = match (
+            value.sub_owner_id,
+            value.sub_owner_name,
+            value.sub_owner_kana_name,
+            value.sub_owner_email,
+            value.sub_owner_phone_number,
+            value.sub_owner_role,
+            value.sub_owner_created_at,
+            value.sub_owner_updated_at,
+        ) {
+            (
+                Some(sub_owner_id),
+                Some(sub_owner_name),
+                Some(sub_owner_kana_name),
+                Some(sub_owner_email),
+                Some(sub_owner_phone_number),
+                Some(sub_owner_role),
+                Some(sub_owner_created_at),
+                Some(sub_owner_updated_at),
+            ) => Some(User::new(
+                UserId::new(sub_owner_id),
+                UserName::new(sub_owner_name),
+                UserKanaName::new(sub_owner_kana_name),
+                UserEmail::try_from(sub_owner_email)?,
+                UserPhoneNumber::new(sub_owner_phone_number),
+                sub_owner_role.into(),
+                DateTime::new(sub_owner_created_at),
+                DateTime::new(sub_owner_updated_at),
+            )),
+            _ => None,
+        };
+
+        Ok(ProjectWithOwners {
+            project,
+            owner,
+            sub_owner,
+        })
     }
 }
 
@@ -109,25 +178,6 @@ impl PgProjectRepository {
 }
 
 impl ProjectRepository for PgProjectRepository {
-    async fn list(&self) -> Result<Vec<Project>, ProjectRepositoryError> {
-        tracing::info!("企画一覧を取得します");
-
-        let project_list = sqlx::query_as!(
-            ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
-            FROM projects
-            WHERE deleted_at IS NULL
-            ORDER BY index ASC"#)
-            .fetch(&*self.db)
-            .map(|row| Project::try_from(row?))
-            .try_collect()
-            .await
-            .context("Failed to fetch project list")?;
-
-        tracing::info!("企画一覧を取得しました");
-        Ok(project_list)
-    }
-
     async fn create(&self, project: Project) -> Result<(), ProjectRepositoryError> {
         tracing::info!("企画を作成します");
 
@@ -151,65 +201,6 @@ impl ProjectRepository for PgProjectRepository {
 
         tracing::info!("企画を作成しました");
         Ok(())
-    }
-
-    async fn find_by_id(&self, id: ProjectId) -> Result<Option<Project>, ProjectRepositoryError> {
-        tracing::info!("企画を取得します: {id:?}");
-
-        let project_row = sqlx::query_as!(
-            ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
-            FROM projects
-            WHERE id = $1 AND deleted_at IS NULL"#,
-            id.clone().value()
-        )
-            .fetch_optional(&*self.db)
-            .await
-            .context("Failed to fetch project")?;
-
-        tracing::info!("企画を取得しました: {id:?}");
-        Ok(project_row.map(Project::try_from).transpose()?)
-    }
-
-    async fn find_by_owner_id(
-        &self,
-        owner_id: UserId,
-    ) -> Result<Option<Project>, ProjectRepositoryError> {
-        tracing::info!("企画責任者に紐づく企画を取得します: {owner_id:?}");
-
-        let project_row = sqlx::query_as!(
-            ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
-            FROM projects
-            WHERE owner_id = $1 AND deleted_at IS NULL"#,
-            owner_id.clone().value()
-        )
-            .fetch_optional(&*self.db)
-            .await
-            .context("Failed to fetch project")?;
-
-        tracing::info!("企画責任者に紐づく企画を取得しました: {owner_id:?}");
-        Ok(project_row.map(Project::try_from).transpose()?)
-    }
-
-    async fn find_by_sub_owner_id(
-        &self,
-        sub_owner_id: UserId,
-    ) -> Result<Option<Project>, ProjectRepositoryError> {
-        tracing::info!("副企画責任者に紐づく企画を取得します: {sub_owner_id:?}");
-
-        let project_row = sqlx::query_as!(
-            ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
-            FROM projects
-            WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
-            sub_owner_id.clone().value()
-        ).fetch_optional(&*self.db)
-            .await
-            .context("Failed to fetch project")?;
-
-        tracing::info!("副企画責任者に紐づく企画を取得しました: {sub_owner_id:?}");
-        Ok(project_row.map(Project::try_from).transpose()?)
     }
 
     async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {
@@ -254,5 +245,213 @@ impl ProjectRepository for PgProjectRepository {
 
         tracing::info!("企画を削除しました: {id:?}");
         Ok(())
+    }
+
+    async fn list(&self) -> Result<Vec<ProjectWithOwners>, ProjectRepositoryError> {
+        tracing::info!("企画一覧を取得します");
+
+        // 現在のsqlxはLEFT JOINで得られるnullableなフィールドの型をうまく推論できないので、明示的に指定する
+        // ref: https://github.com/launchbadge/sqlx/issues/2127
+        let project_list = sqlx::query_as!(
+            ProjectWithOwnersRow,
+            r#"SELECT
+            projects.id AS "project_id",
+            projects.index AS "project_index",
+            projects.title AS "project_title",
+            projects.kana_title AS "project_kana_title",
+            projects.group_name AS "project_group_name",
+            projects.kana_group_name AS "project_kana_group_name",
+            projects.category AS "project_category: ProjectCategoryRow",
+            projects.attributes AS "project_attributes",
+            projects.owner_id AS "project_owner_id",
+            projects.sub_owner_id AS "project_sub_owner_id",
+            projects.remarks AS "project_remarks",
+            projects.created_at AS "project_created_at",
+            projects.updated_at AS "project_updated_at",
+            owners.id AS "owner_id",
+            owners.name AS "owner_name",
+            owners.kana_name AS "owner_kana_name",
+            owners.email AS "owner_email",
+            owners.phone_number AS "owner_phone_number",
+            owners.role AS "owner_role: UserRoleRow",
+            owners.created_at AS "owner_created_at",
+            owners.updated_at AS "owner_updated_at",
+            sub_owners.id AS "sub_owner_id?",
+            sub_owners.name AS "sub_owner_name?",
+            sub_owners.kana_name AS "sub_owner_kana_name?",
+            sub_owners.email AS "sub_owner_email?",
+            sub_owners.phone_number AS "sub_owner_phone_number?",
+            sub_owners.role AS "sub_owner_role?: UserRoleRow",
+            sub_owners.created_at AS "sub_owner_created_at?",
+            sub_owners.updated_at AS "sub_owner_updated_at?"
+            FROM projects
+            INNER JOIN users AS owners ON projects.owner_id = owners.id AND owners.deleted_at IS NULL
+            LEFT JOIN users AS sub_owners ON projects.sub_owner_id = sub_owners.id AND sub_owners.deleted_at IS NULL
+            WHERE projects.deleted_at IS NULL
+            ORDER BY projects.index ASC"#
+        )
+        .fetch(&*self.db)
+        .map(|row| ProjectWithOwners::try_from(row?))
+        .try_collect()
+        .await
+        .context("Failed to fetch project list")?;
+
+        tracing::info!("企画一覧を取得しました");
+        Ok(project_list)
+    }
+
+    async fn find_by_id(
+        &self,
+        id: ProjectId,
+    ) -> Result<Option<ProjectWithOwners>, ProjectRepositoryError> {
+        tracing::info!("企画を取得します: {id:?}");
+
+        let project_row = sqlx::query_as!(
+            ProjectWithOwnersRow,
+            r#"SELECT
+            projects.id AS "project_id",
+            projects.index AS "project_index",
+            projects.title AS "project_title",
+            projects.kana_title AS "project_kana_title",
+            projects.group_name AS "project_group_name",
+            projects.kana_group_name AS "project_kana_group_name",
+            projects.category AS "project_category: ProjectCategoryRow",
+            projects.attributes AS "project_attributes",
+            projects.owner_id AS "project_owner_id",
+            projects.sub_owner_id AS "project_sub_owner_id",
+            projects.remarks AS "project_remarks",
+            projects.created_at AS "project_created_at",
+            projects.updated_at AS "project_updated_at",
+            owners.id AS "owner_id",
+            owners.name AS "owner_name",
+            owners.kana_name AS "owner_kana_name",
+            owners.email AS "owner_email",
+            owners.phone_number AS "owner_phone_number",
+            owners.role AS "owner_role: UserRoleRow",
+            owners.created_at AS "owner_created_at",
+            owners.updated_at AS "owner_updated_at",
+            sub_owners.id AS "sub_owner_id?",
+            sub_owners.name AS "sub_owner_name?",
+            sub_owners.kana_name AS "sub_owner_kana_name?",
+            sub_owners.email AS "sub_owner_email?",
+            sub_owners.phone_number AS "sub_owner_phone_number?",
+            sub_owners.role AS "sub_owner_role?: UserRoleRow",
+            sub_owners.created_at AS "sub_owner_created_at?",
+            sub_owners.updated_at AS "sub_owner_updated_at?"
+            FROM projects
+            INNER JOIN users AS owners ON projects.owner_id = owners.id AND owners.deleted_at IS NULL
+            LEFT JOIN users AS sub_owners ON projects.sub_owner_id = sub_owners.id AND sub_owners.deleted_at IS NULL
+            WHERE projects.id = $1 AND projects.deleted_at IS NULL"#,
+            id.clone().value()
+        )
+            .fetch_optional(&*self.db)
+            .await
+            .context("Failed to fetch project")?;
+
+        tracing::info!("企画を取得しました: {id:?}");
+        Ok(project_row.map(ProjectWithOwners::try_from).transpose()?)
+    }
+
+    async fn find_by_owner_id(
+        &self,
+        owner_id: UserId,
+    ) -> Result<Option<ProjectWithOwners>, ProjectRepositoryError> {
+        tracing::info!("企画責任者に紐づく企画を取得します: {owner_id:?}");
+
+        let project_row = sqlx::query_as!(
+            ProjectWithOwnersRow,
+            r#"SELECT
+            projects.id AS "project_id",
+            projects.index AS "project_index",
+            projects.title AS "project_title",
+            projects.kana_title AS "project_kana_title",
+            projects.group_name AS "project_group_name",
+            projects.kana_group_name AS "project_kana_group_name",
+            projects.category AS "project_category: ProjectCategoryRow",
+            projects.attributes AS "project_attributes",
+            projects.owner_id AS "project_owner_id",
+            projects.sub_owner_id AS "project_sub_owner_id",
+            projects.remarks AS "project_remarks",
+            projects.created_at AS "project_created_at",
+            projects.updated_at AS "project_updated_at",
+            owners.id AS "owner_id",
+            owners.name AS "owner_name",
+            owners.kana_name AS "owner_kana_name",
+            owners.email AS "owner_email",
+            owners.phone_number AS "owner_phone_number",
+            owners.role AS "owner_role: UserRoleRow",
+            owners.created_at AS "owner_created_at",
+            owners.updated_at AS "owner_updated_at",
+            sub_owners.id AS "sub_owner_id?",
+            sub_owners.name AS "sub_owner_name?",
+            sub_owners.kana_name AS "sub_owner_kana_name?",
+            sub_owners.email AS "sub_owner_email?",
+            sub_owners.phone_number AS "sub_owner_phone_number?",
+            sub_owners.role AS "sub_owner_role?: UserRoleRow",
+            sub_owners.created_at AS "sub_owner_created_at?",
+            sub_owners.updated_at AS "sub_owner_updated_at?"
+            FROM projects
+            INNER JOIN users AS owners ON projects.owner_id = owners.id AND owners.deleted_at IS NULL
+            LEFT JOIN users AS sub_owners ON projects.sub_owner_id = sub_owners.id AND sub_owners.deleted_at IS NULL
+            WHERE projects.owner_id = $1 AND projects.deleted_at IS NULL"#,
+            owner_id.clone().value()
+        )
+            .fetch_optional(&*self.db)
+            .await
+            .context("Failed to fetch project")?;
+
+        tracing::info!("企画責任者に紐づく企画を取得しました: {owner_id:?}");
+        Ok(project_row.map(ProjectWithOwners::try_from).transpose()?)
+    }
+
+    async fn find_by_sub_owner_id(
+        &self,
+        sub_owner_id: UserId,
+    ) -> Result<Option<ProjectWithOwners>, ProjectRepositoryError> {
+        tracing::info!("副企画責任者に紐づく企画を取得します: {sub_owner_id:?}");
+
+        let project_row = sqlx::query_as!(
+            ProjectWithOwnersRow,
+            r#"SELECT
+            projects.id AS "project_id",
+            projects.index AS "project_index",
+            projects.title AS "project_title",
+            projects.kana_title AS "project_kana_title",
+            projects.group_name AS "project_group_name",
+            projects.kana_group_name AS "project_kana_group_name",
+            projects.category AS "project_category: ProjectCategoryRow",
+            projects.attributes AS "project_attributes",
+            projects.owner_id AS "project_owner_id",
+            projects.sub_owner_id AS "project_sub_owner_id",
+            projects.remarks AS "project_remarks",
+            projects.created_at AS "project_created_at",
+            projects.updated_at AS "project_updated_at",
+            owners.id AS "owner_id",
+            owners.name AS "owner_name",
+            owners.kana_name AS "owner_kana_name",
+            owners.email AS "owner_email",
+            owners.phone_number AS "owner_phone_number",
+            owners.role AS "owner_role: UserRoleRow",
+            owners.created_at AS "owner_created_at",
+            owners.updated_at AS "owner_updated_at",
+            sub_owners.id AS "sub_owner_id?",
+            sub_owners.name AS "sub_owner_name?",
+            sub_owners.kana_name AS "sub_owner_kana_name?",
+            sub_owners.email AS "sub_owner_email?",
+            sub_owners.phone_number AS "sub_owner_phone_number?",
+            sub_owners.role AS "sub_owner_role?: UserRoleRow",
+            sub_owners.created_at AS "sub_owner_created_at?",
+            sub_owners.updated_at AS "sub_owner_updated_at?"
+            FROM projects
+            INNER JOIN users AS owners ON projects.owner_id = owners.id AND owners.deleted_at IS NULL
+            LEFT JOIN users AS sub_owners ON projects.sub_owner_id = sub_owners.id AND sub_owners.deleted_at IS NULL
+            WHERE projects.sub_owner_id = $1 AND projects.deleted_at IS NULL"#,
+            sub_owner_id.clone().value()
+        ).fetch_optional(&*self.db)
+            .await
+            .context("Failed to fetch project")?;
+
+        tracing::info!("副企画責任者に紐づく企画を取得しました: {sub_owner_id:?}");
+        Ok(project_row.map(ProjectWithOwners::try_from).transpose()?)
     }
 }

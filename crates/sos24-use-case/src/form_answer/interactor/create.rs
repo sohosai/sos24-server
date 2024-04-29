@@ -13,7 +13,7 @@ use sos24_domain::{
 
 use crate::form_answer::dto::FormAnswerItemDto;
 use crate::form_answer::{FormAnswerUseCase, FormAnswerUseCaseError};
-use crate::shared::context::{ContextProvider, OwnedProject};
+use crate::shared::context::ContextProvider;
 
 #[derive(Debug)]
 pub struct CreateFormAnswerCommand {
@@ -30,11 +30,10 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
 
-        let project_id = match ctx.project(&*self.repositories).await? {
-            Some(OwnedProject::Owner(project)) => project.id().clone(),
-            Some(OwnedProject::SubOwner(project)) => project.id().clone(),
-            None => return Err(FormAnswerUseCaseError::NotProjectOwner),
+        let Some(project_with_owners) = ctx.project(&*self.repositories).await? else {
+            return Err(FormAnswerUseCaseError::NotProjectOwner);
         };
+        let project_id = project_with_owners.project.id().clone();
 
         let form_answer = FormAnswer::create(
             project_id,
@@ -46,7 +45,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 .collect::<Result<_, _>>()?,
         );
 
-        let project = self
+        let project_with_owners = self
             .repositories
             .project_repository()
             .find_by_id(form_answer.project_id().clone())
@@ -55,7 +54,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 form_answer.project_id().clone(),
             ))?;
 
-        ensure!(project.is_visible_to(&actor));
+        ensure!(project_with_owners.project.is_visible_to(&actor));
 
         let form = self
             .repositories
@@ -132,16 +131,24 @@ mod tests {
         let mut repositories = MockRepositories::default();
         repositories
             .project_repository_mut()
-            .expect_find_by_owner_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .expect_find_by_id()
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
             .returning(|_, _| Ok(None));
         repositories
             .project_repository_mut()
-            .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .expect_find_by_owner_id()
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_repository_mut()
             .expect_find_by_id()
@@ -203,7 +210,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
@@ -215,7 +226,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_repository_mut()
             .expect_find_by_id()

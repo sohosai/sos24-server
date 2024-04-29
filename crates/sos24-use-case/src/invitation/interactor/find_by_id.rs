@@ -34,7 +34,7 @@ impl<R: Repositories> InvitationUseCase<R> {
             .ok_or(InvitationUseCaseError::UserNotFound(inviter_id.clone()))?;
 
         let project_id = raw_invitation.project_id();
-        let raw_project = self
+        let project_with_owners = self
             .repositories
             .project_repository()
             .find_by_id(project_id.clone())
@@ -44,7 +44,7 @@ impl<R: Repositories> InvitationUseCase<R> {
         Ok(InvitationDto::from((
             raw_invitation,
             raw_inviter,
-            raw_project,
+            project_with_owners.project,
         )))
     }
 }
@@ -80,7 +80,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         let use_case = InvitationUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
@@ -113,7 +117,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         let use_case = InvitationUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
@@ -146,7 +154,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::Committee),
+                )))
+            });
         let use_case = InvitationUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),

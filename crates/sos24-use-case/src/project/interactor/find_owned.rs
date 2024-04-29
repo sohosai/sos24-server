@@ -1,11 +1,10 @@
 use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
-use sos24_domain::repository::user::UserRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::{
     project::{dto::ProjectDto, ProjectUseCase, ProjectUseCaseError},
-    shared::context::{ContextProvider, OwnedProject},
+    shared::context::ContextProvider,
 };
 
 impl<R: Repositories> ProjectUseCase<R> {
@@ -14,37 +13,13 @@ impl<R: Repositories> ProjectUseCase<R> {
         ctx: &impl ContextProvider,
     ) -> Result<Option<ProjectDto>, ProjectUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        let project = ctx.project(&*self.repositories).await?;
 
-        let raw_project = match project {
-            Some(OwnedProject::Owner(project)) => project,
-            Some(OwnedProject::SubOwner(project)) => project,
-            None => return Ok(None),
+        let Some(project_with_owners) = ctx.project(&*self.repositories).await? else {
+            return Ok(None);
         };
+        ensure!(project_with_owners.project.is_visible_to(&actor));
 
-        ensure!(raw_project.is_visible_to(&actor));
-
-        let owner_id = raw_project.owner_id();
-        let raw_owner = self
-            .repositories
-            .user_repository()
-            .find_by_id(owner_id.clone())
-            .await?
-            .ok_or(ProjectUseCaseError::UserNotFound(owner_id.clone()))?;
-
-        let sub_owner_id = raw_project.sub_owner_id();
-        let raw_sub_owner = match sub_owner_id {
-            Some(sub_owner_id) => Some(
-                self.repositories
-                    .user_repository()
-                    .find_by_id(sub_owner_id.clone())
-                    .await?
-                    .ok_or(ProjectUseCaseError::UserNotFound(sub_owner_id.clone()))?,
-            ),
-            None => None,
-        };
-
-        let mut project = ProjectDto::from((raw_project, raw_owner, raw_sub_owner));
+        let mut project = ProjectDto::from(project_with_owners);
         if !actor.has_permission(Permissions::READ_PROJECT_ALL) {
             project.remarks = None;
         }

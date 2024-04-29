@@ -27,13 +27,13 @@ impl<R: Repositories> FileUseCase<R> {
             .await?
             .ok_or(FileUseCaseError::NotFound(id))?;
         if let Some(project_id) = raw_file_data.owner().clone() {
-            let project = self
+            let project_with_owners = self
                 .repositories
                 .project_repository()
                 .find_by_id(project_id)
                 .await?
                 .ok_or(FileUseCaseError::OwnerNotFound)?;
-            ensure!(project.is_visible_to(&actor));
+            ensure!(project_with_owners.project.is_visible_to(&actor));
         }
         let signed_url = self
             .repositories
@@ -99,7 +99,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .file_object_repository_mut()
             .expect_generate_url()
@@ -132,7 +136,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         let use_case = FileUseCase::new(Arc::new(repositories));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
@@ -166,7 +174,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::Committee),
+                )))
+            });
         repositories
             .file_object_repository_mut()
             .expect_generate_url()

@@ -1,7 +1,7 @@
+use std::convert::identity;
+
 use chrono_tz::Asia::Tokyo;
-use sos24_domain::repository::{
-    form::FormRepository, project::ProjectRepository, user::UserRepository, Repositories,
-};
+use sos24_domain::repository::{form::FormRepository, project::ProjectRepository, Repositories};
 
 use crate::{
     form::{FormUseCase, FormUseCaseError},
@@ -27,29 +27,20 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         for form in form_list_to_notify {
             let target_project_list = project_list
                 .iter()
-                .filter(|project| form.is_sent_to(&project));
+                .filter(|project_with_owners| form.is_sent_to(&project_with_owners.project));
 
-            let mut emails = Vec::new();
-            for project in target_project_list {
-                let owner_id = project.owner_id().clone();
-                let owner = self
-                    .repositories
-                    .user_repository()
-                    .find_by_id(owner_id.clone())
-                    .await?
-                    .ok_or(FormUseCaseError::UserNotFound(owner_id))?;
-                emails.push(owner.email().clone().value());
-
-                if let Some(sub_owner_id) = project.sub_owner_id().clone() {
-                    let sub_owner = self
-                        .repositories
-                        .user_repository()
-                        .find_by_id(sub_owner_id.clone())
-                        .await?
-                        .ok_or(FormUseCaseError::UserNotFound(sub_owner_id))?;
-                    emails.push(sub_owner.email().clone().value());
-                }
-            }
+            let emails = target_project_list
+                .flat_map(|project_with_owners| {
+                    [
+                        Some(project_with_owners.owner.email().clone().value()),
+                        project_with_owners
+                            .sub_owner
+                            .as_ref()
+                            .map(|it| it.email().clone().value()),
+                    ]
+                })
+                .filter_map(identity)
+                .collect::<Vec<_>>();
 
             let command = SendEmailCommand {
                 from: Email {

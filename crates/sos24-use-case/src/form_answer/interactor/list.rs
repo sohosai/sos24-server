@@ -23,7 +23,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let mut form_answer_list = Vec::new();
         for raw_form_answer in raw_form_answer_list {
             let project_id = raw_form_answer.project_id();
-            let raw_project = self
+            let project_with_owners = self
                 .repositories
                 .project_repository()
                 .find_by_id(project_id.clone())
@@ -40,7 +40,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
             form_answer_list.push(FormAnswerDto::from((
                 raw_form_answer,
-                raw_project,
+                project_with_owners.project,
                 raw_form,
             )));
         }

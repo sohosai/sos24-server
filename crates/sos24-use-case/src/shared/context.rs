@@ -1,11 +1,10 @@
 use sos24_domain::{
     entity::{
         actor::Actor,
-        project::Project,
         user::{User, UserId},
     },
     repository::{
-        project::{ProjectRepository, ProjectRepositoryError},
+        project::{ProjectRepository, ProjectRepositoryError, ProjectWithOwners},
         user::{UserRepository, UserRepositoryError},
         Repositories,
     },
@@ -21,12 +20,6 @@ pub enum ContextError {
     UserRepositoryError(#[from] UserRepositoryError),
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
-}
-
-#[derive(Debug)]
-pub enum OwnedProject {
-    Owner(Project),
-    SubOwner(Project),
 }
 
 #[derive(Clone, Debug, Default)]
@@ -59,14 +52,14 @@ pub trait ContextProvider: Send + Sync + 'static {
     async fn project<R: Repositories>(
         &self,
         repositories: &R,
-    ) -> Result<Option<OwnedProject>, ContextError> {
+    ) -> Result<Option<ProjectWithOwners>, ContextError> {
         let user_id = UserId::new(self.user_id());
         if let Some(project) = repositories
             .project_repository()
             .find_by_owner_id(user_id.clone())
             .await?
         {
-            return Ok(Some(OwnedProject::Owner(project)));
+            return Ok(Some(project));
         }
 
         if let Some(project) = repositories
@@ -74,7 +67,7 @@ pub trait ContextProvider: Send + Sync + 'static {
             .find_by_sub_owner_id(user_id)
             .await?
         {
-            return Ok(Some(OwnedProject::SubOwner(project)));
+            return Ok(Some(project));
         }
 
         Ok(None)

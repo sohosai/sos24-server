@@ -31,7 +31,7 @@ impl<R: Repositories> InvitationUseCase<R> {
                 .ok_or(InvitationUseCaseError::UserNotFound(inviter_id.clone()))?;
 
             let project_id = raw_invitation.project_id();
-            let raw_project = self
+            let project_with_owners = self
                 .repositories
                 .project_repository()
                 .find_by_id(project_id.clone())
@@ -41,7 +41,7 @@ impl<R: Repositories> InvitationUseCase<R> {
             invitation_list.push(InvitationDto::from((
                 raw_invitation,
                 raw_inviter,
-                raw_project,
+                project_with_owners.project,
             )));
         }
 
