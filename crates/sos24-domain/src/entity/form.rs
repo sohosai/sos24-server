@@ -39,6 +39,10 @@ pub struct Form {
     items: Vec<FormItem>,
     #[getset(get = "pub")]
     attachments: Vec<FileId>,
+    #[getset(get = "pub")]
+    created_at: DateTime,
+    #[getset(get = "pub")]
+    updated_at: DateTime,
 }
 
 impl Form {
@@ -56,6 +60,7 @@ impl Form {
             return Err(FormError::EndTimeEarlierThanStartTime);
         }
 
+        let now = DateTime::now();
         Ok(Self {
             id: FormId::new(uuid::Uuid::new_v4()),
             title,
@@ -67,6 +72,8 @@ impl Form {
             is_notified: FormIsNotified::new(false),
             items,
             attachments,
+            created_at: now.clone(),
+            updated_at: now,
         })
     }
 
@@ -82,6 +89,8 @@ impl Form {
         is_notified: FormIsNotified,
         items: Vec<FormItem>,
         attachments: Vec<FileId>,
+        created_at: DateTime,
+        updated_at: DateTime,
     ) -> Self {
         Self {
             id,
@@ -94,6 +103,8 @@ impl Form {
             is_notified,
             items,
             attachments,
+            created_at,
+            updated_at,
         }
     }
 
@@ -109,6 +120,8 @@ impl Form {
             is_notified: self.is_notified,
             items: self.items,
             attachments: self.attachments,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         }
     }
 }
@@ -125,6 +138,8 @@ pub struct DestructedForm {
     pub is_notified: FormIsNotified,
     pub items: Vec<FormItem>,
     pub attachments: Vec<FileId>,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 impl Form {

@@ -2,12 +2,9 @@ use std::fmt;
 use std::fmt::Formatter;
 
 use sos24_domain::entity::project::ProjectCategories;
+use sos24_domain::entity::project::{Project, ProjectAttributes, ProjectCategory};
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
 use sos24_domain::entity::user::User;
-use sos24_domain::entity::{
-    common::date::WithDate,
-    project::{Project, ProjectAttributes, ProjectCategory},
-};
 
 #[derive(Debug)]
 pub struct ProjectDto {
@@ -30,12 +27,12 @@ pub struct ProjectDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<(WithDate<Project>, WithDate<User>, Option<WithDate<User>>)> for ProjectDto {
-    fn from(entity: (WithDate<Project>, WithDate<User>, Option<WithDate<User>>)) -> Self {
-        let (project_entity, owner_entity, sub_owner_entity) = entity;
-        let project = project_entity.value.destruct();
-        let owner = owner_entity.value.destruct();
-        let sub_owner = sub_owner_entity.map(|it| it.value.destruct());
+impl From<(Project, User, Option<User>)> for ProjectDto {
+    fn from(entity: (Project, User, Option<User>)) -> Self {
+        let (project, owner, sub_owner) = entity;
+        let project = project.destruct();
+        let owner = owner.destruct();
+        let sub_owner = sub_owner.map(|it| it.destruct());
         let (sub_owner_name, sub_owner_email) = match sub_owner {
             Some(user) => (Some(user.name.value()), Some(user.email.value())),
             None => (None, None),
@@ -57,8 +54,8 @@ impl From<(WithDate<Project>, WithDate<User>, Option<WithDate<User>>)> for Proje
             sub_owner_name,
             sub_owner_email,
             remarks: project.remarks.map(|it| it.value()),
-            created_at: project_entity.created_at,
-            updated_at: project_entity.updated_at,
+            created_at: project.created_at.value(),
+            updated_at: project.updated_at.value(),
         }
     }
 }

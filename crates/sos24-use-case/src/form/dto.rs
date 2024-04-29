@@ -1,13 +1,10 @@
 use sos24_domain::entity::form::FormItemExtension;
-use sos24_domain::entity::form_answer::FormAnswer;
-use sos24_domain::entity::{
-    common::date::WithDate,
-    form::{
-        Form, FormItem, FormItemAllowNewline, FormItemDescription, FormItemKind, FormItemLimit,
-        FormItemMax, FormItemMaxLength, FormItemMaxSelection, FormItemMin, FormItemMinLength,
-        FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired,
-    },
+use sos24_domain::entity::form::{
+    Form, FormItem, FormItemAllowNewline, FormItemDescription, FormItemKind, FormItemLimit,
+    FormItemMax, FormItemMaxLength, FormItemMaxSelection, FormItemMin, FormItemMinLength,
+    FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired,
 };
+use sos24_domain::entity::form_answer::FormAnswer;
 
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 
@@ -63,15 +60,13 @@ pub struct FormDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormDto {
-    fn from(
-        (form_entity, form_answer_entity): (WithDate<Form>, Option<WithDate<FormAnswer>>),
-    ) -> Self {
-        let form = form_entity.value.destruct();
-        let (answer_id, answered_at) = form_answer_entity
-            .map(|form_answer_entity| {
-                let answer = form_answer_entity.value.destruct();
-                (Some(answer.id), Some(form_answer_entity.updated_at))
+impl From<(Form, Option<FormAnswer>)> for FormDto {
+    fn from((form, form_answer): (Form, Option<FormAnswer>)) -> Self {
+        let form = form.destruct();
+        let (answer_id, answered_at) = form_answer
+            .map(|form_answer| {
+                let form_answer = form_answer.destruct();
+                (Some(form_answer.id), Some(form_answer.updated_at))
             })
             .unwrap_or((None, None));
 
@@ -90,9 +85,9 @@ impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormDto {
                 .map(|it| it.value().to_string())
                 .collect(),
             answer_id: answer_id.map(|it| it.value().to_string()),
-            answered_at,
-            created_at: form_entity.created_at,
-            updated_at: form_entity.updated_at,
+            answered_at: answered_at.map(|it| it.value()),
+            created_at: form.created_at.value(),
+            updated_at: form.updated_at.value(),
         }
     }
 }
@@ -111,15 +106,13 @@ pub struct FormSummaryDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormSummaryDto {
-    fn from(
-        (form_entity, form_answer_entity): (WithDate<Form>, Option<WithDate<FormAnswer>>),
-    ) -> Self {
-        let form = form_entity.value.destruct();
-        let (answer_id, answered_at) = form_answer_entity
-            .map(|form_answer_entity| {
-                let answer = form_answer_entity.value.destruct();
-                (Some(answer.id), Some(form_answer_entity.updated_at))
+impl From<(Form, Option<FormAnswer>)> for FormSummaryDto {
+    fn from((form, form_answer): (Form, Option<FormAnswer>)) -> Self {
+        let form = form.destruct();
+        let (answer_id, answered_at) = form_answer
+            .map(|form_answer| {
+                let form_answer = form_answer.destruct();
+                (Some(form_answer.id), Some(form_answer.updated_at))
             })
             .unwrap_or((None, None));
 
@@ -132,8 +125,8 @@ impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormSummaryDto {
             categories: ProjectCategoriesDto::from(form.categories),
             attributes: ProjectAttributesDto::from(form.attributes),
             answer_id: answer_id.map(|it| it.value().to_string()),
-            answered_at,
-            updated_at: form_entity.updated_at,
+            answered_at: answered_at.map(|it| it.value()),
+            updated_at: form.updated_at.value(),
         }
     }
 }

@@ -1,7 +1,6 @@
 use sos24_domain::{
     entity::{
         actor::Actor,
-        common::date::WithDate,
         project::Project,
         user::{User, UserId},
     },
@@ -26,8 +25,8 @@ pub enum ContextError {
 
 #[derive(Debug)]
 pub enum OwnedProject {
-    Owner(WithDate<Project>),
-    SubOwner(WithDate<Project>),
+    Owner(Project),
+    SubOwner(Project),
 }
 
 #[derive(Clone, Debug, Default)]
@@ -43,10 +42,7 @@ pub trait ContextProvider: Send + Sync + 'static {
     fn requested_at(&self) -> &chrono::DateTime<chrono::Utc>;
     fn config(&self) -> &Config;
 
-    async fn user<R: Repositories>(
-        &self,
-        repositories: &R,
-    ) -> Result<WithDate<User>, ContextError> {
+    async fn user<R: Repositories>(&self, repositories: &R) -> Result<User, ContextError> {
         let user_id = UserId::new(self.user_id());
         repositories
             .user_repository()
@@ -57,10 +53,7 @@ pub trait ContextProvider: Send + Sync + 'static {
 
     async fn actor<R: Repositories>(&self, repositories: &R) -> Result<Actor, ContextError> {
         let user = self.user(repositories).await?;
-        Ok(Actor::new(
-            user.value.id().clone(),
-            user.value.role().clone(),
-        ))
+        Ok(Actor::new(user.id().clone(), user.role().clone()))
     }
 
     async fn project<R: Repositories>(

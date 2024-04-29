@@ -46,8 +46,8 @@ impl<R: Repositories> ProjectUseCase<R> {
 
             if let Some(project) = ctx.project(&*self.repositories).await? {
                 let project_id = match project {
-                    OwnedProject::Owner(project) => project.value.id().clone(),
-                    OwnedProject::SubOwner(project) => project.value.id().clone(),
+                    OwnedProject::Owner(project) => project.id().clone(),
+                    OwnedProject::SubOwner(project) => project.id().clone(),
                 };
                 return Err(ProjectUseCaseError::AlreadyOwnedProject(project_id));
             }
@@ -139,11 +139,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .project_repository_mut()
             .expect_find_by_sub_owner_id()

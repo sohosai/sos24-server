@@ -33,7 +33,7 @@ impl<R: Repositories> InvitationUseCase<R> {
             .await?
             .ok_or(InvitationUseCaseError::NotFound(id.clone()))?;
 
-        let project_id = invitation.value.project_id().clone();
+        let project_id = invitation.project_id().clone();
         let project = self
             .repositories
             .project_repository()
@@ -41,9 +41,9 @@ impl<R: Repositories> InvitationUseCase<R> {
             .await?
             .ok_or(InvitationUseCaseError::ProjectNotFound(project_id))?;
 
-        let mut new_project = project.value;
+        let mut new_project = project;
         let user_id = UserId::new(ctx.user_id().clone());
-        match invitation.value.position() {
+        match invitation.position() {
             InvitationPosition::Owner => new_project.set_owner_id(user_id)?,
             InvitationPosition::SubOwner => new_project.set_sub_owner_id(user_id)?,
         }
@@ -52,7 +52,7 @@ impl<R: Repositories> InvitationUseCase<R> {
             .update(new_project)
             .await?;
 
-        let mut new_invitation = invitation.value;
+        let mut new_invitation = invitation;
         new_invitation.receive(actor.user_id().clone())?;
         self.repositories
             .invitation_repository()
@@ -81,11 +81,11 @@ mod tests {
             .invitation_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                Ok(Some(fixture::invitation::invitation(
                     fixture::user::id2(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
-                ))))
+                )))
             });
         repositories
             .project_repository_mut()
@@ -98,11 +98,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .project_repository_mut()
             .expect_update()

@@ -4,6 +4,12 @@ use crate::impl_value_object;
 
 impl_value_object!(DateTime(chrono::DateTime<chrono::Utc>));
 
+impl DateTime {
+    pub fn now() -> Self {
+        Self(chrono::Utc::now())
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum DateTimeError {
     #[error("Invalid datetime format")]

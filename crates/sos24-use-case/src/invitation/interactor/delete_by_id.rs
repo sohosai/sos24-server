@@ -76,11 +76,11 @@ mod tests {
             .invitation_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                Ok(Some(fixture::invitation::invitation(
                     fixture::user::id1(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
-                ))))
+                )))
             });
         repositories
             .invitation_repository_mut()

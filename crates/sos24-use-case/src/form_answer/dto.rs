@@ -1,14 +1,11 @@
 use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::form::Form;
 use sos24_domain::entity::form::FormItemId;
-use sos24_domain::entity::project::Project;
-use sos24_domain::entity::{
-    common::date::WithDate,
-    form_answer::{
-        FormAnswer, FormAnswerItem, FormAnswerItemChooseMany, FormAnswerItemChooseOne,
-        FormAnswerItemFile, FormAnswerItemInt, FormAnswerItemKind, FormAnswerItemString,
-    },
+use sos24_domain::entity::form_answer::{
+    FormAnswer, FormAnswerItem, FormAnswerItemChooseMany, FormAnswerItemChooseOne,
+    FormAnswerItemFile, FormAnswerItemInt, FormAnswerItemKind, FormAnswerItemString,
 };
+use sos24_domain::entity::project::Project;
 
 use super::FormAnswerUseCaseError;
 
@@ -24,17 +21,11 @@ pub struct FormAnswerDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<(WithDate<FormAnswer>, WithDate<Project>, WithDate<Form>)> for FormAnswerDto {
-    fn from(
-        (form_answer_entity, project_entity, form_entity): (
-            WithDate<FormAnswer>,
-            WithDate<Project>,
-            WithDate<Form>,
-        ),
-    ) -> Self {
-        let form_answer = form_answer_entity.value.destruct();
-        let project = project_entity.value.destruct();
-        let form = form_entity.value.destruct();
+impl From<(FormAnswer, Project, Form)> for FormAnswerDto {
+    fn from((form_answer, project, form): (FormAnswer, Project, Form)) -> Self {
+        let form_answer = form_answer.destruct();
+        let project = project.destruct();
+        let form = form.destruct();
 
         Self {
             id: form_answer.id.value().to_string(),
@@ -47,8 +38,8 @@ impl From<(WithDate<FormAnswer>, WithDate<Project>, WithDate<Form>)> for FormAns
                 .into_iter()
                 .map(FormAnswerItemDto::from)
                 .collect(),
-            created_at: form_answer_entity.created_at,
-            updated_at: form_answer_entity.updated_at,
+            created_at: form_answer.created_at.value(),
+            updated_at: form_answer.updated_at.value(),
         }
     }
 }

@@ -43,18 +43,18 @@ impl<R: Repositories> FileUseCase<R> {
 
         let mut file_list = Vec::new();
         for form_answer in form_answer_list {
-            let project_id = form_answer.value.project_id().clone();
+            let project_id = form_answer.project_id().clone();
             let project = self
                 .repositories
                 .project_repository()
                 .find_by_id(project_id.clone())
                 .await?
                 .ok_or(FileUseCaseError::ProjectNotFound(project_id))?;
-            let project = project.value.destruct();
+            let project = project.destruct();
 
-            let file_items = form_answer.value.list_file_items();
+            let file_items = form_answer.list_file_items();
             for (item_id, files) in file_items {
-                let Some(form_item) = form.value.find_item(&item_id) else {
+                let Some(form_item) = form.find_item(&item_id) else {
                     return Err(FileUseCaseError::FormItemNotFound(item_id));
                 };
 
@@ -65,7 +65,7 @@ impl<R: Repositories> FileUseCase<R> {
                         .find_by_id(file_id.clone())
                         .await?
                         .ok_or(FileUseCaseError::NotFound(file_id))?;
-                    let file_data = file.value.destruct();
+                    let file = file.destruct();
 
                     let filename = format!(
                         "{}/{}_{}_{}_{}_{}",
@@ -74,10 +74,10 @@ impl<R: Repositories> FileUseCase<R> {
                         project.title.clone().value(),
                         project.group_name.clone().value(),
                         index + 1,
-                        file_data.name.clone().value(),
+                        file.name.clone().value(),
                     );
                     file_list.push(ArchiveEntry::new(
-                        file_data.url,
+                        file.url,
                         FileName::sanitized(filename),
                         file.updated_at,
                     ));
@@ -97,7 +97,7 @@ impl<R: Repositories> FileUseCase<R> {
             }
         });
 
-        let form = form.value.destruct();
+        let form = form.destruct();
         Ok(ArchiveToBeExportedDto {
             filename: format!("{}_ファイル一覧.zip", form.title.value()),
             body: reader,

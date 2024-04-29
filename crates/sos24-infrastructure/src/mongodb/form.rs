@@ -11,7 +11,7 @@ use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::entity::{file_data::FileId, form::FormIsNotified};
 use sos24_domain::{
     entity::{
-        common::{date::WithDate, datetime::DateTime},
+        common::datetime::DateTime,
         form::{
             Form, FormDescription, FormId, FormItem, FormItemAllowNewline, FormItemDescription,
             FormItemKind, FormItemLimit, FormItemMax, FormItemMaxLength, FormItemMaxSelection,
@@ -64,34 +64,32 @@ impl From<Form> for FormDoc {
     }
 }
 
-impl TryFrom<FormDoc> for WithDate<Form> {
+impl TryFrom<FormDoc> for Form {
     type Error = anyhow::Error;
     fn try_from(value: FormDoc) -> Result<Self, Self::Error> {
-        Ok(WithDate::new(
-            Form::new(
-                FormId::try_from(value._id)?,
-                FormTitle::new(value.title),
-                FormDescription::new(value.description),
-                DateTime::new(value.starts_at),
-                DateTime::new(value.ends_at),
-                ProjectCategories::from_bits(value.categories as u32)
-                    .ok_or(anyhow!("cannot convert project categories"))?,
-                ProjectAttributes::from_bits(value.attributes as u32)
-                    .ok_or(anyhow!("cannot convert project attributes"))?,
-                FormIsNotified::new(value.is_notified),
-                value
-                    .items
-                    .into_iter()
-                    .map(FormItem::try_from)
-                    .collect::<Result<_, _>>()?,
-                value
-                    .attachments
-                    .into_iter()
-                    .map(FileId::try_from)
-                    .collect::<Result<_, _>>()?,
-            ),
-            value.created_at,
-            value.updated_at,
+        Ok(Form::new(
+            FormId::try_from(value._id)?,
+            FormTitle::new(value.title),
+            FormDescription::new(value.description),
+            DateTime::new(value.starts_at),
+            DateTime::new(value.ends_at),
+            ProjectCategories::from_bits(value.categories as u32)
+                .ok_or(anyhow!("cannot convert project categories"))?,
+            ProjectAttributes::from_bits(value.attributes as u32)
+                .ok_or(anyhow!("cannot convert project attributes"))?,
+            FormIsNotified::new(value.is_notified),
+            value
+                .items
+                .into_iter()
+                .map(FormItem::try_from)
+                .collect::<Result<_, _>>()?,
+            value
+                .attachments
+                .into_iter()
+                .map(FileId::try_from)
+                .collect::<Result<_, _>>()?,
+            DateTime::new(value.created_at),
+            DateTime::new(value.updated_at),
         ))
     }
 }
@@ -249,7 +247,7 @@ impl MongoFormRepository {
 }
 
 impl FormRepository for MongoFormRepository {
-    async fn list(&self) -> Result<Vec<WithDate<Form>>, FormRepositoryError> {
+    async fn list(&self) -> Result<Vec<Form>, FormRepositoryError> {
         tracing::info!("申請一覧を取得します");
 
         let form_list = self
@@ -264,7 +262,7 @@ impl FormRepository for MongoFormRepository {
             .await
             .context("Failed to list forms")?;
         let forms = form_list
-            .map(|doc| WithDate::try_from(bson::from_document::<FormDoc>(doc?)?))
+            .map(|doc| Form::try_from(bson::from_document::<FormDoc>(doc?)?))
             .try_collect()
             .await?;
 
@@ -285,7 +283,7 @@ impl FormRepository for MongoFormRepository {
         Ok(())
     }
 
-    async fn find_by_id(&self, id: FormId) -> Result<Option<WithDate<Form>>, FormRepositoryError> {
+    async fn find_by_id(&self, id: FormId) -> Result<Option<Form>, FormRepositoryError> {
         tracing::info!("申請を取得します: {id:?}");
 
         let form_doc = self
@@ -298,7 +296,7 @@ impl FormRepository for MongoFormRepository {
             .context("Failed to find form")?;
 
         tracing::info!("申請を取得しました: {id:?}");
-        Ok(form_doc.map(WithDate::try_from).transpose()?)
+        Ok(form_doc.map(Form::try_from).transpose()?)
     }
 
     async fn update(&self, form: Form) -> Result<(), FormRepositoryError> {

@@ -72,27 +72,27 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         let project_list = self.repositories.project_repository().list().await?;
         let target_project_list = project_list
             .into_iter()
-            .filter(|project| news.is_sent_to(&project.value));
+            .filter(|project| news.is_sent_to(&project));
 
         let mut emails = Vec::new();
         for project in target_project_list {
-            let owner_id = project.value.owner_id().clone();
+            let owner_id = project.owner_id().clone();
             let owner = self
                 .repositories
                 .user_repository()
                 .find_by_id(owner_id.clone())
                 .await?
                 .ok_or(NewsUseCaseError::UserNotFound(owner_id))?;
-            emails.push(owner.value.email().clone().value());
+            emails.push(owner.email().clone().value());
 
-            if let Some(sub_owner_id) = project.value.sub_owner_id().clone() {
+            if let Some(sub_owner_id) = project.sub_owner_id().clone() {
                 let sub_owner = self
                     .repositories
                     .user_repository()
                     .find_by_id(sub_owner_id.clone())
                     .await?
                     .ok_or(NewsUseCaseError::UserNotFound(sub_owner_id))?;
-                emails.push(sub_owner.value.email().clone().value());
+                emails.push(sub_owner.email().clone().value());
             }
         }
 

@@ -25,13 +25,13 @@ impl<R: Repositories> FileUseCase<R> {
         ensure!(actor.has_permission(Permissions::READ_FILE_ALL));
 
         let owner_project = ProjectId::try_from(owner_project)?;
-        let raw_project = self
+        let project = self
             .repositories
             .project_repository()
             .find_by_id(owner_project.clone())
             .await?
             .ok_or(FileUseCaseError::ProjectNotFound(owner_project.clone()))?;
-        ensure!(raw_project.value.is_visible_to(&actor));
+        ensure!(project.is_visible_to(&actor));
 
         let file_list = self
             .repositories
@@ -40,8 +40,8 @@ impl<R: Repositories> FileUseCase<R> {
             .await?
             .into_iter()
             .map(|file| {
-                let file_data = file.value.destruct();
-                ArchiveEntry::new(file_data.url, file_data.name, file.updated_at)
+                let file = file.destruct();
+                ArchiveEntry::new(file.url, file.name, file.updated_at)
             })
             .collect();
 
@@ -57,7 +57,7 @@ impl<R: Repositories> FileUseCase<R> {
             }
         });
 
-        let project = raw_project.value.destruct();
+        let project = project.destruct();
         Ok(ArchiveToBeExportedDto {
             filename: format!("{}_ファイル一覧.zip", project.title.value()),
             body: reader,

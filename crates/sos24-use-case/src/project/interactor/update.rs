@@ -39,8 +39,8 @@ impl<R: Repositories> ProjectUseCase<R> {
             .await?
             .ok_or(ProjectUseCaseError::NotFound(id))?;
 
-        ensure!(project.value.is_visible_to(&actor));
-        ensure!(project.value.is_updatable_by(&actor));
+        ensure!(project.is_visible_to(&actor));
+        ensure!(project.is_updatable_by(&actor));
 
         if !actor.has_permission(Permissions::UPDATE_PROJECT_ALL)
             && !self
@@ -50,7 +50,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
 
-        let mut new_project = project.value;
+        let mut new_project = project;
         new_project.set_title(
             &actor,
             ProjectTitle::try_from(project_data.title)
@@ -100,11 +100,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .project_repository_mut()
             .expect_update()
@@ -139,11 +135,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .project_repository_mut()
             .expect_update()
@@ -181,11 +173,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .project_repository_mut()
             .expect_update()
@@ -225,11 +213,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .project_repository_mut()
             .expect_update()
@@ -264,11 +248,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .project_repository_mut()
             .expect_update()

@@ -1,4 +1,4 @@
-use sos24_domain::entity::{common::date::WithDate, news::News};
+use sos24_domain::entity::news::News;
 
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 
@@ -14,9 +14,9 @@ pub struct NewsDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<WithDate<News>> for NewsDto {
-    fn from(entity: WithDate<News>) -> Self {
-        let news = entity.value.destruct();
+impl From<News> for NewsDto {
+    fn from(news: News) -> Self {
+        let news = news.destruct();
         Self {
             id: news.id.value().to_string(),
             title: news.title.value(),
@@ -28,8 +28,8 @@ impl From<WithDate<News>> for NewsDto {
                 .collect(),
             categories: ProjectCategoriesDto::from(news.categories),
             attributes: ProjectAttributesDto::from(news.attributes),
-            created_at: entity.created_at,
-            updated_at: entity.updated_at,
+            created_at: news.created_at.value(),
+            updated_at: news.updated_at.value(),
         }
     }
 }

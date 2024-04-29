@@ -1,9 +1,6 @@
+use sos24_domain::entity::invitation::{Invitation, InvitationPosition};
 use sos24_domain::entity::project::Project;
 use sos24_domain::entity::user::User;
-use sos24_domain::entity::{
-    common::date::WithDate,
-    invitation::{Invitation, InvitationPosition},
-};
 
 #[derive(Debug)]
 pub struct InvitationDto {
@@ -18,17 +15,11 @@ pub struct InvitationDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<(WithDate<Invitation>, WithDate<User>, WithDate<Project>)> for InvitationDto {
-    fn from(
-        (invitation_entity, user_entity, project_entity): (
-            WithDate<Invitation>,
-            WithDate<User>,
-            WithDate<Project>,
-        ),
-    ) -> Self {
-        let invitation = invitation_entity.value.destruct();
-        let inviter = user_entity.value.destruct();
-        let project = project_entity.value.destruct();
+impl From<(Invitation, User, Project)> for InvitationDto {
+    fn from((invitation, user, project): (Invitation, User, Project)) -> Self {
+        let invitation = invitation.destruct();
+        let inviter = user.destruct();
+        let project = project.destruct();
 
         Self {
             id: invitation.id.value().to_string(),
@@ -38,8 +29,8 @@ impl From<(WithDate<Invitation>, WithDate<User>, WithDate<Project>)> for Invitat
             project_title: project.title.value().to_string(),
             position: InvitationPositionDto::from(invitation.position),
             used_by: invitation.used_by.map(|id| id.value().to_string()),
-            created_at: invitation_entity.created_at,
-            updated_at: invitation_entity.updated_at,
+            created_at: invitation.created_at.value(),
+            updated_at: invitation.updated_at.value(),
         }
     }
 }

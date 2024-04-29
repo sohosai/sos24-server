@@ -52,7 +52,7 @@ mod tests {
         repositories
             .news_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::news::news1()))));
+            .returning(|_| Ok(Some(fixture::news::news1())));
         repositories
             .news_repository_mut()
             .expect_delete_by_id()
@@ -78,7 +78,7 @@ mod tests {
         repositories
             .news_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::news::news1()))));
+            .returning(|_| Ok(Some(fixture::news::news1())));
         repositories
             .news_repository_mut()
             .expect_delete_by_id()

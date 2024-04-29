@@ -34,7 +34,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         let mut form_answer_list = Vec::new();
         for raw_form_answer in raw_form_answer_list {
-            let project_id = raw_form_answer.value.project_id();
+            let project_id = raw_form_answer.project_id();
             let raw_project = self
                 .repositories
                 .project_repository()
@@ -89,7 +89,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_form_id()

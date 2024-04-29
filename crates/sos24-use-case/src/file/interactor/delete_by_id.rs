@@ -66,11 +66,7 @@ mod tests {
         repositories
             .file_data_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::file_data::file_data(
-                    None,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::file_data::file_data(None))));
         repositories
             .file_data_repository_mut()
             .expect_delete_by_id()

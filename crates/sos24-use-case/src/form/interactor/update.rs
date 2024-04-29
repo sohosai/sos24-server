@@ -56,7 +56,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             return Err(FormUseCaseError::HasAnswers);
         }
 
-        let mut new_form = form.value;
+        let mut new_form = form;
         new_form.set_title(&actor, FormTitle::new(form_data.title))?;
         new_form.set_description(&actor, FormDescription::new(form_data.description))?;
         new_form.set_starts_at(&actor, DateTime::try_from(form_data.starts_at)?)?;
@@ -141,7 +141,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_form_id()
@@ -187,13 +187,13 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_form_id()
             .returning(|_| {
-                Ok(vec![fixture::date::with(
-                    fixture::form_answer::form_answer1(fixture::project::id1()),
+                Ok(vec![fixture::form_answer::form_answer1(
+                    fixture::project::id1(),
                 )])
             });
         let adapters = MockAdapters::default();

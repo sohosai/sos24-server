@@ -1,8 +1,5 @@
 use sos24_domain::entity::project::Project;
-use sos24_domain::entity::{
-    common::date::WithDate,
-    user::{User, UserRole},
-};
+use sos24_domain::entity::user::{User, UserRole};
 
 #[derive(Debug)]
 pub struct UserDto {
@@ -18,12 +15,12 @@ pub struct UserDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<(WithDate<User>, Option<WithDate<Project>>)> for UserDto {
-    fn from((user_entity, project_entity): (WithDate<User>, Option<WithDate<Project>>)) -> Self {
-        let user = user_entity.value.destruct();
-        let (project_id, project_title) = match project_entity {
+impl From<(User, Option<Project>)> for UserDto {
+    fn from((user, project): (User, Option<Project>)) -> Self {
+        let user = user.destruct();
+        let (project_id, project_title) = match project {
             Some(project) => {
-                let project = project.value.destruct();
+                let project = project.destruct();
                 (Some(project.id.value()), Some(project.title.value()))
             }
             None => (None, None),
@@ -38,8 +35,8 @@ impl From<(WithDate<User>, Option<WithDate<Project>>)> for UserDto {
             role: UserRoleDto::from(user.role),
             owned_project_id: project_id.map(|id| id.to_string()),
             owned_project_title: project_title,
-            created_at: user_entity.created_at,
-            updated_at: user_entity.updated_at,
+            created_at: user.created_at.value(),
+            updated_at: user.updated_at.value(),
         }
     }
 }

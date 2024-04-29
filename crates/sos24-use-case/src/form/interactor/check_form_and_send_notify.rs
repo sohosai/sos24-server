@@ -20,35 +20,34 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let form_list = self.repositories.form_repository().list().await?;
         let form_list_to_notify = form_list
             .into_iter()
-            .filter(|form| !form.value.is_notified().clone().value())
-            .filter(|form| form.value.is_started(ctx.requested_at()));
+            .filter(|form| !form.is_notified().clone().value())
+            .filter(|form| form.is_started(ctx.requested_at()));
 
         let project_list = self.repositories.project_repository().list().await?;
         for form in form_list_to_notify {
-            let form = form.value;
             let target_project_list = project_list
                 .iter()
-                .filter(|project| form.is_sent_to(&project.value));
+                .filter(|project| form.is_sent_to(&project));
 
             let mut emails = Vec::new();
             for project in target_project_list {
-                let owner_id = project.value.owner_id().clone();
+                let owner_id = project.owner_id().clone();
                 let owner = self
                     .repositories
                     .user_repository()
                     .find_by_id(owner_id.clone())
                     .await?
                     .ok_or(FormUseCaseError::UserNotFound(owner_id))?;
-                emails.push(owner.value.email().clone().value());
+                emails.push(owner.email().clone().value());
 
-                if let Some(sub_owner_id) = project.value.sub_owner_id().clone() {
+                if let Some(sub_owner_id) = project.sub_owner_id().clone() {
                     let sub_owner = self
                         .repositories
                         .user_repository()
                         .find_by_id(sub_owner_id.clone())
                         .await?
                         .ok_or(FormUseCaseError::UserNotFound(sub_owner_id))?;
-                    emails.push(sub_owner.value.email().clone().value());
+                    emails.push(sub_owner.email().clone().value());
                 }
             }
 

@@ -20,7 +20,7 @@ impl<R: Repositories> ProjectUseCase<R> {
 
         let mut project_list = Vec::new();
         for raw_project in raw_project_list {
-            let owner_id = raw_project.value.owner_id();
+            let owner_id = raw_project.owner_id();
             let raw_owner = self
                 .repositories
                 .user_repository()
@@ -28,7 +28,7 @@ impl<R: Repositories> ProjectUseCase<R> {
                 .await?
                 .ok_or(ProjectUseCaseError::UserNotFound(owner_id.clone()))?;
 
-            let sub_owner_id = raw_project.value.sub_owner_id();
+            let sub_owner_id = raw_project.sub_owner_id();
             let raw_sub_owner = match sub_owner_id {
                 Some(sub_owner_id) => Some(
                     self.repositories
