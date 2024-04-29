@@ -16,7 +16,6 @@ pub struct UserDto {
     pub owned_project_title: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<(WithDate<User>, Option<WithDate<Project>>)> for UserDto {
@@ -41,7 +40,6 @@ impl From<(WithDate<User>, Option<WithDate<Project>>)> for UserDto {
             owned_project_title: project_title,
             created_at: user_entity.created_at,
             updated_at: user_entity.updated_at,
-            deleted_at: user_entity.deleted_at,
         }
     }
 }

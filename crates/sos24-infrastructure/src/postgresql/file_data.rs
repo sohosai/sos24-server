@@ -22,7 +22,6 @@ pub struct FileDataRow {
     owner_project: Option<uuid::Uuid>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl TryFrom<FileDataRow> for WithDate<FileData> {
@@ -38,7 +37,6 @@ impl TryFrom<FileDataRow> for WithDate<FileData> {
             ),
             value.created_at,
             value.updated_at,
-            value.deleted_at,
         ))
     }
 }
@@ -59,7 +57,7 @@ impl FileDataRepository for PgFileDataRepository {
 
         let file_data_list = sqlx::query_as!(
             FileDataRow,
-            r#"SELECT * FROM files WHERE deleted_at IS NULL"#
+            r#"SELECT id, name, url, owner_project, created_at, updated_at FROM files WHERE deleted_at IS NULL"#
         )
         .fetch(&*self.db)
         .map(|row| WithDate::try_from(row?))
@@ -98,7 +96,7 @@ impl FileDataRepository for PgFileDataRepository {
 
         let file_data_row = sqlx::query_as!(
             FileDataRow,
-            r#"SELECT * FROM files WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, name, url, owner_project, created_at, updated_at FROM files WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
         )
         .fetch_optional(&*self.db)
@@ -117,7 +115,7 @@ impl FileDataRepository for PgFileDataRepository {
 
         let file_data_list = sqlx::query_as!(
             FileDataRow,
-            r#"SELECT * FROM files WHERE owner_project = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, name, url, owner_project, created_at, updated_at FROM files WHERE owner_project = $1 AND deleted_at IS NULL"#,
             owner_project.clone().value()
         )
         .fetch(&*self.db)

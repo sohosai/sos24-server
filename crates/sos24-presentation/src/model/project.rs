@@ -101,8 +101,6 @@ pub struct Project {
     created_at: String,
     #[schema(format = "date-time")]
     updated_at: String,
-    #[schema(format = "date-time")]
-    deleted_at: Option<String>,
 }
 
 impl From<ProjectDto> for Project {
@@ -125,7 +123,6 @@ impl From<ProjectDto> for Project {
             remarks: project.remarks,
             created_at: project.created_at.to_rfc3339(),
             updated_at: project.updated_at.to_rfc3339(),
-            deleted_at: project.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

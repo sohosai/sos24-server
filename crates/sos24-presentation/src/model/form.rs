@@ -129,8 +129,6 @@ pub struct Form {
     pub created_at: String,
     #[schema(format = "date-time")]
     pub updated_at: String,
-    #[schema(format = "date-time")]
-    pub deleted_at: Option<String>,
 }
 
 impl From<FormDto> for Form {
@@ -149,7 +147,6 @@ impl From<FormDto> for Form {
             answered_at: form.answered_at.map(|it| it.to_rfc3339()),
             created_at: form.created_at.to_rfc3339(),
             updated_at: form.updated_at.to_rfc3339(),
-            deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

@@ -20,7 +20,6 @@ pub struct NewsRow {
     attributes: i32,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl TryFrom<NewsRow> for WithDate<News> {
@@ -39,7 +38,6 @@ impl TryFrom<NewsRow> for WithDate<News> {
             ),
             value.created_at,
             value.updated_at,
-            value.deleted_at,
         ))
     }
 }
@@ -60,7 +58,7 @@ impl NewsRepository for PgNewsRepository {
 
         let news_list = sqlx::query_as!(
             NewsRow,
-            r#"SELECT * FROM news WHERE deleted_at IS NULL ORDER BY created_at DESC"#
+            r#"SELECT id, title, body, attachments, categories, attributes, created_at, updated_at FROM news WHERE deleted_at IS NULL ORDER BY created_at DESC"#
         )
         .fetch(&*self.db)
         .map(|row| WithDate::try_from(row?))
@@ -98,7 +96,7 @@ impl NewsRepository for PgNewsRepository {
 
         let news_row = sqlx::query_as!(
             NewsRow,
-            r#"SELECT * FROM news WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, title, body, attachments, categories, attributes, created_at, updated_at FROM news WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
         )
         .fetch_optional(&*self.db)

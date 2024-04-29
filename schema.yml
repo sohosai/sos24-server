@@ -1982,10 +1982,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         id:
           type: string
           format: uuid
@@ -2012,10 +2008,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         filename:
           type: string
         id:
@@ -2063,10 +2055,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         description:
           type: string
         ends_at:
@@ -2102,10 +2090,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         form_id:
           type: string
           format: uuid
@@ -2401,10 +2385,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         id:
           type: string
           format: uuid
@@ -2471,10 +2451,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         id:
           type: string
           format: uuid
@@ -2528,10 +2504,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         group_name:
           type: string
         id:
@@ -2760,10 +2732,6 @@ components:
         created_at:
           type: string
           format: date-time
-        deleted_at:
-          type: string
-          format: date-time
-          nullable: true
         email:
           type: string
         id:

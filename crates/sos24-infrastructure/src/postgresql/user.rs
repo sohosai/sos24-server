@@ -25,7 +25,6 @@ pub struct UserRow {
 
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl TryFrom<UserRow> for WithDate<User> {
@@ -42,7 +41,6 @@ impl TryFrom<UserRow> for WithDate<User> {
             ),
             value.created_at,
             value.updated_at,
-            value.deleted_at,
         ))
     }
 }
@@ -94,7 +92,7 @@ impl UserRepository for PgUserRepository {
         tracing::info!("ユーザー一覧を取得します");
 
         let user_list = sqlx::query_as!(UserRow, r#"
-        SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at
+        SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at
         FROM users
         WHERE deleted_at IS NULL
         ORDER BY role DESC, email ASC"#)
@@ -144,7 +142,7 @@ impl UserRepository for PgUserRepository {
 
         let user_row = sqlx::query_as!(
             UserRow,
-            r#"SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at
+            r#"SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at
             FROM users
             WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value(),

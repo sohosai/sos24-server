@@ -76,8 +76,6 @@ pub struct User {
     pub created_at: String,
     #[schema(format = "date-time")]
     pub updated_at: String,
-    #[schema(format = "date-time")]
-    pub deleted_at: Option<String>,
 }
 
 impl From<UserDto> for User {
@@ -93,7 +91,6 @@ impl From<UserDto> for User {
             owned_project_title: value.owned_project_title,
             created_at: value.created_at.to_rfc3339(),
             updated_at: value.updated_at.to_rfc3339(),
-            deleted_at: value.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

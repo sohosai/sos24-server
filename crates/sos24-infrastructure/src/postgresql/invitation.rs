@@ -23,7 +23,6 @@ pub struct InvitationRow {
     used_by: Option<String>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<InvitationRow> for WithDate<Invitation> {
@@ -38,7 +37,6 @@ impl From<InvitationRow> for WithDate<Invitation> {
             ),
             row.created_at,
             row.updated_at,
-            row.deleted_at,
         )
     }
 }
@@ -84,7 +82,7 @@ impl InvitationRepository for PgInvitationRepository {
 
         let invitations_list = sqlx::query_as!(
             InvitationRow,
-            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE deleted_at IS NULL"#
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at FROM invitations WHERE deleted_at IS NULL"#
         )
             .fetch(&*self.db)
             .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
@@ -123,7 +121,7 @@ impl InvitationRepository for PgInvitationRepository {
 
         let invitation_row = sqlx::query_as!(
             InvitationRow,
-            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at FROM invitations WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
         )
             .fetch_optional(&*self.db)
@@ -142,7 +140,7 @@ impl InvitationRepository for PgInvitationRepository {
 
         let invitation_list = sqlx::query_as!(
             InvitationRow,
-            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE inviter = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at FROM invitations WHERE inviter = $1 AND deleted_at IS NULL"#,
             inviter.clone().value(),
         )
             .fetch(&*self.db)

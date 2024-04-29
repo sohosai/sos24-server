@@ -61,7 +61,6 @@ pub struct FormDto {
     pub answered_at: Option<chrono::DateTime<chrono::Utc>>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormDto {
@@ -94,7 +93,6 @@ impl From<(WithDate<Form>, Option<WithDate<FormAnswer>>)> for FormDto {
             answered_at,
             created_at: form_entity.created_at,
             updated_at: form_entity.updated_at,
-            deleted_at: form_entity.deleted_at,
         }
     }
 }

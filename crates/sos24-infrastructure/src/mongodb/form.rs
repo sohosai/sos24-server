@@ -38,7 +38,6 @@ pub struct FormDoc {
     attachments: Vec<String>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<Form> for FormDoc {
@@ -61,7 +60,6 @@ impl From<Form> for FormDoc {
             is_notified: form.is_notified.value(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
-            deleted_at: None,
         }
     }
 }
@@ -94,7 +92,6 @@ impl TryFrom<FormDoc> for WithDate<Form> {
             ),
             value.created_at,
             value.updated_at,
-            value.deleted_at,
         ))
     }
 }

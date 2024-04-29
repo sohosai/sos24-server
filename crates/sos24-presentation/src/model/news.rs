@@ -78,8 +78,6 @@ pub struct News {
     pub created_at: String,
     #[schema(format = "date-time")]
     pub updated_at: String,
-    #[schema(format = "date-time")]
-    pub deleted_at: Option<String>,
 }
 
 impl From<NewsDto> for News {
@@ -93,7 +91,6 @@ impl From<NewsDto> for News {
             attributes: ProjectAttributes::from(news.attributes),
             created_at: news.created_at.to_rfc3339(),
             updated_at: news.updated_at.to_rfc3339(),
-            deleted_at: news.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

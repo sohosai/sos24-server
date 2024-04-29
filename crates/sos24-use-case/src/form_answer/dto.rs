@@ -22,7 +22,6 @@ pub struct FormAnswerDto {
     pub items: Vec<FormAnswerItemDto>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<(WithDate<FormAnswer>, WithDate<Project>, WithDate<Form>)> for FormAnswerDto {
@@ -50,7 +49,6 @@ impl From<(WithDate<FormAnswer>, WithDate<Project>, WithDate<Form>)> for FormAns
                 .collect(),
             created_at: form_answer_entity.created_at,
             updated_at: form_answer_entity.updated_at,
-            deleted_at: form_answer_entity.deleted_at,
         }
     }
 }

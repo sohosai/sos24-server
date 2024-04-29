@@ -12,7 +12,6 @@ pub struct NewsDto {
     pub attributes: ProjectAttributesDto,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<WithDate<News>> for NewsDto {
@@ -31,7 +30,6 @@ impl From<WithDate<News>> for NewsDto {
             attributes: ProjectAttributesDto::from(news.attributes),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
-            deleted_at: entity.deleted_at,
         }
     }
 }

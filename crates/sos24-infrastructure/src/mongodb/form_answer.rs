@@ -31,7 +31,6 @@ pub struct FormAnswerDoc {
     items: Vec<FormAnswerItemDoc>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<FormAnswer> for FormAnswerDoc {
@@ -48,7 +47,6 @@ impl From<FormAnswer> for FormAnswerDoc {
                 .collect(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
-            deleted_at: None,
         }
     }
 }
@@ -69,7 +67,6 @@ impl TryFrom<FormAnswerDoc> for WithDate<FormAnswer> {
             ),
             form_answer_doc.created_at,
             form_answer_doc.updated_at,
-            form_answer_doc.deleted_at,
         ))
     }
 }

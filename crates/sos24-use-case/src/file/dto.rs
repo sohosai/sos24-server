@@ -12,7 +12,6 @@ pub struct FileDto {
     pub owner: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 pub struct FileInfoDto {
@@ -21,7 +20,6 @@ pub struct FileInfoDto {
     pub owner: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<WithDate<FileData>> for FileInfoDto {
@@ -33,7 +31,6 @@ impl From<WithDate<FileData>> for FileInfoDto {
             owner: filedata.owner.map(|it| it.value().to_string()),
             created_at: entity.created_at,
             updated_at: entity.updated_at,
-            deleted_at: entity.deleted_at,
         }
     }
 }
@@ -48,7 +45,6 @@ impl From<(FileSignedUrl, WithDate<FileData>)> for FileDto {
             owner: file_data.owner.map(|it| it.value().to_string()),
             created_at: file_data_entity.created_at,
             updated_at: file_data_entity.updated_at,
-            deleted_at: file_data_entity.deleted_at,
         }
     }
 }

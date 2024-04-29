@@ -32,7 +32,6 @@ pub struct ProjectRow {
 
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl TryFrom<ProjectRow> for WithDate<Project> {
@@ -55,7 +54,6 @@ impl TryFrom<ProjectRow> for WithDate<Project> {
             ),
             value.created_at,
             value.updated_at,
-            value.deleted_at,
         ))
     }
 }
@@ -118,7 +116,7 @@ impl ProjectRepository for PgProjectRepository {
 
         let project_list = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE deleted_at IS NULL
             ORDER BY index ASC"#)
@@ -165,7 +163,7 @@ impl ProjectRepository for PgProjectRepository {
 
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
@@ -186,7 +184,7 @@ impl ProjectRepository for PgProjectRepository {
 
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE owner_id = $1 AND deleted_at IS NULL"#,
             owner_id.clone().value()
@@ -207,7 +205,7 @@ impl ProjectRepository for PgProjectRepository {
 
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
             sub_owner_id.clone().value()

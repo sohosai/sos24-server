@@ -28,7 +28,6 @@ pub struct ProjectDto {
     pub remarks: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<(WithDate<Project>, WithDate<User>, Option<WithDate<User>>)> for ProjectDto {
@@ -60,7 +59,6 @@ impl From<(WithDate<Project>, WithDate<User>, Option<WithDate<User>>)> for Proje
             remarks: project.remarks.map(|it| it.value()),
             created_at: project_entity.created_at,
             updated_at: project_entity.updated_at,
-            deleted_at: project_entity.deleted_at,
         }
     }
 }

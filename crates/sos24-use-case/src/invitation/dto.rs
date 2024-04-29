@@ -16,7 +16,6 @@ pub struct InvitationDto {
     pub used_by: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<(WithDate<Invitation>, WithDate<User>, WithDate<Project>)> for InvitationDto {
@@ -41,7 +40,6 @@ impl From<(WithDate<Invitation>, WithDate<User>, WithDate<Project>)> for Invitat
             used_by: invitation.used_by.map(|id| id.value().to_string()),
             created_at: invitation_entity.created_at,
             updated_at: invitation_entity.updated_at,
-            deleted_at: invitation_entity.deleted_at,
         }
     }
 }
