@@ -4,7 +4,7 @@ use sqlx::prelude::*;
 
 use sos24_domain::{
     entity::{
-        common::date::WithDate,
+        common::datetime::DateTime,
         file_data::{FileData, FileId, FileName},
         file_object::FileObjectKey,
         project::ProjectId,
@@ -22,23 +22,19 @@ pub struct FileDataRow {
     owner_project: Option<uuid::Uuid>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl TryFrom<FileDataRow> for WithDate<FileData> {
+impl TryFrom<FileDataRow> for FileData {
     type Error = anyhow::Error;
 
     fn try_from(value: FileDataRow) -> Result<Self, Self::Error> {
-        Ok(WithDate::new(
-            FileData::new(
-                FileId::new(value.id),
-                FileName::sanitized(value.name),
-                FileObjectKey::new(value.url),
-                value.owner_project.map(ProjectId::new),
-            ),
-            value.created_at,
-            value.updated_at,
-            value.deleted_at,
+        Ok(FileData::new(
+            FileId::new(value.id),
+            FileName::sanitized(value.name),
+            FileObjectKey::new(value.url),
+            value.owner_project.map(ProjectId::new),
+            DateTime::new(value.created_at),
+            DateTime::new(value.updated_at),
         ))
     }
 }
@@ -54,15 +50,15 @@ impl PgFileDataRepository {
 }
 
 impl FileDataRepository for PgFileDataRepository {
-    async fn list(&self) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError> {
+    async fn list(&self) -> Result<Vec<FileData>, FileDataRepositoryError> {
         tracing::info!("ファイルデータ一覧を取得しています");
 
         let file_data_list = sqlx::query_as!(
             FileDataRow,
-            r#"SELECT * FROM files WHERE deleted_at IS NULL"#
+            r#"SELECT id, name, url, owner_project, created_at, updated_at FROM files WHERE deleted_at IS NULL"#
         )
         .fetch(&*self.db)
-        .map(|row| WithDate::try_from(row?))
+        .map(|row| FileData::try_from(row?))
         .try_collect()
         .await
         .context("Failed to fetch file data list")?;
@@ -90,15 +86,12 @@ impl FileDataRepository for PgFileDataRepository {
         Ok(())
     }
 
-    async fn find_by_id(
-        &self,
-        id: FileId,
-    ) -> Result<Option<WithDate<FileData>>, FileDataRepositoryError> {
+    async fn find_by_id(&self, id: FileId) -> Result<Option<FileData>, FileDataRepositoryError> {
         tracing::info!("ファイルデータを取得しています: {id:?}");
 
         let file_data_row = sqlx::query_as!(
             FileDataRow,
-            r#"SELECT * FROM files WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, name, url, owner_project, created_at, updated_at FROM files WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
         )
         .fetch_optional(&*self.db)
@@ -106,22 +99,22 @@ impl FileDataRepository for PgFileDataRepository {
         .context("Failed to fetch file data")?;
 
         tracing::info!("ファイルデータの取得が完了しました: {id:?}");
-        Ok(file_data_row.map(WithDate::try_from).transpose()?)
+        Ok(file_data_row.map(FileData::try_from).transpose()?)
     }
 
     async fn find_by_owner_project(
         &self,
         owner_project: ProjectId,
-    ) -> Result<Vec<WithDate<FileData>>, FileDataRepositoryError> {
+    ) -> Result<Vec<FileData>, FileDataRepositoryError> {
         tracing::info!("プロジェクトに紐づくファイルデータを取得しています: {owner_project:?}");
 
         let file_data_list = sqlx::query_as!(
             FileDataRow,
-            r#"SELECT * FROM files WHERE owner_project = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, name, url, owner_project, created_at, updated_at FROM files WHERE owner_project = $1 AND deleted_at IS NULL"#,
             owner_project.clone().value()
         )
         .fetch(&*self.db)
-        .map(|row| WithDate::try_from(row?))
+        .map(|row| FileData::try_from(row?))
         .try_collect()
         .await
         .context("Failed to fetch file data list by owner")?;

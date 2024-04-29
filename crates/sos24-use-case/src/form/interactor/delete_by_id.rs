@@ -79,7 +79,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_form_id()
@@ -104,13 +104,13 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_form_id()
             .returning(|_| {
-                Ok(vec![fixture::date::with(
-                    fixture::form_answer::form_answer1(fixture::project::id1()),
+                Ok(vec![fixture::form_answer::form_answer1(
+                    fixture::project::id1(),
                 )])
             });
         let adapters = MockAdapters::default();

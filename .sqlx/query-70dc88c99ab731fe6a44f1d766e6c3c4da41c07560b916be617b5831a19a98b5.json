@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM files WHERE id = $1 AND deleted_at IS NULL",
+  "query": "SELECT id, name, url, owner_project, created_at, updated_at FROM files WHERE owner_project = $1 AND deleted_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -10,33 +10,28 @@
       },
       {
         "ordinal": 1,
-        "name": "url",
-        "type_info": "Text"
-      },
-      {
-        "ordinal": 2,
-        "name": "created_at",
-        "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 3,
-        "name": "updated_at",
-        "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 4,
-        "name": "deleted_at",
-        "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 5,
         "name": "name",
         "type_info": "Text"
       },
       {
-        "ordinal": 6,
+        "ordinal": 2,
+        "name": "url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
         "name": "owner_project",
         "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -48,11 +43,10 @@
       false,
       false,
       false,
-      false,
       true,
       false,
-      true
+      false
     ]
   },
-  "hash": "00acd1b148d534116e33fff543539b78ae35c1346694c2263351d4b1ec747e54"
+  "hash": "70dc88c99ab731fe6a44f1d766e6c3c4da41c07560b916be617b5831a19a98b5"
 }

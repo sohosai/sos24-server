@@ -68,11 +68,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
@@ -96,11 +92,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .project_repository_mut()
             .expect_delete_by_id()

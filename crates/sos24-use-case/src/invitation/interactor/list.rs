@@ -22,7 +22,7 @@ impl<R: Repositories> InvitationUseCase<R> {
 
         let mut invitation_list = Vec::new();
         for raw_invitation in raw_invitation_list {
-            let inviter_id = raw_invitation.value.inviter();
+            let inviter_id = raw_invitation.inviter();
             let raw_inviter = self
                 .repositories
                 .user_repository()
@@ -30,7 +30,7 @@ impl<R: Repositories> InvitationUseCase<R> {
                 .await?
                 .ok_or(InvitationUseCaseError::UserNotFound(inviter_id.clone()))?;
 
-            let project_id = raw_invitation.value.project_id();
+            let project_id = raw_invitation.project_id();
             let raw_project = self
                 .repositories
                 .project_repository()

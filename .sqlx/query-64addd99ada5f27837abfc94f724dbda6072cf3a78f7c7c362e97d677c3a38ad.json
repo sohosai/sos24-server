@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, index, title, kana_title, group_name, kana_group_name, category AS \"category: ProjectCategoryRow\", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at\n            FROM projects\n            WHERE owner_id = $1 AND deleted_at IS NULL",
+  "query": "SELECT id, index, title, kana_title, group_name, kana_group_name, category AS \"category: ProjectCategoryRow\", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at\n            FROM projects\n            WHERE sub_owner_id = $1 AND deleted_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -82,11 +82,6 @@
         "ordinal": 12,
         "name": "updated_at",
         "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 13,
-        "name": "deleted_at",
-        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -107,9 +102,8 @@
       true,
       true,
       false,
-      false,
-      true
+      false
     ]
   },
-  "hash": "205373b972ffe3a796b9447a20ca3f9939430483eb388cbda298ede0a94df2d9"
+  "hash": "64addd99ada5f27837abfc94f724dbda6072cf3a78f7c7c362e97d677c3a38ad"
 }

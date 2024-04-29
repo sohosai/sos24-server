@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, name, kana_name, email, phone_number, role AS \"role: UserRoleRow\", created_at, updated_at, deleted_at\n        FROM users\n        WHERE deleted_at IS NULL\n        ORDER BY role DESC, email ASC",
+  "query": "\n        SELECT id, name, kana_name, email, phone_number, role AS \"role: UserRoleRow\", created_at, updated_at\n        FROM users\n        WHERE deleted_at IS NULL\n        ORDER BY role DESC, email ASC",
   "describe": {
     "columns": [
       {
@@ -54,11 +54,6 @@
         "ordinal": 7,
         "name": "updated_at",
         "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 8,
-        "name": "deleted_at",
-        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -72,9 +67,8 @@
       false,
       false,
       false,
-      false,
-      true
+      false
     ]
   },
-  "hash": "a9cb58d0d10560f0477c55498b336536373f8d23d2dafb03f4ca8f150f34aed4"
+  "hash": "413cc09eea702b670b14ef44aa48c695f0ed2abc2d34edce0cd47923670864be"
 }

@@ -38,7 +38,7 @@ mod tests {
         repositories
             .news_repository_mut()
             .expect_list()
-            .returning(|| Ok(vec![fixture::date::with(fixture::news::news1())]));
+            .returning(|| Ok(vec![fixture::news::news1()]));
         let adapters = MockAdapters::default();
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 

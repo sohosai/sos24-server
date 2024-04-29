@@ -26,18 +26,18 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             .find_by_id(project_id.clone())
             .await?
             .ok_or(FormUseCaseError::ProjectNotFound(project_id.clone()))?;
-        ensure!(project.value.is_visible_to(&actor));
+        ensure!(project.is_visible_to(&actor));
 
         let forms = self.repositories.form_repository().list().await?;
         let filtered_forms = forms
             .into_iter()
-            .filter(|form| form.value.is_sent_to(&project.value))
-            .filter(|form| form.value.is_started(ctx.requested_at()));
+            .filter(|form| form.is_sent_to(&project))
+            .filter(|form| form.is_started(ctx.requested_at()));
 
         // FIXME : N+1
         let mut form_list = vec![];
         for form in filtered_forms {
-            let form_id = form.value.id().clone();
+            let form_id = form.id().clone();
             let form_answer = self
                 .repositories
                 .form_answer_repository()
@@ -68,11 +68,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_repository_mut()
             .expect_list()
@@ -93,11 +89,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
@@ -119,11 +111,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_repository_mut()
             .expect_list()

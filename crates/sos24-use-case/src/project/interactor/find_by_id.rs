@@ -25,9 +25,9 @@ impl<R: Repositories> ProjectUseCase<R> {
             .await?
             .ok_or(ProjectUseCaseError::NotFound(id))?;
 
-        ensure!(raw_project.value.is_visible_to(&actor));
+        ensure!(raw_project.is_visible_to(&actor));
 
-        let owner_id = raw_project.value.owner_id();
+        let owner_id = raw_project.owner_id();
         let raw_owner = self
             .repositories
             .user_repository()
@@ -35,7 +35,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             .await?
             .ok_or(ProjectUseCaseError::UserNotFound(owner_id.clone()))?;
 
-        let sub_owner_id = raw_project.value.sub_owner_id();
+        let sub_owner_id = raw_project.sub_owner_id();
         let raw_sub_owner = match sub_owner_id {
             Some(sub_owner_id) => Some(
                 self.repositories
@@ -74,19 +74,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
@@ -105,11 +97,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
@@ -133,19 +121,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::Committee,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::Committee))));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),

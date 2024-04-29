@@ -2,6 +2,8 @@ use crate::entity::user::{
     User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole,
 };
 
+use super::datetime;
+
 pub fn id1() -> UserId {
     UserId::new("user_id1".to_string())
 }
@@ -50,6 +52,8 @@ pub fn user1(role: UserRole) -> User {
         email1(),
         phone_number1(),
         role,
+        datetime::now(),
+        datetime::now(),
     )
 }
 
@@ -61,5 +65,7 @@ pub fn user2(role: UserRole) -> User {
         email2(),
         phone_number2(),
         role,
+        datetime::now(),
+        datetime::now(),
     )
 }

@@ -26,14 +26,13 @@ impl<R: Repositories> FileUseCase<R> {
             .find_by_id(id.clone())
             .await?
             .ok_or(FileUseCaseError::NotFound(id))?;
-        if let Some(project_id) = raw_file_data.value.owner().clone() {
+        if let Some(project_id) = raw_file_data.owner().clone() {
             let project = self
                 .repositories
                 .project_repository()
                 .find_by_id(project_id)
                 .await?
-                .ok_or(FileUseCaseError::OwnerNotFound)?
-                .value;
+                .ok_or(FileUseCaseError::OwnerNotFound)?;
             ensure!(project.is_visible_to(&actor));
         }
         let signed_url = self
@@ -41,10 +40,8 @@ impl<R: Repositories> FileUseCase<R> {
             .file_object_repository()
             .generate_url(
                 bucket,
-                raw_file_data.value.url().copy(),
-                Some(ContentDisposition::from(
-                    raw_file_data.value.filename().clone(),
-                )),
+                raw_file_data.url().copy(),
+                Some(ContentDisposition::from(raw_file_data.filename().clone())),
             )
             .await?;
         Ok(FileDto::from((signed_url, raw_file_data)))
@@ -69,11 +66,7 @@ mod tests {
         repositories
             .file_data_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::file_data::file_data(
-                    None,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::file_data::file_data(None))));
         repositories
             .file_object_repository_mut()
             .expect_generate_url()
@@ -99,18 +92,14 @@ mod tests {
             .file_data_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::file_data::file_data(
-                    Some(fixture::project::id1()),
+                Ok(Some(fixture::file_data::file_data(Some(
+                    fixture::project::id1(),
                 ))))
             });
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .file_object_repository_mut()
             .expect_generate_url()
@@ -136,18 +125,14 @@ mod tests {
             .file_data_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::file_data::file_data(
-                    Some(fixture::project::id2()),
+                Ok(Some(fixture::file_data::file_data(Some(
+                    fixture::project::id2(),
                 ))))
             });
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
@@ -174,18 +159,14 @@ mod tests {
             .file_data_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::file_data::file_data(
-                    Some(fixture::project::id2()),
+                Ok(Some(fixture::file_data::file_data(Some(
+                    fixture::project::id2(),
                 ))))
             });
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .file_object_repository_mut()
             .expect_generate_url()

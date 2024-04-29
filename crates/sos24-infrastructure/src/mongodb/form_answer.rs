@@ -6,10 +6,9 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use sos24_domain::entity::file_data::FileId;
+use sos24_domain::entity::{common::datetime::DateTime, file_data::FileId};
 use sos24_domain::{
     entity::{
-        common::date::WithDate,
         form::{FormId, FormItemId},
         form_answer::{
             FormAnswer, FormAnswerId, FormAnswerItem, FormAnswerItemChooseMany,
@@ -31,7 +30,6 @@ pub struct FormAnswerDoc {
     items: Vec<FormAnswerItemDoc>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl From<FormAnswer> for FormAnswerDoc {
@@ -48,28 +46,24 @@ impl From<FormAnswer> for FormAnswerDoc {
                 .collect(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
-            deleted_at: None,
         }
     }
 }
 
-impl TryFrom<FormAnswerDoc> for WithDate<FormAnswer> {
+impl TryFrom<FormAnswerDoc> for FormAnswer {
     type Error = anyhow::Error;
     fn try_from(form_answer_doc: FormAnswerDoc) -> Result<Self, Self::Error> {
-        Ok(WithDate::new(
-            FormAnswer::new(
-                FormAnswerId::try_from(form_answer_doc._id)?,
-                ProjectId::try_from(form_answer_doc.project_id)?,
-                FormId::try_from(form_answer_doc.form_id)?,
-                form_answer_doc
-                    .items
-                    .into_iter()
-                    .map(FormAnswerItem::try_from)
-                    .collect::<Result<Vec<_>, _>>()?,
-            ),
-            form_answer_doc.created_at,
-            form_answer_doc.updated_at,
-            form_answer_doc.deleted_at,
+        Ok(FormAnswer::new(
+            FormAnswerId::try_from(form_answer_doc._id)?,
+            ProjectId::try_from(form_answer_doc.project_id)?,
+            FormId::try_from(form_answer_doc.form_id)?,
+            form_answer_doc
+                .items
+                .into_iter()
+                .map(FormAnswerItem::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
+            DateTime::new(form_answer_doc.created_at),
+            DateTime::new(form_answer_doc.updated_at),
         ))
     }
 }
@@ -169,7 +163,7 @@ impl MongoFormAnswerRepository {
 }
 
 impl FormAnswerRepository for MongoFormAnswerRepository {
-    async fn list(&self) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+    async fn list(&self) -> Result<Vec<FormAnswer>, FormAnswerRepositoryError> {
         tracing::info!("申請回答一覧を取得します");
 
         let form_answer_list = self
@@ -184,7 +178,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .await
             .context("Failed to list form answers")?;
         let form_answers = form_answer_list
-            .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
+            .map(|doc| FormAnswer::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
 
@@ -208,7 +202,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
     async fn find_by_id(
         &self,
         id: FormAnswerId,
-    ) -> Result<Option<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+    ) -> Result<Option<FormAnswer>, FormAnswerRepositoryError> {
         tracing::info!("申請回答を取得します: {id:?}");
 
         let form_answer_doc = self
@@ -218,13 +212,13 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .context("Failed to find form answer")?;
 
         tracing::info!("申請回答を取得しました: {id:?}");
-        Ok(form_answer_doc.map(WithDate::try_from).transpose()?)
+        Ok(form_answer_doc.map(FormAnswer::try_from).transpose()?)
     }
 
     async fn find_by_project_id(
         &self,
         project_id: ProjectId,
-    ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+    ) -> Result<Vec<FormAnswer>, FormAnswerRepositoryError> {
         tracing::info!("企画の申請回答を取得します: {project_id:?}");
 
         let form_answer_list = self
@@ -236,7 +230,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .await
             .context("Failed to find form answers")?;
         let form_answers = form_answer_list
-            .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
+            .map(|doc| FormAnswer::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
 
@@ -247,7 +241,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
     async fn find_by_form_id(
         &self,
         form_id: FormId,
-    ) -> Result<Vec<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+    ) -> Result<Vec<FormAnswer>, FormAnswerRepositoryError> {
         tracing::info!("申請の回答を取得します: {form_id:?}");
 
         let form_answer_list = self
@@ -262,7 +256,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .await
             .context("Failed to find form answers")?;
         let form_answers = form_answer_list
-            .map(|doc| WithDate::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
+            .map(|doc| FormAnswer::try_from(bson::from_document::<FormAnswerDoc>(doc?)?))
             .try_collect()
             .await?;
 
@@ -274,7 +268,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
         &self,
         project_id: ProjectId,
         form_id: FormId,
-    ) -> Result<Option<WithDate<FormAnswer>>, FormAnswerRepositoryError> {
+    ) -> Result<Option<FormAnswer>, FormAnswerRepositoryError> {
         tracing::info!("企画の申請の回答を取得します: {project_id:?}, {form_id:?}");
 
         let form_answer_doc = self
@@ -287,7 +281,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .context("Failed to find form answer")?;
 
         tracing::info!("企画の申請の回答を取得しました: {project_id:?}, {form_id:?}");
-        Ok(form_answer_doc.map(WithDate::try_from).transpose()?)
+        Ok(form_answer_doc.map(FormAnswer::try_from).transpose()?)
     }
 
     async fn update(&self, form_answer: FormAnswer) -> Result<(), FormAnswerRepositoryError> {

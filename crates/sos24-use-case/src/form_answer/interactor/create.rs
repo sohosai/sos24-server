@@ -31,8 +31,8 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         ensure!(actor.has_permission(Permissions::CREATE_FORM_ANSWER));
 
         let project_id = match ctx.project(&*self.repositories).await? {
-            Some(OwnedProject::Owner(project)) => project.value.id().clone(),
-            Some(OwnedProject::SubOwner(project)) => project.value.id().clone(),
+            Some(OwnedProject::Owner(project)) => project.id().clone(),
+            Some(OwnedProject::SubOwner(project)) => project.id().clone(),
             None => return Err(FormAnswerUseCaseError::NotProjectOwner),
         };
 
@@ -55,7 +55,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 form_answer.project_id().clone(),
             ))?;
 
-        ensure!(project.value.is_visible_to(&actor));
+        ensure!(project.is_visible_to(&actor));
 
         let form = self
             .repositories
@@ -79,7 +79,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             }
         }
 
-        verify_form_answer::verify(&form.value, &form_answer)?;
+        verify_form_answer::verify(&form, &form_answer)?;
 
         let form_answer_id = {
             let lock = self.creation_lock.lock().await;
@@ -133,11 +133,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
@@ -145,15 +141,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .form_answer_repository_mut()
             .expect_create()
@@ -211,31 +203,23 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()
             .returning(|_, _| {
-                Ok(Some(fixture::date::with(
-                    fixture::form_answer::form_answer1(fixture::project::id1()),
+                Ok(Some(fixture::form_answer::form_answer1(
+                    fixture::project::id1(),
                 )))
             });
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .form_answer_repository_mut()
             .expect_create()

@@ -6,6 +6,8 @@ use crate::entity::{
     user::UserId,
 };
 
+use super::datetime;
+
 pub fn id1() -> ProjectId {
     ProjectId::new(uuid::Uuid::from_u128(1))
 }
@@ -51,6 +53,8 @@ pub fn project1(owner_id: UserId) -> Project {
         owner_id,
         None,
         None,
+        datetime::now(),
+        datetime::now(),
     )
 }
 
@@ -99,5 +103,7 @@ pub fn project2(owner_id: UserId) -> Project {
         owner_id,
         None,
         None,
+        datetime::now(),
+        datetime::now(),
     )
 }

@@ -16,8 +16,6 @@ pub struct File {
     pub created_at: String,
     #[schema(format = "date-time")]
     pub updated_at: String,
-    #[schema(format = "date-time")]
-    pub deleted_at: Option<String>,
 }
 
 impl From<FileDto> for File {
@@ -29,7 +27,6 @@ impl From<FileDto> for File {
             owner: file.owner,
             created_at: file.created_at.to_rfc3339(),
             updated_at: file.updated_at.to_rfc3339(),
-            deleted_at: file.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }
@@ -64,8 +61,6 @@ pub struct FileInfo {
     pub created_at: String,
     #[schema(format = "date-time")]
     pub updated_at: String,
-    #[schema(format = "date-time")]
-    pub deleted_at: Option<String>,
 }
 
 impl From<FileInfoDto> for FileInfo {
@@ -76,7 +71,6 @@ impl From<FileInfoDto> for FileInfo {
             owner: file.owner,
             created_at: file.created_at.to_rfc3339(),
             updated_at: file.updated_at.to_rfc3339(),
-            deleted_at: file.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }

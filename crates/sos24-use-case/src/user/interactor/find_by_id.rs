@@ -1,4 +1,3 @@
-use sos24_domain::entity::common::date::WithDate;
 use sos24_domain::entity::permission::PermissionDeniedError;
 use sos24_domain::entity::project::Project;
 use sos24_domain::entity::user::UserId;
@@ -25,7 +24,7 @@ impl<R: Repositories> UserUseCase<R> {
             .await?
             .ok_or(UserUseCaseError::NotFound(user_id.clone()))?;
 
-        if raw_user.value.is_visible_to(&actor) {
+        if raw_user.is_visible_to(&actor) {
             let raw_project = find_owned_project(user_id.clone(), &*self.repositories).await?;
             Ok(UserDto::from((raw_user, raw_project)))
         } else {
@@ -39,7 +38,7 @@ impl<R: Repositories> UserUseCase<R> {
 async fn find_owned_project(
     user_id: UserId,
     repositories: &impl Repositories,
-) -> Result<Option<WithDate<Project>>, UserUseCaseError> {
+) -> Result<Option<Project>, UserUseCaseError> {
     if let Some(project) = repositories
         .project_repository()
         .find_by_owner_id(user_id.clone())
@@ -76,11 +75,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::Committee,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::Committee))));
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
@@ -104,11 +99,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user2(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
@@ -137,11 +128,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user2(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()

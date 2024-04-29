@@ -24,7 +24,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .find_by_id(project_id.clone())
             .await?
             .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
-        ensure!(project.value.is_visible_to(&actor));
+        ensure!(project.is_visible_to(&actor));
 
         let raw_form_answer_list = self
             .repositories
@@ -34,7 +34,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         let mut form_answer_list = Vec::new();
         for raw_form_answer in raw_form_answer_list {
-            let form_id = raw_form_answer.value.form_id();
+            let form_id = raw_form_answer.form_id();
             let raw_form = self
                 .repositories
                 .form_repository()
@@ -72,11 +72,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id()
@@ -96,11 +92,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id()
@@ -125,11 +117,7 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id()

@@ -62,7 +62,7 @@ impl<R: Repositories> InvitationUseCase<R> {
                 new_invitation.project_id().clone(),
             ))?;
 
-        ensure!(project.value.is_visible_to(&actor));
+        ensure!(project.is_visible_to(&actor));
 
         let invitation_list = self
             .repositories
@@ -70,7 +70,6 @@ impl<R: Repositories> InvitationUseCase<R> {
             .find_by_inviter(new_invitation.inviter().clone())
             .await?;
         for invitation in invitation_list {
-            let invitation = invitation.value;
             if !invitation.is_used()
                 && invitation.project_id() == new_invitation.project_id()
                 && invitation.position() == new_invitation.position()
@@ -113,19 +112,11 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .invitation_repository_mut()
             .expect_find_by_inviter()
@@ -186,19 +177,11 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .invitation_repository_mut()
             .expect_create()
@@ -233,19 +216,11 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::CommitteeOperator,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::CommitteeOperator))));
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .invitation_repository_mut()
             .expect_find_by_inviter()
@@ -279,19 +254,11 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::CommitteeOperator,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::CommitteeOperator))));
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id2(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
         repositories
             .invitation_repository_mut()
             .expect_find_by_inviter()

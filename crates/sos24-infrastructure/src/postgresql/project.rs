@@ -4,7 +4,7 @@ use sqlx::prelude::{FromRow, Type};
 
 use sos24_domain::{
     entity::{
-        common::date::WithDate,
+        common::datetime::DateTime,
         project::{
             Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectIndex,
             ProjectKanaGroupName, ProjectKanaTitle, ProjectRemarks, ProjectTitle,
@@ -32,30 +32,26 @@ pub struct ProjectRow {
 
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl TryFrom<ProjectRow> for WithDate<Project> {
+impl TryFrom<ProjectRow> for Project {
     type Error = anyhow::Error;
     fn try_from(value: ProjectRow) -> Result<Self, Self::Error> {
-        Ok(WithDate::new(
-            Project::new(
-                ProjectId::new(value.id),
-                ProjectIndex::new(value.index),
-                ProjectTitle::try_from(value.title)?,
-                ProjectKanaTitle::new(value.kana_title),
-                ProjectGroupName::try_from(value.group_name)?,
-                ProjectKanaGroupName::new(value.kana_group_name),
-                value.category.into(),
-                ProjectAttributes::from_bits(value.attributes as u32)
-                    .ok_or(anyhow!("cannot convert project attributes"))?,
-                UserId::new(value.owner_id),
-                value.sub_owner_id.map(UserId::new),
-                value.remarks.map(ProjectRemarks::new),
-            ),
-            value.created_at,
-            value.updated_at,
-            value.deleted_at,
+        Ok(Project::new(
+            ProjectId::new(value.id),
+            ProjectIndex::new(value.index),
+            ProjectTitle::try_from(value.title)?,
+            ProjectKanaTitle::new(value.kana_title),
+            ProjectGroupName::try_from(value.group_name)?,
+            ProjectKanaGroupName::new(value.kana_group_name),
+            value.category.into(),
+            ProjectAttributes::from_bits(value.attributes as u32)
+                .ok_or(anyhow!("cannot convert project attributes"))?,
+            UserId::new(value.owner_id),
+            value.sub_owner_id.map(UserId::new),
+            value.remarks.map(ProjectRemarks::new),
+            DateTime::new(value.created_at),
+            DateTime::new(value.updated_at),
         ))
     }
 }
@@ -113,17 +109,17 @@ impl PgProjectRepository {
 }
 
 impl ProjectRepository for PgProjectRepository {
-    async fn list(&self) -> Result<Vec<WithDate<Project>>, ProjectRepositoryError> {
+    async fn list(&self) -> Result<Vec<Project>, ProjectRepositoryError> {
         tracing::info!("企画一覧を取得します");
 
         let project_list = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE deleted_at IS NULL
             ORDER BY index ASC"#)
             .fetch(&*self.db)
-            .map(|row| WithDate::try_from(row?))
+            .map(|row| Project::try_from(row?))
             .try_collect()
             .await
             .context("Failed to fetch project list")?;
@@ -157,15 +153,12 @@ impl ProjectRepository for PgProjectRepository {
         Ok(())
     }
 
-    async fn find_by_id(
-        &self,
-        id: ProjectId,
-    ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+    async fn find_by_id(&self, id: ProjectId) -> Result<Option<Project>, ProjectRepositoryError> {
         tracing::info!("企画を取得します: {id:?}");
 
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
@@ -175,18 +168,18 @@ impl ProjectRepository for PgProjectRepository {
             .context("Failed to fetch project")?;
 
         tracing::info!("企画を取得しました: {id:?}");
-        Ok(project_row.map(WithDate::try_from).transpose()?)
+        Ok(project_row.map(Project::try_from).transpose()?)
     }
 
     async fn find_by_owner_id(
         &self,
         owner_id: UserId,
-    ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+    ) -> Result<Option<Project>, ProjectRepositoryError> {
         tracing::info!("企画責任者に紐づく企画を取得します: {owner_id:?}");
 
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE owner_id = $1 AND deleted_at IS NULL"#,
             owner_id.clone().value()
@@ -196,18 +189,18 @@ impl ProjectRepository for PgProjectRepository {
             .context("Failed to fetch project")?;
 
         tracing::info!("企画責任者に紐づく企画を取得しました: {owner_id:?}");
-        Ok(project_row.map(WithDate::try_from).transpose()?)
+        Ok(project_row.map(Project::try_from).transpose()?)
     }
 
     async fn find_by_sub_owner_id(
         &self,
         sub_owner_id: UserId,
-    ) -> Result<Option<WithDate<Project>>, ProjectRepositoryError> {
+    ) -> Result<Option<Project>, ProjectRepositoryError> {
         tracing::info!("副企画責任者に紐づく企画を取得します: {sub_owner_id:?}");
 
         let project_row = sqlx::query_as!(
             ProjectRow,
-            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at, deleted_at
+            r#"SELECT id, index, title, kana_title, group_name, kana_group_name, category AS "category: ProjectCategoryRow", attributes, owner_id, sub_owner_id, remarks, created_at, updated_at
             FROM projects
             WHERE sub_owner_id = $1 AND deleted_at IS NULL"#,
             sub_owner_id.clone().value()
@@ -216,7 +209,7 @@ impl ProjectRepository for PgProjectRepository {
             .context("Failed to fetch project")?;
 
         tracing::info!("副企画責任者に紐づく企画を取得しました: {sub_owner_id:?}");
-        Ok(project_row.map(WithDate::try_from).transpose()?)
+        Ok(project_row.map(Project::try_from).transpose()?)
     }
 
     async fn update(&self, project: Project) -> Result<(), ProjectRepositoryError> {

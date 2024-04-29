@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, inviter, project_id, position AS \"position: InvitationPositionRow\", used_by, created_at, updated_at, deleted_at FROM invitations WHERE inviter = $1 AND deleted_at IS NULL",
+  "query": "SELECT id, inviter, project_id, position AS \"position: InvitationPositionRow\", used_by, created_at, updated_at FROM invitations WHERE id = $1 AND deleted_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -47,16 +47,11 @@
         "ordinal": 6,
         "name": "updated_at",
         "type_info": "Timestamptz"
-      },
-      {
-        "ordinal": 7,
-        "name": "deleted_at",
-        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Uuid"
       ]
     },
     "nullable": [
@@ -66,9 +61,8 @@
       false,
       true,
       false,
-      false,
-      true
+      false
     ]
   },
-  "hash": "c857fcbcc647400a338664b909e8f73cf5a6d0e866728fd79974d52369a1aba3"
+  "hash": "b5dbf411a7fa4ca1003022a8b88cd4e91d9e59c1679540ba40e98e0e08e6ef4b"
 }

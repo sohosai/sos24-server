@@ -34,7 +34,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
                 OwnedProject::Owner(project) => project,
                 OwnedProject::SubOwner(project) => project,
             });
-        let project_id = project.map(|it| it.value.id().clone());
+        let project_id = project.map(|it| it.id().clone());
 
         let raw_form_answer = match project_id {
             Some(project_id) => {
@@ -67,15 +67,11 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::date::with(fixture::form::form1()))));
+            .returning(|_| Ok(Some(fixture::form::form1())));
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()

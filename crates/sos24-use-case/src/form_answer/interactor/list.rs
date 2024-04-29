@@ -22,7 +22,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
 
         let mut form_answer_list = Vec::new();
         for raw_form_answer in raw_form_answer_list {
-            let project_id = raw_form_answer.value.project_id();
+            let project_id = raw_form_answer.project_id();
             let raw_project = self
                 .repositories
                 .project_repository()
@@ -30,7 +30,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                 .await?
                 .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
 
-            let form_id = raw_form_answer.value.form_id();
+            let form_id = raw_form_answer.form_id();
             let raw_form = self
                 .repositories
                 .form_repository()

@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use crate::impl_value_object;
 
-use super::{file_object::FileObjectKey, project::ProjectId};
+use super::{common::datetime::DateTime, file_object::FileObjectKey, project::ProjectId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct FileData {
@@ -18,24 +18,40 @@ pub struct FileData {
     url: FileObjectKey,
     #[getset(get = "pub", set = "pub")]
     owner: Option<ProjectId>,
+    #[getset(get = "pub")]
+    created_at: DateTime,
+    #[getset(get = "pub")]
+    updated_at: DateTime,
 }
 
 impl FileData {
-    pub fn new(id: FileId, name: FileName, url: FileObjectKey, owner: Option<ProjectId>) -> Self {
+    pub fn new(
+        id: FileId,
+        name: FileName,
+        url: FileObjectKey,
+        owner: Option<ProjectId>,
+        created_at: DateTime,
+        updated_at: DateTime,
+    ) -> Self {
         Self {
             id,
             filename: name,
             url,
             owner,
+            created_at,
+            updated_at,
         }
     }
 
     pub fn create(filename: FileName, url: FileObjectKey, owner: Option<ProjectId>) -> Self {
+        let now = DateTime::now();
         Self {
             id: FileId::new(uuid::Uuid::new_v4()),
             filename,
             url,
             owner,
+            created_at: now.clone(),
+            updated_at: now,
         }
     }
 
@@ -45,6 +61,8 @@ impl FileData {
             name: self.filename,
             url: self.url,
             owner: self.owner,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         }
     }
 }
@@ -55,6 +73,8 @@ pub struct DestructedFileData {
     pub name: FileName,
     pub url: FileObjectKey,
     pub owner: Option<ProjectId>,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 impl_value_object!(FileId(uuid::Uuid));

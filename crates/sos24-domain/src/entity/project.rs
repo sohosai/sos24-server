@@ -9,6 +9,7 @@ use crate::{ensure, impl_value_object};
 
 use super::{
     actor::Actor,
+    common::datetime::DateTime,
     permission::{PermissionDeniedError, Permissions},
     user::UserId,
 };
@@ -37,6 +38,10 @@ pub struct Project {
     sub_owner_id: Option<UserId>,
     #[getset(get = "pub")]
     remarks: Option<ProjectRemarks>,
+    #[getset(get = "pub")]
+    created_at: DateTime,
+    #[getset(get = "pub")]
+    updated_at: DateTime,
 }
 
 impl Project {
@@ -53,6 +58,8 @@ impl Project {
         owner_id: UserId,
         sub_owner_id: Option<UserId>,
         remarks: Option<ProjectRemarks>,
+        created_at: DateTime,
+        updated_at: DateTime,
     ) -> Self {
         Self {
             id,
@@ -66,6 +73,8 @@ impl Project {
             owner_id,
             sub_owner_id,
             remarks,
+            created_at,
+            updated_at,
         }
     }
 
@@ -78,6 +87,7 @@ impl Project {
         attributes: ProjectAttributes,
         owner_id: UserId,
     ) -> Self {
+        let now = DateTime::now();
         Self {
             id: ProjectId::new(uuid::Uuid::new_v4()),
             index: ProjectIndex::new(0), // TODO
@@ -90,6 +100,8 @@ impl Project {
             owner_id,
             sub_owner_id: None,
             remarks: None,
+            created_at: now.clone(),
+            updated_at: now,
         }
     }
 
@@ -106,6 +118,8 @@ impl Project {
             owner_id: self.owner_id,
             sub_owner_id: self.sub_owner_id,
             remarks: self.remarks,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         }
     }
 }
@@ -123,6 +137,8 @@ pub struct DestructedProject {
     pub owner_id: UserId,
     pub sub_owner_id: Option<UserId>,
     pub remarks: Option<ProjectRemarks>,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 #[derive(Debug, Error)]

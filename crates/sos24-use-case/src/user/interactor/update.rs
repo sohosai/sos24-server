@@ -35,9 +35,9 @@ impl<R: Repositories> UserUseCase<R> {
             .find_by_id(id.clone())
             .await?
             .ok_or(UserUseCaseError::NotFound(id.clone()))?;
-        ensure!(user.value.is_updatable_by(&actor));
+        ensure!(user.is_updatable_by(&actor));
 
-        let mut new_user = user.value;
+        let mut new_user = user;
 
         new_user.set_name(&actor, UserName::new(user_data.name))?;
         new_user.set_kana_name(&actor, UserKanaName::new(user_data.kana_name))?;
@@ -91,11 +91,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
         repositories
             .user_repository_mut()
             .expect_update()
@@ -129,11 +125,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
         repositories
             .user_repository_mut()
             .expect_update()
@@ -168,11 +160,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user2(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
         repositories
             .user_repository_mut()
             .expect_update()
@@ -207,11 +195,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user2(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
         repositories
             .user_repository_mut()
             .expect_update()

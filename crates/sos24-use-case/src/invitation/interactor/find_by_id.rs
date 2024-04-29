@@ -25,7 +25,7 @@ impl<R: Repositories> InvitationUseCase<R> {
             .await?
             .ok_or(InvitationUseCaseError::NotFound(id.clone()))?;
 
-        let inviter_id = raw_invitation.value.inviter();
+        let inviter_id = raw_invitation.inviter();
         let raw_inviter = self
             .repositories
             .user_repository()
@@ -33,7 +33,7 @@ impl<R: Repositories> InvitationUseCase<R> {
             .await?
             .ok_or(InvitationUseCaseError::UserNotFound(inviter_id.clone()))?;
 
-        let project_id = raw_invitation.value.project_id();
+        let project_id = raw_invitation.project_id();
         let raw_project = self
             .repositories
             .project_repository()
@@ -67,28 +67,20 @@ mod tests {
             .invitation_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                Ok(Some(fixture::invitation::invitation(
                     fixture::user::id1(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
-                ))))
+                )))
             });
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         let use_case = InvitationUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
@@ -108,28 +100,20 @@ mod tests {
             .invitation_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                Ok(Some(fixture::invitation::invitation(
                     fixture::user::id2(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
-                ))))
+                )))
             });
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user2(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         let use_case = InvitationUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
@@ -149,28 +133,20 @@ mod tests {
             .invitation_repository_mut()
             .expect_find_by_id()
             .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::invitation::invitation(
+                Ok(Some(fixture::invitation::invitation(
                     fixture::user::id2(),
                     fixture::project::id1(),
                     InvitationPosition::SubOwner,
-                ))))
+                )))
             });
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::user::user1(
-                    UserRole::General,
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| {
-                Ok(Some(fixture::date::with(fixture::project::project1(
-                    fixture::user::id1(),
-                ))))
-            });
+            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
         let use_case = InvitationUseCase::new(
             Arc::new(repositories),
             fixture::project_application_period::applicable_period(),
