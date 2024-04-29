@@ -26,13 +26,13 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .ok_or(FormAnswerUseCaseError::NotFound(id))?;
 
         let project_id = form_answer.project_id();
-        let raw_project = self
+        let project_with_owners = self
             .repositories
             .project_repository()
             .find_by_id(project_id.clone())
             .await?
             .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
-        ensure!(raw_project.is_visible_to(&actor));
+        ensure!(project_with_owners.project.is_visible_to(&actor));
 
         let form_id = form_answer.form_id();
         let raw_form = self
@@ -42,7 +42,11 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .await?
             .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
 
-        Ok(FormAnswerDto::from((form_answer, raw_project, raw_form)))
+        Ok(FormAnswerDto::from((
+            form_answer,
+            project_with_owners.project,
+            raw_form,
+        )))
     }
 }
 
@@ -74,7 +78,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_repository_mut()
             .expect_find_by_id()
@@ -102,7 +110,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
@@ -131,7 +143,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         repositories
             .form_repository_mut()
             .expect_find_by_id()

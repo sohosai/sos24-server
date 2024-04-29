@@ -34,14 +34,14 @@ impl<R: Repositories> InvitationUseCase<R> {
             .ok_or(InvitationUseCaseError::NotFound(id.clone()))?;
 
         let project_id = invitation.project_id().clone();
-        let project = self
+        let project_with_owners = self
             .repositories
             .project_repository()
             .find_by_id(project_id.clone())
             .await?
             .ok_or(InvitationUseCaseError::ProjectNotFound(project_id))?;
 
-        let mut new_project = project;
+        let mut new_project = project_with_owners.project;
         let user_id = UserId::new(ctx.user_id().clone());
         match invitation.position() {
             InvitationPosition::Owner => new_project.set_owner_id(user_id)?,
@@ -98,7 +98,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         repositories
             .project_repository_mut()
             .expect_update()

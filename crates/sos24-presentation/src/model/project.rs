@@ -1,15 +1,12 @@
 use chrono_tz::Asia::Tokyo;
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::{
-    project::{
-        dto::{
-            ProjectAttributeDto, ProjectAttributesDto, ProjectCategoriesDto, ProjectCategoryDto,
-            ProjectDto,
-        },
-        interactor::{create::CreateProjectCommand, update::UpdateProjectCommand},
+use sos24_use_case::project::{
+    dto::{
+        ProjectAttributeDto, ProjectAttributesDto, ProjectCategoriesDto, ProjectCategoryDto,
+        ProjectDto,
     },
-    user::dto::UserDto,
+    interactor::{create::CreateProjectCommand, update::UpdateProjectCommand},
 };
 use utoipa::ToSchema;
 
@@ -139,10 +136,10 @@ pub struct ProjectToBeExported {
     group_name: String,
     #[serde(rename(serialize = "企画責任者"))]
     owner_name: String,
-    #[serde(rename(serialize = "企画責任者電話番号"))]
-    owner_phone_number: String,
     #[serde(rename(serialize = "企画責任者メールアドレス"))]
     owner_email: String,
+    #[serde(rename(serialize = "企画責任者電話番号"))]
+    owner_phone_number: String,
     #[serde(rename(serialize = "副企画責任者"))]
     sub_owner_name: Option<String>,
     #[serde(rename(serialize = "副企画責任者メールアドレス"))]
@@ -154,24 +151,24 @@ pub struct ProjectToBeExported {
     #[serde(rename(serialize = "企画属性"))]
     attributes: String,
     #[serde(rename(serialize = "備考"))]
-    remark: Option<String>,
+    remarks: Option<String>,
     #[serde(rename(serialize = "作成日時"))]
     created_at: String,
 }
 
-impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
-    fn from((project, owner, sub_owner): (ProjectDto, UserDto, Option<UserDto>)) -> Self {
+impl From<ProjectDto> for ProjectToBeExported {
+    fn from(project: ProjectDto) -> Self {
         ProjectToBeExported {
             id: project.index,
-            owner_name: owner.name,
-            sub_owner_name: sub_owner.as_ref().map(|it| it.name.clone()),
-            owner_email: owner.email,
-            sub_owner_email: sub_owner.as_ref().map(|it| it.email.clone()),
-            owner_phone_number: owner.phone_number,
-            sub_owner_phone_number: sub_owner.map(|it| it.phone_number.clone()),
             title: project.title,
             kana_title: project.kana_title,
             group_name: project.group_name,
+            owner_name: project.owner_name,
+            owner_email: project.owner_email,
+            owner_phone_number: project.owner_phone_number,
+            sub_owner_name: project.sub_owner_name,
+            sub_owner_email: project.sub_owner_email,
+            sub_owner_phone_number: project.sub_owner_phone_number,
             category: project.category.to_string(),
             attributes: project
                 .attributes
@@ -180,7 +177,7 @@ impl From<(ProjectDto, UserDto, Option<UserDto>)> for ProjectToBeExported {
                 .map(ToString::to_string)
                 .collect::<Vec<String>>()
                 .join(";"),
-            remark: project.remarks,
+            remarks: project.remarks,
             created_at: project.created_at.with_timezone(&Tokyo).to_rfc3339(),
         }
     }

@@ -51,13 +51,13 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let mut form_answers = Vec::new();
         for form_answer in form_answer_list {
             let project_id = form_answer.project_id;
-            let project = self
+            let project_with_owners = self
                 .repositories
                 .project_repository()
                 .find_by_id(project_id.clone())
                 .await?
                 .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
-            let project = project.destruct();
+            let project = project_with_owners.project.destruct();
 
             let form_answer_item_values = form_item_ids
                 .iter()

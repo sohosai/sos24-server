@@ -7,7 +7,7 @@ use sos24_domain::{
 
 use crate::{
     form_answer::{dto::FormAnswerItemDto, FormAnswerUseCase, FormAnswerUseCaseError},
-    shared::context::{ContextProvider, OwnedProject},
+    shared::context::ContextProvider,
 };
 
 pub struct UpdateFormAnswerCommand {
@@ -22,13 +22,9 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         form_answer_data: UpdateFormAnswerCommand,
     ) -> Result<(), FormAnswerUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        let owned_project_id =
-            ctx.project(&*self.repositories)
-                .await?
-                .map(|project| match project {
-                    OwnedProject::Owner(project) => project.id().clone(),
-                    OwnedProject::SubOwner(project) => project.id().clone(),
-                });
+
+        let project_with_owners = ctx.project(&*self.repositories).await?;
+        let owned_project_id = project_with_owners.as_ref().map(|p| p.project.id().clone());
 
         let id = FormAnswerId::try_from(form_answer_data.id)?;
         let form_answer = self
@@ -89,7 +85,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_id()
@@ -130,7 +130,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| Ok(Some(fixture::project::project2(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners2(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_id()

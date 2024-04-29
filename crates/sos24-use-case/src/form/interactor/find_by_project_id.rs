@@ -20,18 +20,18 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let actor = ctx.actor(&*self.repositories).await?;
 
         let project_id = ProjectId::try_from(project_id)?;
-        let project = self
+        let project_with_owners = self
             .repositories
             .project_repository()
             .find_by_id(project_id.clone())
             .await?
             .ok_or(FormUseCaseError::ProjectNotFound(project_id.clone()))?;
-        ensure!(project.is_visible_to(&actor));
+        ensure!(project_with_owners.project.is_visible_to(&actor));
 
         let forms = self.repositories.form_repository().list().await?;
         let filtered_forms = forms
             .into_iter()
-            .filter(|form| form.is_sent_to(&project))
+            .filter(|form| form.is_sent_to(&project_with_owners.project))
             .filter(|form| form.is_started(ctx.requested_at()));
 
         // FIXME : N+1
@@ -68,7 +68,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_repository_mut()
             .expect_list()
@@ -89,7 +93,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
@@ -111,7 +119,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::Committee),
+                )))
+            });
         repositories
             .form_repository_mut()
             .expect_list()

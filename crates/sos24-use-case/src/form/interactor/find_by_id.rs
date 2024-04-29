@@ -8,7 +8,7 @@ use sos24_domain::{
 use crate::form::dto::FormDto;
 use crate::form::{FormUseCase, FormUseCaseError};
 use crate::shared::adapter::Adapters;
-use crate::shared::context::{ContextProvider, OwnedProject};
+use crate::shared::context::ContextProvider;
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
     pub async fn find_by_id(
@@ -27,14 +27,8 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             .await?
             .ok_or(FormUseCaseError::NotFound(form_id.clone()))?;
 
-        let project = ctx
-            .project(&*self.repositories)
-            .await?
-            .map(|project| match project {
-                OwnedProject::Owner(project) => project,
-                OwnedProject::SubOwner(project) => project,
-            });
-        let project_id = project.map(|it| it.id().clone());
+        let project_with_owners = ctx.project(&*self.repositories).await?;
+        let project_id = project_with_owners.map(|it| it.project.id().clone());
 
         let raw_form_answer = match project_id {
             Some(project_id) => {
@@ -71,7 +65,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .form_answer_repository_mut()
             .expect_find_by_project_id_and_form_id()

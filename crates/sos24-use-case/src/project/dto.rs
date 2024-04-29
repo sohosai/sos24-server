@@ -2,9 +2,10 @@ use std::fmt;
 use std::fmt::Formatter;
 
 use sos24_domain::entity::project::ProjectCategories;
-use sos24_domain::entity::project::{Project, ProjectAttributes, ProjectCategory};
+use sos24_domain::entity::project::{ProjectAttributes, ProjectCategory};
 use sos24_domain::entity::project_application_period::ProjectApplicationPeriod;
-use sos24_domain::entity::user::User;
+
+use sos24_domain::repository::project::ProjectWithOwners;
 
 #[derive(Debug)]
 pub struct ProjectDto {
@@ -19,23 +20,28 @@ pub struct ProjectDto {
     pub owner_id: String,
     pub owner_name: String,
     pub owner_email: String,
+    pub owner_phone_number: String,
     pub sub_owner_id: Option<String>,
     pub sub_owner_name: Option<String>,
     pub sub_owner_email: Option<String>,
+    pub sub_owner_phone_number: Option<String>,
     pub remarks: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<(Project, User, Option<User>)> for ProjectDto {
-    fn from(entity: (Project, User, Option<User>)) -> Self {
-        let (project, owner, sub_owner) = entity;
-        let project = project.destruct();
-        let owner = owner.destruct();
-        let sub_owner = sub_owner.map(|it| it.destruct());
-        let (sub_owner_name, sub_owner_email) = match sub_owner {
-            Some(user) => (Some(user.name.value()), Some(user.email.value())),
-            None => (None, None),
+impl From<ProjectWithOwners> for ProjectDto {
+    fn from(entity: ProjectWithOwners) -> Self {
+        let project = entity.project.destruct();
+        let owner = entity.owner.destruct();
+        let sub_owner = entity.sub_owner.map(|it| it.destruct());
+        let (sub_owner_name, sub_owner_email, sub_owner_phone_number) = match sub_owner {
+            Some(user) => (
+                Some(user.name.value()),
+                Some(user.email.value()),
+                Some(user.phone_number.value()),
+            ),
+            None => (None, None, None),
         };
 
         Self {
@@ -50,9 +56,11 @@ impl From<(Project, User, Option<User>)> for ProjectDto {
             owner_id: project.owner_id.value(),
             owner_name: owner.name.value(),
             owner_email: owner.email.value(),
+            owner_phone_number: owner.phone_number.value(),
             sub_owner_id: project.sub_owner_id.map(|id| id.value()),
             sub_owner_name,
             sub_owner_email,
+            sub_owner_phone_number,
             remarks: project.remarks.map(|it| it.value()),
             created_at: project.created_at.value(),
             updated_at: project.updated_at.value(),

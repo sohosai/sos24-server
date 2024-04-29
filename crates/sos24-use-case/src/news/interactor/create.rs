@@ -1,3 +1,5 @@
+use std::convert::identity;
+
 use sos24_domain::{
     ensure,
     entity::{
@@ -8,7 +10,7 @@ use sos24_domain::{
     },
     repository::{
         file_data::FileDataRepository, news::NewsRepository, project::ProjectRepository,
-        user::UserRepository, Repositories,
+        Repositories,
     },
 };
 
@@ -72,29 +74,20 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         let project_list = self.repositories.project_repository().list().await?;
         let target_project_list = project_list
             .into_iter()
-            .filter(|project| news.is_sent_to(&project));
+            .filter(|project_with_owners| news.is_sent_to(&project_with_owners.project));
 
-        let mut emails = Vec::new();
-        for project in target_project_list {
-            let owner_id = project.owner_id().clone();
-            let owner = self
-                .repositories
-                .user_repository()
-                .find_by_id(owner_id.clone())
-                .await?
-                .ok_or(NewsUseCaseError::UserNotFound(owner_id))?;
-            emails.push(owner.email().clone().value());
-
-            if let Some(sub_owner_id) = project.sub_owner_id().clone() {
-                let sub_owner = self
-                    .repositories
-                    .user_repository()
-                    .find_by_id(sub_owner_id.clone())
-                    .await?
-                    .ok_or(NewsUseCaseError::UserNotFound(sub_owner_id))?;
-                emails.push(sub_owner.email().clone().value());
-            }
-        }
+        let emails = target_project_list
+            .flat_map(|project_with_owners| {
+                [
+                    Some(project_with_owners.owner.email().clone().value()),
+                    project_with_owners
+                        .sub_owner
+                        .as_ref()
+                        .map(|it| it.email().clone().value()),
+                ]
+            })
+            .filter_map(identity)
+            .collect::<Vec<_>>();
 
         let command = SendEmailCommand {
             from: Email {

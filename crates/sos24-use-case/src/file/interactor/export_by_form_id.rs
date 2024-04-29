@@ -44,13 +44,13 @@ impl<R: Repositories> FileUseCase<R> {
         let mut file_list = Vec::new();
         for form_answer in form_answer_list {
             let project_id = form_answer.project_id().clone();
-            let project = self
+            let project_with_owners = self
                 .repositories
                 .project_repository()
                 .find_by_id(project_id.clone())
                 .await?
                 .ok_or(FileUseCaseError::ProjectNotFound(project_id))?;
-            let project = project.destruct();
+            let project = project_with_owners.project.destruct();
 
             let file_items = form_answer.list_file_items();
             for (item_id, files) in file_items {

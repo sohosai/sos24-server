@@ -53,7 +53,7 @@ impl<R: Repositories> InvitationUseCase<R> {
                 new_invitation.inviter().clone(),
             ))?;
 
-        let project = self
+        let project_with_owners = self
             .repositories
             .project_repository()
             .find_by_id(new_invitation.project_id().clone())
@@ -62,7 +62,7 @@ impl<R: Repositories> InvitationUseCase<R> {
                 new_invitation.project_id().clone(),
             ))?;
 
-        ensure!(project.is_visible_to(&actor));
+        ensure!(project_with_owners.project.is_visible_to(&actor));
 
         let invitation_list = self
             .repositories
@@ -116,7 +116,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id1()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user1(UserRole::General),
+                )))
+            });
         repositories
             .invitation_repository_mut()
             .expect_find_by_inviter()
@@ -181,7 +185,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         repositories
             .invitation_repository_mut()
             .expect_create()
@@ -220,7 +228,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         repositories
             .invitation_repository_mut()
             .expect_find_by_inviter()
@@ -258,7 +270,11 @@ mod tests {
         repositories
             .project_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::project::project1(fixture::user::id2()))));
+            .returning(|_| {
+                Ok(Some(fixture::project::project_with_owners1(
+                    fixture::user::user2(UserRole::General),
+                )))
+            });
         repositories
             .invitation_repository_mut()
             .expect_find_by_inviter()
