@@ -1,0 +1,229 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            projects.id AS \"project_id\",\n            projects.index AS \"project_index\",\n            projects.title AS \"project_title\",\n            projects.kana_title AS \"project_kana_title\",\n            projects.group_name AS \"project_group_name\",\n            projects.kana_group_name AS \"project_kana_group_name\",\n            projects.category AS \"project_category: ProjectCategoryRow\",\n            projects.attributes AS \"project_attributes\",\n            projects.owner_id AS \"project_owner_id\",\n            projects.sub_owner_id AS \"project_sub_owner_id\",\n            projects.remarks AS \"project_remarks\",\n            projects.created_at AS \"project_created_at\",\n            projects.updated_at AS \"project_updated_at\",\n            owners.id AS \"owner_id\",\n            owners.name AS \"owner_name\",\n            owners.kana_name AS \"owner_kana_name\",\n            owners.email AS \"owner_email\",\n            owners.phone_number AS \"owner_phone_number\",\n            owners.role AS \"owner_role: UserRoleRow\",\n            owners.created_at AS \"owner_created_at\",\n            owners.updated_at AS \"owner_updated_at\",\n            sub_owners.id AS \"sub_owner_id?\",\n            sub_owners.name AS \"sub_owner_name?\",\n            sub_owners.kana_name AS \"sub_owner_kana_name?\",\n            sub_owners.email AS \"sub_owner_email?\",\n            sub_owners.phone_number AS \"sub_owner_phone_number?\",\n            sub_owners.role AS \"sub_owner_role?: UserRoleRow\",\n            sub_owners.created_at AS \"sub_owner_created_at?\",\n            sub_owners.updated_at AS \"sub_owner_updated_at?\"\n            FROM projects\n            INNER JOIN users AS owners ON projects.owner_id = owners.id AND owners.deleted_at IS NULL\n            LEFT JOIN users AS sub_owners ON projects.sub_owner_id = sub_owners.id AND sub_owners.deleted_at IS NULL\n            WHERE projects.owner_id = $1 AND projects.deleted_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "project_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "project_index",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "project_title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "project_kana_title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "project_group_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "project_kana_group_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "project_category: ProjectCategoryRow",
+        "type_info": {
+          "Custom": {
+            "name": "project_category",
+            "kind": {
+              "Enum": [
+                "general",
+                "foods_with_kitchen",
+                "foods_without_kitchen",
+                "foods_without_cooking",
+                "stage_1a",
+                "stage_university_hall",
+                "stage_united"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "project_attributes",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "project_owner_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "project_sub_owner_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "project_remarks",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "project_created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 12,
+        "name": "project_updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 13,
+        "name": "owner_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 14,
+        "name": "owner_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 15,
+        "name": "owner_kana_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 16,
+        "name": "owner_email",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 17,
+        "name": "owner_phone_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 18,
+        "name": "owner_role: UserRoleRow",
+        "type_info": {
+          "Custom": {
+            "name": "user_role",
+            "kind": {
+              "Enum": [
+                "administrator",
+                "committee_operator",
+                "committee",
+                "general"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 19,
+        "name": "owner_created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 20,
+        "name": "owner_updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 21,
+        "name": "sub_owner_id?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 22,
+        "name": "sub_owner_name?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 23,
+        "name": "sub_owner_kana_name?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 24,
+        "name": "sub_owner_email?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 25,
+        "name": "sub_owner_phone_number?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 26,
+        "name": "sub_owner_role?: UserRoleRow",
+        "type_info": {
+          "Custom": {
+            "name": "user_role",
+            "kind": {
+              "Enum": [
+                "administrator",
+                "committee_operator",
+                "committee",
+                "general"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 27,
+        "name": "sub_owner_created_at?",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 28,
+        "name": "sub_owner_updated_at?",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e4c735693f487aa3911eb1708a1aad855fea9fed7a0703498de7e4c33b056d0b"
+}
