@@ -171,7 +171,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .aggregate(
                 vec![
                     doc! { "$match": { "deleted_at": None::<String> } },
-                    doc! { "$sort": { "created_at": 1 } },
+                    doc! { "$sort": { "updated_at": 1 } },
                 ],
                 None,
             )
@@ -225,7 +225,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .collection
             .aggregate(vec![
                 doc! { "$match": { "project_id": project_id.clone().value().to_string(),  "deleted_at": None::<String> } },
-                doc! { "$sort": { "created_at": 1 } },
+                doc! { "$sort": { "updated_at": 1 } },
             ], None)
             .await
             .context("Failed to find form answers")?;
@@ -249,7 +249,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .aggregate(
                 vec![
                     doc! { "$match": { "form_id": form_id.clone().value().to_string(), "deleted_at": None::<String> } },
-                    doc! { "$sort": { "created_at": 1 } },
+                    doc! { "$sort": { "updated_at": 1 } },
                 ],
                 None,
             )
