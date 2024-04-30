@@ -130,10 +130,12 @@ pub struct ProjectToBeExported {
     id: i32,
     #[serde(rename(serialize = "企画名"))]
     title: String,
-    #[serde(rename(serialize = "きかくめい"))]
+    #[serde(rename(serialize = "企画名（ふりがな）"))]
     kana_title: String,
     #[serde(rename(serialize = "企画団体名"))]
     group_name: String,
+    #[serde(rename(serialize = "企画団体名（ふりがな）"))]
+    kana_group_name: String,
     #[serde(rename(serialize = "企画責任者"))]
     owner_name: String,
     #[serde(rename(serialize = "企画責任者メールアドレス"))]
@@ -163,6 +165,7 @@ impl From<ProjectDto> for ProjectToBeExported {
             title: project.title,
             kana_title: project.kana_title,
             group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
             owner_name: project.owner_name,
             owner_email: project.owner_email,
             owner_phone_number: project.owner_phone_number,
