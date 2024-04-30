@@ -42,7 +42,7 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let form_answer_list = self
             .repositories
             .form_answer_repository()
-            .list()
+            .find_by_form_id(form_id)
             .await?
             .into_iter()
             .map(FormAnswer::destruct)
