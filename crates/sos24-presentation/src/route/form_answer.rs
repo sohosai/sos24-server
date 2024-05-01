@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use anyhow::Context as _;
 use axum::body::Body;
 use axum::response::Response;
 use axum::{
@@ -9,12 +8,11 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use csv::Writer;
 use percent_encoding::NON_ALPHANUMERIC;
 use sos24_use_case::form_answer::interactor::create::CreateFormAnswerCommand;
 
 use crate::context::Context;
-use crate::csv::CsvSerializationError;
+use crate::csv::{serialize_to_csv, CsvSerializationError};
 use crate::model::form_answer::{
     CreatedFormAnswer, ExportFormAnswerQuery, FormAnswerSummary, UpdateFormAnswer,
 };
@@ -156,13 +154,15 @@ pub async fn handle_export(
             AppError::from(err)
         })?;
 
-    let data = (|| -> Result<Vec<u8>, CsvSerializationError> {
-        let mut wrt = Writer::from_writer(vec![]);
+    let data = (|| -> Result<String, CsvSerializationError> {
+        let mut csv_data = vec![];
 
-        let header = ["企画番号", "企画名", "企画団体名", "回答日時"]
+        let header: Vec<String> = ["企画番号", "企画名", "企画団体名", "回答日時"]
             .into_iter()
-            .chain(form_answer_list.form_item_names.iter().map(String::as_str));
-        wrt.write_record(header).context("Failed to write header")?;
+            .map(ToString::to_string)
+            .chain(form_answer_list.form_item_names.into_iter())
+            .collect();
+        csv_data.push(header);
 
         for form_answer in form_answer_list.form_answers {
             let record = [
@@ -177,12 +177,12 @@ pub async fn handle_export(
                     .form_answer_item_values
                     .into_iter()
                     .map(|it| it.unwrap_or_default()),
-            );
-            wrt.write_record(record).context("Failed to write record")?;
+            )
+            .collect();
+            csv_data.push(record);
         }
 
-        let csv = wrt.into_inner().context("Failed to write csv")?;
-        Ok(csv)
+        serialize_to_csv(csv_data)
     })()
     .map_err(|err| {
         tracing::error!("Failed to serialize to csv: {err:?}");
