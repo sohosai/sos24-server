@@ -7,7 +7,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use sos24_use_case::context::ContextProvider;
+use sos24_use_case::shared::context::ContextProvider;
 
 use crate::context::Context;
 use crate::csv::serialize_to_csv;
@@ -110,38 +110,11 @@ pub async fn handle_export(
         }
     };
 
-    let mut projects: Vec<ProjectToBeExported> = Vec::new();
-
-    for project in raw_project_list {
-        let owner = match modules
-            .user_use_case()
-            .find_by_id(&ctx, project.owner_id.clone())
-            .await
-        {
-            Ok(user) => user,
-            Err(err) => {
-                tracing::error!("Failed to find user: {err:?}");
-                return Err(err.into());
-            }
-        };
-
-        let sub_owner = match project.sub_owner_id.clone() {
-            Some(sub_owner_id) => {
-                match modules.user_use_case().find_by_id(&ctx, sub_owner_id).await {
-                    Ok(user) => Some(user),
-                    Err(err) => {
-                        tracing::error!("Failed to find user: {err:?}");
-                        return Err(err.into());
-                    }
-                }
-            }
-            None => None,
-        };
-
-        projects.push(ProjectToBeExported::from((project, owner, sub_owner)));
-    }
-
-    let data = serialize_to_csv(projects).map_err(|err| {
+    let project_list = raw_project_list
+        .into_iter()
+        .map(ProjectToBeExported::from)
+        .collect();
+    let data = serialize_to_csv(project_list).map_err(|err| {
         tracing::error!("Failed to serialize to csv: {err:?}");
         AppError::from(err)
     })?;

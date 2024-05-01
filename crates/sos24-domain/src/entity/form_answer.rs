@@ -9,6 +9,7 @@ use crate::entity::project::ProjectId;
 use crate::{ensure, impl_value_object};
 
 use super::actor::Actor;
+use super::common::datetime::DateTime;
 use super::permission::{PermissionDeniedError, Permissions};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
@@ -21,15 +22,22 @@ pub struct FormAnswer {
     form_id: FormId,
     #[getset(get = "pub")]
     items: Vec<FormAnswerItem>,
+    #[getset(get = "pub")]
+    created_at: DateTime,
+    #[getset(get = "pub")]
+    updated_at: DateTime,
 }
 
 impl FormAnswer {
     pub fn create(project_id: ProjectId, form_id: FormId, items: Vec<FormAnswerItem>) -> Self {
+        let now = DateTime::now();
         Self {
             id: FormAnswerId::new(uuid::Uuid::new_v4()),
             project_id,
             form_id,
             items,
+            created_at: now.clone(),
+            updated_at: now,
         }
     }
 
@@ -38,12 +46,16 @@ impl FormAnswer {
         project_id: ProjectId,
         form_id: FormId,
         items: Vec<FormAnswerItem>,
+        created_at: DateTime,
+        updated_at: DateTime,
     ) -> Self {
         Self {
             id,
             project_id,
             form_id,
             items,
+            created_at,
+            updated_at,
         }
     }
 
@@ -53,6 +65,8 @@ impl FormAnswer {
             project_id: self.project_id,
             form_id: self.form_id,
             items: self.items,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         }
     }
 }
@@ -63,6 +77,8 @@ pub struct DestructedFormAnswer {
     pub project_id: ProjectId,
     pub form_id: FormId,
     pub items: Vec<FormAnswerItem>,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 impl FormAnswer {

@@ -1,5 +1,5 @@
 pub mod actor;
-pub mod date;
+pub mod datetime;
 pub mod file_data;
 pub mod file_object;
 pub mod firebase_user;

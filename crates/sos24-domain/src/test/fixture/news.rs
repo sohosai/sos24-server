@@ -2,6 +2,8 @@ use crate::entity::file_data::FileId;
 use crate::entity::news::{News, NewsBody, NewsId, NewsTitle};
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
 
+use super::datetime;
+
 pub fn id1() -> NewsId {
     NewsId::new(uuid::Uuid::from_u128(1))
 }
@@ -34,6 +36,8 @@ pub fn news1() -> News {
         attachments1(),
         categories1(),
         attributes1(),
+        datetime::now(),
+        datetime::now(),
     )
 }
 
@@ -69,5 +73,7 @@ pub fn news2() -> News {
         attachments2(),
         categories2(),
         attributes2(),
+        datetime::now(),
+        datetime::now(),
     )
 }

@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use crate::impl_value_object;
 
-use super::file_data::FileName;
+use super::{common::datetime::DateTime, file_data::FileName};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Setters)]
 pub struct FileObject {
@@ -92,15 +92,11 @@ impl FileObjectKey {
 pub struct ArchiveEntry {
     key: FileObjectKey,
     filename: FileName,
-    updated_at: chrono::DateTime<chrono::Utc>,
+    updated_at: DateTime,
 }
 
 impl ArchiveEntry {
-    pub fn new(
-        key: FileObjectKey,
-        filename: FileName,
-        updated_at: chrono::DateTime<chrono::Utc>,
-    ) -> Self {
+    pub fn new(key: FileObjectKey, filename: FileName, updated_at: DateTime) -> Self {
         Self {
             key,
             filename,
@@ -120,7 +116,7 @@ impl ArchiveEntry {
 pub struct DestructedArchiveEntry {
     pub key: FileObjectKey,
     pub filename: FileName,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: DateTime,
 }
 
 #[cfg(test)]

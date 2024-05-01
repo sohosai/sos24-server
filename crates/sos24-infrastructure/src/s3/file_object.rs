@@ -99,7 +99,7 @@ impl FileObjectRepository for S3FileObjectRepository {
 
             let zip_entry =
                 ZipEntryBuilder::new(entry.filename.value().into(), Compression::Deflate)
-                    .last_modification_date(entry.updated_at.into());
+                    .last_modification_date(entry.updated_at.value().into());
             let mut zip_entry_stream = zip_writer
                 .write_entry_stream(zip_entry)
                 .await

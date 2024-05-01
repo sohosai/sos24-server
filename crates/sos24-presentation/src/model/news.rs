@@ -1,10 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::news::{CreateNewsDto, NewsDto, UpdateNewsDto};
-use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
+use sos24_use_case::news::dto::NewsDto;
+use sos24_use_case::news::interactor::create::CreateNewsCommand;
+use sos24_use_case::news::interactor::update::UpdateNewsCommand;
+use sos24_use_case::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 use utoipa::ToSchema;
 
-use crate::model::project::{ProjectAttribute, ProjectCategory};
+use super::project::{ProjectAttributes, ProjectCategories};
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateNews {
@@ -12,25 +14,19 @@ pub struct CreateNews {
     body: String,
     #[schema(format = "uuid")]
     attachments: Vec<String>,
-    categories: Vec<ProjectCategory>,
-    attributes: Vec<ProjectAttribute>,
+    categories: ProjectCategories,
+    attributes: ProjectAttributes,
 }
 
-impl From<CreateNews> for CreateNewsDto {
+impl From<CreateNews> for CreateNewsCommand {
     fn from(news: CreateNews) -> Self {
-        CreateNewsDto::new(
-            news.title,
-            news.body,
-            news.attachments,
-            news.categories
-                .into_iter()
-                .map(ProjectCategoryDto::from)
-                .collect(),
-            news.attributes
-                .into_iter()
-                .map(ProjectAttributeDto::from)
-                .collect(),
-        )
+        CreateNewsCommand {
+            title: news.title,
+            body: news.body,
+            attachments: news.attachments,
+            categories: ProjectCategoriesDto::from(news.categories),
+            attributes: ProjectAttributesDto::from(news.attributes),
+        }
     }
 }
 
@@ -46,31 +42,25 @@ pub struct UpdateNews {
     body: String,
     #[schema(format = "uuid")]
     attachments: Vec<String>,
-    categories: Vec<ProjectCategory>,
-    attributes: Vec<ProjectAttribute>,
+    categories: ProjectCategories,
+    attributes: ProjectAttributes,
 }
 
 pub trait ConvertToUpdateNewsDto {
-    fn to_update_news_dto(self) -> UpdateNewsDto;
+    fn to_update_news_dto(self) -> UpdateNewsCommand;
 }
 
 impl ConvertToUpdateNewsDto for (String, UpdateNews) {
-    fn to_update_news_dto(self) -> UpdateNewsDto {
+    fn to_update_news_dto(self) -> UpdateNewsCommand {
         let (id, news) = self;
-        UpdateNewsDto::new(
+        UpdateNewsCommand {
             id,
-            news.title,
-            news.body,
-            news.attachments,
-            news.categories
-                .into_iter()
-                .map(ProjectCategoryDto::from)
-                .collect(),
-            news.attributes
-                .into_iter()
-                .map(ProjectAttributeDto::from)
-                .collect(),
-        )
+            title: news.title,
+            body: news.body,
+            attachments: news.attachments,
+            categories: ProjectCategoriesDto::from(news.categories),
+            attributes: ProjectAttributesDto::from(news.attributes),
+        }
     }
 }
 
@@ -82,14 +72,12 @@ pub struct News {
     pub body: String,
     #[schema(format = "uuid")]
     pub attachments: Vec<String>,
-    pub categories: Vec<ProjectCategory>,
-    pub attributes: Vec<ProjectAttribute>,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
     #[schema(format = "date-time")]
     pub created_at: String,
     #[schema(format = "date-time")]
     pub updated_at: String,
-    #[schema(format = "date-time")]
-    pub deleted_at: Option<String>,
 }
 
 impl From<NewsDto> for News {
@@ -99,19 +87,10 @@ impl From<NewsDto> for News {
             title: news.title,
             body: news.body,
             attachments: news.attachments,
-            categories: news
-                .categories
-                .into_iter()
-                .map(ProjectCategory::from)
-                .collect(),
-            attributes: news
-                .attributes
-                .into_iter()
-                .map(ProjectAttribute::from)
-                .collect(),
+            categories: ProjectCategories::from(news.categories),
+            attributes: ProjectAttributes::from(news.attributes),
             created_at: news.created_at.to_rfc3339(),
             updated_at: news.updated_at.to_rfc3339(),
-            deleted_at: news.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }
@@ -121,8 +100,8 @@ pub struct NewsSummary {
     #[schema(format = "uuid")]
     id: String,
     title: String,
-    categories: Vec<ProjectCategory>,
-    attributes: Vec<ProjectAttribute>,
+    categories: ProjectCategories,
+    attributes: ProjectAttributes,
     #[schema(format = "date-time")]
     updated_at: String,
 }
@@ -132,16 +111,8 @@ impl From<NewsDto> for NewsSummary {
         NewsSummary {
             id: news.id,
             title: news.title,
-            attributes: news
-                .attributes
-                .into_iter()
-                .map(ProjectAttribute::from)
-                .collect(),
-            categories: news
-                .categories
-                .into_iter()
-                .map(ProjectCategory::from)
-                .collect(),
+            categories: ProjectCategories::from(news.categories),
+            attributes: ProjectAttributes::from(news.attributes),
             updated_at: news.updated_at.to_rfc3339(),
         }
     }

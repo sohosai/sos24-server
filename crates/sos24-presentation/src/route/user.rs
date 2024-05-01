@@ -8,8 +8,8 @@ use axum::{
     Extension, Json,
 };
 
-use sos24_use_case::context::ContextProvider;
-use sos24_use_case::dto::user::CreateUserDto;
+use sos24_use_case::shared::context::ContextProvider;
+use sos24_use_case::user::interactor::create::CreateUserCommand;
 
 use crate::context::Context;
 use crate::csv::serialize_to_csv;
@@ -121,7 +121,7 @@ pub async fn handle_post(
     State(modules): State<Arc<Modules>>,
     Json(raw_user): Json<CreateUser>,
 ) -> Result<impl IntoResponse, AppError> {
-    let user = CreateUserDto::from(raw_user);
+    let user = CreateUserCommand::from(raw_user);
     let res = modules.user_use_case().create(user).await;
     res.map(|id| (StatusCode::CREATED, Json(CreatedUser { id })))
         .map_err(|err| {

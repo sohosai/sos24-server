@@ -4,7 +4,7 @@ use sqlx::prelude::{FromRow, Type};
 
 use sos24_domain::{
     entity::{
-        common::date::WithDate,
+        common::datetime::DateTime,
         invitation::{Invitation, InvitationId, InvitationPosition},
         project::ProjectId,
         user::UserId,
@@ -23,22 +23,18 @@ pub struct InvitationRow {
     used_by: Option<String>,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl From<InvitationRow> for WithDate<Invitation> {
+impl From<InvitationRow> for Invitation {
     fn from(row: InvitationRow) -> Self {
-        WithDate::new(
-            Invitation::new(
-                InvitationId::new(row.id),
-                UserId::new(row.inviter),
-                ProjectId::new(row.project_id),
-                InvitationPosition::from(row.position),
-                row.used_by.map(UserId::new),
-            ),
-            row.created_at,
-            row.updated_at,
-            row.deleted_at,
+        Invitation::new(
+            InvitationId::new(row.id),
+            UserId::new(row.inviter),
+            ProjectId::new(row.project_id),
+            InvitationPosition::from(row.position),
+            row.used_by.map(UserId::new),
+            DateTime::new(row.created_at),
+            DateTime::new(row.updated_at),
         )
     }
 }
@@ -79,15 +75,15 @@ impl PgInvitationRepository {
 }
 
 impl InvitationRepository for PgInvitationRepository {
-    async fn list(&self) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError> {
+    async fn list(&self) -> Result<Vec<Invitation>, InvitationRepositoryError> {
         tracing::info!("招待一覧を取得します");
 
         let invitations_list = sqlx::query_as!(
             InvitationRow,
-            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE deleted_at IS NULL"#
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at FROM invitations WHERE deleted_at IS NULL"#
         )
             .fetch(&*self.db)
-            .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
+            .map(|row| Ok::<_, anyhow::Error>(Invitation::from(row?)))
             .try_collect()
             .await
             .context("Failed to fetch invitations list")?;
@@ -118,12 +114,12 @@ impl InvitationRepository for PgInvitationRepository {
     async fn find_by_id(
         &self,
         id: InvitationId,
-    ) -> Result<Option<WithDate<Invitation>>, InvitationRepositoryError> {
+    ) -> Result<Option<Invitation>, InvitationRepositoryError> {
         tracing::info!("招待を取得します: {id:?}");
 
         let invitation_row = sqlx::query_as!(
             InvitationRow,
-            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at FROM invitations WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
         )
             .fetch_optional(&*self.db)
@@ -131,22 +127,22 @@ impl InvitationRepository for PgInvitationRepository {
             .context("Failed to fetch invitation")?;
 
         tracing::info!("招待を取得しました: {id:?}");
-        Ok(invitation_row.map(WithDate::from))
+        Ok(invitation_row.map(Invitation::from))
     }
 
     async fn find_by_inviter(
         &self,
         inviter: UserId,
-    ) -> Result<Vec<WithDate<Invitation>>, InvitationRepositoryError> {
+    ) -> Result<Vec<Invitation>, InvitationRepositoryError> {
         tracing::info!("招待を取得します: {inviter:?}");
 
         let invitation_list = sqlx::query_as!(
             InvitationRow,
-            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at, deleted_at FROM invitations WHERE inviter = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, inviter, project_id, position AS "position: InvitationPositionRow", used_by, created_at, updated_at FROM invitations WHERE inviter = $1 AND deleted_at IS NULL"#,
             inviter.clone().value(),
         )
             .fetch(&*self.db)
-            .map(|row| Ok::<_, anyhow::Error>(WithDate::from(row?)))
+            .map(|row| Ok::<_, anyhow::Error>(Invitation::from(row?)))
             .try_collect()
             .await
             .context("Failed to fetch invitation")?;

@@ -1,10 +1,15 @@
-use crate::entity::{
-    project::{
-        Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectIndex,
-        ProjectKanaGroupName, ProjectKanaTitle, ProjectTitle,
+use crate::{
+    entity::{
+        project::{
+            Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectIndex,
+            ProjectKanaGroupName, ProjectKanaTitle, ProjectTitle,
+        },
+        user::{User, UserId},
     },
-    user::UserId,
+    repository::project::ProjectWithOwners,
 };
+
+use super::datetime;
 
 pub fn id1() -> ProjectId {
     ProjectId::new(uuid::Uuid::from_u128(1))
@@ -51,7 +56,17 @@ pub fn project1(owner_id: UserId) -> Project {
         owner_id,
         None,
         None,
+        datetime::now(),
+        datetime::now(),
     )
+}
+
+pub fn project_with_owners1(owner: User) -> ProjectWithOwners {
+    ProjectWithOwners {
+        project: project1(owner.id().clone()),
+        owner,
+        sub_owner: None,
+    }
 }
 
 pub fn id2() -> ProjectId {
@@ -99,5 +114,15 @@ pub fn project2(owner_id: UserId) -> Project {
         owner_id,
         None,
         None,
+        datetime::now(),
+        datetime::now(),
     )
+}
+
+pub fn project_with_owners2(owner: User) -> ProjectWithOwners {
+    ProjectWithOwners {
+        project: project2(owner.id().clone()),
+        owner,
+        sub_owner: None,
+    }
 }

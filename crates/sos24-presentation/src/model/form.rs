@@ -1,13 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::dto::form::{
-    CreateFormDto, FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
-    UpdateFormDto,
+use sos24_use_case::form::dto::{
+    FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
 };
-use sos24_use_case::dto::project::{ProjectAttributeDto, ProjectCategoryDto};
+use sos24_use_case::form::interactor::create::CreateFormCommand;
+use sos24_use_case::form::interactor::update::UpdateFormCommand;
+use sos24_use_case::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 use utoipa::{IntoParams, ToSchema};
 
-use crate::model::project::{ProjectAttribute, ProjectCategory};
+use super::project::{ProjectAttributes, ProjectCategories};
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateForm {
@@ -17,37 +18,29 @@ pub struct CreateForm {
     starts_at: String,
     #[schema(format = "date-time")]
     ends_at: String,
-    categories: Vec<ProjectCategory>,
-    attributes: Vec<ProjectAttribute>,
+    categories: ProjectCategories,
+    attributes: ProjectAttributes,
     items: Vec<NewFormItem>,
     #[schema(format = "uuid")]
     attachments: Vec<String>,
 }
 
-impl From<CreateForm> for CreateFormDto {
+impl From<CreateForm> for CreateFormCommand {
     fn from(create_form: CreateForm) -> Self {
-        CreateFormDto::new(
-            create_form.title,
-            create_form.description,
-            create_form.starts_at,
-            create_form.ends_at,
-            create_form
-                .categories
-                .into_iter()
-                .map(ProjectCategoryDto::from)
-                .collect(),
-            create_form
-                .attributes
-                .into_iter()
-                .map(ProjectAttributeDto::from)
-                .collect(),
-            create_form
+        CreateFormCommand {
+            title: create_form.title,
+            description: create_form.description,
+            starts_at: create_form.starts_at,
+            ends_at: create_form.ends_at,
+            categories: ProjectCategoriesDto::from(create_form.categories),
+            attributes: ProjectAttributesDto::from(create_form.attributes),
+            items: create_form
                 .items
                 .into_iter()
                 .map(NewFormItemDto::from)
                 .collect(),
-            create_form.attachments,
-        )
+            attachments: create_form.attachments,
+        }
     }
 }
 
@@ -85,37 +78,31 @@ pub struct UpdateForm {
     pub starts_at: String,
     #[schema(format = "date-time")]
     pub ends_at: String,
-    pub categories: Vec<ProjectCategory>,
-    pub attributes: Vec<ProjectAttribute>,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
     pub items: Vec<NewFormItem>,
     #[schema(format = "uuid")]
     pub attachments: Vec<String>,
 }
 
 pub trait ConvertToUpdateFormDto {
-    fn to_update_form_dto(self) -> UpdateFormDto;
+    fn to_update_form_dto(self) -> UpdateFormCommand;
 }
 
 impl ConvertToUpdateFormDto for (String, UpdateForm) {
-    fn to_update_form_dto(self) -> UpdateFormDto {
+    fn to_update_form_dto(self) -> UpdateFormCommand {
         let (id, form) = self;
-        UpdateFormDto::new(
+        UpdateFormCommand {
             id,
-            form.title,
-            form.description,
-            form.starts_at,
-            form.ends_at,
-            form.categories
-                .into_iter()
-                .map(ProjectCategoryDto::from)
-                .collect(),
-            form.attributes
-                .into_iter()
-                .map(ProjectAttributeDto::from)
-                .collect(),
-            form.items.into_iter().map(NewFormItemDto::from).collect(),
-            form.attachments,
-        )
+            title: form.title,
+            description: form.description,
+            starts_at: form.starts_at,
+            ends_at: form.ends_at,
+            categories: ProjectCategoriesDto::from(form.categories),
+            attributes: ProjectAttributesDto::from(form.attributes),
+            items: form.items.into_iter().map(NewFormItemDto::from).collect(),
+            attachments: form.attachments,
+        }
     }
 }
 
@@ -129,8 +116,8 @@ pub struct Form {
     pub starts_at: String,
     #[schema(format = "date-time")]
     pub ends_at: String,
-    pub categories: Vec<ProjectCategory>,
-    pub attributes: Vec<ProjectAttribute>,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
     pub items: Vec<FormItem>,
     #[schema(format = "uuid")]
     pub attachments: Vec<String>,
@@ -142,8 +129,6 @@ pub struct Form {
     pub created_at: String,
     #[schema(format = "date-time")]
     pub updated_at: String,
-    #[schema(format = "date-time")]
-    pub deleted_at: Option<String>,
 }
 
 impl From<FormDto> for Form {
@@ -154,23 +139,14 @@ impl From<FormDto> for Form {
             description: form.description,
             starts_at: form.starts_at.to_rfc3339(),
             ends_at: form.ends_at.to_rfc3339(),
-            categories: form
-                .categories
-                .into_iter()
-                .map(ProjectCategory::from)
-                .collect(),
-            attributes: form
-                .attributes
-                .into_iter()
-                .map(ProjectAttribute::from)
-                .collect(),
+            categories: ProjectCategories::from(form.categories),
+            attributes: ProjectAttributes::from(form.attributes),
             items: form.items.into_iter().map(FormItem::from).collect(),
             attachments: form.attachments,
             answer_id: form.answer_id.map(|it| it.to_string()),
             answered_at: form.answered_at.map(|it| it.to_rfc3339()),
             created_at: form.created_at.to_rfc3339(),
             updated_at: form.updated_at.to_rfc3339(),
-            deleted_at: form.deleted_at.map(|it| it.to_rfc3339()),
         }
     }
 }
@@ -185,8 +161,8 @@ pub struct FormSummary {
     pub starts_at: String,
     #[schema(format = "date-time")]
     pub ends_at: String,
-    pub categories: Vec<ProjectCategory>,
-    pub attributes: Vec<ProjectAttribute>,
+    pub categories: ProjectCategories,
+    pub attributes: ProjectAttributes,
     #[schema(format = "uuid")]
     pub answer_id: Option<String>,
     #[schema(format = "date-time")]
@@ -203,16 +179,8 @@ impl From<FormSummaryDto> for FormSummary {
             description: form.description,
             starts_at: form.starts_at.to_rfc3339(),
             ends_at: form.ends_at.to_rfc3339(),
-            categories: form
-                .categories
-                .into_iter()
-                .map(ProjectCategory::from)
-                .collect(),
-            attributes: form
-                .attributes
-                .into_iter()
-                .map(ProjectAttribute::from)
-                .collect(),
+            categories: ProjectCategories::from(form.categories),
+            attributes: ProjectAttributes::from(form.attributes),
             answer_id: form.answer_id.map(|it| it.to_string()),
             answered_at: form.answered_at.map(|it| it.to_rfc3339()),
             updated_at: form.updated_at.to_rfc3339(),

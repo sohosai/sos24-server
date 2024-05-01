@@ -4,7 +4,11 @@ use crate::{ensure, impl_value_object};
 
 use super::{
     actor::Actor,
-    common::email::{Email, EmailError},
+    common::{
+        datetime::DateTime,
+        email::{Email, EmailError},
+    },
+    firebase_user::FirebaseUserId,
     permission::{PermissionDeniedError, Permissions},
 };
 
@@ -22,6 +26,10 @@ pub struct User {
     phone_number: UserPhoneNumber,
     #[getset(get = "pub")]
     role: UserRole,
+    #[getset(get = "pub")]
+    created_at: DateTime,
+    #[getset(get = "pub")]
+    updated_at: DateTime,
 }
 
 impl User {
@@ -32,6 +40,8 @@ impl User {
         email: UserEmail,
         phone_number: UserPhoneNumber,
         role: UserRole,
+        created_at: DateTime,
+        updated_at: DateTime,
     ) -> Self {
         Self {
             id,
@@ -40,6 +50,8 @@ impl User {
             email,
             phone_number,
             role,
+            created_at,
+            updated_at,
         }
     }
 
@@ -50,6 +62,7 @@ impl User {
         email: UserEmail,
         phone_number: UserPhoneNumber,
     ) -> Self {
+        let now = DateTime::now();
         Self {
             id,
             name,
@@ -57,6 +70,8 @@ impl User {
             email,
             phone_number,
             role: UserRole::General,
+            created_at: now.clone(),
+            updated_at: now,
         }
     }
 
@@ -68,6 +83,8 @@ impl User {
             email: self.email,
             phone_number: self.phone_number,
             role: self.role,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         }
     }
 }
@@ -80,6 +97,8 @@ pub struct DestructuredUser {
     pub email: UserEmail,
     pub phone_number: UserPhoneNumber,
     pub role: UserRole,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 impl User {
@@ -141,6 +160,13 @@ impl User {
 }
 
 impl_value_object!(UserId(String));
+
+impl From<FirebaseUserId> for UserId {
+    fn from(value: FirebaseUserId) -> Self {
+        Self(value.value())
+    }
+}
+
 impl_value_object!(UserName(String));
 impl_value_object!(UserKanaName(String));
 impl_value_object!(UserPhoneNumber(String)); // ガバガバだが、電話番号が弾かれる事によってjsysの作業が増えることを鑑みて許容する

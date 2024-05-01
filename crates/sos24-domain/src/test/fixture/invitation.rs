@@ -4,6 +4,8 @@ use crate::entity::{
     user::UserId,
 };
 
+use super::datetime;
+
 pub fn id() -> InvitationId {
     InvitationId::new(uuid::Uuid::from_u128(1))
 }
@@ -13,5 +15,13 @@ pub fn invitation(
     project_id: ProjectId,
     position: InvitationPosition,
 ) -> Invitation {
-    Invitation::new(id(), inviter, project_id, position, None)
+    Invitation::new(
+        id(),
+        inviter,
+        project_id,
+        position,
+        None,
+        datetime::now(),
+        datetime::now(),
+    )
 }

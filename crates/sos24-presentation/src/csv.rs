@@ -10,7 +10,8 @@ pub enum CsvSerializationError {
 }
 
 pub fn serialize_to_csv<S: Serialize>(records: Vec<S>) -> Result<String, CsvSerializationError> {
-    let mut wrt = Writer::from_writer(vec![]);
+    // 文字化けを防ぐためにUTF-8 BOMを付けておく
+    let mut wrt = Writer::from_writer(vec![0xEF, 0xBB, 0xBF]);
     for record in records {
         wrt.serialize(record).context("Failed to serialize")?;
     }

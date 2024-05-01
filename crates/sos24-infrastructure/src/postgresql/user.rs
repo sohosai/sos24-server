@@ -4,7 +4,7 @@ use sqlx::prelude::*;
 
 use sos24_domain::{
     entity::{
-        common::date::WithDate,
+        common::datetime::DateTime,
         user::{User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber, UserRole},
     },
     repository::user::{UserRepository, UserRepositoryError},
@@ -25,24 +25,20 @@ pub struct UserRow {
 
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl TryFrom<UserRow> for WithDate<User> {
+impl TryFrom<UserRow> for User {
     type Error = anyhow::Error;
     fn try_from(value: UserRow) -> Result<Self, Self::Error> {
-        Ok(WithDate::new(
-            User::new(
-                UserId::new(value.id),
-                UserName::new(value.name),
-                UserKanaName::new(value.kana_name),
-                UserEmail::try_from(value.email)?,
-                UserPhoneNumber::new(value.phone_number),
-                UserRole::from(value.role),
-            ),
-            value.created_at,
-            value.updated_at,
-            value.deleted_at,
+        Ok(User::new(
+            UserId::new(value.id),
+            UserName::new(value.name),
+            UserKanaName::new(value.kana_name),
+            UserEmail::try_from(value.email)?,
+            UserPhoneNumber::new(value.phone_number),
+            UserRole::from(value.role),
+            DateTime::new(value.created_at),
+            DateTime::new(value.updated_at),
         ))
     }
 }
@@ -90,16 +86,16 @@ impl PgUserRepository {
 }
 
 impl UserRepository for PgUserRepository {
-    async fn list(&self) -> Result<Vec<WithDate<User>>, UserRepositoryError> {
+    async fn list(&self) -> Result<Vec<User>, UserRepositoryError> {
         tracing::info!("ユーザー一覧を取得します");
 
         let user_list = sqlx::query_as!(UserRow, r#"
-        SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at
+        SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at
         FROM users
         WHERE deleted_at IS NULL
         ORDER BY role DESC, email ASC"#)
             .fetch(&*self.db)
-            .map(|row| WithDate::try_from(row.context("Failed to fetch user list")?))
+            .map(|row| User::try_from(row.context("Failed to fetch user list")?))
             .try_collect()
             .await?;
 
@@ -139,12 +135,12 @@ impl UserRepository for PgUserRepository {
         }
     }
 
-    async fn find_by_id(&self, id: UserId) -> Result<Option<WithDate<User>>, UserRepositoryError> {
+    async fn find_by_id(&self, id: UserId) -> Result<Option<User>, UserRepositoryError> {
         tracing::info!("ユーザーを取得します: {id:?}");
 
         let user_row = sqlx::query_as!(
             UserRow,
-            r#"SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at, deleted_at
+            r#"SELECT id, name, kana_name, email, phone_number, role AS "role: UserRoleRow", created_at, updated_at
             FROM users
             WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value(),
@@ -154,7 +150,7 @@ impl UserRepository for PgUserRepository {
             .context("Failed to fetch user by id")?;
 
         tracing::info!("ユーザーを取得しました: {id:?}");
-        Ok(user_row.map(WithDate::try_from).transpose()?)
+        Ok(user_row.map(User::try_from).transpose()?)
     }
 
     async fn update(&self, user: User) -> Result<(), UserRepositoryError> {

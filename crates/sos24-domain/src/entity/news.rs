@@ -5,6 +5,7 @@ use crate::entity::file_data::FileId;
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
 use crate::{ensure, impl_value_object};
 
+use super::common::datetime::DateTime;
 use super::project::Project;
 use super::{
     actor::Actor,
@@ -25,6 +26,10 @@ pub struct News {
     categories: ProjectCategories,
     #[getset(get = "pub")]
     attributes: ProjectAttributes,
+    #[getset(get = "pub")]
+    created_at: DateTime,
+    #[getset(get = "pub")]
+    updated_at: DateTime,
 }
 
 impl News {
@@ -35,6 +40,8 @@ impl News {
         attachments: Vec<FileId>,
         categories: ProjectCategories,
         attributes: ProjectAttributes,
+        created_at: DateTime,
+        updated_at: DateTime,
     ) -> Self {
         Self {
             id,
@@ -43,6 +50,8 @@ impl News {
             attachments,
             categories,
             attributes,
+            created_at,
+            updated_at,
         }
     }
 
@@ -53,6 +62,7 @@ impl News {
         categories: ProjectCategories,
         attributes: ProjectAttributes,
     ) -> Self {
+        let now = DateTime::now();
         Self {
             id: NewsId::new(uuid::Uuid::new_v4()),
             title,
@@ -60,6 +70,8 @@ impl News {
             attachments,
             categories,
             attributes,
+            created_at: now.clone(),
+            updated_at: now,
         }
     }
 
@@ -71,6 +83,8 @@ impl News {
             attachments: self.attachments,
             categories: self.categories,
             attributes: self.attributes,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         }
     }
 }
@@ -83,6 +97,8 @@ pub struct DestructedNews {
     pub attachments: Vec<FileId>,
     pub categories: ProjectCategories,
     pub attributes: ProjectAttributes,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }
 
 impl News {

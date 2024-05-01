@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Context};
 use futures_util::{StreamExt, TryStreamExt};
+use sos24_domain::entity::common::datetime::DateTime;
 use sqlx::prelude::*;
 
-use sos24_domain::entity::common::date::WithDate;
 use sos24_domain::entity::file_data::FileId;
 use sos24_domain::entity::news::{News, NewsBody, NewsId, NewsTitle};
 use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
@@ -20,26 +20,22 @@ pub struct NewsRow {
     attributes: i32,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl TryFrom<NewsRow> for WithDate<News> {
+impl TryFrom<NewsRow> for News {
     type Error = anyhow::Error;
     fn try_from(value: NewsRow) -> Result<Self, Self::Error> {
-        Ok(WithDate::new(
-            News::new(
-                NewsId::new(value.id),
-                NewsTitle::new(value.title),
-                NewsBody::new(value.body),
-                value.attachments.into_iter().map(FileId::new).collect(),
-                ProjectCategories::from_bits(value.categories as u32)
-                    .ok_or(anyhow!("cannot convert project categories"))?,
-                ProjectAttributes::from_bits(value.attributes as u32)
-                    .ok_or(anyhow!("cannot convert project attributes"))?,
-            ),
-            value.created_at,
-            value.updated_at,
-            value.deleted_at,
+        Ok(News::new(
+            NewsId::new(value.id),
+            NewsTitle::new(value.title),
+            NewsBody::new(value.body),
+            value.attachments.into_iter().map(FileId::new).collect(),
+            ProjectCategories::from_bits(value.categories as u32)
+                .ok_or(anyhow!("cannot convert project categories"))?,
+            ProjectAttributes::from_bits(value.attributes as u32)
+                .ok_or(anyhow!("cannot convert project attributes"))?,
+            DateTime::new(value.created_at),
+            DateTime::new(value.updated_at),
         ))
     }
 }
@@ -55,15 +51,15 @@ impl PgNewsRepository {
 }
 
 impl NewsRepository for PgNewsRepository {
-    async fn list(&self) -> Result<Vec<WithDate<News>>, NewsRepositoryError> {
+    async fn list(&self) -> Result<Vec<News>, NewsRepositoryError> {
         tracing::info!("お知らせ一覧を取得します");
 
         let news_list = sqlx::query_as!(
             NewsRow,
-            r#"SELECT * FROM news WHERE deleted_at IS NULL ORDER BY created_at DESC"#
+            r#"SELECT id, title, body, attachments, categories, attributes, created_at, updated_at FROM news WHERE deleted_at IS NULL ORDER BY created_at DESC"#
         )
         .fetch(&*self.db)
-        .map(|row| WithDate::try_from(row?))
+        .map(|row| News::try_from(row?))
         .try_collect()
         .await
         .context("Failed to fetch news list")?;
@@ -93,12 +89,12 @@ impl NewsRepository for PgNewsRepository {
         Ok(())
     }
 
-    async fn find_by_id(&self, id: NewsId) -> Result<Option<WithDate<News>>, NewsRepositoryError> {
+    async fn find_by_id(&self, id: NewsId) -> Result<Option<News>, NewsRepositoryError> {
         tracing::info!("お知らせを取得します: {id:?}");
 
         let news_row = sqlx::query_as!(
             NewsRow,
-            r#"SELECT * FROM news WHERE id = $1 AND deleted_at IS NULL"#,
+            r#"SELECT id, title, body, attachments, categories, attributes, created_at, updated_at FROM news WHERE id = $1 AND deleted_at IS NULL"#,
             id.clone().value()
         )
         .fetch_optional(&*self.db)
@@ -106,7 +102,7 @@ impl NewsRepository for PgNewsRepository {
         .context("Failed to fetch news")?;
 
         tracing::info!("お知らせを取得しました: {id:?}");
-        Ok(news_row.map(WithDate::try_from).transpose()?)
+        Ok(news_row.map(News::try_from).transpose()?)
     }
 
     async fn update(&self, news: News) -> Result<(), NewsRepositoryError> {

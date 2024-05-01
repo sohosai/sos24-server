@@ -8,6 +8,8 @@ use crate::{
     test::fixture::form,
 };
 
+use super::datetime;
+
 pub fn id1() -> FormAnswerId {
     FormAnswerId::new(uuid::Uuid::from_u128(1))
 }
@@ -20,7 +22,14 @@ pub fn items1() -> Vec<FormAnswerItem> {
 }
 
 pub fn form_answer1(project_id: ProjectId) -> FormAnswer {
-    FormAnswer::new(id1(), project_id, form::id1(), items1())
+    FormAnswer::new(
+        id1(),
+        project_id,
+        form::id1(),
+        items1(),
+        datetime::now(),
+        datetime::now(),
+    )
 }
 
 pub fn id2() -> FormAnswerId {
@@ -35,5 +44,12 @@ pub fn items2() -> Vec<FormAnswerItem> {
 }
 
 pub fn form_answer2(project_id: ProjectId) -> FormAnswer {
-    FormAnswer::new(id1(), project_id, form::id1(), items1())
+    FormAnswer::new(
+        id1(),
+        project_id,
+        form::id1(),
+        items1(),
+        datetime::now(),
+        datetime::now(),
+    )
 }

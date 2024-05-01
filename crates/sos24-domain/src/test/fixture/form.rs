@@ -10,6 +10,8 @@ use crate::entity::{
     project::{ProjectAttributes, ProjectCategories},
 };
 
+use super::datetime;
+
 pub fn id1() -> FormId {
     FormId::new(uuid::Uuid::from_u128(1))
 }
@@ -92,6 +94,8 @@ pub fn form1() -> Form {
         is_notified1(),
         items1(),
         attachments1(),
+        datetime::now(),
+        datetime::now(),
     )
 }
 
@@ -173,5 +177,7 @@ pub fn form2() -> Form {
         is_notified1(),
         items2(),
         attachments2(),
+        datetime::now(),
+        datetime::now(),
     )
 }

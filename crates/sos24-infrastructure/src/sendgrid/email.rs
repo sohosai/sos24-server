@@ -1,5 +1,5 @@
 use sendgrid::v3::{Content, Email, Message, Personalization};
-use sos24_use_case::adapter::email::{self, EmailSender, SendEmailCommand};
+use sos24_use_case::shared::adapter::email::{self, EmailSender, SendEmailCommand};
 
 use super::SendGrid;
 

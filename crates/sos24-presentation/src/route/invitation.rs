@@ -6,7 +6,7 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
-use sos24_use_case::context::ContextProvider;
+use sos24_use_case::shared::context::ContextProvider;
 
 use crate::{
     context::Context,
