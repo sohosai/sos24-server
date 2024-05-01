@@ -221,8 +221,8 @@ impl From<FormItemDto> for FormItem {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum FormItemKind {
     String {
-        min_length: Option<i32>,
-        max_length: Option<i32>,
+        min_length: Option<u32>,
+        max_length: Option<u32>,
         allow_newline: bool,
     },
     Int {
@@ -234,12 +234,12 @@ pub enum FormItemKind {
     },
     ChooseMany {
         options: Vec<String>,
-        min_selection: Option<i32>,
-        max_selection: Option<i32>,
+        min_selection: Option<u32>,
+        max_selection: Option<u32>,
     },
     File {
         extensions: Option<Vec<String>>,
-        limit: Option<i32>,
+        limit: Option<u32>,
     },
 }
 

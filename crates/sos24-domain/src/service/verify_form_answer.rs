@@ -19,9 +19,9 @@ pub enum VerifyFormAnswerError {
     #[error("Answer item {0:?} has invalid kind")]
     InvalidAnswerItemKind(FormItemId),
     #[error("String answer item {0:?} is too short (min: {1})")]
-    TooShortString(FormItemId, i32),
+    TooShortString(FormItemId, u32),
     #[error("String answer item {0:?} is too long (max: {1})")]
-    TooLongString(FormItemId, i32),
+    TooLongString(FormItemId, u32),
     #[error("String answer item {0:?} contains newline")]
     NewlineNotAllowed(FormItemId),
     #[error("Int answer item {0:?} is too small (min: {1})")]
@@ -33,11 +33,11 @@ pub enum VerifyFormAnswerError {
     #[error("ChooseMany answer item {0:?} has invalid option: {1}")]
     InvalidChooseManyOption(FormItemId, String),
     #[error("ChooseOne answer item {0:?} has too few options (min: {1})")]
-    TooFewOptionsChooseMany(FormItemId, i32),
+    TooFewOptionsChooseMany(FormItemId, u32),
     #[error("ChooseOne answer item {0:?} has too many options (max: {1})")]
-    TooManyOptionsChooseMany(FormItemId, i32),
+    TooManyOptionsChooseMany(FormItemId, u32),
     #[error("File answer item {0:?} has too many files (max: {1})")]
-    TooManyFiles(FormItemId, i32),
+    TooManyFiles(FormItemId, u32),
 }
 
 pub fn verify(form: &Form, answer: &FormAnswer) -> Result<(), VerifyFormAnswerError> {

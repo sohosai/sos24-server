@@ -44,7 +44,11 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             DateTime::try_from(raw_form.ends_at)?,
             ProjectCategories::from(raw_form.categories),
             ProjectAttributes::from(raw_form.attributes),
-            raw_form.items.into_iter().map(FormItem::from).collect(),
+            raw_form
+                .items
+                .into_iter()
+                .map(FormItem::try_from)
+                .collect::<Result<_, _>>()?,
             raw_form
                 .attachments
                 .into_iter()
