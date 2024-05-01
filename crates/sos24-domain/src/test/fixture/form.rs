@@ -66,6 +66,7 @@ pub fn formitem_kind1() -> FormItemKind {
         Some(FormItemMaxLength::new(10)),
         FormItemAllowNewline::new(true),
     )
+    .unwrap()
 }
 
 pub fn items1() -> Vec<FormItem> {
@@ -148,7 +149,7 @@ pub fn formitem_required2() -> FormItemRequired {
 }
 
 pub fn formitem_kind2() -> FormItemKind {
-    FormItemKind::new_int(Some(FormItemMin::new(1)), Some(FormItemMax::new(2)))
+    FormItemKind::new_int(Some(FormItemMin::new(1)), Some(FormItemMax::new(2))).unwrap()
 }
 
 pub fn items2() -> Vec<FormItem> {

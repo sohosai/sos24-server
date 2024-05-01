@@ -8,6 +8,8 @@ use sos24_domain::entity::form_answer::FormAnswer;
 
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 
+use super::FormUseCaseError;
+
 #[derive(Debug)]
 pub struct NewFormItemDto {
     name: String,
@@ -32,14 +34,15 @@ impl NewFormItemDto {
     }
 }
 
-impl From<NewFormItemDto> for FormItem {
-    fn from(value: NewFormItemDto) -> Self {
-        FormItem::create(
+impl TryFrom<NewFormItemDto> for FormItem {
+    type Error = FormUseCaseError;
+    fn try_from(value: NewFormItemDto) -> Result<Self, Self::Error> {
+        Ok(FormItem::create(
             FormItemName::new(value.name),
             value.description.map(FormItemDescription::new),
             FormItemRequired::new(value.required),
-            FormItemKind::from(value.kind),
-        )
+            FormItemKind::try_from(value.kind)?,
+        ))
     }
 }
 
@@ -158,14 +161,15 @@ impl FormItemDto {
     }
 }
 
-impl From<FormItemDto> for FormItem {
-    fn from(value: FormItemDto) -> Self {
-        FormItem::create(
+impl TryFrom<FormItemDto> for FormItem {
+    type Error = FormUseCaseError;
+    fn try_from(value: FormItemDto) -> Result<Self, Self::Error> {
+        Ok(FormItem::create(
             FormItemName::new(value.name),
             value.description.map(FormItemDescription::new),
             FormItemRequired::new(value.required),
-            FormItemKind::from(value.kind),
-        )
+            FormItemKind::try_from(value.kind)?,
+        ))
     }
 }
 
@@ -185,8 +189,8 @@ impl From<FormItem> for FormItemDto {
 #[derive(Debug)]
 pub enum FormItemKindDto {
     String {
-        min_length: Option<i32>,
-        max_length: Option<i32>,
+        min_length: Option<u32>,
+        max_length: Option<u32>,
         allow_newline: bool,
     },
     Int {
@@ -198,46 +202,48 @@ pub enum FormItemKindDto {
     },
     ChooseMany {
         options: Vec<String>,
-        min_selection: Option<i32>,
-        max_selection: Option<i32>,
+        min_selection: Option<u32>,
+        max_selection: Option<u32>,
     },
     File {
         extensions: Option<Vec<String>>,
-        limit: Option<i32>,
+        limit: Option<u32>,
     },
 }
 
-impl From<FormItemKindDto> for FormItemKind {
-    fn from(value: FormItemKindDto) -> Self {
+impl TryFrom<FormItemKindDto> for FormItemKind {
+    type Error = FormUseCaseError;
+    fn try_from(value: FormItemKindDto) -> Result<Self, Self::Error> {
         match value {
             FormItemKindDto::String {
                 min_length,
                 max_length,
                 allow_newline,
-            } => FormItemKind::new_string(
+            } => Ok(FormItemKind::new_string(
                 min_length.map(FormItemMinLength::new),
                 max_length.map(FormItemMaxLength::new),
                 FormItemAllowNewline::new(allow_newline),
-            ),
-            FormItemKindDto::Int { min, max } => {
-                FormItemKind::new_int(min.map(FormItemMin::new), max.map(FormItemMax::new))
-            }
-            FormItemKindDto::ChooseOne { options } => {
-                FormItemKind::new_choose_one(options.into_iter().map(FormItemOption::new).collect())
-            }
+            )?),
+            FormItemKindDto::Int { min, max } => Ok(FormItemKind::new_int(
+                min.map(FormItemMin::new),
+                max.map(FormItemMax::new),
+            )?),
+            FormItemKindDto::ChooseOne { options } => Ok(FormItemKind::new_choose_one(
+                options.into_iter().map(FormItemOption::new).collect(),
+            )?),
             FormItemKindDto::ChooseMany {
                 options,
                 min_selection,
                 max_selection,
-            } => FormItemKind::new_choose_many(
+            } => Ok(FormItemKind::new_choose_many(
                 options.into_iter().map(FormItemOption::new).collect(),
                 min_selection.map(FormItemMinSelection::new),
                 max_selection.map(FormItemMaxSelection::new),
-            ),
-            FormItemKindDto::File { extensions, limit } => FormItemKind::new_file(
+            )?),
+            FormItemKindDto::File { extensions, limit } => Ok(FormItemKind::new_file(
                 extensions.map(|it| it.into_iter().map(FormItemExtension::new).collect()),
                 limit.map(FormItemLimit::new),
-            ),
+            )),
         }
     }
 }
