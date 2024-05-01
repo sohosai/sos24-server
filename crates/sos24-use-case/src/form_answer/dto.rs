@@ -148,5 +148,5 @@ pub struct FormAnswerToBeExportedDto {
     pub project_title: String,
     pub project_group_name: String,
     pub form_answer_item_values: Vec<Option<String>>,
-    pub created_at: String,
+    pub created_at: Option<String>,
 }
