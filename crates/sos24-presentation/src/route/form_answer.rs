@@ -169,7 +169,7 @@ pub async fn handle_export(
                 form_answer.project_index.to_string(),
                 form_answer.project_title,
                 form_answer.project_group_name,
-                form_answer.created_at,
+                form_answer.created_at.unwrap_or_default(),
             ]
             .into_iter()
             .chain(
