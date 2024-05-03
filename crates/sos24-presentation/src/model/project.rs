@@ -181,7 +181,11 @@ impl From<ProjectDto> for ProjectToBeExported {
                 .collect::<Vec<String>>()
                 .join(";"),
             remarks: project.remarks,
-            created_at: project.created_at.with_timezone(&Tokyo).to_rfc3339(),
+            created_at: project
+                .created_at
+                .with_timezone(&Tokyo)
+                .format("%Y-%m-%d %H:%M:%S")
+                .to_string(),
         }
     }
 }
