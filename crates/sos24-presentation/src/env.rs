@@ -97,3 +97,7 @@ pub fn email_reply_to_address() -> String {
 pub fn app_url() -> String {
     env::var("APP_URL").expect("Env `APP_URL` must be set")
 }
+
+pub fn slack_webhook_url() -> Option<String> {
+    env::var("SLACK_WEBHOOK_URL").ok()
+}

@@ -6,6 +6,7 @@ use form::MongoFormRepository;
 use form_answer::MongoFormAnswerRepository;
 use invitation::PgInvitationRepository;
 use news::PgNewsRepository;
+use notification::SlackNotifier;
 use project::PgProjectRepository;
 use shared::{
     firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql, s3::S3, sendgrid::SendGrid,
@@ -22,6 +23,7 @@ pub mod form;
 pub mod form_answer;
 pub mod invitation;
 pub mod news;
+pub mod notification;
 pub mod project;
 pub mod shared;
 pub mod user;
@@ -104,20 +106,27 @@ impl Repositories for DefaultRepositories {
 
 pub struct DefaultAdapters {
     email_sender: SendGridEmailSender,
+    notifier: SlackNotifier,
 }
 
 impl DefaultAdapters {
-    pub fn new(send_grid: SendGrid) -> Self {
+    pub fn new(send_grid: SendGrid, slack_webhook_url: Option<String>) -> Self {
         Self {
             email_sender: SendGridEmailSender::new(send_grid),
+            notifier: SlackNotifier::new(slack_webhook_url),
         }
     }
 }
 
 impl Adapters for DefaultAdapters {
     type EmailSenderImpl = SendGridEmailSender;
+    type NotifierImpl = SlackNotifier;
 
     fn email_sender(&self) -> &Self::EmailSenderImpl {
         &self.email_sender
+    }
+
+    fn notifier(&self) -> &Self::NotifierImpl {
+        &self.notifier
     }
 }

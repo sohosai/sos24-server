@@ -29,7 +29,7 @@ pub struct Modules {
     invitation_use_case: InvitationUseCase<module::Repositories>,
     news_use_case: NewsUseCase<module::Repositories, module::Adapters>,
     file_use_case: FileUseCase<module::Repositories>,
-    project_use_case: ProjectUseCase<module::Repositories>,
+    project_use_case: ProjectUseCase<module::Repositories, module::Adapters>,
     user_use_case: UserUseCase<module::Repositories>,
 }
 
@@ -58,7 +58,7 @@ impl Modules {
         &self.file_use_case
     }
 
-    pub fn project_use_case(&self) -> &ProjectUseCase<module::Repositories> {
+    pub fn project_use_case(&self) -> &ProjectUseCase<module::Repositories, module::Adapters> {
         &self.project_use_case
     }
 
@@ -94,7 +94,10 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
     ));
 
     let send_grid = SendGrid::new(&env::send_grid_api_key());
-    let adapters = Arc::new(sos24_infrastructure::DefaultAdapters::new(send_grid));
+    let adapters = Arc::new(sos24_infrastructure::DefaultAdapters::new(
+        send_grid,
+        env::slack_webhook_url(),
+    ));
 
     let application_period = ProjectApplicationPeriod::new(
         config.project_application_start_at.clone(),
@@ -111,7 +114,11 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
         ),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories), Arc::clone(&adapters)),
         file_use_case: FileUseCase::new(Arc::clone(&repositories)),
-        project_use_case: ProjectUseCase::new(Arc::clone(&repositories), application_period),
+        project_use_case: ProjectUseCase::new(
+            Arc::clone(&repositories),
+            Arc::clone(&adapters),
+            application_period,
+        ),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })
 }
@@ -136,7 +143,11 @@ pub async fn new_test(
         ),
         news_use_case: NewsUseCase::new(Arc::clone(&repositories), Arc::clone(&adapters)),
         file_use_case: FileUseCase::new(Arc::clone(&repositories)),
-        project_use_case: ProjectUseCase::new(Arc::clone(&repositories), application_period),
+        project_use_case: ProjectUseCase::new(
+            Arc::clone(&repositories),
+            Arc::clone(&adapters),
+            application_period,
+        ),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })
 }
