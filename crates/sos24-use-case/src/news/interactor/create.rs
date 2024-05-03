@@ -130,7 +130,7 @@ Email : {email}
             .notify(format!(
                 "お知らせ「{}」が公開されました。\n{}",
                 news.title().clone().value(),
-                app_url::news(ctx, news_id.clone()),
+                app_url::committee_news(ctx, news_id.clone()),
             ))
             .await?;
 

@@ -80,7 +80,7 @@ impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
             .notify(format!(
                 "企画「{}」が登録されました。\n{}",
                 project_title,
-                app_url::project(ctx, project_id.clone()),
+                app_url::committee_project(ctx, project_id.clone()),
             ))
             .await?;
 
