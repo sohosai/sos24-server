@@ -71,7 +71,8 @@ impl<R: Repositories> FormAnswerUseCase<R> {
                         .created_at
                         .value()
                         .with_timezone(&Tokyo)
-                        .to_rfc3339();
+                        .format("%Y-%m-%d %H:%M:%S")
+                        .to_string();
                     (values, Some(created_at))
                 }
                 None => (form_item_ids.iter().map(|_| None).collect(), None),
