@@ -14,7 +14,9 @@ use sos24_domain::{
     repository::project::{ProjectRepository, ProjectRepositoryError, ProjectWithOwners},
 };
 
-use super::{user::UserRoleRow, Postgresql};
+use crate::shared::postgresql::Postgresql;
+
+use super::user::UserRoleRow;
 
 #[derive(FromRow)]
 pub struct ProjectWithOwnersRow {

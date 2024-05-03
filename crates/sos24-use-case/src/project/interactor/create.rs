@@ -9,6 +9,9 @@ use sos24_domain::repository::Repositories;
 use sos24_domain::{ensure, entity::project::Project};
 
 use crate::project::dto::ProjectAttributesDto;
+use crate::shared::adapter::notification::Notifier;
+use crate::shared::adapter::Adapters;
+use crate::shared::app_url;
 use crate::{
     project::{dto::ProjectCategoryDto, ProjectUseCase, ProjectUseCaseError},
     shared::context::ContextProvider,
@@ -25,7 +28,7 @@ pub struct CreateProjectCommand {
     pub owner_id: String,
 }
 
-impl<R: Repositories> ProjectUseCase<R> {
+impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
     pub async fn create(
         &self,
         ctx: &impl ContextProvider,
@@ -41,6 +44,7 @@ impl<R: Repositories> ProjectUseCase<R> {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
 
+        let project_title = raw_project.title.clone();
         let project_id = {
             let lock = self.creation_lock.lock().await;
 
@@ -71,6 +75,15 @@ impl<R: Repositories> ProjectUseCase<R> {
             project_id
         };
 
+        self.adapters
+            .notifier()
+            .notify(format!(
+                "企画「{}」が登録されました。\n{}",
+                project_title,
+                app_url::project(ctx, project_id.clone()),
+            ))
+            .await?;
+
         Ok(project_id.value().to_string())
     }
 }
@@ -86,6 +99,7 @@ mod tests {
     use crate::project::dto::{ProjectAttributesDto, ProjectCategoryDto};
     use crate::project::interactor::create::CreateProjectCommand;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::adapter::MockAdapters;
     use crate::shared::context::TestContext;
 
     #[tokio::test]
@@ -103,8 +117,14 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
+        let mut adapters = MockAdapters::default();
+        adapters
+            .notifier_mut()
+            .expect_notify()
+            .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 
@@ -145,8 +165,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 
@@ -186,8 +208,10 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::not_applicable_period(),
         );
 
@@ -227,8 +251,14 @@ mod tests {
             .project_repository_mut()
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
+        let mut adapters = MockAdapters::default();
+        adapters
+            .notifier_mut()
+            .expect_notify()
+            .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::not_applicable_period(),
         );
 

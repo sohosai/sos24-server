@@ -1,27 +1,32 @@
-use firebase::firebase_user::FirebaseUserRepositoryImpl;
-use firebase::FirebaseAuth;
-use mongodb::form::MongoFormRepository;
-use mongodb::form_answer::MongoFormAnswerRepository;
-use mongodb::MongoDb;
-use postgresql::file_data::PgFileDataRepository;
-use postgresql::invitation::PgInvitationRepository;
-use postgresql::project::PgProjectRepository;
-use postgresql::user::PgUserRepository;
-use s3::file_object::S3FileObjectRepository;
-use s3::S3;
-use sendgrid::email::SendGridEmailSender;
-use sendgrid::SendGrid;
+use email::SendGridEmailSender;
+use file_data::PgFileDataRepository;
+use file_object::S3FileObjectRepository;
+use firebase_user::FirebaseUserRepositoryImpl;
+use form::MongoFormRepository;
+use form_answer::MongoFormAnswerRepository;
+use invitation::PgInvitationRepository;
+use news::PgNewsRepository;
+use notification::SlackNotifier;
+use project::PgProjectRepository;
+use shared::{
+    firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql, s3::S3, sendgrid::SendGrid,
+};
 use sos24_domain::repository::Repositories;
 use sos24_use_case::shared::adapter::Adapters;
+use user::PgUserRepository;
 
-use crate::postgresql::news::PgNewsRepository;
-use crate::postgresql::Postgresql;
-
-pub mod firebase;
-pub mod mongodb;
-pub mod postgresql;
-pub mod s3;
-pub mod sendgrid;
+pub mod email;
+pub mod file_data;
+pub mod file_object;
+pub mod firebase_user;
+pub mod form;
+pub mod form_answer;
+pub mod invitation;
+pub mod news;
+pub mod notification;
+pub mod project;
+pub mod shared;
+pub mod user;
 
 pub struct DefaultRepositories {
     firebase_user_repository: FirebaseUserRepositoryImpl,
@@ -101,20 +106,27 @@ impl Repositories for DefaultRepositories {
 
 pub struct DefaultAdapters {
     email_sender: SendGridEmailSender,
+    notifier: SlackNotifier,
 }
 
 impl DefaultAdapters {
-    pub fn new(send_grid: SendGrid) -> Self {
+    pub fn new(send_grid: SendGrid, slack_webhook_url: Option<String>) -> Self {
         Self {
             email_sender: SendGridEmailSender::new(send_grid),
+            notifier: SlackNotifier::new(slack_webhook_url),
         }
     }
 }
 
 impl Adapters for DefaultAdapters {
     type EmailSenderImpl = SendGridEmailSender;
+    type NotifierImpl = SlackNotifier;
 
     fn email_sender(&self) -> &Self::EmailSenderImpl {
         &self.email_sender
+    }
+
+    fn notifier(&self) -> &Self::NotifierImpl {
+        &self.notifier
     }
 }

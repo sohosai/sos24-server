@@ -4,10 +4,10 @@ use sos24_domain::repository::Repositories;
 
 use crate::{
     project::{dto::ProjectDto, ProjectUseCase, ProjectUseCaseError},
-    shared::context::ContextProvider,
+    shared::{adapter::Adapters, context::ContextProvider},
 };
 
-impl<R: Repositories> ProjectUseCase<R> {
+impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
     pub async fn find_owned(
         &self,
         ctx: &impl ContextProvider,

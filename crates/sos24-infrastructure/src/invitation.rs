@@ -12,7 +12,7 @@ use sos24_domain::{
     repository::invitation::{InvitationRepository, InvitationRepositoryError},
 };
 
-use super::Postgresql;
+use crate::shared::postgresql::Postgresql;
 
 #[derive(FromRow)]
 pub struct InvitationRow {

@@ -20,8 +20,10 @@ use crate::{
     shared::{
         adapter::{
             email::{Email, EmailSender, SendEmailCommand},
+            notification::Notifier,
             Adapters,
         },
+        app_url,
         context::ContextProvider,
     },
 };
@@ -117,15 +119,20 @@ Email : {email}
 電話 : 029-853-2899"#,
                 title = news.title().clone().value(),
                 body = news.body().clone().value(),
-                url = format!(
-                    "{}/news/{}",
-                    ctx.config().app_url,
-                    news.id().clone().value()
-                ),
+                url = app_url::news(ctx, news.id().clone()),
                 email = ctx.config().email_reply_to_address.clone(),
             ),
         };
         self.adapters.email_sender().send_email(command).await?;
+
+        self.adapters
+            .notifier()
+            .notify(format!(
+                "お知らせ「{}」が公開されました。\n{}",
+                news.title().clone().value(),
+                app_url::news(ctx, news_id.clone()),
+            ))
+            .await?;
 
         Ok(news_id.value().to_string())
     }
@@ -195,6 +202,10 @@ mod tests {
         adapters
             .email_sender_mut()
             .expect_send_email()
+            .returning(|_| Ok(()));
+        adapters
+            .notifier_mut()
+            .expect_notify()
             .returning(|_| Ok(()));
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 

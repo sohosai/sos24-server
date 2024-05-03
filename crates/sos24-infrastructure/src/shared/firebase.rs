@@ -2,8 +2,6 @@ use std::ops::Deref;
 
 use rs_firebase_admin_sdk::{App, CustomServiceAccount, LiveAuthAdmin};
 
-pub mod firebase_user;
-
 pub struct FirebaseAuth(LiveAuthAdmin);
 
 impl FirebaseAuth {

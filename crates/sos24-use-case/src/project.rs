@@ -17,6 +17,7 @@ use sos24_domain::{
     repository::{project::ProjectRepositoryError, Repositories},
 };
 
+use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextError;
 
 pub mod dto;
@@ -57,16 +58,22 @@ pub enum ProjectUseCaseError {
     InternalError(#[from] anyhow::Error),
 }
 
-pub struct ProjectUseCase<R: Repositories> {
+pub struct ProjectUseCase<R: Repositories, A: Adapters> {
     repositories: Arc<R>,
+    adapters: Arc<A>,
     project_application_period: ProjectApplicationPeriod, // TODO
     creation_lock: tokio::sync::Mutex<()>,                // FIXME
 }
 
-impl<R: Repositories> ProjectUseCase<R> {
-    pub fn new(repositories: Arc<R>, project_application_period: ProjectApplicationPeriod) -> Self {
+impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
+    pub fn new(
+        repositories: Arc<R>,
+        adapters: Arc<A>,
+        project_application_period: ProjectApplicationPeriod,
+    ) -> Self {
         Self {
             repositories,
+            adapters,
             project_application_period,
             creation_lock: tokio::sync::Mutex::new(()),
         }
