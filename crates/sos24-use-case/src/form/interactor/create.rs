@@ -69,7 +69,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             .notify(format!(
                 "申請「{}」が作成されました。\n{}",
                 form_title.value(),
-                app_url::form(ctx, form_id.clone()),
+                app_url::committee_form(ctx, form_id.clone()),
             ))
             .await?;
 
