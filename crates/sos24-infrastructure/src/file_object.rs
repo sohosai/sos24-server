@@ -13,7 +13,7 @@ use sos24_domain::{
     repository::file_object::{FileObjectRepository, FileObjectRepositoryError},
 };
 
-use super::S3;
+use crate::shared::s3::S3;
 
 pub struct S3FileObjectRepository {
     s3: S3,

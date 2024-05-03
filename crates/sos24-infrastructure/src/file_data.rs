@@ -12,7 +12,7 @@ use sos24_domain::{
     repository::file_data::{FileDataRepository, FileDataRepositoryError},
 };
 
-use crate::postgresql::Postgresql;
+use crate::shared::postgresql::Postgresql;
 
 #[derive(FromRow)]
 pub struct FileDataRow {

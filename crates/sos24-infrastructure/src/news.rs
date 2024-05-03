@@ -8,7 +8,7 @@ use sos24_domain::entity::news::{News, NewsBody, NewsId, NewsTitle};
 use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::repository::news::{NewsRepository, NewsRepositoryError};
 
-use crate::postgresql::Postgresql;
+use crate::shared::postgresql::Postgresql;
 
 #[derive(FromRow)]
 pub struct NewsRow {

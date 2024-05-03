@@ -69,11 +69,12 @@ impl Modules {
 
 #[cfg(not(test))]
 pub async fn new(config: Config) -> anyhow::Result<Modules> {
-    use crate::env;
-    use sos24_infrastructure::{
+    use sos24_infrastructure::shared::{
         firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql, s3::S3,
         sendgrid::SendGrid,
     };
+
+    use crate::env;
 
     let db = Postgresql::new(&env::postgres_db_url()).await?;
     let mongo_db = MongoDb::new(&env::mongodb_db_url(), &env::mongodb_db_name()).await?;

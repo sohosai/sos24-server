@@ -5,8 +5,6 @@ use aws_sdk_s3::{
     Client,
 };
 
-pub mod file_object;
-
 #[derive(Clone)]
 pub struct S3(Client);
 

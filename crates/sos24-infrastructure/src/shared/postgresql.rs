@@ -3,12 +3,6 @@ use std::ops::Deref;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
-pub mod file_data;
-pub mod invitation;
-pub mod news;
-pub mod project;
-pub mod user;
-
 #[derive(Clone)]
 pub struct Postgresql(pub(crate) PgPool);
 

@@ -1,27 +1,30 @@
-use firebase::firebase_user::FirebaseUserRepositoryImpl;
-use firebase::FirebaseAuth;
-use mongodb::form::MongoFormRepository;
-use mongodb::form_answer::MongoFormAnswerRepository;
-use mongodb::MongoDb;
-use postgresql::file_data::PgFileDataRepository;
-use postgresql::invitation::PgInvitationRepository;
-use postgresql::project::PgProjectRepository;
-use postgresql::user::PgUserRepository;
-use s3::file_object::S3FileObjectRepository;
-use s3::S3;
-use sendgrid::email::SendGridEmailSender;
-use sendgrid::SendGrid;
+use email::SendGridEmailSender;
+use file_data::PgFileDataRepository;
+use file_object::S3FileObjectRepository;
+use firebase_user::FirebaseUserRepositoryImpl;
+use form::MongoFormRepository;
+use form_answer::MongoFormAnswerRepository;
+use invitation::PgInvitationRepository;
+use news::PgNewsRepository;
+use project::PgProjectRepository;
+use shared::{
+    firebase::FirebaseAuth, mongodb::MongoDb, postgresql::Postgresql, s3::S3, sendgrid::SendGrid,
+};
 use sos24_domain::repository::Repositories;
 use sos24_use_case::shared::adapter::Adapters;
+use user::PgUserRepository;
 
-use crate::postgresql::news::PgNewsRepository;
-use crate::postgresql::Postgresql;
-
-pub mod firebase;
-pub mod mongodb;
-pub mod postgresql;
-pub mod s3;
-pub mod sendgrid;
+pub mod email;
+pub mod file_data;
+pub mod file_object;
+pub mod firebase_user;
+pub mod form;
+pub mod form_answer;
+pub mod invitation;
+pub mod news;
+pub mod project;
+pub mod shared;
+pub mod user;
 
 pub struct DefaultRepositories {
     firebase_user_repository: FirebaseUserRepositoryImpl,

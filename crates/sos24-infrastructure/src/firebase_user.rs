@@ -10,7 +10,7 @@ use sos24_domain::{
     repository::firebase_user::{FirebaseUserRepository, FirebaseUserRepositoryError},
 };
 
-use super::FirebaseAuth;
+use crate::shared::firebase::FirebaseAuth;
 
 pub struct FirebaseUserRepositoryImpl {
     auth: FirebaseAuth,
