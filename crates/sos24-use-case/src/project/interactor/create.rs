@@ -11,6 +11,7 @@ use sos24_domain::{ensure, entity::project::Project};
 use crate::project::dto::ProjectAttributesDto;
 use crate::shared::adapter::notification::Notifier;
 use crate::shared::adapter::Adapters;
+use crate::shared::app_url;
 use crate::{
     project::{dto::ProjectCategoryDto, ProjectUseCase, ProjectUseCaseError},
     shared::context::ContextProvider,
@@ -43,6 +44,7 @@ impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
             return Err(ProjectUseCaseError::ApplicationsNotAccepted);
         }
 
+        let project_title = raw_project.title.clone();
         let project_id = {
             let lock = self.creation_lock.lock().await;
 
@@ -72,6 +74,15 @@ impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
             drop(lock);
             project_id
         };
+
+        self.adapters
+            .notifier()
+            .notify(format!(
+                "企画「{}」が登録されました。\n{}",
+                project_title,
+                app_url::project(ctx, project_id.clone()),
+            ))
+            .await?;
 
         Ok(project_id.value().to_string())
     }
@@ -107,6 +118,10 @@ mod tests {
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
         let mut adapters = MockAdapters::default();
+        adapters
+            .notifier_mut()
+            .expect_notify()
+            .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
             Arc::new(adapters),
@@ -237,6 +252,10 @@ mod tests {
             .expect_find_by_sub_owner_id()
             .returning(|_| Ok(None));
         let mut adapters = MockAdapters::default();
+        adapters
+            .notifier_mut()
+            .expect_notify()
+            .returning(|_| Ok(()));
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
             Arc::new(adapters),
