@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -24,6 +24,7 @@ services:
       - EMAIL_SENDER_ADDRESS=${EMAIL_SENDER_ADDRESS}
       - EMAIL_REPLY_TO_ADDRESS=${EMAIL_REPLY_TO_ADDRESS}
       - APP_URL=${APP_URL}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
     labels:
       traefik.enable: "true"
       traefik.docker.network: "portainer-traefik"
@@ -63,8 +64,8 @@ volumes:
 
 networks:
   portainer-traefik:
-     name: portainer-traefik
-     external: true
+    name: portainer-traefik
+    external: true
   sos24-server-beta:
-     name: sos24-server-beta
-     internal: true
+    name: sos24-server-beta
+    internal: true

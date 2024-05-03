@@ -15,6 +15,16 @@ use super::permission::{PermissionDeniedError, Permissions};
 pub enum FormError {
     #[error("The end time is earlier than the start time")]
     EndTimeEarlierThanStartTime,
+    #[error("The minimum length is greater than the maximum length")]
+    MinLengthGreaterThanMaxLength,
+    #[error("The minimum value is greater than the maximum value")]
+    MinGreaterThanMax,
+    #[error("The options is empty")]
+    EmptyOptions,
+    #[error("The minimum selection is greater than the options")]
+    MinSelectionGreaterThanOptions,
+    #[error("The minimum selection is greater than the maximum selection")]
+    MinSelectionGreaterThanMaxSelection,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters)]
@@ -365,32 +375,64 @@ impl FormItemKind {
         min_length: Option<FormItemMinLength>,
         max_length: Option<FormItemMaxLength>,
         allow_newline: FormItemAllowNewline,
-    ) -> Self {
-        Self::String(FormItemString {
+    ) -> Result<Self, FormError> {
+        if let (Some(min_length), Some(max_length)) = (min_length.clone(), max_length.clone()) {
+            if min_length.value() > max_length.value() {
+                return Err(FormError::MinLengthGreaterThanMaxLength);
+            }
+        }
+
+        Ok(Self::String(FormItemString {
             min_length,
             max_length,
             allow_newline,
-        })
+        }))
     }
 
-    pub fn new_int(min: Option<FormItemMin>, max: Option<FormItemMax>) -> Self {
-        Self::Int(FormItemInt { min, max })
+    pub fn new_int(min: Option<FormItemMin>, max: Option<FormItemMax>) -> Result<Self, FormError> {
+        if let (Some(min), Some(max)) = (min.clone(), max.clone()) {
+            if min.value() > max.value() {
+                return Err(FormError::MinGreaterThanMax);
+            }
+        }
+
+        Ok(Self::Int(FormItemInt { min, max }))
     }
 
-    pub fn new_choose_one(options: Vec<FormItemOption>) -> Self {
-        Self::ChooseOne(FormItemChooseOne { options })
+    pub fn new_choose_one(options: Vec<FormItemOption>) -> Result<Self, FormError> {
+        if options.is_empty() {
+            return Err(FormError::EmptyOptions);
+        }
+
+        Ok(Self::ChooseOne(FormItemChooseOne { options }))
     }
 
     pub fn new_choose_many(
         options: Vec<FormItemOption>,
         min_selection: Option<FormItemMinSelection>,
         max_selection: Option<FormItemMaxSelection>,
-    ) -> Self {
-        Self::ChooseMany(FormItemChooseMany {
+    ) -> Result<Self, FormError> {
+        if options.is_empty() {
+            return Err(FormError::EmptyOptions);
+        }
+        if let Some(min_selection) = min_selection.clone() {
+            if min_selection.value() > options.len() as u32 {
+                return Err(FormError::MinSelectionGreaterThanOptions);
+            }
+        }
+        if let (Some(min_selection), Some(max_selection)) =
+            (min_selection.clone(), max_selection.clone())
+        {
+            if min_selection.value() > max_selection.value() {
+                return Err(FormError::MinSelectionGreaterThanMaxSelection);
+            }
+        }
+
+        Ok(Self::ChooseMany(FormItemChooseMany {
             options,
             min_selection,
             max_selection,
-        })
+        }))
     }
 
     pub fn new_file(
@@ -520,22 +562,44 @@ pub struct DestructedFormItemFile {
     pub limit: Option<FormItemLimit>,
 }
 
-impl_value_object!(FormItemMinLength(i32));
-impl_value_object!(FormItemMaxLength(i32));
+impl_value_object!(FormItemMinLength(u32));
+impl_value_object!(FormItemMaxLength(u32));
 impl_value_object!(FormItemAllowNewline(bool));
 impl_value_object!(FormItemMin(i32));
 impl_value_object!(FormItemMax(i32));
 impl_value_object!(FormItemOption(String));
-impl_value_object!(FormItemMinSelection(i32));
-impl_value_object!(FormItemMaxSelection(i32));
+impl_value_object!(FormItemMinSelection(u32));
+impl_value_object!(FormItemMaxSelection(u32));
 impl_value_object!(FormItemExtension(String));
-impl_value_object!(FormItemLimit(i32));
+impl_value_object!(FormItemLimit(u32));
 
 #[cfg(test)]
 mod tests {
-    use crate::{entity::form::FormError, test::fixture};
+    use crate::{
+        entity::form::{
+            FormError, FormItemAllowNewline, FormItemKind, FormItemMax, FormItemMaxLength,
+            FormItemMaxSelection, FormItemMin, FormItemMinLength, FormItemMinSelection,
+            FormItemOption,
+        },
+        test::fixture,
+    };
 
     use super::Form;
+
+    #[test]
+    fn 申請の開始時間が終了時間より前ならばエラーを返さない() {
+        let form = Form::create(
+            fixture::form::title1(),
+            fixture::form::description1(),
+            fixture::form::starts_at1(),
+            fixture::form::ends_at1(),
+            fixture::form::categories1(),
+            fixture::form::attributes1(),
+            fixture::form::items1(),
+            fixture::form::attachments1(),
+        );
+        assert!(form.is_ok());
+    }
 
     #[test]
     fn 申請の開始時間が終了時間より後ならばエラーを返す() {
@@ -550,5 +614,110 @@ mod tests {
             fixture::form::attachments1(),
         );
         assert!(matches!(form, Err(FormError::EndTimeEarlierThanStartTime)));
+    }
+
+    #[test]
+    fn 文字列項目の最小文字数が最大文字数以下ならばエラーを返さない() {
+        let item = FormItemKind::new_string(
+            Some(FormItemMinLength::new(1)),
+            Some(FormItemMaxLength::new(2)),
+            FormItemAllowNewline::new(false),
+        );
+        assert!(item.is_ok());
+    }
+
+    #[test]
+    fn 文字列項目の最小文字数が最大文字数より大きいならばエラーを返す() {
+        let item = FormItemKind::new_string(
+            Some(FormItemMinLength::new(2)),
+            Some(FormItemMaxLength::new(1)),
+            FormItemAllowNewline::new(false),
+        );
+        assert!(matches!(
+            item,
+            Err(FormError::MinLengthGreaterThanMaxLength)
+        ));
+    }
+
+    #[test]
+    fn 数値項目の最小値が最大値以下ならばエラーを返さない() {
+        let item = FormItemKind::new_int(Some(FormItemMin::new(1)), Some(FormItemMax::new(2)));
+        assert!(item.is_ok());
+    }
+
+    #[test]
+    fn 数値項目の最小値が最大値より大きいならばエラーを返す() {
+        let item = FormItemKind::new_int(Some(FormItemMin::new(2)), Some(FormItemMax::new(1)));
+        assert!(matches!(item, Err(FormError::MinGreaterThanMax)));
+    }
+
+    #[test]
+    fn 選択肢項目の選択肢が1個以上ならばエラーを返さない() {
+        let item = FormItemKind::new_choose_one(vec![FormItemOption::new("a".to_string())]);
+        assert!(item.is_ok());
+    }
+
+    #[test]
+    fn 選択肢項目の選択肢が0個ならばエラーを返す() {
+        let item = FormItemKind::new_choose_one(vec![]);
+        assert!(matches!(item, Err(FormError::EmptyOptions)));
+    }
+
+    #[test]
+    fn 複数選択項目の最小選択数が選択肢数以下ならばエラーを返さない() {
+        let item = FormItemKind::new_choose_many(
+            vec![
+                FormItemOption::new("a".to_string()),
+                FormItemOption::new("b".to_string()),
+            ],
+            Some(FormItemMinSelection::new(2)),
+            None,
+        );
+        assert!(item.is_ok());
+    }
+
+    #[test]
+    fn 複数選択項目の最小選択数が選択肢数より大きいならばエラーを返す() {
+        let item = FormItemKind::new_choose_many(
+            vec![
+                FormItemOption::new("a".to_string()),
+                FormItemOption::new("b".to_string()),
+            ],
+            Some(FormItemMinSelection::new(3)),
+            None,
+        );
+        assert!(matches!(
+            item,
+            Err(FormError::MinSelectionGreaterThanOptions)
+        ));
+    }
+
+    #[test]
+    fn 複数選択項目の最小選択数が最大選択数以下ならばエラーを返さない() {
+        let item = FormItemKind::new_choose_many(
+            vec![
+                FormItemOption::new("a".to_string()),
+                FormItemOption::new("b".to_string()),
+            ],
+            Some(FormItemMinSelection::new(1)),
+            Some(FormItemMaxSelection::new(2)),
+        );
+        assert!(item.is_ok());
+    }
+
+    #[test]
+    fn 複数選択項目の最小選択数が最大選択数より大きいならばエラーを返す() {
+        let item = FormItemKind::new_choose_many(
+            vec![
+                FormItemOption::new("a".to_string()),
+                FormItemOption::new("b".to_string()),
+            ],
+            Some(FormItemMinSelection::new(2)),
+            Some(FormItemMaxSelection::new(1)),
+        );
+        assert!(matches!(
+            item,
+            Err(FormError::MinSelectionGreaterThanMaxSelection)
+        ));
     }
 }

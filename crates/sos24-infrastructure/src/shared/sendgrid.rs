@@ -2,8 +2,6 @@ use std::ops::Deref;
 
 use sendgrid::v3::Sender;
 
-pub mod email;
-
 pub struct SendGrid(Sender);
 
 impl SendGrid {

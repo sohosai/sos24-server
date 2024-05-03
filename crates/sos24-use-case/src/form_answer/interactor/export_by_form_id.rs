@@ -1,7 +1,7 @@
 use chrono_tz::Asia::Tokyo;
 
 use sos24_domain::entity::form::FormId;
-use sos24_domain::entity::form_answer::{FormAnswer, FormAnswerItem, FormAnswerItemKind};
+use sos24_domain::entity::form_answer::{FormAnswerItem, FormAnswerItemKind};
 use sos24_domain::repository::form::FormRepository;
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::{
@@ -31,6 +31,12 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .await?
             .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
 
+        let project_list = self.repositories.project_repository().list().await?;
+        let target_project_list: Vec<_> = project_list
+            .into_iter()
+            .filter(|project_with_owners| form.is_sent_to(&project_with_owners.project))
+            .collect();
+
         let form = form.destruct();
         let form_title = form.title.value();
         let (form_item_ids, form_item_names): (Vec<_>, Vec<_>) = form
@@ -39,47 +45,46 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             .map(|item| (item.id().clone(), item.name().clone().value()))
             .unzip();
 
-        let form_answer_list = self
-            .repositories
-            .form_answer_repository()
-            .find_by_form_id(form_id)
-            .await?
-            .into_iter()
-            .map(FormAnswer::destruct)
-            .collect::<Vec<_>>();
-
         let mut form_answers = Vec::new();
-        for form_answer in form_answer_list {
-            let project_id = form_answer.project_id;
-            let project_with_owners = self
+        for project_with_owner in target_project_list {
+            let project_id = project_with_owner.project.id().clone();
+            let form_answer = self
                 .repositories
-                .project_repository()
-                .find_by_id(project_id.clone())
-                .await?
-                .ok_or(FormAnswerUseCaseError::ProjectNotFound(project_id.clone()))?;
-            let project = project_with_owners.project.destruct();
+                .form_answer_repository()
+                .find_by_project_id_and_form_id(project_id, form_id.clone())
+                .await?;
 
-            let form_answer_item_values = form_item_ids
-                .iter()
-                .map(|item_id| {
-                    form_answer
-                        .items
+            let (form_answer_item_values, created_at) = match form_answer {
+                Some(form_answer) => {
+                    let form_answer = form_answer.destruct();
+                    let values = form_item_ids
                         .iter()
-                        .find(|item| item.item_id() == item_id)
-                        .map(convert_answer_item_to_string)
-                })
-                .collect();
+                        .map(|item_id| {
+                            form_answer
+                                .items
+                                .iter()
+                                .find(|item| item.item_id() == item_id)
+                                .map(convert_answer_item_to_string)
+                        })
+                        .collect();
+                    let created_at = form_answer
+                        .created_at
+                        .value()
+                        .with_timezone(&Tokyo)
+                        .format("%Y-%m-%d %H:%M:%S")
+                        .to_string();
+                    (values, Some(created_at))
+                }
+                None => (form_item_ids.iter().map(|_| None).collect(), None),
+            };
 
+            let project = project_with_owner.project.destruct();
             form_answers.push(FormAnswerToBeExportedDto {
                 project_index: project.index.value(),
                 project_title: project.title.value().to_string(),
                 project_group_name: project.group_name.value().to_string(),
                 form_answer_item_values,
-                created_at: form_answer
-                    .created_at
-                    .value()
-                    .with_timezone(&Tokyo)
-                    .to_rfc3339(),
+                created_at,
             });
         }
 

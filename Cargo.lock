@@ -3228,6 +3228,7 @@ dependencies = [
  "chrono",
  "futures-util",
  "mongodb",
+ "reqwest 0.11.27",
  "rs-firebase-admin-sdk",
  "sendgrid",
  "serde",

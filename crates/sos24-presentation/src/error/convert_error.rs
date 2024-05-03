@@ -474,6 +474,31 @@ impl From<FormError> for AppError {
                 "form/end-time-earlier-than-start-time".to_string(),
                 error.to_string(),
             ),
+            FormError::MinLengthGreaterThanMaxLength => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/min-length-greater-than-max-length".to_string(),
+                error.to_string(),
+            ),
+            FormError::MinGreaterThanMax => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/min-greater-than-max".to_string(),
+                error.to_string(),
+            ),
+            FormError::EmptyOptions => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/empty-options".to_string(),
+                error.to_string(),
+            ),
+            FormError::MinSelectionGreaterThanOptions => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/min-selection-greater-than-options".to_string(),
+                error.to_string(),
+            ),
+            FormError::MinSelectionGreaterThanMaxSelection => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form/min-selection-greater-than-max-selection".to_string(),
+                error.to_string(),
+            ),
         }
     }
 }

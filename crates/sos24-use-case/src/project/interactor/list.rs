@@ -5,9 +5,10 @@ use sos24_domain::repository::Repositories;
 
 use crate::project::dto::ProjectDto;
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
+use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
 
-impl<R: Repositories> ProjectUseCase<R> {
+impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
     pub async fn list(
         &self,
         ctx: &impl ContextProvider,
@@ -30,13 +31,16 @@ mod tests {
     use sos24_domain::test::repository::MockRepositories;
 
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::adapter::MockAdapters;
     use crate::shared::context::TestContext;
 
     #[tokio::test]
     async fn 一般ユーザーは企画一覧を取得できない() {
         let repositories = MockRepositories::default();
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 
@@ -57,8 +61,10 @@ mod tests {
             .project_repository_mut()
             .expect_list()
             .returning(|| Ok(vec![]));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 

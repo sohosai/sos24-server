@@ -22,7 +22,7 @@ use sos24_domain::{
     repository::form::{FormRepository, FormRepositoryError},
 };
 
-use super::MongoDb;
+use crate::shared::mongodb::MongoDb;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormDoc {
@@ -124,7 +124,7 @@ impl TryFrom<FormItemDoc> for FormItem {
             FormItemName::new(value.name),
             value.description.map(FormItemDescription::new),
             FormItemRequired::new(value.required),
-            FormItemKind::from(value.kind),
+            FormItemKind::try_from(value.kind)?,
         ))
     }
 }
@@ -132,8 +132,8 @@ impl TryFrom<FormItemDoc> for FormItem {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum FormItemKindDoc {
     String {
-        min_length: Option<i32>,
-        max_length: Option<i32>,
+        min_length: Option<u32>,
+        max_length: Option<u32>,
         allow_newline: bool,
     },
     Int {
@@ -145,12 +145,12 @@ pub enum FormItemKindDoc {
     },
     ChooseMany {
         options: Vec<String>,
-        min_selection: Option<i32>,
-        max_selection: Option<i32>,
+        min_selection: Option<u32>,
+        max_selection: Option<u32>,
     },
     File {
         extensions: Option<Vec<String>>,
-        limit: Option<i32>,
+        limit: Option<u32>,
     },
 }
 
@@ -199,37 +199,39 @@ impl From<FormItemKind> for FormItemKindDoc {
     }
 }
 
-impl From<FormItemKindDoc> for FormItemKind {
-    fn from(value: FormItemKindDoc) -> Self {
+impl TryFrom<FormItemKindDoc> for FormItemKind {
+    type Error = anyhow::Error;
+    fn try_from(value: FormItemKindDoc) -> Result<Self, Self::Error> {
         match value {
             FormItemKindDoc::String {
                 min_length,
                 max_length,
                 allow_newline,
-            } => FormItemKind::new_string(
+            } => Ok(FormItemKind::new_string(
                 min_length.map(FormItemMinLength::new),
                 max_length.map(FormItemMaxLength::new),
                 FormItemAllowNewline::new(allow_newline),
-            ),
-            FormItemKindDoc::Int { min, max } => {
-                FormItemKind::new_int(min.map(FormItemMin::new), max.map(FormItemMax::new))
-            }
-            FormItemKindDoc::ChooseOne { options } => {
-                FormItemKind::new_choose_one(options.into_iter().map(FormItemOption::new).collect())
-            }
+            )?),
+            FormItemKindDoc::Int { min, max } => Ok(FormItemKind::new_int(
+                min.map(FormItemMin::new),
+                max.map(FormItemMax::new),
+            )?),
+            FormItemKindDoc::ChooseOne { options } => Ok(FormItemKind::new_choose_one(
+                options.into_iter().map(FormItemOption::new).collect(),
+            )?),
             FormItemKindDoc::ChooseMany {
                 options,
                 min_selection,
                 max_selection,
-            } => FormItemKind::new_choose_many(
+            } => Ok(FormItemKind::new_choose_many(
                 options.into_iter().map(FormItemOption::new).collect(),
                 min_selection.map(FormItemMinSelection::new),
                 max_selection.map(FormItemMaxSelection::new),
-            ),
-            FormItemKindDoc::File { extensions, limit } => FormItemKind::new_file(
+            )?),
+            FormItemKindDoc::File { extensions, limit } => Ok(FormItemKind::new_file(
                 extensions.map(|it| it.into_iter().map(FormItemExtension::new).collect()),
                 limit.map(FormItemLimit::new),
-            ),
+            )),
         }
     }
 }

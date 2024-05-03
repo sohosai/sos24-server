@@ -63,7 +63,11 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         new_form.set_ends_at(&actor, DateTime::try_from(form_data.ends_at)?)?;
         new_form.set_categories(&actor, ProjectCategories::from(form_data.categories))?;
         new_form.set_attributes(&actor, ProjectAttributes::from(form_data.attributes))?;
-        let new_items = form_data.items.into_iter().map(FormItem::from).collect();
+        let new_items = form_data
+            .items
+            .into_iter()
+            .map(FormItem::try_from)
+            .collect::<Result<_, _>>()?;
         new_form.set_items(&actor, new_items)?;
         let new_attachments = form_data
             .attachments

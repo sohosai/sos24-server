@@ -13,7 +13,11 @@ use sos24_domain::{
 use crate::{
     form::{dto::NewFormItemDto, FormUseCase, FormUseCaseError},
     project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
-    shared::{adapter::Adapters, context::ContextProvider},
+    shared::{
+        adapter::{notification::Notifier, Adapters},
+        app_url,
+        context::ContextProvider,
+    },
 };
 
 #[derive(Debug)]
@@ -44,7 +48,11 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             DateTime::try_from(raw_form.ends_at)?,
             ProjectCategories::from(raw_form.categories),
             ProjectAttributes::from(raw_form.attributes),
-            raw_form.items.into_iter().map(FormItem::from).collect(),
+            raw_form
+                .items
+                .into_iter()
+                .map(FormItem::try_from)
+                .collect::<Result<_, _>>()?,
             raw_form
                 .attachments
                 .into_iter()
@@ -53,7 +61,18 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         )?;
 
         let form_id = form.id().clone();
+        let form_title = form.title().clone();
         self.repositories.form_repository().create(form).await?;
+
+        self.adapters
+            .notifier()
+            .notify(format!(
+                "申請「{}」が作成されました。\n{}",
+                form_title.value(),
+                app_url::committee_form(ctx, form_id.clone()),
+            ))
+            .await?;
+
         Ok(form_id.value().to_string())
     }
 }
@@ -126,7 +145,11 @@ mod tests {
             .form_repository_mut()
             .expect_create()
             .returning(|_| Ok(()));
-        let adapters = MockAdapters::default();
+        let mut adapters = MockAdapters::default();
+        adapters
+            .notifier_mut()
+            .expect_notify()
+            .returning(|_| Ok(()));
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));

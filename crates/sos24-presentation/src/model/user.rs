@@ -138,7 +138,11 @@ impl From<UserDto> for UserTobeExported {
             kana_name: user.kana_name,
             email: user.email,
             role: user.role.to_string(),
-            created_at: user.created_at.with_timezone(&Tokyo).to_rfc3339(),
+            created_at: user
+                .created_at
+                .with_timezone(&Tokyo)
+                .format("%Y-%m-%d %H:%M:%S")
+                .to_string(),
         }
     }
 }

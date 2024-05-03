@@ -9,6 +9,7 @@ use sos24_domain::repository::Repositories;
 
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoryDto};
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
+use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
 
 #[derive(Debug)]
@@ -23,7 +24,7 @@ pub struct UpdateProjectCommand {
     pub remarks: Option<String>,
 }
 
-impl<R: Repositories> ProjectUseCase<R> {
+impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
     pub async fn update(
         &self,
         ctx: &impl ContextProvider,
@@ -92,6 +93,7 @@ mod tests {
     use crate::project::dto::{ProjectAttributesDto, ProjectCategoryDto};
     use crate::project::interactor::update::UpdateProjectCommand;
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::adapter::MockAdapters;
     use crate::shared::context::TestContext;
 
     #[tokio::test]
@@ -109,8 +111,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 
@@ -148,8 +152,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::not_applicable_period(),
         );
 
@@ -190,8 +196,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 
@@ -234,8 +242,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 
@@ -273,8 +283,10 @@ mod tests {
             .project_repository_mut()
             .expect_update()
             .returning(|_| Ok(()));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::not_applicable_period(),
         );
 

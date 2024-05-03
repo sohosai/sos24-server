@@ -8,9 +8,10 @@ use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
 
 use crate::project::{ProjectUseCase, ProjectUseCaseError};
+use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
 
-impl<R: Repositories> ProjectUseCase<R> {
+impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
     pub async fn delete_by_id(
         &self,
         ctx: &impl ContextProvider,
@@ -60,6 +61,7 @@ mod tests {
     use sos24_domain::test::repository::MockRepositories;
 
     use crate::project::{ProjectUseCase, ProjectUseCaseError};
+    use crate::shared::adapter::MockAdapters;
     use crate::shared::context::TestContext;
 
     #[tokio::test]
@@ -73,8 +75,10 @@ mod tests {
                     fixture::user::user1(UserRole::Committee),
                 )))
             });
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 
@@ -117,8 +121,10 @@ mod tests {
             .file_data_repository_mut()
             .expect_delete_by_owner_project()
             .returning(|_| Ok(()));
+        let adapters = MockAdapters::default();
         let use_case = ProjectUseCase::new(
             Arc::new(repositories),
+            Arc::new(adapters),
             fixture::project_application_period::applicable_period(),
         );
 

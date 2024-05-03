@@ -20,7 +20,7 @@ use sos24_domain::{
     repository::form_answer::{FormAnswerRepository, FormAnswerRepositoryError},
 };
 
-use super::MongoDb;
+use crate::shared::mongodb::MongoDb;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormAnswerDoc {

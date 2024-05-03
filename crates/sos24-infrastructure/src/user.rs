@@ -10,7 +10,7 @@ use sos24_domain::{
     repository::user::{UserRepository, UserRepositoryError},
 };
 
-use super::Postgresql;
+use crate::shared::postgresql::Postgresql;
 
 #[derive(FromRow)]
 pub struct UserRow {
