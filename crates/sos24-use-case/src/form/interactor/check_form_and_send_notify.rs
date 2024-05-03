@@ -5,11 +5,14 @@ use sos24_domain::repository::{form::FormRepository, project::ProjectRepository,
 
 use crate::{
     form::{FormUseCase, FormUseCaseError},
-    shared::adapter::{
-        email::{Email, EmailSender, SendEmailCommand},
-        Adapters,
+    shared::{
+        adapter::{
+            email::{Email, EmailSender, SendEmailCommand},
+            Adapters,
+        },
+        app_url,
+        context::ContextProvider,
     },
-    shared::context::ContextProvider,
 };
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
@@ -81,11 +84,7 @@ Email : {email}
                         .value()
                         .with_timezone(&Tokyo)
                         .format("%Y年%m月%d日 %H:%M"),
-                    url = format!(
-                        "{}/forms/{}",
-                        ctx.config().app_url,
-                        form.id().clone().value()
-                    ),
+                    url = app_url::form(ctx, form.id().clone()),
                     email = ctx.config().email_reply_to_address.clone(),
                 ),
             };

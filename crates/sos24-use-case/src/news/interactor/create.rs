@@ -117,11 +117,7 @@ Email : {email}
 電話 : 029-853-2899"#,
                 title = news.title().clone().value(),
                 body = news.body().clone().value(),
-                url = format!(
-                    "{}/news/{}",
-                    ctx.config().app_url,
-                    news.id().clone().value()
-                ),
+                url = app_url::news(ctx, news.id().clone()),
                 email = ctx.config().email_reply_to_address.clone(),
             ),
         };
