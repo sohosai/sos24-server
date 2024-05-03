@@ -26,7 +26,7 @@ services:
       - EMAIL_SENDER_ADDRESS=${EMAIL_SENDER_ADDRESS}
       - EMAIL_REPLY_TO_ADDRESS=${EMAIL_REPLY_TO_ADDRESS}
       - APP_URL=${APP_URL}
-      - SLACK_WEBHOOK_URL=${APP_URL}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
     labels:
       - traefik.enable=true
       - traefik.docker.network=sos24-traefik
