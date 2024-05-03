@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -24,6 +24,7 @@ services:
       - EMAIL_SENDER_ADDRESS=${EMAIL_SENDER_ADDRESS}
       - EMAIL_REPLY_TO_ADDRESS=${EMAIL_REPLY_TO_ADDRESS}
       - APP_URL=${APP_URL}
+      - SLACK_WEBHOOK_URL=${APP_URL}
     labels:
       traefik.enable: "true"
       traefik.docker.network: "portainer-traefik"
