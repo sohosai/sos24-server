@@ -1,8 +1,11 @@
 use sos24_domain::repository::Repositories;
 
-use crate::project::{dto::ProjectApplicationPeriodDto, ProjectUseCase, ProjectUseCaseError};
+use crate::{
+    project::{dto::ProjectApplicationPeriodDto, ProjectUseCase, ProjectUseCaseError},
+    shared::adapter::Adapters,
+};
 
-impl<R: Repositories> ProjectUseCase<R> {
+impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
     pub async fn get_project_application_period(
         &self,
     ) -> Result<ProjectApplicationPeriodDto, ProjectUseCaseError> {
