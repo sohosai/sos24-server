@@ -64,7 +64,7 @@ impl From<FileName> for ContentDisposition {
 
 fn generate_content_disposition(value: &[u8]) -> String {
     format!(
-        "attachment; filename*=UTF8''{}",
+        "attachment; filename*=UTF-8''{}",
         percent_encoding::percent_encode(value, NON_ALPHANUMERIC)
     )
 }
@@ -126,11 +126,11 @@ mod test {
     #[test]
     fn encode_non_ascii_file_name() {
         assert_eq!(
-            "attachment; filename*=UTF8''%E3%83%86%E3%82%B9%E3%83%88%2Etxt",
+            "attachment; filename*=UTF-8''%E3%83%86%E3%82%B9%E3%83%88%2Etxt",
             generate_content_disposition("テスト.txt".as_bytes())
         );
         assert_eq!(
-            "attachment; filename*=UTF8''%E3%83%86%20%E3%82%B9%E3%83%88%2Etxt",
+            "attachment; filename*=UTF-8''%E3%83%86%20%E3%82%B9%E3%83%88%2Etxt",
             generate_content_disposition("テ スト.txt".as_bytes())
         )
     }
@@ -138,7 +138,7 @@ mod test {
     #[test]
     fn encode_injecting_file_name() {
         assert_eq!(
-            "attachment; filename*=UTF8''example%22%3B%27%3B%2Etxt",
+            "attachment; filename*=UTF-8''example%22%3B%27%3B%2Etxt",
             generate_content_disposition("example\";';.txt".as_bytes())
         );
     }
