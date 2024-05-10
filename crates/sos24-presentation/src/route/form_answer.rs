@@ -157,6 +157,7 @@ pub async fn handle_export(
     let data = (|| -> Result<String, CsvSerializationError> {
         let mut csv_data = vec![];
 
+        let form_item_names_len = form_answer_list.form_item_names.len();
         let header: Vec<String> = ["企画番号", "企画名", "企画団体名", "回答日時"]
             .into_iter()
             .map(ToString::to_string)
@@ -175,8 +176,8 @@ pub async fn handle_export(
             .chain(
                 form_answer
                     .form_answer_item_values
-                    .into_iter()
-                    .map(|it| it.unwrap_or_default()),
+                    .unwrap_or_else(|| vec![String::new(); form_item_names_len])
+                    .into_iter(),
             )
             .collect();
             csv_data.push(record);

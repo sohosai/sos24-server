@@ -40,6 +40,8 @@ pub enum FormAnswerUseCaseError {
     FileNotFound(FileId),
     #[error("Not a project owner or subowner")]
     NotProjectOwner,
+    #[error("Export failed")]
+    ExportFailed,
 
     #[error(transparent)]
     FileIdError(#[from] FileIdError),
