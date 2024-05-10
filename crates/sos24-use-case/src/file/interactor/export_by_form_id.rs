@@ -78,7 +78,7 @@ impl<R: Repositories> FileUseCase<R> {
                     );
                     file_list.push(ArchiveEntry::new(
                         file.url,
-                        FileName::sanitized(filename),
+                        FileName::new(filename), // FIXME: ファイル名のサニタイズ
                         file.updated_at,
                     ));
                 }
