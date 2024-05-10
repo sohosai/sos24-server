@@ -53,12 +53,12 @@ impl<R: Repositories> FileUseCase<R> {
             let project = project_with_owners.project.destruct();
 
             let file_items = form_answer.list_file_items();
-            for (item_id, files) in file_items {
+            for (index1, (item_id, files)) in file_items.into_iter().enumerate() {
                 let Some(form_item) = form.find_item(&item_id) else {
                     return Err(FileUseCaseError::FormItemNotFound(item_id));
                 };
 
-                for (index, file_id) in files.into_iter().enumerate() {
+                for (index2, file_id) in files.into_iter().enumerate() {
                     let file = self
                         .repositories
                         .file_data_repository()
@@ -67,13 +67,14 @@ impl<R: Repositories> FileUseCase<R> {
                         .ok_or(FileUseCaseError::NotFound(file_id))?;
                     let file = file.destruct();
 
+                    // {申請項目名}_{通し番号1}/{企画番号}_{企画名}_{通し番号2}_{オリジナルファイル名}
                     let filename = format!(
-                        "{}/{}_{}_{}_{}_{}",
+                        "{}_{}/{}_{}_{}_{}",
                         form_item.name().clone().value(),
+                        index1 + 1,
                         project.index.clone().value(),
                         project.title.clone().value(),
-                        project.group_name.clone().value(),
-                        index + 1,
+                        index2 + 1,
                         file.name.clone().value(),
                     );
                     file_list.push(ArchiveEntry::new(
