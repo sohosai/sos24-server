@@ -121,6 +121,11 @@ impl From<FormAnswerUseCaseError> for AppError {
                 "form-answer/not-project-owner".to_string(),
                 message,
             ),
+            FormAnswerUseCaseError::ExportFailed => AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "form-answer/export-failed".to_string(),
+                message,
+            ),
             FormAnswerUseCaseError::FormIdError(e) => e.into(),
             FormAnswerUseCaseError::ProjectIdError(e) => e.into(),
             FormAnswerUseCaseError::FormUseCaseError(e) => e.into(),
