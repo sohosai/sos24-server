@@ -83,6 +83,10 @@ impl_value_object!(FileId(uuid::Uuid));
 pub struct FileName(String);
 
 impl FileName {
+    pub fn new(name: String) -> Self {
+        Self(name)
+    }
+
     pub fn sanitized(name: String) -> Self {
         // ref: https://github.com/rwf2/Rocket/blob/60f3cd57b06243beaee87fd5b7545e3bf0fa6f60/core/lib/src/fs/file_name.rs#L140-L146
         static BAD_CHARS: &[char] = &[
