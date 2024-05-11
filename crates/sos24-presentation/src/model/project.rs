@@ -150,8 +150,16 @@ pub struct ProjectToBeExported {
     sub_owner_phone_number: Option<String>,
     #[serde(rename(serialize = "企画区分"))]
     category: String,
-    #[serde(rename(serialize = "企画属性"))]
-    attributes: String,
+    #[serde(rename(serialize = "企画属性 屋内企画"))]
+    attributes_inside: bool,
+    #[serde(rename(serialize = "企画属性 屋外企画"))]
+    attributes_outside: bool,
+    #[serde(rename(serialize = "企画属性 学術認定企画"))]
+    attributes_academic: bool,
+    #[serde(rename(serialize = "企画属性 芸術祭参加企画"))]
+    attributes_art: bool,
+    #[serde(rename(serialize = "企画属性 委員会開催企画"))]
+    attributes_official: bool,
     #[serde(rename(serialize = "備考"))]
     remarks: Option<String>,
     #[serde(rename(serialize = "作成日時"))]
@@ -173,13 +181,17 @@ impl From<ProjectDto> for ProjectToBeExported {
             sub_owner_email: project.sub_owner_email,
             sub_owner_phone_number: project.sub_owner_phone_number,
             category: project.category.to_string(),
-            attributes: project
+            attributes_inside: project.attributes.0.contains(&ProjectAttributeDto::Inside),
+            attributes_outside: project.attributes.0.contains(&ProjectAttributeDto::Outside),
+            attributes_academic: project
                 .attributes
                 .0
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<String>>()
-                .join(";"),
+                .contains(&ProjectAttributeDto::Academic),
+            attributes_art: project.attributes.0.contains(&ProjectAttributeDto::Art),
+            attributes_official: project
+                .attributes
+                .0
+                .contains(&ProjectAttributeDto::Official),
             remarks: project.remarks,
             created_at: project
                 .created_at

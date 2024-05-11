@@ -137,16 +137,18 @@ impl From<FormAnswerItemKind> for FormAnswerItemKindDto {
     }
 }
 
+#[derive(Debug)]
 pub struct FormAnswerToBeExportedListDto {
     pub form_title: String,
     pub form_item_names: Vec<String>,
     pub form_answers: Vec<FormAnswerToBeExportedDto>,
 }
 
+#[derive(Debug)]
 pub struct FormAnswerToBeExportedDto {
     pub project_index: i32,
     pub project_title: String,
     pub project_group_name: String,
-    pub form_answer_item_values: Vec<Option<String>>,
+    pub form_answer_item_values: Option<Vec<String>>,
     pub created_at: Option<String>,
 }
