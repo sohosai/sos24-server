@@ -20,9 +20,12 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - name: Cache dependencies
+        id: cache
+        uses: corca-ai/local-cache@v2
         with:
-          workspaces: "/home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}"
+          path: target
+          key: ${{ hashFiles('Cargo.lock') }}
       - name: Build
         env:
           SQLX_OFFLINE: true
