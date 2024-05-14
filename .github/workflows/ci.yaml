@@ -30,16 +30,14 @@ jobs:
           key: ${{ hashFiles('Cargo.lock') }}
       - name: Format
         run: cargo fmt --all --check
-      - name: Build
+      - name: Clippy
+        uses: sksat/action-clippy@v0.7.0
+        if: github.event_name == 'pull_request'
         env:
           SQLX_OFFLINE: true
-        run: cargo build --verbose
+        with:
+          reporter: github-pr-review
       - name: Run tests
         env:
           SQLX_OFFLINE: true
         run: cargo test --verbose
-      - name: Clippy
-        uses: sksat/action-clippy@v0.7.0
-        if: github.event_name == 'pull_request'
-        with:
-          reporter: github-pr-review
