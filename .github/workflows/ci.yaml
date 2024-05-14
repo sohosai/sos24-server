@@ -20,12 +20,16 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy rustfmt
       - name: Cache dependencies
         id: cache
         uses: corca-ai/local-cache@v2
         with:
           path: target
           key: ${{ hashFiles('Cargo.lock') }}
+      - name: Format
+        run: cargo fmt --all --check
       - name: Build
         env:
           SQLX_OFFLINE: true
@@ -34,3 +38,8 @@ jobs:
         env:
           SQLX_OFFLINE: true
         run: cargo test --verbose
+      - name: Clippy
+        uses: sksat/action-clippy@v0.7.0
+        if: github.event_name == 'pull_request'
+        with:
+          reporter: github-pr-review
