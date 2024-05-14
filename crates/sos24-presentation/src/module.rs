@@ -11,26 +11,27 @@ use sos24_use_case::{
 };
 
 #[cfg(not(test))]
-mod module {
+mod modules {
     pub type Repositories = sos24_infrastructure::DefaultRepositories;
     pub type Adapters = sos24_infrastructure::DefaultAdapters;
 }
 
+#[allow(clippy::items_after_test_module)]
 #[cfg(test)]
-mod module {
+mod modules {
     pub type Repositories = sos24_domain::test::repository::MockRepositories;
     pub type Adapters = sos24_use_case::shared::adapter::MockAdapters;
 }
 
 pub struct Modules {
     config: Config,
-    form_use_case: FormUseCase<module::Repositories, module::Adapters>,
-    form_answer_use_case: FormAnswerUseCase<module::Repositories>,
-    invitation_use_case: InvitationUseCase<module::Repositories>,
-    news_use_case: NewsUseCase<module::Repositories, module::Adapters>,
-    file_use_case: FileUseCase<module::Repositories>,
-    project_use_case: ProjectUseCase<module::Repositories, module::Adapters>,
-    user_use_case: UserUseCase<module::Repositories>,
+    form_use_case: FormUseCase<modules::Repositories, modules::Adapters>,
+    form_answer_use_case: FormAnswerUseCase<modules::Repositories>,
+    invitation_use_case: InvitationUseCase<modules::Repositories>,
+    news_use_case: NewsUseCase<modules::Repositories, modules::Adapters>,
+    file_use_case: FileUseCase<modules::Repositories>,
+    project_use_case: ProjectUseCase<modules::Repositories, modules::Adapters>,
+    user_use_case: UserUseCase<modules::Repositories>,
 }
 
 impl Modules {
@@ -38,31 +39,31 @@ impl Modules {
         &self.config
     }
 
-    pub fn form_use_case(&self) -> &FormUseCase<module::Repositories, module::Adapters> {
+    pub fn form_use_case(&self) -> &FormUseCase<modules::Repositories, modules::Adapters> {
         &self.form_use_case
     }
 
-    pub fn form_answer_use_case(&self) -> &FormAnswerUseCase<module::Repositories> {
+    pub fn form_answer_use_case(&self) -> &FormAnswerUseCase<modules::Repositories> {
         &self.form_answer_use_case
     }
 
-    pub fn invitation_use_case(&self) -> &InvitationUseCase<module::Repositories> {
+    pub fn invitation_use_case(&self) -> &InvitationUseCase<modules::Repositories> {
         &self.invitation_use_case
     }
 
-    pub fn news_use_case(&self) -> &NewsUseCase<module::Repositories, module::Adapters> {
+    pub fn news_use_case(&self) -> &NewsUseCase<modules::Repositories, modules::Adapters> {
         &self.news_use_case
     }
 
-    pub fn file_use_case(&self) -> &FileUseCase<module::Repositories> {
+    pub fn file_use_case(&self) -> &FileUseCase<modules::Repositories> {
         &self.file_use_case
     }
 
-    pub fn project_use_case(&self) -> &ProjectUseCase<module::Repositories, module::Adapters> {
+    pub fn project_use_case(&self) -> &ProjectUseCase<modules::Repositories, modules::Adapters> {
         &self.project_use_case
     }
 
-    pub fn user_use_case(&self) -> &UserUseCase<module::Repositories> {
+    pub fn user_use_case(&self) -> &UserUseCase<modules::Repositories> {
         &self.user_use_case
     }
 }
@@ -93,7 +94,7 @@ pub async fn new(config: Config) -> anyhow::Result<Modules> {
         object_storage,
     ));
 
-    let send_grid = SendGrid::new(&env::send_grid_api_key());
+    let send_grid = SendGrid::new(env::send_grid_api_key());
     let adapters = Arc::new(sos24_infrastructure::DefaultAdapters::new(
         send_grid,
         env::slack_webhook_url(),

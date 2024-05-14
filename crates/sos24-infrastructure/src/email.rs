@@ -8,17 +8,17 @@ pub struct SendGridEmailSender {
 }
 
 trait EmailToSendGridEmail {
-    fn into_email<'a>(&'a self) -> Email;
+    fn to_email(&self) -> Email;
 }
 
 impl EmailToSendGridEmail for email::Email {
-    fn into_email<'a>(&'a self) -> Email {
+    fn to_email(&self) -> Email {
         Email::new(&self.address).set_name(&self.name)
     }
 }
 
 impl EmailToSendGridEmail for String {
-    fn into_email<'a>(&'a self) -> Email {
+    fn to_email(&self) -> Email {
         Email::new(self)
     }
 }
@@ -42,7 +42,7 @@ impl EmailSender for SendGridEmailSender {
             return Ok(());
         }
 
-        let mut message = Message::new(command.from.into_email())
+        let mut message = Message::new(command.from.to_email())
             .set_subject(&command.subject)
             .add_content(
                 Content::new()
@@ -51,7 +51,7 @@ impl EmailSender for SendGridEmailSender {
             )
             .add_category("sos");
         if let Some(ref reply_to) = command.reply_to {
-            message = message.set_reply_to(reply_to.into_email());
+            message = message.set_reply_to(reply_to.to_email());
         }
 
         // 宛先数が1000件より多い場合は分割して送信する必要がある
@@ -61,7 +61,7 @@ impl EmailSender for SendGridEmailSender {
         }
 
         for address in &command.to {
-            message = message.add_personalization(Personalization::new(address.into_email()));
+            message = message.add_personalization(Personalization::new(address.to_email()));
         }
 
         self.sender.send(&message).await?;
