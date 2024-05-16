@@ -13,7 +13,6 @@ paths:
       tags:
       - files
       summary: ファイル一覧の取得
-      description: ファイル一覧の取得
       operationId: getFiles
       responses:
         '200':
@@ -48,7 +47,6 @@ paths:
       tags:
       - files
       summary: ファイルの作成
-      description: ファイルの作成
       operationId: postFiles
       parameters:
       - name: visibility
@@ -115,7 +113,6 @@ paths:
       tags:
       - files
       summary: ファイル一覧のエクスポート
-      description: ファイル一覧のエクスポート
       operationId: getFilesExport
       parameters:
       - name: project_id
@@ -164,7 +161,6 @@ paths:
       tags:
       - files
       summary: 特定のIDのファイルの取得
-      description: 特定のIDのファイルの取得
       operationId: getFileById
       parameters:
       - name: file_id
@@ -203,7 +199,6 @@ paths:
       tags:
       - files
       summary: 特定のIDのファイルの削除
-      description: 特定のIDのファイルの削除
       operationId: deleteFileById
       parameters:
       - name: file_id
@@ -239,7 +234,6 @@ paths:
       tags:
       - form-answers
       summary: 申請回答一覧を取得
-      description: 申請回答一覧を取得
       operationId: getFormAnswers
       parameters:
       - name: project_id
@@ -289,7 +283,6 @@ paths:
       tags:
       - form-answers
       summary: 申請回答を作成
-      description: 申請回答を作成
       operationId: postFormAnswer
       requestBody:
         content:
@@ -341,7 +334,6 @@ paths:
       tags:
       - form-answers
       summary: 申請回答一覧のエクスポート
-      description: 申請回答一覧のエクスポート
       operationId: getFormAnswersExport
       parameters:
       - name: form_id
@@ -383,7 +375,6 @@ paths:
       tags:
       - form-answers
       summary: 特定のIDの申請回答を取得
-      description: 特定のIDの申請回答を取得
       operationId: getFormAnswerById
       parameters:
       - name: form_answer_id
@@ -428,7 +419,6 @@ paths:
       tags:
       - form-answers
       summary: 特定のIDの申請回答を更新
-      description: 特定のIDの申請回答を更新
       operationId: putFormAnswerById
       parameters:
       - name: form_answer_id
@@ -488,7 +478,6 @@ paths:
       tags:
       - forms
       summary: 申請一覧の取得
-      description: 申請一覧の取得
       operationId: getForms
       parameters:
       - name: project_id
@@ -537,7 +526,6 @@ paths:
       tags:
       - forms
       summary: 申請の作成
-      description: 申請の作成
       operationId: postForm
       requestBody:
         content:
@@ -589,7 +577,6 @@ paths:
       tags:
       - forms
       summary: 特定のIDの申請を取得
-      description: 特定のIDの申請を取得
       operationId: getFormById
       parameters:
       - name: form_id
@@ -628,7 +615,6 @@ paths:
       tags:
       - forms
       summary: 特定のIDの申請を更新
-      description: 特定のIDの申請を更新
       operationId: putFormById
       parameters:
       - name: form_id
@@ -687,7 +673,6 @@ paths:
       tags:
       - forms
       summary: 特定のIDの申請を削除
-      description: 特定のIDの申請を削除
       operationId: deleteFormById
       parameters:
       - name: form_id
@@ -729,7 +714,6 @@ paths:
       tags:
       - meta
       summary: サーバーの状態を確認する
-      description: サーバーの状態を確認する
       operationId: getHealth
       responses:
         '200':
@@ -741,7 +725,6 @@ paths:
       tags:
       - invitations
       summary: 招待一覧の取得
-      description: 招待一覧の取得
       operationId: getInvitations
       responses:
         '200':
@@ -776,7 +759,6 @@ paths:
       tags:
       - invitations
       summary: 招待の作成
-      description: 招待の作成
       operationId: postInvitation
       requestBody:
         content:
@@ -828,7 +810,6 @@ paths:
       tags:
       - invitations
       summary: 特定のIDの招待の取得
-      description: 特定のIDの招待の取得
       operationId: getInvitationById
       parameters:
       - name: invitation_id
@@ -873,7 +854,6 @@ paths:
       tags:
       - invitations
       summary: 特定のIDの招待の受諾
-      description: 特定のIDの招待の受諾
       operationId: postInvitationById
       parameters:
       - name: invitation_id
@@ -914,7 +894,6 @@ paths:
       tags:
       - invitations
       summary: 特定のIDの招待の削除
-      description: 特定のIDの招待の削除
       operationId: deleteInvitationById
       parameters:
       - name: invitation_id
@@ -956,7 +935,6 @@ paths:
       tags:
       - news
       summary: お知らせ一覧の取得
-      description: お知らせ一覧の取得
       operationId: getNews
       responses:
         '200':
@@ -985,7 +963,6 @@ paths:
       tags:
       - news
       summary: お知らせの作成
-      description: お知らせの作成
       operationId: postNews
       requestBody:
         content:
@@ -1037,7 +1014,6 @@ paths:
       tags:
       - news
       summary: 特定のIDのお知らせの取得
-      description: 特定のIDのお知らせの取得
       operationId: getNewsById
       parameters:
       - name: news_id
@@ -1076,7 +1052,6 @@ paths:
       tags:
       - news
       summary: 特定のIDのお知らせを更新
-      description: 特定のIDのお知らせを更新
       operationId: putNewsById
       parameters:
       - name: news_id
@@ -1135,7 +1110,6 @@ paths:
       tags:
       - news
       summary: 特定のIDのお知らせの削除
-      description: 特定のIDのお知らせの削除
       operationId: deleteNewsById
       parameters:
       - name: news_id
@@ -1177,7 +1151,6 @@ paths:
       tags:
       - projects
       summary: 企画募集期間を取得する
-      description: 企画募集期間を取得する
       operationId: getProjectApplicationPeriod
       responses:
         '200':
@@ -1205,7 +1178,6 @@ paths:
       tags:
       - projects
       summary: 企画一覧の取得
-      description: 企画一覧の取得
       operationId: getProjects
       responses:
         '200':
@@ -1240,7 +1212,6 @@ paths:
       tags:
       - projects
       summary: 企画の作成
-      description: 企画の作成
       operationId: postProject
       requestBody:
         content:
@@ -1286,7 +1257,6 @@ paths:
       tags:
       - projects
       summary: 企画一覧のエクスポート
-      description: 企画一覧のエクスポート
       operationId: getProjectsExport
       responses:
         '200':
@@ -1320,7 +1290,6 @@ paths:
       tags:
       - projects
       summary: 自分が企画責任者・副企画責任者になっている企画の取得
-      description: 自分が企画責任者・副企画責任者になっている企画の取得
       operationId: getMyProject
       responses:
         '200':
@@ -1354,7 +1323,6 @@ paths:
       tags:
       - projects
       summary: 特定のIDの企画の取得
-      description: 特定のIDの企画の取得
       operationId: getProjectById
       parameters:
       - name: project_id
@@ -1399,7 +1367,6 @@ paths:
       tags:
       - projects
       summary: 特定のIDの企画を更新
-      description: 特定のIDの企画を更新
       operationId: putProjectById
       parameters:
       - name: project_id
@@ -1458,7 +1425,6 @@ paths:
       tags:
       - projects
       summary: 特定のIDの企画の削除
-      description: 特定のIDの企画の削除
       operationId: deleteProjectById
       parameters:
       - name: project_id
@@ -1500,7 +1466,6 @@ paths:
       tags:
       - users
       summary: ユーザー一覧の取得
-      description: ユーザー一覧の取得
       operationId: getUsers
       responses:
         '200':
@@ -1535,7 +1500,6 @@ paths:
       tags:
       - users
       summary: ユーザーの作成
-      description: ユーザーの作成
       operationId: postUser
       requestBody:
         content:
@@ -1575,7 +1539,6 @@ paths:
       tags:
       - users
       summary: ユーザー一覧のエクスポート
-      description: ユーザー一覧のエクスポート
       operationId: getUsersExport
       responses:
         '200':
@@ -1609,7 +1572,6 @@ paths:
       tags:
       - users
       summary: 自分のユーザーの取得
-      description: 自分のユーザーの取得
       operationId: getMyUser
       responses:
         '200':
@@ -1637,7 +1599,6 @@ paths:
       tags:
       - users
       summary: 特定のIDのユーザーの取得
-      description: 特定のIDのユーザーの取得
       operationId: getUserById
       parameters:
       - name: user_id
@@ -1682,7 +1643,6 @@ paths:
       tags:
       - users
       summary: 特定のIDのユーザーの更新
-      description: 特定のIDのユーザーの更新
       operationId: putUserById
       parameters:
       - name: user_id
@@ -1741,7 +1701,6 @@ paths:
       tags:
       - users
       summary: 特定のIDのユーザーの削除
-      description: 特定のIDのユーザーの削除
       operationId: deleteUserById
       parameters:
       - name: user_id
