@@ -56,6 +56,7 @@ pub struct Form {
 }
 
 impl Form {
+    #[allow(clippy::too_many_arguments)]
     pub fn create(
         title: FormTitle,
         description: FormDescription,
