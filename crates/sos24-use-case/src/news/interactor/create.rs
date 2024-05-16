@@ -1,5 +1,3 @@
-use std::convert::identity;
-
 use sos24_domain::{
     ensure,
     entity::{
@@ -88,7 +86,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
                         .map(|it| it.email().clone().value()),
                 ]
             })
-            .filter_map(identity)
+            .flatten()
             .collect::<Vec<_>>();
 
         let command = SendEmailCommand {

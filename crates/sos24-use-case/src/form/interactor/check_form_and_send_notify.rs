@@ -1,5 +1,3 @@
-use std::convert::identity;
-
 use chrono_tz::Asia::Tokyo;
 use sos24_domain::repository::{form::FormRepository, project::ProjectRepository, Repositories};
 
@@ -42,7 +40,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
                             .map(|it| it.email().clone().value()),
                     ]
                 })
-                .filter_map(identity)
+                .flatten()
                 .collect::<Vec<_>>();
 
             let command = SendEmailCommand {

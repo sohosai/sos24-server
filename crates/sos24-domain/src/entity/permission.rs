@@ -36,13 +36,14 @@ bitflags! {
       const CREATE_FORM_ANSWER = 1 << 20;
       const READ_FORM_ANSWER_ALL = 1 << 21;
       const UPDATE_FORM_ANSWER_ALL = 1 << 22;
+      const UPDATE_FORM_ANSWER_ANYTIME = 1 << 23;
 
-      const CREATE_FILE_PRIVATE = 1 << 23;
-      const CREATE_FILE_PUBLIC = 1 << 24;
-      const READ_FILE_ALL = 1 << 25;
-      const DELETE_FILE_ALL = 1 << 26;
+      const CREATE_FILE_PRIVATE = 1 << 24;
+      const CREATE_FILE_PUBLIC = 1 << 25;
+      const READ_FILE_ALL = 1 << 26;
+      const DELETE_FILE_ALL = 1 << 27;
 
-      const CREATE_PROJECT_ANYTIME = 1 << 27;
+      const CREATE_PROJECT_ANYTIME = 1 << 28;
     }
 }
 
@@ -67,6 +68,7 @@ impl UserRole {
                     | Permissions::DELETE_INVITATION_ALL
                     | Permissions::CREATE_INVITATION_ANYTIME
                     | Permissions::UPDATE_FORM_ANSWER_ALL
+                    | Permissions::UPDATE_FORM_ANSWER_ANYTIME
                     | Permissions::CREATE_FILE_PUBLIC
                     | Permissions::DELETE_FILE_ALL
                     | Permissions::CREATE_PROJECT_ANYTIME

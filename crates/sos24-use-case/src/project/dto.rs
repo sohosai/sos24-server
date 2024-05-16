@@ -83,9 +83,9 @@ impl fmt::Display for ProjectCategoryDto {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             ProjectCategoryDto::General => write!(f, "普通企画"),
-            ProjectCategoryDto::FoodsWithKitchen => write!(f, "調理企画（仕込み場が必要）"),
-            ProjectCategoryDto::FoodsWithoutKitchen => write!(f, "調理企画（仕込み場が不要）"),
-            ProjectCategoryDto::FoodsWithoutCooking => write!(f, "既成食品販売企画"),
+            ProjectCategoryDto::FoodsWithKitchen => write!(f, "調理企画（仕込場が必要）"),
+            ProjectCategoryDto::FoodsWithoutKitchen => write!(f, "調理企画（仕込場が不要）"),
+            ProjectCategoryDto::FoodsWithoutCooking => write!(f, "既製食品販売企画"),
             ProjectCategoryDto::Stage1A => write!(f, "ステージ企画(1Aステージ)"),
             ProjectCategoryDto::StageUniversityHall => write!(f, "ステージ企画(大学会館ステージ)"),
             ProjectCategoryDto::StageUnited => write!(f, "ステージ企画(UNITEDステージ)"),
@@ -126,7 +126,7 @@ pub struct ProjectCategoriesDto(pub Vec<ProjectCategoryDto>);
 
 impl From<ProjectCategoriesDto> for ProjectCategories {
     fn from(value: ProjectCategoriesDto) -> Self {
-        let res = value
+        value
             .0
             .into_iter()
             .map(|category| match category {
@@ -138,8 +138,7 @@ impl From<ProjectCategoriesDto> for ProjectCategories {
                 ProjectCategoryDto::StageUniversityHall => ProjectCategories::STAGE_UNIVERSITY_HALL,
                 ProjectCategoryDto::StageUnited => ProjectCategories::STAGE_UNITED,
             })
-            .fold(ProjectCategories::empty(), |acc, category| acc | category);
-        res
+            .fold(ProjectCategories::empty(), |acc, category| acc | category)
     }
 }
 
@@ -195,7 +194,7 @@ pub struct ProjectAttributesDto(pub Vec<ProjectAttributeDto>);
 
 impl From<ProjectAttributesDto> for ProjectAttributes {
     fn from(value: ProjectAttributesDto) -> Self {
-        let res = value
+        value
             .0
             .into_iter()
             .map(|attribute| match attribute {
@@ -205,8 +204,7 @@ impl From<ProjectAttributesDto> for ProjectAttributes {
                 ProjectAttributeDto::Inside => ProjectAttributes::INSIDE,
                 ProjectAttributeDto::Outside => ProjectAttributes::OUTSIDE,
             })
-            .fold(ProjectAttributes::empty(), |acc, attribute| acc | attribute);
-        res
+            .fold(ProjectAttributes::empty(), |acc, attribute| acc | attribute)
     }
 }
 

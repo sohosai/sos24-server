@@ -56,6 +56,7 @@ pub struct Form {
 }
 
 impl Form {
+    #[allow(clippy::too_many_arguments)]
     pub fn create(
         title: FormTitle,
         description: FormDescription,
@@ -254,6 +255,14 @@ impl Form {
 
     pub fn is_started(&self, now: &chrono::DateTime<chrono::Utc>) -> bool {
         &self.starts_at.clone().value() <= now
+    }
+
+    pub fn is_ended(&self, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        &self.ends_at.clone().value() <= now
+    }
+
+    pub fn can_be_updated(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        !self.is_ended(now) || actor.has_permission(Permissions::UPDATE_FORM_ANSWER_ANYTIME)
     }
 }
 
@@ -591,8 +600,8 @@ mod tests {
         let form = Form::create(
             fixture::form::title1(),
             fixture::form::description1(),
-            fixture::form::starts_at1(),
-            fixture::form::ends_at1(),
+            fixture::form::starts_at1_opened(),
+            fixture::form::ends_at1_opened(),
             fixture::form::categories1(),
             fixture::form::attributes1(),
             fixture::form::items1(),
@@ -606,8 +615,8 @@ mod tests {
         let form = Form::create(
             fixture::form::title1(),
             fixture::form::description1(),
-            fixture::form::ends_at1(),
-            fixture::form::starts_at1(),
+            fixture::form::ends_at1_opened(),
+            fixture::form::starts_at1_opened(),
             fixture::form::categories1(),
             fixture::form::attributes1(),
             fixture::form::items1(),
