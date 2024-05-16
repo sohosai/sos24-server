@@ -86,7 +86,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::form::form1())));
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::General));
@@ -151,7 +151,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::form::form1())));
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));

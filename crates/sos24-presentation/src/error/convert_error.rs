@@ -126,6 +126,11 @@ impl From<FormAnswerUseCaseError> for AppError {
                 "form-answer/export-failed".to_string(),
                 message,
             ),
+            FormAnswerUseCaseError::FormClosed => AppError::new(
+                StatusCode::BAD_REQUEST,
+                "form-answer/form-closed".to_string(),
+                message,
+            ),
             FormAnswerUseCaseError::FormIdError(e) => e.into(),
             FormAnswerUseCaseError::ProjectIdError(e) => e.into(),
             FormAnswerUseCaseError::FormUseCaseError(e) => e.into(),

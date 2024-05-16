@@ -12,7 +12,7 @@ use percent_encoding::NON_ALPHANUMERIC;
 use sos24_use_case::form_answer::interactor::create::CreateFormAnswerCommand;
 
 use crate::context::Context;
-use crate::csv::{serialize_to_csv, CsvSerializationError};
+use crate::csv::serialize_to_csv;
 use crate::model::form_answer::{
     CreatedFormAnswer, ExportFormAnswerQuery, FormAnswerSummary, UpdateFormAnswer,
 };
@@ -154,7 +154,7 @@ pub async fn handle_export(
             AppError::from(err)
         })?;
 
-    let data = (|| -> Result<String, CsvSerializationError> {
+    let data = {
         let mut csv_data = vec![];
 
         let form_item_names_len = form_answer_list.form_item_names.len();
@@ -184,7 +184,7 @@ pub async fn handle_export(
         }
 
         serialize_to_csv(csv_data)
-    })()
+    }
     .map_err(|err| {
         tracing::error!("Failed to serialize to csv: {err:?}");
         AppError::from(err)

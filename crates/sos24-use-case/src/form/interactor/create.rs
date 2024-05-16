@@ -113,8 +113,8 @@ mod tests {
                 CreateFormCommand {
                     title: fixture::form::title1().value(),
                     description: fixture::form::description1().value(),
-                    starts_at: fixture::form::starts_at1().value().to_rfc3339(),
-                    ends_at: fixture::form::ends_at1().value().to_rfc3339(),
+                    starts_at: fixture::form::starts_at1_opened().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at1_opened().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories1()),
                     attributes: ProjectAttributesDto::from(fixture::form::attributes1()),
                     items: vec![NewFormItemDto::new(
@@ -159,8 +159,8 @@ mod tests {
                 CreateFormCommand {
                     title: fixture::form::title1().value(),
                     description: fixture::form::description1().value(),
-                    starts_at: fixture::form::starts_at1().value().to_rfc3339(),
-                    ends_at: fixture::form::ends_at1().value().to_rfc3339(),
+                    starts_at: fixture::form::starts_at1_opened().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at1_opened().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories1()),
                     attributes: ProjectAttributesDto::from(fixture::form::attributes1()),
                     items: vec![NewFormItemDto::new(

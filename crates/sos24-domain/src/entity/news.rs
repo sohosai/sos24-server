@@ -33,6 +33,7 @@ pub struct News {
 }
 
 impl News {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: NewsId,
         title: NewsTitle,
