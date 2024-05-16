@@ -2203,8 +2203,12 @@ components:
       - project_title
       - form_id
       - form_title
+      - created_at
       - updated_at
       properties:
+        created_at:
+          type: string
+          format: date-time
         form_id:
           type: string
           format: uuid

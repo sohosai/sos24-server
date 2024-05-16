@@ -116,6 +116,8 @@ pub struct FormAnswerSummary {
     form_id: String,
     form_title: String,
     #[schema(format = "date-time")]
+    created_at: String,
+    #[schema(format = "date-time")]
     updated_at: String,
 }
 
@@ -127,7 +129,8 @@ impl From<FormAnswerDto> for FormAnswerSummary {
             project_title: form_answer_dto.project_title,
             form_id: form_answer_dto.form_id,
             form_title: form_answer_dto.form_title,
-            updated_at: form_answer_dto.updated_at.to_rfc3339(),
+            created_at: form_answer_dto.created_at.to_rfc3339(),
+            updated_at: form_answer_dto.created_at.to_rfc3339(),
         }
     }
 }
