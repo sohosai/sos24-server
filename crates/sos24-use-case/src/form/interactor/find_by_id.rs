@@ -61,7 +61,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::form::form1())));
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()

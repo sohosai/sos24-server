@@ -24,12 +24,36 @@ pub fn description1() -> FormDescription {
     FormDescription::new("そぽたん申請です".to_string())
 }
 
-pub fn starts_at1() -> DateTime {
-    DateTime::try_from("2021-01-01T00:00:00+00:00".to_string()).unwrap()
+pub fn starts_at1_opened() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_sub_days(chrono::Days::new(1))
+            .unwrap(),
+    )
 }
 
-pub fn ends_at1() -> DateTime {
-    DateTime::try_from("2021-01-01T23:59:59+00:00".to_string()).unwrap()
+pub fn ends_at1_opened() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_add_days(chrono::Days::new(1))
+            .unwrap(),
+    )
+}
+
+pub fn starts_at1_closed() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_sub_days(chrono::Days::new(2))
+            .unwrap(),
+    )
+}
+
+pub fn ends_at1_closed() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_sub_days(chrono::Days::new(1))
+            .unwrap(),
+    )
 }
 
 pub fn categories1() -> ProjectCategories {
@@ -83,13 +107,30 @@ pub fn attachments1() -> Vec<FileId> {
     vec![]
 }
 
-pub fn form1() -> Form {
+pub fn form1_opened() -> Form {
     Form::new(
         id1(),
         title1(),
         description1(),
-        starts_at1(),
-        ends_at1(),
+        starts_at1_opened(),
+        ends_at1_opened(),
+        categories1(),
+        attributes1(),
+        is_notified1(),
+        items1(),
+        attachments1(),
+        datetime::now(),
+        datetime::now(),
+    )
+}
+
+pub fn form1_closed() -> Form {
+    Form::new(
+        id1(),
+        title1(),
+        description1(),
+        starts_at1_closed(),
+        ends_at1_closed(),
         categories1(),
         attributes1(),
         is_notified1(),

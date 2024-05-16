@@ -73,11 +73,11 @@ impl<R: Repositories> FormAnswerUseCase<R> {
             });
         }
 
-        Ok(dbg!(FormAnswerToBeExportedListDto {
+        Ok(FormAnswerToBeExportedListDto {
             form_title: form.title().clone().value(),
             form_item_names: header,
             form_answers,
-        }))
+        })
     }
 }
 

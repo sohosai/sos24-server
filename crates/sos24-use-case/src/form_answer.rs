@@ -42,6 +42,8 @@ pub enum FormAnswerUseCaseError {
     NotProjectOwner,
     #[error("Export failed")]
     ExportFailed,
+    #[error("Form closed")]
+    FormClosed,
 
     #[error(transparent)]
     FileIdError(#[from] FileIdError),

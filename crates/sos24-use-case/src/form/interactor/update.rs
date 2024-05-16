@@ -145,7 +145,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::form::form1())));
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_form_id()
@@ -191,7 +191,7 @@ mod tests {
         repositories
             .form_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::form::form1())));
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
         repositories
             .form_answer_repository_mut()
             .expect_find_by_form_id()
