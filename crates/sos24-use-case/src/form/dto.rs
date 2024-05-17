@@ -69,7 +69,7 @@ impl From<(Form, Option<FormAnswer>)> for FormDto {
         let (answer_id, answered_at) = form_answer
             .map(|form_answer| {
                 let form_answer = form_answer.destruct();
-                (Some(form_answer.id), Some(form_answer.updated_at))
+                (Some(form_answer.id), Some(form_answer.created_at))
             })
             .unwrap_or((None, None));
 
