@@ -2551,22 +2551,31 @@ components:
       - id
       - index
       - title
+      - kana_title
       - category
       - attributes
       - owner_id
       - owner_name
       - owner_email
+      - group_name
+      - kana_group_name
       properties:
         attributes:
           $ref: '#/components/schemas/ProjectAttributes'
         category:
           $ref: '#/components/schemas/ProjectCategory'
+        group_name:
+          type: string
         id:
           type: string
           format: uuid
         index:
           type: integer
           format: int32
+        kana_group_name:
+          type: string
+        kana_title:
+          type: string
         owner_email:
           type: string
         owner_id:
