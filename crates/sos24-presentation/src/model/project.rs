@@ -208,11 +208,14 @@ pub struct ProjectSummary {
     id: String,
     index: i32,
     title: String,
+    kana_title: String,
     category: ProjectCategory,
     attributes: ProjectAttributes,
     owner_id: String,
     owner_name: String,
     owner_email: String,
+    group_name: String,
+    kana_group_name: String,
 }
 
 impl From<ProjectDto> for ProjectSummary {
@@ -221,11 +224,14 @@ impl From<ProjectDto> for ProjectSummary {
             id: project.id,
             index: project.index,
             title: project.title,
+            kana_title: project.kana_title,
             category: ProjectCategory::from(project.category),
             attributes: ProjectAttributes::from(project.attributes),
             owner_id: project.owner_id,
             owner_name: project.owner_name,
             owner_email: project.owner_email,
+            group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
         }
     }
 }
