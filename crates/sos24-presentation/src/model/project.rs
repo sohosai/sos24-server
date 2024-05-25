@@ -214,6 +214,8 @@ pub struct ProjectSummary {
     owner_id: String,
     owner_name: String,
     owner_email: String,
+    group_name: String,
+    kana_group_name: String,
 }
 
 impl From<ProjectDto> for ProjectSummary {
@@ -228,6 +230,8 @@ impl From<ProjectDto> for ProjectSummary {
             owner_id: project.owner_id,
             owner_name: project.owner_name,
             owner_email: project.owner_email,
+            group_name: project.group_name,
+            kana_group_name: project.kana_group_name,
         }
     }
 }
