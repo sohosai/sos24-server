@@ -2,11 +2,11 @@ name: CD(beta)
 run-name: CD(beta) - ${{ github.event_name }}
 
 on:
-#  pull_request:
-#    branches:
-#      - develop
-#    types:
-#      - closed
+  #  pull_request:
+  #    branches:
+  #      - develop
+  #    types:
+  #      - closed
 
   workflow_dispatch:
     inputs:
@@ -24,7 +24,7 @@ on:
 jobs:
   push-image:
     if: github.event.pull_request.merged == true || github.event.inputs.deploy-only == 'false'
-    runs-on: [self-hosted, garm]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -72,7 +72,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    runs-on: [self-hosted, garm]
+    runs-on: ubuntu-latest
     needs: push-image
     if: |
       (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) ||
@@ -128,7 +128,7 @@ jobs:
           VERIFY_SSL: "true"
 
   notify:
-    runs-on: [self-hosted, garm]
+    runs-on: ubuntu-latest
     needs: [push-image, deploy]
     if: always() && !cancelled()
     steps:
