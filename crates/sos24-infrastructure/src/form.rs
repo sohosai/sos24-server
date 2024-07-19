@@ -316,7 +316,7 @@ impl FormRepository for MongoFormRepository {
                         "ends_at":bson::to_bson(&form_doc.ends_at).unwrap(),
                         "categories": bson::to_bson(&form_doc.categories).unwrap(),
                         "attributes": bson::to_bson(&form_doc.attributes).unwrap(),
-                        "attachments": bson::to_bson(&form_doc.attachments).unwrap(), //fix by aKYM in 2024/7/19
+                        "attachments": bson::to_bson(&form_doc.attachments).unwrap(),
                         "is_notified": bson::to_bson(&form_doc.is_notified).unwrap(),
                         "items": bson::to_bson(&form_doc.items).unwrap(),
                         "updated_at": bson::to_bson(&form_doc.updated_at).unwrap(),
