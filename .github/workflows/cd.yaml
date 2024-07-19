@@ -23,7 +23,7 @@ on:
 jobs:
   push-image:
     if: github.event.pull_request.merged == true || github.event.inputs.deploy-only == 'false'
-    runs-on: [self-hosted, garm]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -71,8 +71,8 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    runs-on: [self-hosted, garm]
     needs: push-image
+    runs-on: ubuntu-latest
     if: |
       (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) ||
       (github.event.inputs.push-image-only == 'false' && always() && !failure() && !cancelled())
@@ -129,7 +129,7 @@ jobs:
           rm .env"
 
   notify:
-    runs-on: [self-hosted, garm]
+    runs-on: ubuntu-latest
     needs: [push-image, deploy]
     if: always() && !cancelled()
     steps:
@@ -144,4 +144,4 @@ jobs:
           color: 0x0000ff
           url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           username: GitHub Actions
-          avatar_url: https://r2.sohosai.com/logo.png    
+          avatar_url: https://r2.sohosai.com/logo.png
