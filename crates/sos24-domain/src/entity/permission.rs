@@ -25,25 +25,26 @@ bitflags! {
       const CREATE_FORM = 1 << 11;
       const READ_FORM_ALL = 1 << 12;
       const UPDATE_FORM_ALL = 1 << 13;
-      const DELETE_FORM_ALL = 1 << 14;
+      const UPDATE_FORM_ALL_ANSWERED = 1 << 14;
+      const DELETE_FORM_ALL = 1 << 15;
 
-      const CREATE_INVITATION = 1 << 15;
-      const CREATE_INVITATION_ANYTIME = 1 << 16;
-      const READ_INVITATION_ALL = 1 << 17;
-      const UPDATE_INVITATION_ALL = 1 << 18;
-      const DELETE_INVITATION_ALL = 1 << 19;
+      const CREATE_INVITATION = 1 << 16;
+      const CREATE_INVITATION_ANYTIME = 1 << 17;
+      const READ_INVITATION_ALL = 1 << 18;
+      const UPDATE_INVITATION_ALL = 1 << 19;
+      const DELETE_INVITATION_ALL = 1 << 20;
 
-      const CREATE_FORM_ANSWER = 1 << 20;
-      const READ_FORM_ANSWER_ALL = 1 << 21;
-      const UPDATE_FORM_ANSWER_ALL = 1 << 22;
-      const UPDATE_FORM_ANSWER_ANYTIME = 1 << 23;
+      const CREATE_FORM_ANSWER = 1 << 21;
+      const READ_FORM_ANSWER_ALL = 1 << 22;
+      const UPDATE_FORM_ANSWER_ALL = 1 << 23;
+      const UPDATE_FORM_ANSWER_ANYTIME = 1 << 24;
 
-      const CREATE_FILE_PRIVATE = 1 << 24;
-      const CREATE_FILE_PUBLIC = 1 << 25;
-      const READ_FILE_ALL = 1 << 26;
-      const DELETE_FILE_ALL = 1 << 27;
+      const CREATE_FILE_PRIVATE = 1 << 25;
+      const CREATE_FILE_PUBLIC = 1 << 26;
+      const READ_FILE_ALL = 1 << 27;
+      const DELETE_FILE_ALL = 1 << 28;
 
-      const CREATE_PROJECT_ANYTIME = 1 << 28;
+      const CREATE_PROJECT_ANYTIME = 1 << 29;
     }
 }
 
