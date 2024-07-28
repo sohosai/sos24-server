@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use tokio::net::TcpListener;
+use tokio::{net::TcpListener, signal};
 
 use sos24_presentation::{config::Config, context::Context, env, module, route::create_app};
 use tokio_cron_scheduler::{Job, JobScheduler};
@@ -57,5 +57,32 @@ async fn main() {
     let addr = format!("{}:{}", env::host(), env::port());
     let listener = TcpListener::bind(&addr).await.unwrap();
     tracing::info!("Listening on http://{addr}");
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .unwrap();
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 }
