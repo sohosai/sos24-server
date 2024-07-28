@@ -407,7 +407,13 @@ bitflags! {
 
 impl ProjectAttributes {
     pub fn matches(self, attributes: ProjectAttributes) -> bool {
-        attributes.intersects(self)
+        if self.contains(Self::OFFICIAL) {
+            // フィルターに委員会開催企画が含まれている場合はORで判定する
+            attributes.intersects(self)
+        } else {
+            // フィルターに委員会開催企画が含まれていない場合はORで判定し、かつ、委員会開催企画が含まれていない企画のみを対象とする
+            attributes.intersects(self) && !attributes.contains(Self::OFFICIAL)
+        }
     }
 }
 
@@ -499,23 +505,37 @@ mod tests {
     #[test]
     fn match_project_attributes() {
         let filter_attributes = ProjectAttributes::ACADEMIC | ProjectAttributes::INSIDE;
-        for attributes in ProjectAttributes::all().iter() {
-            if attributes.contains(ProjectAttributes::ACADEMIC)
-                || attributes.contains(ProjectAttributes::INSIDE)
+        for attributes_bits in 0..ProjectAttributes::all().bits() {
+            let attributes = ProjectAttributes::from_bits(attributes_bits).unwrap();
+            if !attributes.contains(ProjectAttributes::OFFICIAL)
+                && (attributes.contains(ProjectAttributes::ACADEMIC)
+                    || attributes.contains(ProjectAttributes::INSIDE))
             {
                 assert!(filter_attributes.matches(attributes));
             } else {
                 assert!(!filter_attributes.matches(attributes));
             }
         }
+
+        let filter_attributes = ProjectAttributes::OFFICIAL;
+        assert!(filter_attributes.matches(ProjectAttributes::OFFICIAL));
+        assert!(
+            filter_attributes.matches(ProjectAttributes::OFFICIAL | ProjectAttributes::ACADEMIC)
+        );
     }
 
     #[test]
     fn not_match_project_attributes() {
-        let attributes = ProjectAttributes::empty();
-        assert!(!attributes.matches(ProjectAttributes::ACADEMIC));
+        let filter_attributes = ProjectAttributes::empty();
+        assert!(!filter_attributes.matches(ProjectAttributes::ACADEMIC));
 
-        let attributes = ProjectAttributes::ACADEMIC | ProjectAttributes::INSIDE;
-        assert!(!attributes.matches(ProjectAttributes::OUTSIDE));
+        let filter_attributes = ProjectAttributes::ACADEMIC | ProjectAttributes::INSIDE;
+        assert!(!filter_attributes.matches(ProjectAttributes::OUTSIDE));
+
+        let filter_attributes = ProjectAttributes::ACADEMIC;
+        assert!(!filter_attributes.matches(ProjectAttributes::OFFICIAL));
+        assert!(
+            !filter_attributes.matches(ProjectAttributes::OFFICIAL | ProjectAttributes::ACADEMIC)
+        );
     }
 }
