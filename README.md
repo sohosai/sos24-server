@@ -9,6 +9,9 @@
 > [!NOTE]
 > クエリを変更した場合はCIを通すために `cargo sqlx prepare --workspace` を実行してください。
 
+## API リファレンス
+- https://sos24.readme.io/reference/getprojectapplicationperiod (要ログイン)
+
 ## 環境構築
 
 ### 環境変数
