@@ -154,6 +154,7 @@ impl User {
     pub fn set_role(&mut self, actor: &Actor, role: UserRole) -> Result<(), PermissionDeniedError> {
         if self.role != role {
             ensure!(actor.has_permission(Permissions::UPDATE_USER_ALL));
+            ensure!(actor.role() >= &role);
             self.role = role;
         }
         Ok(())
@@ -172,12 +173,13 @@ impl_value_object!(UserName(String));
 impl_value_object!(UserKanaName(String));
 impl_value_object!(UserPhoneNumber(String)); // ガバガバだが、電話番号が弾かれる事によってjsysの作業が増えることを鑑みて許容する
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+// 権限の弱い順に定義
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum UserRole {
-    Administrator,
-    CommitteeOperator,
-    Committee,
     General,
+    Committee,
+    CommitteeOperator,
+    Administrator,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -197,5 +199,17 @@ impl TryFrom<String> for UserEmail {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let email = Email::try_from(value)?;
         Ok(Self(email))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::entity::user::UserRole;
+
+    #[test]
+    fn user_role_ordering() {
+        assert!(UserRole::Administrator > UserRole::CommitteeOperator);
+        assert!(UserRole::CommitteeOperator > UserRole::Committee);
+        assert!(UserRole::Committee > UserRole::General);
     }
 }
