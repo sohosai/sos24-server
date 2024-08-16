@@ -42,7 +42,12 @@ impl<R: Repositories> UserUseCase<R> {
         new_user.set_name(&actor, UserName::new(user_data.name))?;
         new_user.set_kana_name(&actor, UserKanaName::new(user_data.kana_name))?;
         new_user.set_phone_number(&actor, UserPhoneNumber::new(user_data.phone_number))?;
-        new_user.set_role(&actor, UserRole::from(user_data.role))?;
+
+        let old_role = new_user.role().clone();
+        let new_role = UserRole::from(user_data.role);
+        if old_role != new_role {
+            new_user.set_role(&actor, new_role)?;
+        }
 
         let firebase_user_id: FirebaseUserId = new_user.id().clone().into();
 
@@ -190,7 +195,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 実委人管理者はロールを含む自分のユーザーを更新できる() {
+    async fn 実委人管理者は他人のユーザーを更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -207,7 +212,100 @@ mod tests {
             .update(
                 &ctx,
                 UpdateUserCommand {
+                    id: fixture::user::id2().value(),
+                    name: fixture::user::name2().value(),
+                    kana_name: fixture::user::kana_name2().value(),
+                    email: fixture::user::email2().value(),
+                    phone_number: fixture::user::phone_number2().value(),
+                    role: UserRoleDto::from(UserRole::CommitteeOperator),
+                },
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn 実委人管理者は自分を管理者に変更できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::CommitteeOperator))));
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateUserCommand {
                     id: fixture::user::id1().value(),
+                    name: fixture::user::name1().value(),
+                    kana_name: fixture::user::kana_name1().value(),
+                    email: fixture::user::email1().value(),
+                    phone_number: fixture::user::phone_number1().value(),
+                    role: UserRoleDto::from(UserRole::Administrator),
+                },
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDeniedError(_))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 管理者は自分を実委人管理者に変更できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::Administrator))));
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Administrator));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateUserCommand {
+                    id: fixture::user::id1().value(),
+                    name: fixture::user::name1().value(),
+                    kana_name: fixture::user::kana_name1().value(),
+                    email: fixture::user::email1().value(),
+                    phone_number: fixture::user::phone_number1().value(),
+                    role: UserRoleDto::from(UserRole::CommitteeOperator),
+                },
+            )
+            .await;
+        assert!(res.is_ok());
+    }
+
+    #[tokio::test]
+    async fn 管理者は他人を管理者に変更できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Administrator));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateUserCommand {
+                    id: fixture::user::id2().value(),
                     name: fixture::user::name2().value(),
                     kana_name: fixture::user::kana_name2().value(),
                     email: fixture::user::email2().value(),
@@ -216,6 +314,6 @@ mod tests {
                 },
             )
             .await;
-        assert!(matches!(res, Ok(())));
+        assert!(res.is_ok());
     }
 }
