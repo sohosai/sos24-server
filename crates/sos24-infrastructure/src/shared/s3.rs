@@ -1,7 +1,7 @@
-use std::ops::Deref;
+use std::{ops::Deref, time::Duration};
 
 use aws_sdk_s3::{
-    config::{Builder, Credentials, Region},
+    config::{timeout::TimeoutConfig, Builder, Credentials, Region, StalledStreamProtectionConfig},
     Client,
 };
 
@@ -29,6 +29,18 @@ impl S3 {
             .region(Region::new(region.to_string()))
             .credentials_provider(credential)
             .behavior_version_latest()
+            .timeout_config(
+                TimeoutConfig::builder()
+                    .operation_attempt_timeout(Duration::from_secs(60 * 10))
+                    .build(),
+            )
+            // ファイルアップロード時に以下のエラーが出る問題のワークラウンド
+            // "minimum throughput was specified at 1 B/s, but throughput of 0 B/s was observed"
+            .stalled_stream_protection(
+                StalledStreamProtectionConfig::enabled()
+                    .upload_enabled(false)
+                    .build(),
+            )
             .build();
 
         tracing::info!("S3 client initialized");
