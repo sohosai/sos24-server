@@ -744,6 +744,9 @@ impl From<PermissionDeniedError> for AppError {
 
 impl From<anyhow::Error> for AppError {
     fn from(error: anyhow::Error) -> AppError {
+        // anyhow::Errorのコンテキストが破棄されてしまうので、ここでログに出力する
+        tracing::error!("{:#}", error);
+
         AppError::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal-error".to_string(),
