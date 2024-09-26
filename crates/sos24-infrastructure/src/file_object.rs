@@ -108,9 +108,14 @@ impl FileObjectRepository for S3FileObjectRepository {
 
                 let temp_file_name = entry.filename.value();
                 let temp_file_path = temp_dir_path.join(&temp_file_name);
+                let temp_file_path_prefix =
+                    temp_file_path.parent().context("Failed to get parent")?;
+                tokio::fs::create_dir_all(&temp_file_path_prefix)
+                    .await
+                    .context("Failed to create dir")?;
                 let mut temp_file = tokio::fs::File::create_new(&temp_file_path)
                     .await
-                    .context("Failed to open file")?;
+                    .context("Failed to create file")?;
 
                 tokio::io::copy_buf(&mut file_data_stream, &mut temp_file)
                     .await
