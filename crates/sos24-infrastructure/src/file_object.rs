@@ -108,7 +108,7 @@ impl FileObjectRepository for S3FileObjectRepository {
 
                 let temp_file_name = entry.filename.value();
                 let temp_file_path = temp_dir_path.join(&temp_file_name);
-                let mut temp_file = tokio::fs::File::open(&temp_file_path)
+                let mut temp_file = tokio::fs::File::create_new(&temp_file_path)
                     .await
                     .context("Failed to open file")?;
 
