@@ -1,9 +1,11 @@
+use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Context;
 use async_zip::tokio::write::ZipFileWriter;
 use async_zip::{Compression, ZipEntryBuilder};
 use aws_sdk_s3::{presigning::PresigningConfig, primitives::SdkBody};
+use futures_util::future;
 use tokio::io::DuplexStream;
 use tokio_util::compat::FuturesAsyncWriteCompatExt;
 
@@ -81,32 +83,70 @@ impl FileObjectRepository for S3FileObjectRepository {
     ) -> Result<(), FileObjectRepositoryError> {
         tracing::info!("ファイルのアーカイブを作成します");
 
-        let mut zip_writer = ZipFileWriter::with_tokio(writer);
+        let temp_dir = tempfile::tempdir().context("Failed to create temp dir")?;
 
+        let mut tasks = Vec::new();
         for entry in entry_list {
-            let entry = entry.destruct();
-            tracing::info!("ファイルをアーカイブに追加します: {:?}", entry.key);
+            let s3 = self.s3.clone();
+            let bucket = bucket.clone();
+            let temp_dir_path = temp_dir.path().to_owned();
 
-            let file_data = self
-                .s3
-                .get_object()
-                .bucket(&bucket)
-                .key(entry.key.value())
-                .send()
+            let task = tokio::spawn(async move {
+                let entry = entry.destruct();
+                let entry_key = entry.key.value();
+
+                tracing::info!("ファイルをダウンロードします: {:?}", entry_key);
+
+                let file_data = s3
+                    .get_object()
+                    .bucket(&bucket)
+                    .key(entry_key.clone())
+                    .send()
+                    .await
+                    .context("Failed to get object")?;
+                let mut file_data_stream = file_data.body.into_async_read();
+
+                let temp_file_name = entry.filename.value();
+                let temp_file_path = temp_dir_path.join(&temp_file_name);
+                let mut temp_file = tokio::fs::File::open(&temp_file_path)
+                    .await
+                    .context("Failed to open file")?;
+
+                tokio::io::copy_buf(&mut file_data_stream, &mut temp_file)
+                    .await
+                    .context("Failed to copy")?;
+
+                tracing::info!("ファイルをダウンロードしました: {:?}", entry_key);
+
+                Ok::<_, anyhow::Error>((temp_file_path, temp_file_name, entry.updated_at.value()))
+            });
+            tasks.push(task);
+        }
+
+        let temp_file_paths: Vec<(PathBuf, String, chrono::DateTime<chrono::Utc>)> =
+            future::try_join_all(tasks)
                 .await
-                .context("Failed to get object")?;
-            let mut file_data_stream = file_data.body.into_async_read();
+                .context("Failed to join")?
+                .into_iter()
+                .collect::<Result<_, _>>()?;
 
-            let zip_entry =
-                ZipEntryBuilder::new(entry.filename.value().into(), Compression::Deflate)
-                    .last_modification_date(entry.updated_at.value().into());
+        let mut zip_writer = ZipFileWriter::with_tokio(writer);
+        for (temp_file_path, file_name, updated_at) in temp_file_paths {
+            tracing::info!("ファイルをアーカイブに追加します: {:?}", temp_file_path);
+
+            let mut temp_file = tokio::fs::File::open(temp_file_path.clone())
+                .await
+                .context("Failed to open file")?;
+
+            let zip_entry = ZipEntryBuilder::new(file_name.into(), Compression::Deflate)
+                .last_modification_date(updated_at.into());
             let mut zip_entry_stream = zip_writer
                 .write_entry_stream(zip_entry)
                 .await
                 .context("Failed to write entry")?
                 .compat_write();
 
-            tokio::io::copy_buf(&mut file_data_stream, &mut zip_entry_stream)
+            tokio::io::copy(&mut temp_file, &mut zip_entry_stream)
                 .await
                 .context("Failed to copy")?;
 
@@ -116,7 +156,7 @@ impl FileObjectRepository for S3FileObjectRepository {
                 .await
                 .context("Failed to close")?;
 
-            tracing::info!("ファイルをアーカイブに追加しました");
+            tracing::info!("ファイルをアーカイブに追加しました: {:?}", temp_file_path);
         }
 
         zip_writer.close().await.context("Failed to close")?;
