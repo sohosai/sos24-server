@@ -13,7 +13,12 @@ edition = "2021"
 
 [workspace.dependencies]
 anyhow = "1.0.79"
-async_zip = { version = "0.0.17", features = ["chrono", "deflate", "tokio"] }
+async_zip = { version = "0.0.17", features = [
+    "chrono",
+    "deflate",
+    "tokio",
+    "zstd",
+] }
 axum = { version = "0.7.4", features = ["macros", "multipart", "query"] }
 aws-sdk-s3 = { version = "1.20.0", features = ["rt-tokio"] }
 base64 = "0.22.0"
