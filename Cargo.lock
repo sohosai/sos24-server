@@ -83,8 +83,6 @@ dependencies = [
  "futures-io",
  "memchr",
  "pin-project-lite",
- "zstd",
- "zstd-safe",
 ]
 
 [[package]]
@@ -612,11 +610,6 @@ name = "cc"
 version = "1.0.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "099a5357d84c4c61eb35fc8eafa9a79a902c2f76911e5747ced4e032edd8d9b4"
-dependencies = [
- "jobserver",
- "libc",
- "once_cell",
-]
 
 [[package]]
 name = "cfg-if"
@@ -1732,15 +1725,6 @@ name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
-
-[[package]]
-name = "jobserver"
-version = "0.1.32"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48d1dbcbbeb6a7fec7e059840aa538bd62aaccf972c7346c4d9d2059312853d0"
-dependencies = [
- "libc",
-]
 
 [[package]]
 name = "js-sys"
@@ -4526,31 +4510,3 @@ name = "zeroize"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "525b4ec142c6b68a2d10f01f7bbf6755599ca3f81ea53b8431b7dd348f5fdb2d"
-
-[[package]]
-name = "zstd"
-version = "0.13.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcf2b778a664581e31e389454a7072dab1647606d44f7feea22cd5abb9c9f3f9"
-dependencies = [
- "zstd-safe",
-]
-
-[[package]]
-name = "zstd-safe"
-version = "7.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa556e971e7b568dc775c136fc9de8c779b1c2fc3a63defaafadffdbd3181afa"
-dependencies = [
- "zstd-sys",
-]
-
-[[package]]
-name = "zstd-sys"
-version = "2.0.12+zstd.1.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a4e40c320c3cb459d9a9ff6de98cff88f4751ee9275d140e2be94a2b74e4c13"
-dependencies = [
- "cc",
- "pkg-config",
-]
