@@ -143,7 +143,7 @@ impl FileObjectRepository for S3FileObjectRepository {
                 .await
                 .context("Failed to open file")?;
 
-            let zip_entry = ZipEntryBuilder::new(file_name.into(), Compression::Stored)
+            let zip_entry = ZipEntryBuilder::new(file_name.into(), Compression::Zstd)
                 .last_modification_date(updated_at.into());
             let mut zip_entry_stream = zip_writer
                 .write_entry_stream(zip_entry)
