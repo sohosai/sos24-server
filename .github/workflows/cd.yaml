@@ -52,7 +52,7 @@ jobs:
           key: cache-${{ hashFiles('Dockerfile') }}-${{ hashFiles('Cargo.*') }}
       - name: inject cache into docker
         # v3.0.0のcommitを指定
-        uses: reproducible-containers/buildkit-cache-dance@0fc239dcc207d7ce9fd659f4f92fefb84549c182
+        uses: reproducible-containers/buildkit-cache-dance@61bd187f75f25d38e056fdd48506fac777c6ebec
         with:
           cache-map: |
             {
