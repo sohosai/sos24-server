@@ -13,7 +13,7 @@ use sos24_use_case::user::interactor::create::CreateUserCommand;
 
 use crate::context::Context;
 use crate::csv::serialize_to_csv;
-use crate::error::AppError;
+use crate::error::{AppError, ErrorResponse};
 use crate::model::user::CreatedUser;
 use crate::{
     model::user::{
@@ -30,9 +30,9 @@ use crate::{
     tag = "users",
     responses(
         (status = 200, description = "OK", body = Vec<UserSummary>),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -61,9 +61,9 @@ pub async fn handle_get(
     tag = "users",
     responses(
         (status = 200, description = "OK", content_type = "text/csv", body = String),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -111,9 +111,9 @@ pub async fn handle_export(
     request_body(content = CreateUser),
     responses(
         (status = 201, description = "Created", body = CreatedUser),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(()),
 )]
@@ -138,10 +138,10 @@ pub async fn handle_post(
     tag = "users",
     responses(
         (status = 200, description = "OK", body = User),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -168,8 +168,8 @@ pub async fn handle_get_id(
     tag = "users",
     responses(
         (status = 200, description = "OK", body = User),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -199,10 +199,10 @@ pub async fn handle_get_me(
     params(("user_id" = String, Path,)),
     responses(
         (status = 200, description = "OK"),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -228,12 +228,12 @@ pub async fn handle_delete_id(
     request_body(content = UpdateUser),
     responses(
         (status = 200, description = "OK"),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]

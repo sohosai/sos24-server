@@ -11,7 +11,7 @@ use sos24_use_case::shared::context::ContextProvider;
 
 use crate::context::Context;
 use crate::csv::serialize_to_csv;
-use crate::error::AppError;
+use crate::error::{AppError, ErrorResponse};
 use crate::model::project::{ConvertToCreateProjectDto, CreatedProject, ProjectToBeExported};
 use crate::{
     model::project::{
@@ -28,9 +28,9 @@ use crate::{
     tag = "projects",
     responses(
         (status = 200, description = "OK", body = Vec<ProjectSummary>),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -62,10 +62,10 @@ pub async fn handle_get(
     request_body(content = CreateProject),
     responses(
         (status = 201, description = "Created", body = CreatedProject),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -92,9 +92,9 @@ pub async fn handle_post(
     tag = "projects",
     responses(
         (status = 200, description = "OK", content_type = "text/csv", body = String),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -141,9 +141,9 @@ pub async fn handle_export(
     tag = "projects",
     responses(
         (status = 200, description = "OK", body = Project),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -175,10 +175,10 @@ pub async fn handle_get_me(
     params(("project_id" = String, Path, format="uuid")),
     responses(
         (status = 200, description = "OK", body = Project),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -205,10 +205,10 @@ pub async fn handle_get_id(
     params(("project_id" = String, Path, format="uuid")),
     responses(
         (status = 200, description = "OK"),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -234,12 +234,12 @@ pub async fn handle_delete_id(
     request_body(content = UpdateProject),
     responses(
         (status = 200, description = "OK"),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
