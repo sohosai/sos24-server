@@ -6,7 +6,7 @@ pub struct SendGrid(Sender);
 
 impl SendGrid {
     pub fn new<S: Into<String>>(api_key: S) -> Self {
-        Self(Sender::new(api_key.into()))
+        Self(Sender::new(api_key.into(), None))
     }
 }
 
