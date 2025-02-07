@@ -5,7 +5,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 
-use crate::error::AppError;
+use crate::error::{AppError, ErrorResponse};
 use crate::model::project_application_period::ProjectApplicationPeriod;
 use crate::module::Modules;
 
@@ -17,8 +17,8 @@ use crate::module::Modules;
     tag = "projects",
     responses(
         (status = 200, description = "OK", body = ProjectApplicationPeriod),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(()),
 )]

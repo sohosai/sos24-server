@@ -13,6 +13,7 @@ use sos24_use_case::form_answer::interactor::create::CreateFormAnswerCommand;
 
 use crate::context::Context;
 use crate::csv::serialize_to_csv;
+use crate::error::ErrorResponse;
 use crate::model::form_answer::{
     CreatedFormAnswer, ExportFormAnswerQuery, FormAnswerSummary, UpdateFormAnswer,
 };
@@ -33,9 +34,9 @@ use crate::{
     params(FormAnswerQuery),
     responses(
         (status = 200, description = "OK", body = Vec<FormAnswerSummary>),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -92,11 +93,11 @@ pub async fn handle_get(
     ),
     responses(
         (status = 201, description = "Created", body = CreatedFormAnswer),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -126,9 +127,9 @@ pub async fn handle_post(
     params(ExportFormAnswerQuery),
     responses(
         (status = 200, description = "OK", content_type = "text/csv", body = String),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -221,10 +222,10 @@ pub async fn handle_export(
     params(("form_answer_id" = String, Path, format="uuid")),
     responses(
         (status = 200, description = "OK", body = FormAnswer),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -253,12 +254,12 @@ pub async fn handle_get_id(
     request_body(content = UpdateFormAnswer),
     responses(
         (status = 200, description = "OK"),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]

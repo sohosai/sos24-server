@@ -7,7 +7,7 @@ use axum::{Extension, Json};
 use sos24_use_case::news::interactor::create::CreateNewsCommand;
 
 use crate::context::Context;
-use crate::error::AppError;
+use crate::error::{AppError, ErrorResponse};
 use crate::model::news::{
     ConvertToUpdateNewsDto, CreateNews, CreatedNews, News, NewsSummary, UpdateNews,
 };
@@ -21,8 +21,8 @@ use crate::module::Modules;
     tag = "news",
     responses(
         (status = 200, description = "OK", body = Vec<NewsSummary>),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -52,11 +52,11 @@ pub async fn handle_get(
     request_body(content = CreateNews),
     responses(
         (status = 201, description = "Created", body = CreatedNews),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -83,9 +83,9 @@ pub async fn handle_post(
     params(("news_id" = String, Path, format="uuid")),
     responses(
         (status = 200, description = "OK", body = News),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -113,10 +113,10 @@ pub async fn handle_get_id(
     params(("news_id" = String, Path, format="uuid")),
     responses(
         (status = 200, description = "OK"),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -142,12 +142,12 @@ pub async fn handle_delete_id(
     request_body(content = UpdateNews),
     responses(
         (status = 200, description = "OK"),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 404, description = "Not Found", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]

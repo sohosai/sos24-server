@@ -118,7 +118,7 @@ pub fn create_app(modules: Arc<Modules>) -> Router {
         )
 }
 
-use crate::{error, model, route};
+use crate::route;
 #[derive(OpenApi)]
 #[openapi(
     info(title = "Sohosai Online System"),
@@ -176,51 +176,6 @@ use crate::{error, model, route};
         route::user::handle_delete_id,
         route::user::handle_put_id,
     ),
-    components(schemas(
-        model::file::CreatedFile,
-        model::file::File,
-        model::file::FileInfo,
-        model::form::CreateForm,
-        model::form::CreatedForm,
-        model::form::UpdateForm,
-        model::form::NewFormItem,
-        model::form::Form,
-        model::form::FormItem,
-        model::form::FormItemKind,
-        model::form::FormSummary,
-        model::form_answer::CreateFormAnswer,
-        model::form_answer::CreatedFormAnswer,
-        model::form_answer::UpdateFormAnswer,
-        model::form_answer::FormAnswer,
-        model::form_answer::FormAnswerItem,
-        model::form_answer::FormAnswerSummary,
-        model::invitation::CreateInvitation,
-        model::invitation::CreatedInvitation,
-        model::invitation::Invitation,
-        model::invitation::InvitationPosition,
-        model::news::CreateNews,
-        model::news::CreatedNews,
-        model::news::UpdateNews,
-        model::news::News,
-        model::news::NewsSummary,
-        model::project::CreateProject,
-        model::project::CreatedProject,
-        model::project::UpdateProject,
-        model::project::Project,
-        model::project::ProjectCategory,
-        model::project::ProjectCategories,
-        model::project::ProjectAttribute,
-        model::project::ProjectAttributes,
-        model::project::ProjectSummary,
-        model::project_application_period::ProjectApplicationPeriod,
-        model::user::CreateUser,
-        model::user::CreatedUser,
-        model::user::UpdateUser,
-        model::user::User,
-        model::user::UserRole,
-        model::user::UserSummary,
-        error::ErrorResponse,
-    )),
     modifiers(&SecurityAddon),
 )]
 pub struct ApiDoc;
