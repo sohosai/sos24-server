@@ -168,13 +168,10 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
 
         let form_answer_list = self
             .collection
-            .aggregate(
-                vec![
-                    doc! { "$match": { "deleted_at": None::<String> } },
-                    doc! { "$sort": { "updated_at": 1 } },
-                ],
-                None,
-            )
+            .aggregate(vec![
+                doc! { "$match": { "deleted_at": None::<String> } },
+                doc! { "$sort": { "updated_at": 1 } },
+            ])
             .await
             .context("Failed to list form answers")?;
         let form_answers = form_answer_list
@@ -191,7 +188,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
 
         let form_answer_doc = FormAnswerDoc::from(form_answer);
         self.collection
-            .insert_one(form_answer_doc, None)
+            .insert_one(form_answer_doc)
             .await
             .context("Failed to insert form answer")?;
 
@@ -207,7 +204,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
 
         let form_answer_doc = self
             .collection
-            .find_one(doc! { "_id": id.clone().value().to_string() }, None)
+            .find_one(doc! { "_id": id.clone().value().to_string() })
             .await
             .context("Failed to find form answer")?;
 
@@ -226,7 +223,7 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .aggregate(vec![
                 doc! { "$match": { "project_id": project_id.clone().value().to_string(),  "deleted_at": None::<String> } },
                 doc! { "$sort": { "updated_at": 1 } },
-            ], None)
+            ])
             .await
             .context("Failed to find form answers")?;
         let form_answers = form_answer_list
@@ -251,7 +248,6 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
                     doc! { "$match": { "form_id": form_id.clone().value().to_string(), "deleted_at": None::<String> } },
                     doc! { "$sort": { "updated_at": 1 } },
                 ],
-                None,
             )
             .await
             .context("Failed to find form answers")?;
@@ -275,7 +271,6 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .collection
             .find_one(
                 doc! { "project_id": project_id.clone().value().to_string(), "form_id": form_id.clone().value().to_string() },
-                None,
             )
             .await
             .context("Failed to find form answer")?;
@@ -299,7 +294,6 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
                         "updated_at": bson::to_bson(&form_answer_doc.updated_at).unwrap(),
                     }
                 },
-                None,
             )
             .await
             .context("Failed to update form")?;
@@ -313,7 +307,6 @@ impl FormAnswerRepository for MongoFormAnswerRepository {
             .update_many(
                 doc! { "project_id": id.value().to_string(),  "deleted_at": None::<String> },
                 doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
-                None,
             )
             .await
             .context("Failed to delete form by project id")?;
