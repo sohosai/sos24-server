@@ -254,13 +254,10 @@ impl FormRepository for MongoFormRepository {
 
         let form_list = self
             .collection
-            .aggregate(
-                vec![
-                    doc! { "$match": { "deleted_at": None::<String> } },
-                    doc! { "$sort": { "ends_at": 1 } },
-                ],
-                None,
-            )
+            .aggregate(vec![
+                doc! { "$match": { "deleted_at": None::<String> } },
+                doc! { "$sort": { "ends_at": 1 } },
+            ])
             .await
             .context("Failed to list forms")?;
         let forms = form_list
@@ -277,7 +274,7 @@ impl FormRepository for MongoFormRepository {
 
         let form_doc = FormDoc::from(form);
         self.collection
-            .insert_one(form_doc, None)
+            .insert_one(form_doc)
             .await
             .context("Failed to create form")?;
 
@@ -292,7 +289,6 @@ impl FormRepository for MongoFormRepository {
             .collection
             .find_one(
                 doc! { "_id": id.clone().value().to_string(),  "deleted_at": None::<String>  },
-                None,
             )
             .await
             .context("Failed to find form")?;
@@ -322,7 +318,6 @@ impl FormRepository for MongoFormRepository {
                         "updated_at": bson::to_bson(&form_doc.updated_at).unwrap(),
                     }
                 },
-                None,
             )
             .await
             .context("Failed to update form")?;
@@ -338,7 +333,6 @@ impl FormRepository for MongoFormRepository {
             .update_one(
                 doc! { "_id": id.clone().value().to_string(),  "deleted_at": None::<String> },
                 doc! { "$set": { "deleted_at": bson::to_bson(&chrono::Utc::now()).unwrap() } },
-                None,
             )
             .await
             .context("Failed to delete form")?;
