@@ -5,8 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "127.0.0.1:3000:3000"
     env_file:
       - .env
     volumes:
@@ -18,14 +16,12 @@ services:
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "127.0.0.1:5433:5432"
     env_file:
       - .env
 
   mongo:
     image: mongo
-    restart: always
+    restart: unless-stopped
     volumes:
       - mongodb-data:/data/db
     env_file:
@@ -33,13 +29,12 @@ services:
 
   mongo-express:
     image: mongo-express
-    restart: always
-    ports:
-      - "127.0.0.1:8081:8081"
+    restart: unless-stopped
     env_file:
       - .env
     depends_on:
       - mongo
+    network_mode: service:app # devcontainer.jsonでポートフォワーディングするために必要
 
 volumes:
   postgres-data:
