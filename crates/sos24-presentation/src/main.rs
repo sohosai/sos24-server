@@ -7,7 +7,7 @@ use tokio_cron_scheduler::{Job, JobScheduler};
 
 #[tokio::main]
 async fn main() {
-    if let Err(e) = dotenvy::dotenv() {
+    if let Err(e) = dotenvy::dotenv_override() {
         tracing::info!(".env file doesn't exist. skipped: {e}");
     }
 
