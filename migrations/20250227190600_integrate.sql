@@ -1,5 +1,5 @@
 CREATE TYPE user_role AS ENUM ('administrator', 'committee_operator', 'committee', 'general');
-CREATE TYPE user_category AS ENUM ('undergraduate_student', 'graduate_student', 'academic_staff');
+-- CREATE TYPE user_category AS ENUM ('undergraduate_student', 'graduate_student', 'academic_staff');
 
 CREATE TABLE users (
   id TEXT PRIMARY KEY, -- Firebase AuthのためにUUIDでなくTEXT
@@ -10,7 +10,7 @@ CREATE TABLE users (
   email TEXT NOT NULL UNIQUE,
   phone_number TEXT NOT NULL UNIQUE,
   role user_role NOT NULL DEFAULT 'general',
-  category user_category NOT NULL,
+  -- category user_category NOT NULL,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -25,7 +25,7 @@ CREATE TABLE projects (
 
   title TEXT NOT NULL,
   kana_title TEXT NOT NULL,
-  description TEXT NOT NULL,
+  -- description TEXT NOT NULL,
 
   group_name TEXT NOT NULL,
   kana_group_name TEXT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE projects (
   attributes INTEGER NOT NULL DEFAULT 0,
 
   owner_id TEXT NOT NULL REFERENCES users(id),
-  sub_owner_id TEXT NOT NULL REFERENCES users(id),
+  sub_owner_id TEXT DEFAULT NULL REFERENCES users(id),
 
   remarks TEXT DEFAULT NULL, -- 削除理由など
 
@@ -49,17 +49,36 @@ CREATE TABLE news (
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   categories INTEGER NOT NULL,
+  attributes INTEGER NOT NULL,
+  attachments UUID[] NOT NULL DEFAULT '{}',
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
-CREATE TABLE news_attachments (
+CREATE TABLE files (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  news_id UUID NOT NULL REFERENCES news(id),
+  -- news_id UUID NOT NULL REFERENCES news(id),
+  name TEXT NOT NULL,
+  owner_project UUID REFERENCES projects(id),
 
   url TEXT NOT NULL,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE TYPE invitation_position AS ENUM ('owner', 'sub_owner');
+
+CREATE TABLE invitations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  inviter TEXT NOT NULL REFERENCES users(id),
+  project_id UUID NOT NULL REFERENCES projects(id),
+  position invitation_position NOT NULL,
+  used_by TEXT DEFAULT NULL REFERENCES users(id),
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -139,14 +158,27 @@ CREATE TRIGGER refresh_news_updated_at_step3
     EXECUTE PROCEDURE refresh_updated_at_step3();
 
 /*
-// TRIGGERS (news_attachments)
+// TRIGGERS (files)
 */
-CREATE TRIGGER refresh_news_attachments_updated_at_step1
-    BEFORE UPDATE ON news_attachments FOR EACH ROW
+CREATE TRIGGER refresh_files_updated_at_step1
+    BEFORE UPDATE ON files FOR EACH ROW
     EXECUTE PROCEDURE refresh_updated_at_step1();
-CREATE TRIGGER refresh_news_attachments_updated_at_step2
-    BEFORE UPDATE OF updated_at ON news_attachments FOR EACH ROW
+CREATE TRIGGER refresh_files_updated_at_step2
+    BEFORE UPDATE OF updated_at ON files FOR EACH ROW
     EXECUTE PROCEDURE refresh_updated_at_step2();
-CREATE TRIGGER refresh_news_attachments_updated_at_step3
-    BEFORE UPDATE ON news_attachments FOR EACH ROW
+CREATE TRIGGER refresh_files_updated_at_step3
+    BEFORE UPDATE ON files FOR EACH ROW
+    EXECUTE PROCEDURE refresh_updated_at_step3();
+
+/*
+// TRIGGERS (invitations)
+*/
+CREATE TRIGGER refresh_invitations_updated_at_step1
+    BEFORE UPDATE ON invitations FOR EACH ROW
+    EXECUTE PROCEDURE refresh_updated_at_step1();
+CREATE TRIGGER refresh_invitations_updated_at_step2
+    BEFORE UPDATE OF updated_at ON invitations FOR EACH ROW
+    EXECUTE PROCEDURE refresh_updated_at_step2();
+CREATE TRIGGER refresh_invitations_updated_at_step3
+    BEFORE UPDATE ON invitations FOR EACH ROW
     EXECUTE PROCEDURE refresh_updated_at_step3();
