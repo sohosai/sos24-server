@@ -25,7 +25,6 @@ impl AppError {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-#[schema(as = Error)]
 pub struct ErrorResponse {
     code: String,
     message: String,

@@ -10,6 +10,7 @@ use sos24_use_case::file::interactor::create::CreateFileCommand;
 use tokio_util::io::ReaderStream;
 
 use crate::context::Context;
+use crate::error::ErrorResponse;
 use crate::model::file::{CreateFile, CreatedFile, ExportFileQuery};
 use crate::{
     error::AppError,
@@ -25,9 +26,9 @@ use crate::{
     tag = "files",
     responses(
         (status = 200, description = "OK", body = Vec<FileInfo>),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -60,11 +61,11 @@ pub async fn handle_get(
     ),
     responses(
         (status = 201, description = "Created", body = CreatedFile),
-        (status = 400, description = "Bad Request", body = Error),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 422, description = "Unprocessable Entity", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -176,9 +177,9 @@ pub async fn handle_post(
     params(ExportFileQuery),
     responses(
         (status = 200, description = "OK", content_type = "application/zip", body = String),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -256,9 +257,9 @@ pub async fn handle_export(
     params(("file_id" = String, Path, format = "uuid")),
     responses(
         (status = 200, description = "OK", body = File),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]
@@ -289,9 +290,9 @@ pub async fn handle_get_id(
     params(("file_id" = String, Path, format = "uuid")),
     responses(
         (status = 200, description = "OK"),
-        (status = 401, description = "Unauthorized", body = Error),
-        (status = 403, description = "Forbidden", body = Error),
-        (status = 500, description = "Internal Server Error", body = Error),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
     security(("jwt_token" = [])),
 )]

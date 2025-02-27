@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "crates/sos24-presentation",
-    "crates/sos24-domain",
-    "crates/sos24-infrastructure",
-    "crates/sos24-use-case",
+  "crates/sos24-presentation",
+  "crates/sos24-domain",
+  "crates/sos24-infrastructure",
+  "crates/sos24-use-case",
 ]
 resolver = "2"
 
@@ -14,7 +14,7 @@ edition = "2021"
 [workspace.dependencies]
 anyhow = "1.0.79"
 async_zip = { version = "0.0.17", features = ["chrono", "deflate", "tokio"] }
-axum = { version = "0.7.4", features = ["macros", "multipart", "query"] }
+axum = { version = "0.8.0", features = ["macros", "multipart", "query"] }
 aws-sdk-s3 = { version = "1.20.0", features = ["rt-tokio"] }
 base64 = "0.22.0"
 bitflags = "2.4.2"
@@ -28,31 +28,31 @@ getset = "0.1.2"
 hyper = { version = "1.1.0", features = ["full"] }
 jsonwebtoken = "9.2.0"
 mockall = "0.13.0"
-mongodb = { version = "2.8.0", features = ["bson-chrono-0_4", "bson-uuid-1"] }
+mongodb = { version = "3.0.0" }
 regex = "1.10.3"
-reqwest = { version = "0.11.24", features = ["json"] }
+reqwest = { version = "0.12.0", features = ["json"] }
 rs-firebase-admin-sdk = "1.2.2"
-sendgrid = "0.21.0"
+sendgrid = "0.23.0"
 serde = { version = "1.0.195", features = ["derive"] }
 serde_json = "1.0.111"
-sqlx = { version = "0.7.3", features = [
-    "runtime-tokio",
-    "postgres",
-    "chrono",
-    "uuid",
-    "tls-rustls",
+sqlx = { version = "0.8.0", features = [
+  "runtime-tokio",
+  "postgres",
+  "chrono",
+  "uuid",
+  "tls-rustls",
 ] }
 tempfile = "3.12.0"
-thiserror = "1.0.56"
+thiserror = "2.0.0"
 tokio = { version = "1.35.1", features = ["full"] }
-tokio-cron-scheduler = "0.11.0"
+tokio-cron-scheduler = "0.13.0"
 tokio-util = { version = "0.7.10", features = ["compat", "io"] }
-tower = { version = "0.4.13", features = ["util"] }
-tower-http = { version = "0.5.1", features = ["cors", "trace"] }
+tower = { version = "0.5.0", features = ["util"] }
+tower-http = { version = "0.6.0", features = ["cors", "trace"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 unicode-segmentation = "1.11.0"
-utoipa = { version = "4.2.0", features = ["axum_extras", "yaml"] }
+utoipa = { version = "5.0.0", features = ["axum_extras", "yaml"] }
 uuid = { version = "1.7.0", features = ["v4", "serde"] }
 url = "2.5.0"
 percent-encoding = "2.3.1"
