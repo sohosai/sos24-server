@@ -2,11 +2,11 @@ name: CD(prodution)
 run-name: CD(prodution) - ${{ github.event_name }}
 
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
+  # pull_request:
+  #   branches:
+  #     - main
+  #   types:
+  #     - closed
   workflow_dispatch:
     inputs:
       push-image-only:
@@ -22,7 +22,8 @@ on:
 
 jobs:
   push-image:
-    if: github.event.pull_request.merged == true || github.event.inputs.deploy-only == 'false'
+    # if: github.event.pull_request.merged == true || github.event.inputs.deploy-only == 'false'
+    if: github.event.inputs.deploy-only == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,9 +74,10 @@ jobs:
   deploy:
     needs: push-image
     runs-on: ubuntu-latest
-    if: |
-      (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) ||
-      (github.event.inputs.push-image-only == 'false' && always() && !failure() && !cancelled())
+    # if: |
+    #   (github.event.pull_request.merged == true && always() && !failure() && !cancelled()) ||
+    #   (github.event.inputs.push-image-only == 'false' && always() && !failure() && !cancelled())
+    if: github.event.inputs.push-image-only == 'false' && always() && !failure() && !cancelled()
     steps:
       - uses: actions/checkout@v4
         with:
