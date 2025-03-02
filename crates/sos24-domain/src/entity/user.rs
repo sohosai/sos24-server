@@ -177,7 +177,9 @@ impl_value_object!(UserPhoneNumber(String)); // ガバガバだが、電話番�
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum UserRole {
     General,
-    Committee,
+    CommitteeViewer,
+    CommitteeDrafter,
+    CommitteeEditor,
     CommitteeOperator,
     Administrator,
 }
@@ -209,7 +211,9 @@ mod tests {
     #[test]
     fn user_role_ordering() {
         assert!(UserRole::Administrator > UserRole::CommitteeOperator);
-        assert!(UserRole::CommitteeOperator > UserRole::Committee);
-        assert!(UserRole::Committee > UserRole::General);
+        assert!(UserRole::CommitteeOperator > UserRole::CommitteeEditor);
+        assert!(UserRole::CommitteeEditor > UserRole::CommitteeDrafter);
+        assert!(UserRole::CommitteeDrafter > UserRole::CommitteeViewer);
+        assert!(UserRole::CommitteeViewer > UserRole::General);
     }
 }
