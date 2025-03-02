@@ -121,7 +121,7 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::project::project_with_owners1(
-                    fixture::user::user1(UserRole::Committee),
+                    fixture::user::user1(UserRole::CommitteeViewer),
                 )))
             });
         repositories
@@ -131,7 +131,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;

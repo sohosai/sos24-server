@@ -215,7 +215,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .create(
                 &ctx,

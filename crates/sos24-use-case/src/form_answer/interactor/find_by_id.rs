@@ -154,7 +154,7 @@ mod tests {
             .returning(|_| Ok(Some(fixture::form::form1_opened())));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_id(&ctx, fixture::form_answer::id1().value().to_string())
             .await;

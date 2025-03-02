@@ -41,7 +41,7 @@ mod tests {
         let repositories = MockRepositories::default();
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,

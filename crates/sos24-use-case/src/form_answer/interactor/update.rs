@@ -231,7 +231,7 @@ mod tests {
             .expect_find_by_owner_id()
             .returning(|_| {
                 Ok(Some(fixture::project::project_with_owners1(
-                    fixture::user::user1(UserRole::Committee),
+                    fixture::user::user1(UserRole::CommitteeViewer),
                 )))
             });
         repositories
@@ -256,7 +256,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,

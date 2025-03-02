@@ -53,7 +53,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .delete_by_id(&ctx, fixture::user::id1().value())
             .await;
