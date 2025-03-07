@@ -84,6 +84,7 @@ impl News {
     pub fn destruct(self) -> DestructedNews {
         DestructedNews {
             id: self.id,
+            state: self.state,
             title: self.title,
             body: self.body,
             attachments: self.attachments,
@@ -98,6 +99,7 @@ impl News {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DestructedNews {
     pub id: NewsId,
+    pub state: NewsState,
     pub title: NewsTitle,
     pub body: NewsBody,
     pub attachments: Vec<FileId>,
