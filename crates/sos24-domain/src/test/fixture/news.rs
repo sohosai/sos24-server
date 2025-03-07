@@ -1,11 +1,15 @@
 use crate::entity::file_data::FileId;
-use crate::entity::news::{News, NewsBody, NewsId, NewsTitle};
+use crate::entity::news::{News, NewsBody, NewsId, NewsState, NewsTitle};
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
 
 use super::datetime;
 
 pub fn id1() -> NewsId {
     NewsId::new(uuid::Uuid::from_u128(1))
+}
+
+pub fn state1() -> NewsState {
+    NewsState::Published
 }
 
 pub fn title1() -> NewsTitle {
@@ -31,6 +35,7 @@ pub fn attributes1() -> ProjectAttributes {
 pub fn news1() -> News {
     News::new(
         id1(),
+        state1(),
         title1(),
         body1(),
         attachments1(),
@@ -43,6 +48,10 @@ pub fn news1() -> News {
 
 pub fn id2() -> NewsId {
     NewsId::new(uuid::Uuid::from_u128(2))
+}
+
+pub fn state2() -> NewsState {
+    NewsState::Scheduled(datetime::now())
 }
 
 pub fn title2() -> NewsTitle {
@@ -68,6 +77,7 @@ pub fn attributes2() -> ProjectAttributes {
 pub fn news2() -> News {
     News::new(
         id2(),
+        state2(),
         title2(),
         body2(),
         attachments2(),

@@ -17,6 +17,8 @@ pub struct News {
     #[getset(get = "pub")]
     id: NewsId,
     #[getset(get = "pub")]
+    state: NewsState,
+    #[getset(get = "pub")]
     title: NewsTitle,
     #[getset(get = "pub")]
     body: NewsBody,
@@ -36,6 +38,7 @@ impl News {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: NewsId,
+        state: NewsState,
         title: NewsTitle,
         body: NewsBody,
         attachments: Vec<FileId>,
@@ -46,6 +49,7 @@ impl News {
     ) -> Self {
         Self {
             id,
+            state,
             title,
             body,
             attachments,
@@ -66,6 +70,7 @@ impl News {
         let now = DateTime::now();
         Self {
             id: NewsId::new(uuid::Uuid::new_v4()),
+            state: NewsState::Published,
             title,
             body,
             attachments,
@@ -109,6 +114,16 @@ impl News {
 
     pub fn is_updatable_by(&self, actor: &Actor) -> bool {
         actor.has_permission(Permissions::UPDATE_NEWS_ALL)
+    }
+
+    pub fn set_state(
+        &mut self,
+        actor: &Actor,
+        state: NewsState,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor));
+        self.state = state;
+        Ok(())
     }
 
     pub fn set_title(
@@ -181,3 +196,10 @@ impl TryFrom<String> for NewsId {
 
 impl_value_object!(NewsTitle(String));
 impl_value_object!(NewsBody(String));
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NewsState {
+    Draft,
+    Scheduled(DateTime),
+    Published,
+}
