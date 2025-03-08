@@ -1,9 +1,5 @@
 use sos24_domain::{
-    ensure,
-    entity::{
-        news::NewsId,
-        permission::{PermissionDeniedError, Permissions},
-    },
+    entity::{news::NewsId, permission::PermissionDeniedError},
     repository::{news::NewsRepository, Repositories},
 };
 
