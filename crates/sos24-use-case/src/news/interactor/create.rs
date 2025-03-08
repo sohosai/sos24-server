@@ -1,6 +1,8 @@
+use anyhow::anyhow;
 use sos24_domain::{
     ensure,
     entity::{
+        common::datetime::DateTime,
         file_data::FileId,
         news::{News, NewsBody, NewsState, NewsTitle},
         permission::Permissions,
@@ -34,6 +36,22 @@ pub struct CreateNewsCommand {
     pub attachments: Vec<String>,
     pub categories: ProjectCategoriesDto,
     pub attributes: ProjectAttributesDto,
+    pub scheduled_at: Option<String>,
+}
+
+impl CreateNewsCommand {
+    pub fn get_news_state(&self) -> Result<NewsState, NewsUseCaseError> {
+        match &self.state {
+            NewsStateDto::Draft => Ok(NewsState::Draft),
+            NewsStateDto::Scheduled => match &self.scheduled_at {
+                Some(date) => Ok(NewsState::Scheduled(DateTime::try_from(date.clone())?)),
+                None => Err(NewsUseCaseError::InternalError(anyhow!(
+                    "Invalid newsstate format"
+                ))),
+            },
+            NewsStateDto::Published => Ok(NewsState::Published),
+        }
+    }
 }
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
@@ -46,7 +64,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         ensure!(actor.has_permission(Permissions::CREATE_NEWS));
 
         let news = News::create(
-            NewsState::Draft,
+            raw_news.get_news_state()?,
             NewsTitle::new(raw_news.title),
             NewsBody::new(raw_news.body),
             raw_news
@@ -166,11 +184,12 @@ mod tests {
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
+        let (state, scheduled_at) = NewsStateDto::from_news_state(fixture::news::state1());
         let res = use_case
             .create(
                 &ctx,
                 CreateNewsCommand {
-                    state: NewsStateDto::from(fixture::news::state1()),
+                    state,
                     title: fixture::news::title1().value(),
                     body: fixture::news::body1().value(),
                     attachments: fixture::news::attachments1()
@@ -179,6 +198,7 @@ mod tests {
                         .collect(),
                     categories: ProjectCategoriesDto::from(fixture::news::categories1()),
                     attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
+                    scheduled_at,
                 },
             )
             .await;
@@ -213,11 +233,12 @@ mod tests {
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let (state, scheduled_at) = NewsStateDto::from_news_state(fixture::news::state1());
         let res = use_case
             .create(
                 &ctx,
                 CreateNewsCommand {
-                    state: NewsStateDto::from(fixture::news::state1()),
+                    state,
                     title: fixture::news::title1().value(),
                     body: fixture::news::body1().value(),
                     attachments: fixture::news::attachments1()
@@ -226,6 +247,7 @@ mod tests {
                         .collect(),
                     categories: ProjectCategoriesDto::from(fixture::news::categories1()),
                     attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
+                    scheduled_at,
                 },
             )
             .await;

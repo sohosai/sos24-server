@@ -10,22 +10,35 @@ use super::project::{ProjectAttributes, ProjectCategories};
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateNews {
+    state: CreateNewsState,
     title: String,
     body: String,
     #[schema(format = "uuid")]
     attachments: Vec<String>,
     categories: ProjectCategories,
     attributes: ProjectAttributes,
+    #[schema(format = "date-time")]
+    scheduled_at: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum CreateNewsState {
+    Draft,
+    Scheduled,
+    Published,
 }
 
 impl From<CreateNews> for CreateNewsCommand {
     fn from(news: CreateNews) -> Self {
         CreateNewsCommand {
+            state: news.state,
             title: news.title,
             body: news.body,
             attachments: news.attachments,
             categories: ProjectCategoriesDto::from(news.categories),
             attributes: ProjectAttributesDto::from(news.attributes),
+            scheduled_at: news.scheduled_at,
         }
     }
 }
@@ -55,11 +68,13 @@ impl ConvertToUpdateNewsDto for (String, UpdateNews) {
         let (id, news) = self;
         UpdateNewsCommand {
             id,
+            state: news.state,
             title: news.title,
             body: news.body,
             attachments: news.attachments,
             categories: ProjectCategoriesDto::from(news.categories),
             attributes: ProjectAttributesDto::from(news.attributes),
+            scheduled_at: news.scheduled_at,
         }
     }
 }

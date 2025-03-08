@@ -13,40 +13,35 @@ pub struct NewsDto {
     pub attributes: ProjectAttributesDto,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub scheduled_at: Option<String>,
 }
 
 #[derive(Debug)]
 pub enum NewsStateDto {
     Draft,
-    Scheduled(chrono::DateTime<chrono::Utc>),
+    Scheduled,
     Published,
 }
 
-impl From<NewsState> for NewsStateDto {
-    fn from(value: NewsState) -> NewsStateDto {
-        match value {
-            NewsState::Draft => NewsStateDto::Draft,
-            NewsState::Scheduled(date) => NewsStateDto::Scheduled(date.value()),
-            NewsState::Published => NewsStateDto::Published,
+impl NewsStateDto {
+    pub fn from_news_state(state: NewsState) -> (Self, Option<String>) {
+        match state {
+            NewsState::Draft => (NewsStateDto::Draft, None),
+            NewsState::Scheduled(date) => {
+                (NewsStateDto::Scheduled, Some(date.value().to_rfc3339()))
+            }
+            NewsState::Published => (NewsStateDto::Published, None),
         }
     }
 }
-// impl From<NewsStateDto> for NewsState {
-//     fn from(value: NewsStateDto) -> NewsState {
-//         match value {
-//             NewsStateDto::Draft => NewsState::Draft,
-//             NewsStateDto::Scheduled(date) => NewsState::Scheduled(datetime::DateTime::new(date)),
-//             NewsStateDto::Published => NewsState::Published,
-//         }
-//     }
-// }
 
 impl From<News> for NewsDto {
     fn from(news: News) -> Self {
         let news = news.destruct();
+        let (state, scheduled_at) = NewsStateDto::from_news_state(news.state);
         Self {
             id: news.id.value().to_string(),
-            state: NewsStateDto::from(news.state),
+            state,
             title: news.title.value(),
             body: news.body.value(),
             attachments: news
@@ -58,6 +53,7 @@ impl From<News> for NewsDto {
             attributes: ProjectAttributesDto::from(news.attributes),
             created_at: news.created_at.value(),
             updated_at: news.updated_at.value(),
+            scheduled_at,
         }
     }
 }

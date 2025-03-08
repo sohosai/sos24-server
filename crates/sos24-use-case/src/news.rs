@@ -9,6 +9,7 @@ use sos24_domain::entity::file_data::{FileId, FileIdError};
 use sos24_domain::repository::file_data::FileDataRepositoryError;
 use sos24_domain::{
     entity::{
+        common::datetime::DateTimeError,
         news::{NewsId, NewsIdError},
         permission::PermissionDeniedError,
     },
@@ -49,6 +50,8 @@ pub enum NewsUseCaseError {
     NewsIdError(#[from] NewsIdError),
     #[error(transparent)]
     PermissionDeniedError(#[from] PermissionDeniedError),
+    #[error(transparent)]
+    DateTimeError(#[from] DateTimeError),
     #[error(transparent)]
     InternalError(#[from] anyhow::Error),
 }
