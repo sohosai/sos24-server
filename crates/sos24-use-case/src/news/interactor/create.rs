@@ -2,7 +2,7 @@ use sos24_domain::{
     ensure,
     entity::{
         file_data::FileId,
-        news::{News, NewsBody, NewsTitle},
+        news::{News, NewsBody, NewsState, NewsTitle},
         permission::Permissions,
         project::{ProjectAttributes, ProjectCategories},
     },
@@ -13,7 +13,7 @@ use sos24_domain::{
 };
 
 use crate::{
-    news::{NewsUseCase, NewsUseCaseError},
+    news::{dto::NewsStateDto, NewsUseCase, NewsUseCaseError},
     project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
     shared::{
         adapter::{
@@ -28,6 +28,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct CreateNewsCommand {
+    pub state: NewsStateDto,
     pub title: String,
     pub body: String,
     pub attachments: Vec<String>,
@@ -45,6 +46,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         ensure!(actor.has_permission(Permissions::CREATE_NEWS));
 
         let news = News::create(
+            NewsState::Draft,
             NewsTitle::new(raw_news.title),
             NewsBody::new(raw_news.body),
             raw_news
@@ -146,7 +148,9 @@ mod tests {
     };
 
     use crate::{
-        news::{interactor::create::CreateNewsCommand, NewsUseCase, NewsUseCaseError},
+        news::{
+            dto::NewsStateDto, interactor::create::CreateNewsCommand, NewsUseCase, NewsUseCaseError,
+        },
         project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
         shared::{adapter::MockAdapters, context::TestContext},
     };
@@ -166,6 +170,7 @@ mod tests {
             .create(
                 &ctx,
                 CreateNewsCommand {
+                    state: NewsStateDto::from(fixture::news::state1()),
                     title: fixture::news::title1().value(),
                     body: fixture::news::body1().value(),
                     attachments: fixture::news::attachments1()
@@ -212,6 +217,7 @@ mod tests {
             .create(
                 &ctx,
                 CreateNewsCommand {
+                    state: NewsStateDto::from(fixture::news::state1()),
                     title: fixture::news::title1().value(),
                     body: fixture::news::body1().value(),
                     attachments: fixture::news::attachments1()

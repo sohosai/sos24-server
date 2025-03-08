@@ -61,6 +61,7 @@ impl News {
     }
 
     pub fn create(
+        state: NewsState,
         title: NewsTitle,
         body: NewsBody,
         attachments: Vec<FileId>,
@@ -70,7 +71,7 @@ impl News {
         let now = DateTime::now();
         Self {
             id: NewsId::new(uuid::Uuid::new_v4()),
-            state: NewsState::Published,
+            state,
             title,
             body,
             attachments,

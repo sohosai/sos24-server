@@ -9,7 +9,7 @@ use sos24_domain::{
     repository::{news::NewsRepository, Repositories},
 };
 
-use crate::news::{NewsUseCase, NewsUseCaseError};
+use crate::news::{dto::NewsStateDto, NewsUseCase, NewsUseCaseError};
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 use crate::shared::adapter::Adapters;
 use crate::shared::context::ContextProvider;
@@ -17,6 +17,7 @@ use crate::shared::context::ContextProvider;
 #[derive(Debug)]
 pub struct UpdateNewsCommand {
     pub id: String,
+    pub state: NewsStateDto,
     pub title: String,
     pub body: String,
     pub attachments: Vec<String>,
@@ -88,7 +89,9 @@ mod tests {
     };
 
     use crate::{
-        news::{interactor::update::UpdateNewsCommand, NewsUseCase, NewsUseCaseError},
+        news::{
+            dto::NewsStateDto, interactor::update::UpdateNewsCommand, NewsUseCase, NewsUseCaseError,
+        },
         project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
         shared::{adapter::MockAdapters, context::TestContext},
     };
@@ -113,6 +116,7 @@ mod tests {
                 &ctx,
                 UpdateNewsCommand {
                     id: fixture::news::id1().value().to_string(),
+                    state: NewsStateDto::from(fixture::news::state1()),
                     title: fixture::news::title2().value(),
                     body: fixture::news::body2().value(),
                     attachments: fixture::news::attachments2()
@@ -152,6 +156,7 @@ mod tests {
                 &ctx,
                 UpdateNewsCommand {
                     id: fixture::news::id1().value().to_string(),
+                    state: NewsStateDto::from(fixture::news::state1()),
                     title: fixture::news::title2().value(),
                     body: fixture::news::body2().value(),
                     attachments: fixture::news::attachments2()
