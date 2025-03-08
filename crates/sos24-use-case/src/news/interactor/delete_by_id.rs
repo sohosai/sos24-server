@@ -1,6 +1,9 @@
 use sos24_domain::{
     ensure,
-    entity::{news::NewsId, permission::Permissions},
+    entity::{
+        news::NewsId,
+        permission::{PermissionDeniedError, Permissions},
+    },
     repository::{news::NewsRepository, Repositories},
 };
 
@@ -17,14 +20,20 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         id: String,
     ) -> Result<(), NewsUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::DELETE_NEWS_ALL));
 
         let id = NewsId::try_from(id)?;
-        self.repositories
+        let news = self
+            .repositories
             .news_repository()
             .find_by_id(id.clone())
             .await?
             .ok_or(NewsUseCaseError::NotFound(id.clone()))?;
+
+        // check deletability for each news state
+        // and for each user role
+        if !news.is_deletable_by(&actor) {
+            return Err(PermissionDeniedError.into());
+        }
 
         self.repositories.news_repository().delete_by_id(id).await?;
         Ok(())

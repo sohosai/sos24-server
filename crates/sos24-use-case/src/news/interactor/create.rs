@@ -61,7 +61,13 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         raw_news: CreateNewsCommand,
     ) -> Result<String, NewsUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::CREATE_NEWS));
+        match raw_news.state {
+            NewsStateDto::Draft => ensure!(actor.has_permission(Permissions::CREATE_DRAFT_NEWS)),
+            NewsStateDto::Scheduled => {
+                ensure!(actor.has_permission(Permissions::CREATE_SCHEDULED_NEWS))
+            }
+            NewsStateDto::Published => ensure!(actor.has_permission(Permissions::CREATE_NEWS)),
+        }
 
         let news = News::create(
             raw_news.get_news_state()?,

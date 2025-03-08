@@ -1,6 +1,9 @@
 use sos24_domain::{
     ensure,
-    entity::{news::NewsId, permission::Permissions},
+    entity::{
+        news::{NewsId, NewsState},
+        permission::Permissions,
+    },
     repository::{news::NewsRepository, Repositories},
 };
 
@@ -17,7 +20,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         id: String,
     ) -> Result<NewsDto, NewsUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
+        ensure!(actor.has_permission(Permissions::READ_NEWS_ALL)); // first check of visibility
 
         let id = NewsId::try_from(id)?;
         let raw_news = self
@@ -25,7 +28,14 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
             .news_repository()
             .find_by_id(id.clone())
             .await?
-            .ok_or(NewsUseCaseError::NotFound(id))?;
+            .ok_or(NewsUseCaseError::NotFound(id.clone()))?;
+
+        // check visibility for each state of news
+        // and for each user role
+        if !raw_news.is_visible_to(&actor) {
+            return Err(NewsUseCaseError::NotFound(id));
+        }
+
         Ok(NewsDto::from(raw_news))
     }
 }

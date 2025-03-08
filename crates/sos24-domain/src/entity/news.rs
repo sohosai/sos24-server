@@ -112,11 +112,27 @@ pub struct DestructedNews {
 
 impl News {
     pub fn is_visible_to(&self, actor: &Actor) -> bool {
-        actor.has_permission(Permissions::READ_NEWS_ALL)
+        match self.state {
+            NewsState::Draft => actor.has_permission(Permissions::READ_DRAFT_NEWS_ALL),
+            NewsState::Scheduled(_) => actor.has_permission(Permissions::READ_SCHEDULED_NEWS_ALL),
+            NewsState::Published => actor.has_permission(Permissions::READ_NEWS_ALL),
+        }
     }
 
     pub fn is_updatable_by(&self, actor: &Actor) -> bool {
-        actor.has_permission(Permissions::UPDATE_NEWS_ALL)
+        match self.state {
+            NewsState::Draft => actor.has_permission(Permissions::UPDATE_DRAFT_NEWS_ALL),
+            NewsState::Scheduled(_) => actor.has_permission(Permissions::UPDATE_SCHEDULED_NEWS_ALL),
+            NewsState::Published => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+        }
+    }
+
+    pub fn is_deletable_by(&self, actor: &Actor) -> bool {
+        match self.state {
+            NewsState::Draft => actor.has_permission(Permissions::DELETE_DRAFT_NEWS_ALL),
+            NewsState::Scheduled(_) => actor.has_permission(Permissions::DELETE_SCHEDULED_NEWS_ALL),
+            NewsState::Published => actor.has_permission(Permissions::DELETE_NEWS_ALL),
+        }
     }
 
     pub fn set_state(
