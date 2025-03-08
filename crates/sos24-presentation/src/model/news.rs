@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use sos24_use_case::news::dto::NewsDto;
+use sos24_use_case::news::dto::{NewsDto, NewsStateDto};
 use sos24_use_case::news::interactor::create::CreateNewsCommand;
 use sos24_use_case::news::interactor::update::UpdateNewsCommand;
 use sos24_use_case::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
@@ -29,10 +29,20 @@ pub enum CreateNewsState {
     Published,
 }
 
+impl From<CreateNewsState> for NewsStateDto {
+    fn from(value: CreateNewsState) -> Self {
+        match value {
+            CreateNewsState::Draft => NewsStateDto::Draft,
+            CreateNewsState::Scheduled => NewsStateDto::Scheduled,
+            CreateNewsState::Published => NewsStateDto::Published,
+        }
+    }
+}
+
 impl From<CreateNews> for CreateNewsCommand {
     fn from(news: CreateNews) -> Self {
         CreateNewsCommand {
-            state: news.state,
+            state: NewsStateDto::from(news.state),
             title: news.title,
             body: news.body,
             attachments: news.attachments,
@@ -51,12 +61,15 @@ pub struct CreatedNews {
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UpdateNews {
+    state: CreateNewsState,
     title: String,
     body: String,
     #[schema(format = "uuid")]
     attachments: Vec<String>,
     categories: ProjectCategories,
     attributes: ProjectAttributes,
+    #[schema(format = "date-time")]
+    scheduled_at: Option<String>,
 }
 
 pub trait ConvertToUpdateNewsDto {
@@ -68,7 +81,7 @@ impl ConvertToUpdateNewsDto for (String, UpdateNews) {
         let (id, news) = self;
         UpdateNewsCommand {
             id,
-            state: news.state,
+            state: NewsStateDto::from(news.state),
             title: news.title,
             body: news.body,
             attachments: news.attachments,
