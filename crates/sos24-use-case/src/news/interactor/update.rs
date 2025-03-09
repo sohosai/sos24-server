@@ -62,13 +62,15 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         if !news.is_visible_to(&actor) {
             return Err(NewsUseCaseError::NotFound(id));
         }
-        if !news.is_updatable_by(&actor) {
+
+        let new_state = news_data.get_news_state()?;
+        if !news.is_updatable_by(&actor, &new_state) {
             return Err(PermissionDeniedError.into());
         }
 
         let mut new_news = news;
 
-        new_news.set_state(&actor, news_data.get_news_state()?)?;
+        new_news.set_state(&actor, new_state)?;
         new_news.set_title(&actor, NewsTitle::new(news_data.title))?;
         new_news.set_body(&actor, NewsBody::new(news_data.body))?;
 

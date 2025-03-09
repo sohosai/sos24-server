@@ -119,11 +119,33 @@ impl News {
         }
     }
 
-    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
+    fn is_updatable_by_without_changing_state(&self, actor: &Actor) -> bool {
         match self.state {
             NewsState::Draft => actor.has_permission(Permissions::UPDATE_DRAFT_NEWS_ALL),
             NewsState::Scheduled(_) => actor.has_permission(Permissions::UPDATE_SCHEDULED_NEWS_ALL),
             NewsState::Published => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+        }
+    }
+
+    pub fn is_updatable_by(&self, actor: &Actor, new_state: &NewsState) -> bool {
+        match self.state {
+            NewsState::Draft => match new_state {
+                NewsState::Draft => actor.has_permission(Permissions::UPDATE_DRAFT_NEWS_ALL),
+                NewsState::Scheduled(_) => actor.has_permission(Permissions::CREATE_SCHEDULED_NEWS),
+                NewsState::Published => actor.has_permission(Permissions::CREATE_NEWS),
+            },
+            NewsState::Scheduled(_) => match new_state {
+                NewsState::Draft => actor.has_permission(Permissions::UPDATE_SCHEDULED_NEWS_ALL),
+                NewsState::Scheduled(_) => {
+                    actor.has_permission(Permissions::UPDATE_SCHEDULED_NEWS_ALL)
+                }
+                NewsState::Published => actor.has_permission(Permissions::CREATE_NEWS),
+            },
+            NewsState::Published => match new_state {
+                NewsState::Draft => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+                NewsState::Scheduled(_) => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+                NewsState::Published => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+            },
         }
     }
 
@@ -140,7 +162,7 @@ impl News {
         actor: &Actor,
         state: NewsState,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by(actor, &state));
         self.state = state;
         Ok(())
     }
@@ -150,13 +172,13 @@ impl News {
         actor: &Actor,
         title: NewsTitle,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.title = title;
         Ok(())
     }
 
     pub fn set_body(&mut self, actor: &Actor, body: NewsBody) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.body = body;
         Ok(())
     }
@@ -166,7 +188,7 @@ impl News {
         actor: &Actor,
         attachments: Vec<FileId>,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.attachments = attachments;
         Ok(())
     }
@@ -176,7 +198,7 @@ impl News {
         actor: &Actor,
         categories: ProjectCategories,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.categories = categories;
         Ok(())
     }
@@ -186,7 +208,7 @@ impl News {
         actor: &Actor,
         attributes: ProjectAttributes,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.attributes = attributes;
         Ok(())
     }
