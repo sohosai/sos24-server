@@ -45,6 +45,11 @@ async fn main() {
                 .check_form_and_send_notify(&ctx)
                 .await
                 .expect("Failed to check form and send notify");
+            modules
+                .news_use_case()
+                .check_news_and_send_notify(&ctx)
+                .await
+                .expect("Failed to check news and send notify");
             tracing::info!("cronjobを実行しました");
         })
     })
