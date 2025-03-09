@@ -1,0 +1,85 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, state AS \"state: NewsStateRow\", title, body, attachments, categories, attributes, created_at, updated_at, scheduled_at FROM news WHERE deleted_at IS NULL ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "state: NewsStateRow",
+        "type_info": {
+          "Custom": {
+            "name": "news_state",
+            "kind": {
+              "Enum": [
+                "draft",
+                "scheduled",
+                "published"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "body",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "attachments",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "categories",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "attributes",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "scheduled_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "3c973c28e6594557595a18aa14ad415cbdb27ecdd9a348324308664826816142"
+}
