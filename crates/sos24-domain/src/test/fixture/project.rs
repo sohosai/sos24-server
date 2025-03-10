@@ -2,7 +2,7 @@ use crate::{
     entity::{
         project::{
             Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectIndex,
-            ProjectKanaGroupName, ProjectKanaTitle, ProjectTitle,
+            ProjectKanaGroupName, ProjectKanaTitle, ProjectLocationId, ProjectTitle,
         },
         user::{User, UserId},
     },
@@ -43,6 +43,10 @@ pub fn attributes1() -> ProjectAttributes {
     ProjectAttributes::OUTSIDE
 }
 
+pub fn location_id1() -> ProjectLocationId {
+    ProjectLocationId::new("3C213".to_string())
+}
+
 pub fn project1(owner_id: UserId) -> Project {
     Project::new(
         id1(),
@@ -54,6 +58,7 @@ pub fn project1(owner_id: UserId) -> Project {
         category1(),
         attributes1(),
         owner_id,
+        None,
         None,
         None,
         datetime::now(),
@@ -114,6 +119,7 @@ pub fn project2(owner_id: UserId) -> Project {
         owner_id,
         None,
         None,
+        Some(location_id1()),
         datetime::now(),
         datetime::now(),
     )
