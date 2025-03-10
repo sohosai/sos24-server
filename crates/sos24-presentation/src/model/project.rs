@@ -54,6 +54,7 @@ pub struct UpdateProject {
     category: ProjectCategory,
     attributes: ProjectAttributes,
     remarks: Option<String>,
+    location_id: Option<String>,
 }
 
 pub trait ConvertToUpdateProjectDto {
@@ -72,6 +73,7 @@ impl ConvertToUpdateProjectDto for (UpdateProject, String) {
             category: ProjectCategoryDto::from(project.category),
             attributes: ProjectAttributesDto::from(project.attributes),
             remarks: project.remarks,
+            location_id: project.location_id,
         }
     }
 }
@@ -94,6 +96,7 @@ pub struct Project {
     sub_owner_name: Option<String>,
     sub_owner_email: Option<String>,
     remarks: Option<String>,
+    location_id: Option<String>,
     #[schema(format = "date-time")]
     created_at: String,
     #[schema(format = "date-time")]
@@ -118,6 +121,7 @@ impl From<ProjectDto> for Project {
             sub_owner_name: project.sub_owner_name,
             sub_owner_email: project.sub_owner_email,
             remarks: project.remarks,
+            location_id: project.location_id,
             created_at: project.created_at.to_rfc3339(),
             updated_at: project.updated_at.to_rfc3339(),
         }
@@ -162,6 +166,8 @@ pub struct ProjectToBeExported {
     attributes_official: bool,
     #[serde(rename(serialize = "備考"))]
     remarks: Option<String>,
+    #[serde(rename(serialize = "場所番号"))]
+    location_id: Option<String>,
     #[serde(rename(serialize = "作成日時"))]
     created_at: String,
 }
@@ -193,6 +199,7 @@ impl From<ProjectDto> for ProjectToBeExported {
                 .0
                 .contains(&ProjectAttributeDto::Official),
             remarks: project.remarks,
+            location_id: project.location_id,
             created_at: project
                 .created_at
                 .with_timezone(&Tokyo)
@@ -216,6 +223,7 @@ pub struct ProjectSummary {
     owner_email: String,
     group_name: String,
     kana_group_name: String,
+    location_id: Option<String>,
 }
 
 impl From<ProjectDto> for ProjectSummary {
@@ -232,6 +240,7 @@ impl From<ProjectDto> for ProjectSummary {
             owner_email: project.owner_email,
             group_name: project.group_name,
             kana_group_name: project.kana_group_name,
+            location_id: project.location_id,
         }
     }
 }

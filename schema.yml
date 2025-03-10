@@ -2533,6 +2533,10 @@ components:
           type: string
         kana_title:
           type: string
+        location_id:
+          type:
+          - string
+          - 'null'
         owner_email:
           type: string
         owner_id:
@@ -2629,6 +2633,10 @@ components:
           type: string
         kana_title:
           type: string
+        location_id:
+          type:
+          - string
+          - 'null'
         owner_email:
           type: string
         owner_id:
@@ -2731,6 +2739,10 @@ components:
           type: string
         kana_title:
           type: string
+        location_id:
+          type:
+          - string
+          - 'null'
         remarks:
           type:
           - string
