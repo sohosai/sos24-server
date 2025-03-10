@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n            projects.id AS \"project_id\",\n            projects.index AS \"project_index\",\n            projects.title AS \"project_title\",\n            projects.kana_title AS \"project_kana_title\",\n            projects.group_name AS \"project_group_name\",\n            projects.kana_group_name AS \"project_kana_group_name\",\n            projects.category AS \"project_category: ProjectCategoryRow\",\n            projects.attributes AS \"project_attributes\",\n            projects.owner_id AS \"project_owner_id\",\n            projects.sub_owner_id AS \"project_sub_owner_id\",\n            projects.remarks AS \"project_remarks\",\n            projects.created_at AS \"project_created_at\",\n            projects.updated_at AS \"project_updated_at\",\n            owners.id AS \"owner_id\",\n            owners.name AS \"owner_name\",\n            owners.kana_name AS \"owner_kana_name\",\n            owners.email AS \"owner_email\",\n            owners.phone_number AS \"owner_phone_number\",\n            owners.role AS \"owner_role: UserRoleRow\",\n            owners.created_at AS \"owner_created_at\",\n            owners.updated_at AS \"owner_updated_at\",\n            sub_owners.id AS \"sub_owner_id?\",\n            sub_owners.name AS \"sub_owner_name?\",\n            sub_owners.kana_name AS \"sub_owner_kana_name?\",\n            sub_owners.email AS \"sub_owner_email?\",\n            sub_owners.phone_number AS \"sub_owner_phone_number?\",\n            sub_owners.role AS \"sub_owner_role?: UserRoleRow\",\n            sub_owners.created_at AS \"sub_owner_created_at?\",\n            sub_owners.updated_at AS \"sub_owner_updated_at?\"\n            FROM projects\n            INNER JOIN users AS owners ON projects.owner_id = owners.id AND owners.deleted_at IS NULL\n            LEFT JOIN users AS sub_owners ON projects.sub_owner_id = sub_owners.id AND sub_owners.deleted_at IS NULL\n            WHERE projects.deleted_at IS NULL\n            ORDER BY projects.index ASC",
+  "query": "SELECT\n            projects.id AS \"project_id\",\n            projects.index AS \"project_index\",\n            projects.title AS \"project_title\",\n            projects.kana_title AS \"project_kana_title\",\n            projects.group_name AS \"project_group_name\",\n            projects.kana_group_name AS \"project_kana_group_name\",\n            projects.category AS \"project_category: ProjectCategoryRow\",\n            projects.attributes AS \"project_attributes\",\n            projects.owner_id AS \"project_owner_id\",\n            projects.sub_owner_id AS \"project_sub_owner_id\",\n            projects.remarks AS \"project_remarks\",\n            projects.location_id AS \"project_location_id\",\n            projects.created_at AS \"project_created_at\",\n            projects.updated_at AS \"project_updated_at\",\n            owners.id AS \"owner_id\",\n            owners.name AS \"owner_name\",\n            owners.kana_name AS \"owner_kana_name\",\n            owners.email AS \"owner_email\",\n            owners.phone_number AS \"owner_phone_number\",\n            owners.role AS \"owner_role: UserRoleRow\",\n            owners.created_at AS \"owner_created_at\",\n            owners.updated_at AS \"owner_updated_at\",\n            sub_owners.id AS \"sub_owner_id?\",\n            sub_owners.name AS \"sub_owner_name?\",\n            sub_owners.kana_name AS \"sub_owner_kana_name?\",\n            sub_owners.email AS \"sub_owner_email?\",\n            sub_owners.phone_number AS \"sub_owner_phone_number?\",\n            sub_owners.role AS \"sub_owner_role?: UserRoleRow\",\n            sub_owners.created_at AS \"sub_owner_created_at?\",\n            sub_owners.updated_at AS \"sub_owner_updated_at?\"\n            FROM projects\n            INNER JOIN users AS owners ON projects.owner_id = owners.id AND owners.deleted_at IS NULL\n            LEFT JOIN users AS sub_owners ON projects.sub_owner_id = sub_owners.id AND sub_owners.deleted_at IS NULL\n            WHERE projects.owner_id = $1 AND projects.deleted_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -75,41 +75,46 @@
       },
       {
         "ordinal": 11,
+        "name": "project_location_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
         "name": "project_created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 12,
+        "ordinal": 13,
         "name": "project_updated_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 13,
+        "ordinal": 14,
         "name": "owner_id",
         "type_info": "Text"
       },
       {
-        "ordinal": 14,
+        "ordinal": 15,
         "name": "owner_name",
         "type_info": "Text"
       },
       {
-        "ordinal": 15,
+        "ordinal": 16,
         "name": "owner_kana_name",
         "type_info": "Text"
       },
       {
-        "ordinal": 16,
+        "ordinal": 17,
         "name": "owner_email",
         "type_info": "Text"
       },
       {
-        "ordinal": 17,
+        "ordinal": 18,
         "name": "owner_phone_number",
         "type_info": "Text"
       },
       {
-        "ordinal": 18,
+        "ordinal": 19,
         "name": "owner_role: UserRoleRow",
         "type_info": {
           "Custom": {
@@ -128,42 +133,42 @@
         }
       },
       {
-        "ordinal": 19,
+        "ordinal": 20,
         "name": "owner_created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 20,
+        "ordinal": 21,
         "name": "owner_updated_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 21,
+        "ordinal": 22,
         "name": "sub_owner_id?",
         "type_info": "Text"
       },
       {
-        "ordinal": 22,
+        "ordinal": 23,
         "name": "sub_owner_name?",
         "type_info": "Text"
       },
       {
-        "ordinal": 23,
+        "ordinal": 24,
         "name": "sub_owner_kana_name?",
         "type_info": "Text"
       },
       {
-        "ordinal": 24,
+        "ordinal": 25,
         "name": "sub_owner_email?",
         "type_info": "Text"
       },
       {
-        "ordinal": 25,
+        "ordinal": 26,
         "name": "sub_owner_phone_number?",
         "type_info": "Text"
       },
       {
-        "ordinal": 26,
+        "ordinal": 27,
         "name": "sub_owner_role?: UserRoleRow",
         "type_info": {
           "Custom": {
@@ -182,18 +187,20 @@
         }
       },
       {
-        "ordinal": 27,
+        "ordinal": 28,
         "name": "sub_owner_created_at?",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 28,
+        "ordinal": 29,
         "name": "sub_owner_updated_at?",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Text"
+      ]
     },
     "nullable": [
       false,
@@ -205,6 +212,7 @@
       false,
       false,
       false,
+      true,
       true,
       true,
       false,
@@ -227,5 +235,5 @@
       false
     ]
   },
-  "hash": "c7d81f6ff993bb8c6751d76b7fe44470f1827f91946d25a153bf59d9f9075449"
+  "hash": "d3e2e1c95dd8b11f80fcd4f22ff6b1527f133faa1cb09894033089182e381bb6"
 }
