@@ -26,6 +26,7 @@ pub struct ProjectDto {
     pub sub_owner_email: Option<String>,
     pub sub_owner_phone_number: Option<String>,
     pub remarks: Option<String>,
+    pub location_id: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
@@ -62,6 +63,7 @@ impl From<ProjectWithOwners> for ProjectDto {
             sub_owner_email,
             sub_owner_phone_number,
             remarks: project.remarks.map(|it| it.value()),
+            location_id: project.location_id.map(|it| it.value()),
             created_at: project.created_at.value(),
             updated_at: project.updated_at.value(),
         }
