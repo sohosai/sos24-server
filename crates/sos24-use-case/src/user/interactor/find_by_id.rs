@@ -70,7 +70,7 @@ mod tests {
         repositories
             .user_repository_mut()
             .expect_find_by_id()
-            .returning(|_| Ok(Some(fixture::user::user1(UserRole::Committee))));
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::CommitteeViewer))));
         repositories
             .project_repository_mut()
             .expect_find_by_owner_id()
@@ -81,7 +81,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_id(&ctx, fixture::user::id1().value())
             .await;
@@ -105,7 +105,7 @@ mod tests {
             .returning(|_| Ok(None));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_id(&ctx, fixture::user::id2().value())
             .await;

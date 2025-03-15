@@ -60,7 +60,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .delete_by_id(&ctx, fixture::news::id1().value().to_string())
             .await;

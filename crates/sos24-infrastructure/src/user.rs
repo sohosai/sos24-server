@@ -48,7 +48,9 @@ impl TryFrom<UserRow> for User {
 pub enum UserRoleRow {
     Administrator,
     CommitteeOperator,
-    Committee,
+    CommitteeEditor,
+    CommitteeDrafter,
+    CommitteeViewer,
     General,
 }
 
@@ -57,7 +59,9 @@ impl From<UserRoleRow> for UserRole {
         match value {
             UserRoleRow::Administrator => UserRole::Administrator,
             UserRoleRow::CommitteeOperator => UserRole::CommitteeOperator,
-            UserRoleRow::Committee => UserRole::Committee,
+            UserRoleRow::CommitteeEditor => UserRole::CommitteeEditor,
+            UserRoleRow::CommitteeDrafter => UserRole::CommitteeDrafter,
+            UserRoleRow::CommitteeViewer => UserRole::CommitteeViewer,
             UserRoleRow::General => UserRole::General,
         }
     }
@@ -68,7 +72,9 @@ impl From<UserRole> for UserRoleRow {
         match value {
             UserRole::Administrator => UserRoleRow::Administrator,
             UserRole::CommitteeOperator => UserRoleRow::CommitteeOperator,
-            UserRole::Committee => UserRoleRow::Committee,
+            UserRole::CommitteeEditor => UserRoleRow::CommitteeEditor,
+            UserRole::CommitteeDrafter => UserRoleRow::CommitteeDrafter,
+            UserRole::CommitteeViewer => UserRoleRow::CommitteeViewer,
             UserRole::General => UserRoleRow::General,
         }
     }

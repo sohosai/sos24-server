@@ -61,7 +61,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .delete_by_id(&ctx, fixture::form::id1().value().to_string())
             .await;

@@ -87,7 +87,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .create(
                 &ctx,
@@ -117,7 +117,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .create(
                 &ctx,
@@ -147,7 +147,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .create(
                 &ctx,

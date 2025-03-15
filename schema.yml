@@ -2778,7 +2778,9 @@ components:
       enum:
       - administrator
       - committee_operator
-      - committee
+      - committee_editor
+      - committee_drafter
+      - committee_viewer
       - general
     UserSummary:
       type: object

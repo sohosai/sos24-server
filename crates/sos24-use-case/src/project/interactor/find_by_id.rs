@@ -121,7 +121,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_id(&ctx, fixture::project::id1().value().to_string())
             .await;
