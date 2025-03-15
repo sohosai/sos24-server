@@ -1823,6 +1823,7 @@ components:
     CreateNews:
       type: object
       required:
+      - state
       - title
       - body
       - attachments
@@ -1840,8 +1841,21 @@ components:
           type: string
         categories:
           $ref: '#/components/schemas/ProjectCategories'
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          $ref: '#/components/schemas/CreateNewsState'
         title:
           type: string
+    CreateNewsState:
+      type: string
+      enum:
+      - draft
+      - scheduled
+      - published
     CreateProject:
       type: object
       required:
@@ -2432,6 +2446,7 @@ components:
       type: object
       required:
       - id
+      - state
       - title
       - body
       - attachments
@@ -2457,6 +2472,13 @@ components:
         id:
           type: string
           format: uuid
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          type: string
         title:
           type: string
         updated_at:
@@ -2466,6 +2488,7 @@ components:
       type: object
       required:
       - id
+      - state
       - title
       - categories
       - attributes
@@ -2478,6 +2501,13 @@ components:
         id:
           type: string
           format: uuid
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          type: string
         title:
           type: string
         updated_at:
@@ -2670,6 +2700,7 @@ components:
     UpdateNews:
       type: object
       required:
+      - state
       - title
       - body
       - attachments
@@ -2687,6 +2718,13 @@ components:
           type: string
         categories:
           $ref: '#/components/schemas/ProjectCategories'
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          $ref: '#/components/schemas/CreateNewsState'
         title:
           type: string
     UpdateProject:

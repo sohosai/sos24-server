@@ -296,6 +296,7 @@ impl From<NewsUseCaseError> for AppError {
             NewsUseCaseError::FileDataRepositoryError(e) => e.into(),
             NewsUseCaseError::ProjectRepositoryError(e) => e.into(),
             NewsUseCaseError::UserRepositoryError(e) => e.into(),
+            NewsUseCaseError::DateTimeError(e) => e.into(),
         }
     }
 }

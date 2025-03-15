@@ -15,7 +15,9 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         let actor = ctx.actor(&*self.repositories).await?;
         ensure!(actor.has_permission(Permissions::READ_NEWS_ALL));
 
-        let raw_news_list = self.repositories.news_repository().list().await?;
+        let mut raw_news_list = self.repositories.news_repository().list().await?;
+        raw_news_list.retain(|news| news.is_visible_to(&actor)); // check visibility
+                                                                 // and remove invisible elements
         let news_list = raw_news_list.into_iter().map(NewsDto::from);
         Ok(news_list.collect())
     }

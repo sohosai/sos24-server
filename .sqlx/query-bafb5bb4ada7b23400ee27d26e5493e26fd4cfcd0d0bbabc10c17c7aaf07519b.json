@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, title, body, attachments, categories, attributes, created_at, updated_at FROM news WHERE id = $1 AND deleted_at IS NULL",
+  "query": "SELECT id,  state AS \"state: NewsStateRow\", title, body, attachments, categories, attributes, created_at, updated_at, scheduled_at FROM news WHERE id = $1 AND deleted_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -10,37 +10,58 @@
       },
       {
         "ordinal": 1,
+        "name": "state: NewsStateRow",
+        "type_info": {
+          "Custom": {
+            "name": "news_state",
+            "kind": {
+              "Enum": [
+                "draft",
+                "scheduled",
+                "published"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
         "name": "title",
         "type_info": "Text"
       },
       {
-        "ordinal": 2,
+        "ordinal": 3,
         "name": "body",
         "type_info": "Text"
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
         "name": "attachments",
         "type_info": "UuidArray"
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "categories",
         "type_info": "Int4"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "attributes",
         "type_info": "Int4"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "created_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "scheduled_at",
         "type_info": "Timestamptz"
       }
     ],
@@ -57,8 +78,10 @@
       false,
       false,
       false,
-      false
+      false,
+      false,
+      true
     ]
   },
-  "hash": "1c205d7574937dfb966050a22db8dc1da738601ba427e30968d16f60aa663872"
+  "hash": "bafb5bb4ada7b23400ee27d26e5493e26fd4cfcd0d0bbabc10c17c7aaf07519b"
 }

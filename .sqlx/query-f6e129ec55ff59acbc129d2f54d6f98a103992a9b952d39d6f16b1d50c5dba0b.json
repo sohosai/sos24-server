@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE news SET state = $2, title = $3, body = $4, attachments = $5, categories = $6, attributes = $7, scheduled_at = $8 WHERE id = $1 and deleted_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "news_state",
+            "kind": {
+              "Enum": [
+                "draft",
+                "scheduled",
+                "published"
+              ]
+            }
+          }
+        },
+        "Text",
+        "Text",
+        "UuidArray",
+        "Int4",
+        "Int4",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f6e129ec55ff59acbc129d2f54d6f98a103992a9b952d39d6f16b1d50c5dba0b"
+}
