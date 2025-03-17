@@ -1847,15 +1847,9 @@ components:
           - 'null'
           format: date-time
         state:
-          $ref: '#/components/schemas/CreateNewsState'
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
-    CreateNewsState:
-      type: string
-      enum:
-      - draft
-      - scheduled
-      - published
     CreateProject:
       type: object
       required:
@@ -2478,12 +2472,18 @@ components:
           - 'null'
           format: date-time
         state:
-          type: string
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
         updated_at:
           type: string
           format: date-time
+    NewsState:
+      type: string
+      enum:
+      - draft
+      - scheduled
+      - published
     NewsSummary:
       type: object
       required:
@@ -2507,7 +2507,7 @@ components:
           - 'null'
           format: date-time
         state:
-          type: string
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
         updated_at:
@@ -2732,7 +2732,7 @@ components:
           - 'null'
           format: date-time
         state:
-          $ref: '#/components/schemas/CreateNewsState'
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
     UpdateProject:
