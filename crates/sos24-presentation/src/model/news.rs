@@ -10,7 +10,7 @@ use super::project::{ProjectAttributes, ProjectCategories};
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateNews {
-    state: CreateNewsState,
+    state: NewsState,
     title: String,
     body: String,
     #[schema(format = "uuid")]
@@ -23,18 +23,28 @@ pub struct CreateNews {
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum CreateNewsState {
+pub enum NewsState {
     Draft,
     Scheduled,
     Published,
 }
 
-impl From<CreateNewsState> for NewsStateDto {
-    fn from(value: CreateNewsState) -> Self {
+impl From<NewsState> for NewsStateDto {
+    fn from(value: NewsState) -> Self {
         match value {
-            CreateNewsState::Draft => NewsStateDto::Draft,
-            CreateNewsState::Scheduled => NewsStateDto::Scheduled,
-            CreateNewsState::Published => NewsStateDto::Published,
+            NewsState::Draft => NewsStateDto::Draft,
+            NewsState::Scheduled => NewsStateDto::Scheduled,
+            NewsState::Published => NewsStateDto::Published,
+        }
+    }
+}
+
+impl From<NewsStateDto> for NewsState {
+    fn from(value: NewsStateDto) -> Self {
+        match value {
+            NewsStateDto::Draft => NewsState::Draft,
+            NewsStateDto::Scheduled => NewsState::Scheduled,
+            NewsStateDto::Published => NewsState::Published,
         }
     }
 }
@@ -61,7 +71,7 @@ pub struct CreatedNews {
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct UpdateNews {
-    state: CreateNewsState,
+    state: NewsState,
     title: String,
     body: String,
     #[schema(format = "uuid")]
@@ -92,25 +102,11 @@ impl ConvertToUpdateNewsDto for (String, UpdateNews) {
     }
 }
 
-pub trait ConvertToString {
-    fn to_string(&self) -> String;
-}
-
-impl ConvertToString for NewsStateDto {
-    fn to_string(&self) -> String {
-        match self {
-            NewsStateDto::Draft => "draft".to_string(),
-            NewsStateDto::Scheduled => "scheduled".to_string(),
-            NewsStateDto::Published => "published".to_string(),
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct News {
     #[schema(format = "uuid")]
     pub id: String,
-    pub state: String,
+    pub state: NewsState,
     pub title: String,
     pub body: String,
     #[schema(format = "uuid")]
@@ -129,7 +125,7 @@ impl From<NewsDto> for News {
     fn from(news: NewsDto) -> Self {
         News {
             id: news.id,
-            state: news.state.to_string(),
+            state: NewsState::from(news.state),
             title: news.title,
             body: news.body,
             attachments: news.attachments,
@@ -146,7 +142,7 @@ impl From<NewsDto> for News {
 pub struct NewsSummary {
     #[schema(format = "uuid")]
     id: String,
-    state: String,
+    state: NewsState,
     title: String,
     categories: ProjectCategories,
     attributes: ProjectAttributes,
@@ -160,7 +156,7 @@ impl From<NewsDto> for NewsSummary {
     fn from(news: NewsDto) -> Self {
         NewsSummary {
             id: news.id,
-            state: news.state.to_string(),
+            state: NewsState::from(news.state),
             title: news.title,
             categories: ProjectCategories::from(news.categories),
             attributes: ProjectAttributes::from(news.attributes),
