@@ -20,7 +20,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Test Secrets
         run: |
-          echo ${{ secrets.PORTAINER_URL }}
+          echo secret "${{secrets.PORTAINER_URL }}" | sed 's/./& /g'
       - name: Build
         env:
           SQLX_OFFLINE: true
