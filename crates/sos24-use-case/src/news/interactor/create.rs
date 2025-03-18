@@ -153,15 +153,6 @@ Email : {email}
 
         self.adapters
             .notifier()
-            .notify(format!(
-                "お知らせ「{}」が投稿されました。\n{}",
-                news.title().clone().value(),
-                app_url::committee_news(ctx, news_id.clone())
-            ))
-            .await?;
-
-        self.adapters
-            .notifier()
             .notify(match news.state() {
                 NewsState::Draft => format!(
                     "お知らせ「{}」が下書きとして保存されました。\n{}",
