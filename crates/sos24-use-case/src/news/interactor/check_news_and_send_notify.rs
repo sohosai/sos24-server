@@ -26,17 +26,7 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
     ) -> Result<(), NewsUseCaseError> {
         let news_list = self.repositories.news_repository().list().await?;
         let news_list_to_notify = news_list.into_iter().filter(|news| match news.state() {
-            NewsState::Scheduled(date) => {
-                tracing::info!(
-                    "{}",
-                    format!(
-                        "リクエスト日時: {}, お知らせの予約日時: {}",
-                        ctx.requested_at().to_rfc3339(),
-                        date.clone().value().to_rfc3339()
-                    )
-                );
-                ctx.requested_at() <= &date.clone().value()
-            }
+            NewsState::Scheduled(date) => ctx.requested_at() <= &date.clone().value(),
             _ => false,
         });
 
