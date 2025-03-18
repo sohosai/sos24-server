@@ -97,37 +97,38 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
             .create(news.clone())
             .await?;
 
-        let project_list = self.repositories.project_repository().list().await?;
-        let target_project_list = project_list
-            .into_iter()
-            .filter(|project_with_owners| news.is_sent_to(&project_with_owners.project));
+        if let NewsState::Published = news.state() {
+            let project_list = self.repositories.project_repository().list().await?;
+            let target_project_list = project_list
+                .into_iter()
+                .filter(|project_with_owners| news.is_sent_to(&project_with_owners.project));
 
-        let emails = target_project_list
-            .flat_map(|project_with_owners| {
-                [
-                    Some(project_with_owners.owner.email().clone().value()),
-                    project_with_owners
-                        .sub_owner
-                        .as_ref()
-                        .map(|it| it.email().clone().value()),
-                ]
-            })
-            .flatten()
-            .collect::<Vec<_>>();
+            let emails = target_project_list
+                .flat_map(|project_with_owners| {
+                    [
+                        Some(project_with_owners.owner.email().clone().value()),
+                        project_with_owners
+                            .sub_owner
+                            .as_ref()
+                            .map(|it| it.email().clone().value()),
+                    ]
+                })
+                .flatten()
+                .collect::<Vec<_>>();
 
-        let command = SendEmailCommand {
-            from: Email {
-                address: ctx.config().email_sender_address.clone(),
-                name: String::from("雙峰祭オンラインシステム"),
-            },
-            to: emails,
-            reply_to: Some(ctx.config().email_reply_to_address.clone()),
-            subject: format!(
-                "お知らせ「{title}」が公開されました",
-                title = news.title().clone().value()
-            ),
-            body: format!(
-                r#"雙峰祭オンラインシステムでお知らせが公開されました。
+            let command = SendEmailCommand {
+                from: Email {
+                    address: ctx.config().email_sender_address.clone(),
+                    name: String::from("雙峰祭オンラインシステム"),
+                },
+                to: emails,
+                reply_to: Some(ctx.config().email_reply_to_address.clone()),
+                subject: format!(
+                    "お知らせ「{title}」が公開されました",
+                    title = news.title().clone().value()
+                ),
+                body: format!(
+                    r#"雙峰祭オンラインシステムでお知らせが公開されました。
 
 タイトル: {title}
 本文:
@@ -141,21 +142,35 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
 筑波大学学園祭実行委員会
 Email : {email}
 電話 : 029-853-2899"#,
-                title = news.title().clone().value(),
-                body = news.body().clone().value(),
-                url = app_url::news(ctx, news.id().clone()),
-                email = ctx.config().email_reply_to_address.clone(),
-            ),
-        };
-        self.adapters.email_sender().send_email(command).await?;
+                    title = news.title().clone().value(),
+                    body = news.body().clone().value(),
+                    url = app_url::news(ctx, news.id().clone()),
+                    email = ctx.config().email_reply_to_address.clone(),
+                ),
+            };
+            self.adapters.email_sender().send_email(command).await?;
+        }
 
         self.adapters
             .notifier()
-            .notify(format!(
-                "お知らせ「{}」が公開されました。\n{}",
-                news.title().clone().value(),
-                app_url::committee_news(ctx, news_id.clone()),
-            ))
+            .notify(match news.state() {
+                NewsState::Draft => format!(
+                    "お知らせ「{}」が下書きとして保存されました。\n{}",
+                    news.title().clone().value(),
+                    app_url::committee_news(ctx, news_id.clone())
+                ),
+                NewsState::Scheduled(date) => format!(
+                    "お知らせ「{}」が{}に予約されました。\n{}",
+                    news.title().clone().value(),
+                    date.clone().value().to_rfc3339(),
+                    app_url::committee_news(ctx, news_id.clone())
+                ),
+                NewsState::Published => format!(
+                    "お知らせ「{}」が公開されました。\n{}",
+                    news.title().clone().value(),
+                    app_url::committee_news(ctx, news_id.clone())
+                ),
+            })
             .await?;
 
         Ok(news_id.value().to_string())
