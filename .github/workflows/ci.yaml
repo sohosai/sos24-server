@@ -18,6 +18,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Test Secrets
+        run: |
+          echo ${{ secrets.PORTAINER_URL }}
       - name: Build
         env:
           SQLX_OFFLINE: true
