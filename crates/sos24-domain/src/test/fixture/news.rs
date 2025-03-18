@@ -1,3 +1,5 @@
+use chrono::TimeZone;
+
 use crate::entity::file_data::FileId;
 use crate::entity::news::{News, NewsBody, NewsId, NewsState, NewsTitle};
 use crate::entity::project::{ProjectAttributes, ProjectCategories};
@@ -51,7 +53,11 @@ pub fn id2() -> NewsId {
 }
 
 pub fn state2() -> NewsState {
-    NewsState::Scheduled(datetime::now())
+    NewsState::Scheduled(crate::entity::common::datetime::DateTime::new(
+        chrono::Utc
+            .with_ymd_and_hms(2025, 6, 15, 12, 15, 00)
+            .unwrap(),
+    ))
 }
 
 pub fn title2() -> NewsTitle {

@@ -217,6 +217,50 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn 実委人編集者は予約投稿のお知らせを作成できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .news_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        repositories
+            .project_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let mut adapters = MockAdapters::default();
+        adapters
+            .email_sender_mut()
+            .expect_send_email()
+            .returning(|_| Ok(()));
+        adapters
+            .notifier_mut()
+            .expect_notify()
+            .returning(|_| Ok(()));
+        let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeEditor));
+        let (state, scheduled_at) = NewsStateDto::from_news_state(fixture::news::state2());
+        let res = use_case
+            .create(
+                &ctx,
+                CreateNewsCommand {
+                    state,
+                    title: fixture::news::title1().value(),
+                    body: fixture::news::body1().value(),
+                    attachments: fixture::news::attachments1()
+                        .into_iter()
+                        .map(|id| id.value().to_string())
+                        .collect(),
+                    categories: ProjectCategoriesDto::from(fixture::news::categories1()),
+                    attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
+                    scheduled_at,
+                },
+            )
+            .await;
+        assert!(res.is_ok());
+    }
+
+    #[tokio::test]
     async fn 実委人管理者はお知らせを作成できる() {
         let mut repositories = MockRepositories::default();
         repositories
