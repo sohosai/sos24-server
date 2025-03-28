@@ -96,7 +96,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519.pub
           ssh-keyscan -H ${{ secrets.DEPLOYSERVER_IP }} >> ~/.ssh/known_hosts
-      - name: old container dwon
+      - name: old container down
         run: |
           # down database container
           ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "if [ -f /home/ubuntu/docker-compose-db.yml ]; then \
