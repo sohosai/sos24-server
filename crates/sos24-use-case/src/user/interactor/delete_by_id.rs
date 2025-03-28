@@ -41,7 +41,7 @@ mod tests {
     use crate::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
-    async fn 実委人は自分のユーザーを削除できない() {
+    async fn 実委人閲覧者は自分のユーザーを削除できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -54,6 +54,31 @@ mod tests {
         let use_case = UserUseCase::new(Arc::new(repositories));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
+        let res = use_case
+            .delete_by_id(&ctx, fixture::user::id1().value())
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人編集者は自分のユーザーを削除できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
+        repositories
+            .user_repository_mut()
+            .expect_delete_by_id()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeEditor));
         let res = use_case
             .delete_by_id(&ctx, fixture::user::id1().value())
             .await;
