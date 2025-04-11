@@ -101,3 +101,11 @@ pub fn app_url() -> String {
 pub fn slack_webhook_url() -> Option<String> {
     env::var("SLACK_WEBHOOK_URL").ok()
 }
+
+pub fn default_admin_email() -> String {
+    env::var("DEFAULT_ADMIN_EMAIL").expect("Env `DEFAULT_ADMIN_EMAIL` must be set")
+}
+
+pub fn default_admin_password() -> String {
+    env::var("DEFAULT_ADMIN_PASSWORD").expect("Env `DEFAULT_ADMIN_PASSWORD` must be set")
+}
