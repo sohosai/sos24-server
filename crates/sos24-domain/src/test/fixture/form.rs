@@ -5,7 +5,7 @@ use crate::entity::{
     form::{
         Form, FormDescription, FormId, FormItem, FormItemAllowNewline, FormItemDescription,
         FormItemId, FormItemKind, FormItemMax, FormItemMaxLength, FormItemMin, FormItemMinLength,
-        FormItemName, FormItemRequired, FormTitle,
+        FormItemName, FormItemRequired, FormState, FormTitle,
     },
     project::{ProjectAttributes, ProjectCategories},
 };
@@ -14,6 +14,10 @@ use super::datetime;
 
 pub fn id1() -> FormId {
     FormId::new(uuid::Uuid::from_u128(1))
+}
+
+pub fn state1() -> FormState {
+    FormState::Draft
 }
 
 pub fn title1() -> FormTitle {
@@ -110,6 +114,7 @@ pub fn attachments1() -> Vec<FileId> {
 pub fn form1_opened() -> Form {
     Form::new(
         id1(),
+        state1(),
         title1(),
         description1(),
         starts_at1_opened(),
@@ -127,6 +132,7 @@ pub fn form1_opened() -> Form {
 pub fn form1_closed() -> Form {
     Form::new(
         id1(),
+        state1(),
         title1(),
         description1(),
         starts_at1_closed(),
@@ -143,6 +149,10 @@ pub fn form1_closed() -> Form {
 
 pub fn id2() -> FormId {
     FormId::new(uuid::Uuid::from_u128(2))
+}
+
+pub fn state2() -> FormState {
+    FormState::Published
 }
 
 pub fn title2() -> FormTitle {
@@ -210,6 +220,7 @@ pub fn attachments2() -> Vec<FileId> {
 pub fn form2() -> Form {
     Form::new(
         id2(),
+        state2(),
         title2(),
         description2(),
         starts_at2(),

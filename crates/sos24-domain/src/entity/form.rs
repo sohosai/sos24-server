@@ -32,6 +32,8 @@ pub struct Form {
     #[getset(get = "pub")]
     id: FormId,
     #[getset(get = "pub")]
+    state: FormState,
+    #[getset(get = "pub")]
     title: FormTitle,
     #[getset(get = "pub")]
     description: FormDescription,
@@ -58,6 +60,7 @@ pub struct Form {
 impl Form {
     #[allow(clippy::too_many_arguments)]
     pub fn create(
+        state: FormState,
         title: FormTitle,
         description: FormDescription,
         starts_at: DateTime,
@@ -74,6 +77,7 @@ impl Form {
         let now = DateTime::now();
         Ok(Self {
             id: FormId::new(uuid::Uuid::new_v4()),
+            state,
             title,
             description,
             starts_at,
@@ -91,6 +95,7 @@ impl Form {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: FormId,
+        state: FormState,
         title: FormTitle,
         description: FormDescription,
         starts_at: DateTime,
@@ -105,6 +110,7 @@ impl Form {
     ) -> Self {
         Self {
             id,
+            state,
             title,
             description,
             starts_at,
@@ -122,6 +128,7 @@ impl Form {
     pub fn destruct(self) -> DestructedForm {
         DestructedForm {
             id: self.id,
+            state: self.state,
             title: self.title,
             description: self.description,
             starts_at: self.starts_at,
@@ -140,6 +147,7 @@ impl Form {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DestructedForm {
     pub id: FormId,
+    pub state: FormState,
     pub title: FormTitle,
     pub description: FormDescription,
     pub starts_at: DateTime,
@@ -279,6 +287,13 @@ impl TryFrom<String> for FormId {
         let uuid = uuid::Uuid::from_str(&value).map_err(|_| FormIdError::InvalidUuid)?;
         Ok(Self(uuid))
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FormState {
+    Draft,
+    Scheduled,
+    Published,
 }
 
 impl_value_object!(FormTitle(String));
@@ -598,6 +613,7 @@ mod tests {
     #[test]
     fn 申請の開始時間が終了時間より前ならばエラーを返さない() {
         let form = Form::create(
+            fixture::form::state1(),
             fixture::form::title1(),
             fixture::form::description1(),
             fixture::form::starts_at1_opened(),
@@ -613,6 +629,7 @@ mod tests {
     #[test]
     fn 申請の開始時間が終了時間より後ならばエラーを返す() {
         let form = Form::create(
+            fixture::form::state1(),
             fixture::form::title1(),
             fixture::form::description1(),
             fixture::form::ends_at1_opened(),
