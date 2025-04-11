@@ -62,11 +62,9 @@ jobs:
               "app-target": "/app/target"
             }
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
-      - name: test secrets
-        run: echo secret "${{secrets.DEMO_SQL }}" | sed 's/./& /g'
       - name: create demo.sql
         run: |
-          echo "${{ secrets.DEMO_SQL }}" > migrations/99999999999999_demo.sql
+          echo "${{ secrets.BETA_DEMO_SQL }}" > migrations/99999999999999_demo.sql
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
