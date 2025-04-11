@@ -3,7 +3,7 @@ use sos24_domain::{
     entity::{
         common::datetime::DateTime,
         file_data::FileId,
-        form::{Form, FormDescription, FormItem, FormTitle},
+        form::{Form, FormDescription, FormItem, FormState, FormTitle},
         permission::Permissions,
         project::{ProjectAttributes, ProjectCategories},
     },
@@ -11,7 +11,10 @@ use sos24_domain::{
 };
 
 use crate::{
-    form::{dto::NewFormItemDto, FormUseCase, FormUseCaseError},
+    form::{
+        dto::{FormStateDto, NewFormItemDto},
+        FormUseCase, FormUseCaseError,
+    },
     project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
     shared::{
         adapter::{notification::Notifier, Adapters},
@@ -22,6 +25,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct CreateFormCommand {
+    pub state: FormStateDto,
     pub title: String,
     pub description: String,
     pub starts_at: String,
@@ -30,6 +34,16 @@ pub struct CreateFormCommand {
     pub attributes: ProjectAttributesDto,
     pub items: Vec<NewFormItemDto>,
     pub attachments: Vec<String>,
+}
+
+impl CreateFormCommand {
+    pub fn get_form_state(&self) -> FormState {
+        match &self.state {
+            FormStateDto::Draft => FormState::Draft,
+            FormStateDto::Scheduled => FormState::Scheduled,
+            FormStateDto::Published => FormState::Published,
+        }
+    }
 }
 
 impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
@@ -42,6 +56,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         ensure!(actor.has_permission(Permissions::CREATE_FORM));
 
         let form = Form::create(
+            raw_form.get_form_state(),
             FormTitle::new(raw_form.title),
             FormDescription::new(raw_form.description),
             DateTime::try_from(raw_form.starts_at)?,
@@ -88,7 +103,7 @@ mod tests {
 
     use crate::{
         form::{
-            dto::{FormItemKindDto, NewFormItemDto},
+            dto::{FormItemKindDto, FormStateDto, NewFormItemDto},
             interactor::create::CreateFormCommand,
             FormUseCase, FormUseCaseError,
         },
@@ -111,6 +126,7 @@ mod tests {
             .create(
                 &ctx,
                 CreateFormCommand {
+                    state: FormStateDto::from(fixture::form::state1()),
                     title: fixture::form::title1().value(),
                     description: fixture::form::description1().value(),
                     starts_at: fixture::form::starts_at1_opened().value().to_rfc3339(),
@@ -157,6 +173,7 @@ mod tests {
             .create(
                 &ctx,
                 CreateFormCommand {
+                    state: FormStateDto::from(fixture::form::state1()),
                     title: fixture::form::title1().value(),
                     description: fixture::form::description1().value(),
                     starts_at: fixture::form::starts_at1_opened().value().to_rfc3339(),

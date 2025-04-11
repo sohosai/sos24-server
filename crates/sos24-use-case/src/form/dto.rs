@@ -2,7 +2,7 @@ use sos24_domain::entity::form::FormItemExtension;
 use sos24_domain::entity::form::{
     Form, FormItem, FormItemAllowNewline, FormItemDescription, FormItemKind, FormItemLimit,
     FormItemMax, FormItemMaxLength, FormItemMaxSelection, FormItemMin, FormItemMinLength,
-    FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired,
+    FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired, FormState,
 };
 use sos24_domain::entity::form_answer::FormAnswer;
 
@@ -48,6 +48,7 @@ impl TryFrom<NewFormItemDto> for FormItem {
 
 #[derive(Debug)]
 pub struct FormDto {
+    pub state: FormStateDto,
     pub id: String,
     pub title: String,
     pub description: String,
@@ -63,6 +64,23 @@ pub struct FormDto {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
+#[derive(Debug)]
+pub enum FormStateDto {
+    Draft,
+    Scheduled,
+    Published,
+}
+
+impl From<FormState> for FormStateDto {
+    fn from(state: FormState) -> Self {
+        match state {
+            FormState::Draft => FormStateDto::Draft,
+            FormState::Scheduled => FormStateDto::Scheduled,
+            FormState::Published => FormStateDto::Published,
+        }
+    }
+}
+
 impl From<(Form, Option<FormAnswer>)> for FormDto {
     fn from((form, form_answer): (Form, Option<FormAnswer>)) -> Self {
         let form = form.destruct();
@@ -75,6 +93,7 @@ impl From<(Form, Option<FormAnswer>)> for FormDto {
 
         Self {
             id: form.id.value().to_string(),
+            state: FormStateDto::from(form.state),
             title: form.title.value(),
             description: form.description.value(),
             starts_at: form.starts_at.value(),
