@@ -17,6 +17,10 @@ impl<R: Repositories> UserUseCase<R> {
         &self,
         raw_user: CreateUserCommand,
     ) -> Result<String, UserUseCaseError> {
+        if !self.repositories.user_repository().list().await?.is_empty() {
+            return Err(UserUseCaseError::UsersAlreadyExist);
+        }
+
         let firebase_user = NewFirebaseUser::new(
             FirebaseUserEmail::try_from(raw_user.email.clone())?,
             FirebaseUserPassword::new(raw_user.password.clone()),

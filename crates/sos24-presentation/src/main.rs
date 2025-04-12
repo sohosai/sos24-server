@@ -36,7 +36,7 @@ async fn main() {
     let modules = Arc::new(module::new(config.clone()).await.unwrap());
     let _ = modules
         .user_use_case()
-        .create(CreateUserCommand {
+        .create_admin(CreateUserCommand {
             name: "admin".to_string(),
             kana_name: "あどみん".to_string(),
             email: config.clone().default_admin_email,
