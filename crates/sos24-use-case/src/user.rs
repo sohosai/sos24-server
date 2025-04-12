@@ -20,6 +20,9 @@ pub enum UserUseCaseError {
     #[error("User not found: {0:?}")]
     NotFound(UserId),
 
+    #[error("Users already exist")]
+    UsersAlreadyExist,
+
     #[error(transparent)]
     ProjectRepositoryError(#[from] ProjectRepositoryError),
     #[error(transparent)]

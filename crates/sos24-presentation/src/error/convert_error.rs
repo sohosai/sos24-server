@@ -381,6 +381,11 @@ impl From<UserUseCaseError> for AppError {
                 "user/not-found".to_string(),
                 error.to_string(),
             ),
+            UserUseCaseError::UsersAlreadyExist => AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "user/arleady-exist".to_string(),
+                error.to_string(),
+            ),
             UserUseCaseError::ContextError(e) => e.into(),
             UserUseCaseError::UserRepositoryError(e) => e.into(),
             UserUseCaseError::FirebaseUserRepositoryError(e) => e.into(),

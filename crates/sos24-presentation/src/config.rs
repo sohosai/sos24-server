@@ -10,4 +10,7 @@ pub struct Config {
     pub email_sender_address: String,
     pub email_reply_to_address: String,
     pub app_url: String,
+
+    pub default_admin_email: String,
+    pub default_admin_password: String,
 }
