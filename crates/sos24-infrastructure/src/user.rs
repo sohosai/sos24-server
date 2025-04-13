@@ -115,13 +115,14 @@ impl UserRepository for PgUserRepository {
         let user = user.destruct();
         let res = sqlx::query!(
             r#"
-        INSERT INTO users (id, name, kana_name, email, phone_number)
-        VALUES ($1, $2, $3, $4, $5)"#,
+        INSERT INTO users (id, name, kana_name, email, phone_number, role)
+        VALUES ($1, $2, $3, $4, $5, $6)"#,
             user.id.value(),
             user.name.value(),
             user.kana_name.value(),
             user.email.clone().value(),
             user.phone_number.clone().value(),
+            UserRoleRow::from(user.role) as UserRoleRow,
         )
         .execute(&*self.db)
         .await;
