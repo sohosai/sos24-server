@@ -3,7 +3,7 @@ use sos24_domain::{
     entity::{
         common::datetime::DateTime,
         file_data::FileId,
-        form::{Form, FormDescription, FormItem, FormTitle},
+        form::{Form, FormDescription, FormIsDraft, FormItem, FormTitle},
         permission::Permissions,
         project::{ProjectAttributes, ProjectCategories},
     },
@@ -11,7 +11,10 @@ use sos24_domain::{
 };
 
 use crate::{
-    form::{dto::NewFormItemDto, FormUseCase, FormUseCaseError},
+    form::{
+        dto::{FormIsDraftDto, NewFormItemDto},
+        FormUseCase, FormUseCaseError,
+    },
     project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
     shared::{
         adapter::{notification::Notifier, Adapters},
@@ -24,6 +27,7 @@ use crate::{
 pub struct CreateFormCommand {
     pub title: String,
     pub description: String,
+    pub is_draft: FormIsDraftDto,
     pub starts_at: String,
     pub ends_at: String,
     pub categories: ProjectCategoriesDto,
@@ -44,6 +48,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let form = Form::create(
             FormTitle::new(raw_form.title),
             FormDescription::new(raw_form.description),
+            FormIsDraft::from(raw_form.is_draft),
             DateTime::try_from(raw_form.starts_at)?,
             DateTime::try_from(raw_form.ends_at)?,
             ProjectCategories::from(raw_form.categories),
@@ -88,7 +93,7 @@ mod tests {
 
     use crate::{
         form::{
-            dto::{FormItemKindDto, NewFormItemDto},
+            dto::{FormIsDraftDto, FormItemKindDto, NewFormItemDto},
             interactor::create::CreateFormCommand,
             FormUseCase, FormUseCaseError,
         },
@@ -113,6 +118,7 @@ mod tests {
                 CreateFormCommand {
                     title: fixture::form::title1().value(),
                     description: fixture::form::description1().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at1_opened().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at1_opened().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories1()),
@@ -159,6 +165,7 @@ mod tests {
                 CreateFormCommand {
                     title: fixture::form::title1().value(),
                     description: fixture::form::description1().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at1_opened().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at1_opened().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories1()),

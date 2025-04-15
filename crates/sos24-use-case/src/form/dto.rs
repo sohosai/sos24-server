@@ -1,9 +1,9 @@
-use sos24_domain::entity::form::FormItemExtension;
 use sos24_domain::entity::form::{
     Form, FormItem, FormItemAllowNewline, FormItemDescription, FormItemKind, FormItemLimit,
     FormItemMax, FormItemMaxLength, FormItemMaxSelection, FormItemMin, FormItemMinLength,
     FormItemMinSelection, FormItemName, FormItemOption, FormItemRequired,
 };
+use sos24_domain::entity::form::{FormIsDraft, FormItemExtension};
 use sos24_domain::entity::form_answer::FormAnswer;
 
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
@@ -47,10 +47,32 @@ impl TryFrom<NewFormItemDto> for FormItem {
 }
 
 #[derive(Debug)]
+pub struct FormIsDraftDto(bool);
+
+impl FormIsDraftDto {
+    pub fn value(&self) -> bool {
+        self.0
+    }
+}
+
+impl From<FormIsDraft> for FormIsDraftDto {
+    fn from(value: FormIsDraft) -> Self {
+        FormIsDraftDto(value.value())
+    }
+}
+
+impl From<FormIsDraftDto> for FormIsDraft {
+    fn from(value: FormIsDraftDto) -> Self {
+        FormIsDraft::new(value.value())
+    }
+}
+
+#[derive(Debug)]
 pub struct FormDto {
     pub id: String,
     pub title: String,
     pub description: String,
+    pub is_draft: FormIsDraftDto,
     pub starts_at: chrono::DateTime<chrono::Utc>,
     pub ends_at: chrono::DateTime<chrono::Utc>,
     pub categories: ProjectCategoriesDto,
@@ -77,6 +99,7 @@ impl From<(Form, Option<FormAnswer>)> for FormDto {
             id: form.id.value().to_string(),
             title: form.title.value(),
             description: form.description.value(),
+            is_draft: FormIsDraftDto::from(form.is_draft),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
             categories: ProjectCategoriesDto::from(form.categories),
@@ -100,6 +123,7 @@ pub struct FormSummaryDto {
     pub id: String,
     pub title: String,
     pub description: String,
+    pub is_draft: FormIsDraftDto,
     pub starts_at: chrono::DateTime<chrono::Utc>,
     pub ends_at: chrono::DateTime<chrono::Utc>,
     pub categories: ProjectCategoriesDto,
@@ -123,6 +147,7 @@ impl From<(Form, Option<FormAnswer>)> for FormSummaryDto {
             id: form.id.value().to_string(),
             title: form.title.value(),
             description: form.description.value(),
+            is_draft: FormIsDraftDto::from(form.is_draft),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
             categories: ProjectCategoriesDto::from(form.categories),
