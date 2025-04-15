@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::form::dto::{
-    FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
+    FormDto, FormItemDto, FormItemKindDto, FormStateDto, FormSummaryDto, NewFormItemDto,
 };
 use sos24_use_case::form::interactor::create::CreateFormCommand;
 use sos24_use_case::form::interactor::update::UpdateFormCommand;
@@ -11,7 +11,36 @@ use utoipa::{IntoParams, ToSchema};
 use super::project::{ProjectAttributes, ProjectCategories};
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum FormState {
+    Draft,
+    Scheduled,
+    Published,
+}
+
+impl From<FormState> for FormStateDto {
+    fn from(value: FormState) -> Self {
+        match value {
+            FormState::Draft => FormStateDto::Draft,
+            FormState::Scheduled => FormStateDto::Scheduled,
+            FormState::Published => FormStateDto::Published,
+        }
+    }
+}
+
+impl From<FormStateDto> for FormState {
+    fn from(value: FormStateDto) -> Self {
+        match value {
+            FormStateDto::Draft => FormState::Draft,
+            FormStateDto::Scheduled => FormState::Scheduled,
+            FormStateDto::Published => FormState::Published,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct CreateForm {
+    state: FormState,
     title: String,
     description: String,
     #[schema(format = "date-time")]
@@ -28,6 +57,7 @@ pub struct CreateForm {
 impl From<CreateForm> for CreateFormCommand {
     fn from(create_form: CreateForm) -> Self {
         CreateFormCommand {
+            state: FormStateDto::from(create_form.state),
             title: create_form.title,
             description: create_form.description,
             starts_at: create_form.starts_at,

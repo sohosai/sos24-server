@@ -1764,6 +1764,7 @@ components:
     CreateForm:
       type: object
       required:
+      - state
       - title
       - description
       - starts_at
@@ -1794,6 +1795,8 @@ components:
         starts_at:
           type: string
           format: date-time
+        state:
+          $ref: '#/components/schemas/FormState'
         title:
           type: string
     CreateFormAnswer:
@@ -2337,6 +2340,12 @@ components:
             type: string
             enum:
             - file
+    FormState:
+      type: string
+      enum:
+      - draft
+      - scheduled
+      - published
     FormSummary:
       type: object
       required:
