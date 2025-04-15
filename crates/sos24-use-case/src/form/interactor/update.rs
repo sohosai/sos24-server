@@ -11,7 +11,7 @@ use sos24_domain::{
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::form::dto::NewFormItemDto;
+use crate::form::dto::{FormIsDraftDto, NewFormItemDto};
 use crate::form::{FormUseCase, FormUseCaseError};
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 use crate::shared::adapter::Adapters;
@@ -22,6 +22,7 @@ pub struct UpdateFormCommand {
     pub id: String,
     pub title: String,
     pub description: String,
+    pub is_draft: FormIsDraftDto,
     pub starts_at: String,
     pub ends_at: String,
     pub categories: ProjectCategoriesDto,
@@ -100,7 +101,7 @@ mod tests {
 
     use crate::{
         form::{
-            dto::{FormItemKindDto, NewFormItemDto},
+            dto::{FormIsDraftDto, FormItemKindDto, NewFormItemDto},
             interactor::update::UpdateFormCommand,
             FormUseCase, FormUseCaseError,
         },
@@ -122,6 +123,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),
@@ -173,6 +175,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),
@@ -219,6 +222,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),
@@ -270,6 +274,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),

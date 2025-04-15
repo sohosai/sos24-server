@@ -50,6 +50,10 @@ impl TryFrom<NewFormItemDto> for FormItem {
 pub struct FormIsDraftDto(bool);
 
 impl FormIsDraftDto {
+    pub fn new(value: bool) -> Self {
+        FormIsDraftDto(value)
+    }
+
     pub fn value(&self) -> bool {
         self.0
     }

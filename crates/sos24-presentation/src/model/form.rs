@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use sos24_use_case::form::dto::{
-    FormDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
+    FormDto, FormIsDraftDto, FormItemDto, FormItemKindDto, FormSummaryDto, NewFormItemDto,
 };
 use sos24_use_case::form::interactor::create::CreateFormCommand;
 use sos24_use_case::form::interactor::update::UpdateFormCommand;
@@ -14,6 +14,7 @@ use super::project::{ProjectAttributes, ProjectCategories};
 pub struct CreateForm {
     title: String,
     description: String,
+    is_draft: bool,
     #[schema(format = "date-time")]
     starts_at: String,
     #[schema(format = "date-time")]
@@ -30,6 +31,7 @@ impl From<CreateForm> for CreateFormCommand {
         CreateFormCommand {
             title: create_form.title,
             description: create_form.description,
+            is_draft: FormIsDraftDto::new(create_form.is_draft),
             starts_at: create_form.starts_at,
             ends_at: create_form.ends_at,
             categories: ProjectCategoriesDto::from(create_form.categories),
@@ -74,6 +76,7 @@ pub struct CreatedForm {
 pub struct UpdateForm {
     pub title: String,
     pub description: String,
+    pub is_draft: bool,
     #[schema(format = "date-time")]
     pub starts_at: String,
     #[schema(format = "date-time")]
@@ -96,6 +99,7 @@ impl ConvertToUpdateFormDto for (String, UpdateForm) {
             id,
             title: form.title,
             description: form.description,
+            is_draft: FormIsDraftDto::new(form.is_draft),
             starts_at: form.starts_at,
             ends_at: form.ends_at,
             categories: ProjectCategoriesDto::from(form.categories),
@@ -112,6 +116,7 @@ pub struct Form {
     pub id: String,
     pub title: String,
     pub description: String,
+    pub is_draft: bool,
     #[schema(format = "date-time")]
     pub starts_at: String,
     #[schema(format = "date-time")]
@@ -137,6 +142,7 @@ impl From<FormDto> for Form {
             id: form.id.to_string(),
             title: form.title,
             description: form.description,
+            is_draft: form.is_draft.value(),
             starts_at: form.starts_at.to_rfc3339(),
             ends_at: form.ends_at.to_rfc3339(),
             categories: ProjectCategories::from(form.categories),
@@ -157,6 +163,7 @@ pub struct FormSummary {
     pub id: String,
     pub title: String,
     pub description: String,
+    pub is_draft: bool,
     #[schema(format = "date-time")]
     pub starts_at: String,
     #[schema(format = "date-time")]
@@ -177,6 +184,7 @@ impl From<FormSummaryDto> for FormSummary {
             id: form.id.to_string(),
             title: form.title,
             description: form.description,
+            is_draft: form.is_draft.value(),
             starts_at: form.starts_at.to_rfc3339(),
             ends_at: form.ends_at.to_rfc3339(),
             categories: ProjectCategories::from(form.categories),
