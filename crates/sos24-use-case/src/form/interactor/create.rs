@@ -36,9 +36,9 @@ pub struct CreateFormCommand {
     pub attachments: Vec<String>,
 }
 
-impl CreateFormCommand {
-    pub fn get_form_state(&self) -> FormState {
-        match &self.state {
+impl From<FormStateDto> for FormState {
+    fn from(value: FormStateDto) -> Self {
+        match value {
             FormStateDto::Draft => FormState::Draft,
             FormStateDto::Scheduled => FormState::Scheduled,
             FormStateDto::Published => FormState::Published,
@@ -56,7 +56,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         ensure!(actor.has_permission(Permissions::CREATE_FORM));
 
         let form = Form::create(
-            raw_form.get_form_state(),
+            FormState::from(raw_form.state),
             FormTitle::new(raw_form.title),
             FormDescription::new(raw_form.description),
             DateTime::try_from(raw_form.starts_at)?,
