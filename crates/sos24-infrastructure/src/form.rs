@@ -6,7 +6,7 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use sos24_domain::entity::form::{FormItemExtension, FormItemId};
+use sos24_domain::entity::form::{FormItemExtension, FormItemId, FormState};
 use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::entity::{file_data::FileId, form::FormIsNotified};
 use sos24_domain::{
@@ -27,6 +27,7 @@ use crate::shared::mongodb::MongoDb;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormDoc {
     _id: String,
+    state: FormStateDoc,
     title: String,
     description: String,
     starts_at: chrono::DateTime<chrono::Utc>,
@@ -45,6 +46,7 @@ impl From<Form> for FormDoc {
         let form = form.destruct();
         Self {
             _id: form.id.value().to_string(),
+            state: FormStateDoc::from(form.state),
             title: form.title.value(),
             description: form.description.value(),
             starts_at: form.starts_at.value(),
@@ -64,11 +66,39 @@ impl From<Form> for FormDoc {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub enum FormStateDoc {
+    Draft,
+    Scheduled,
+    Published,
+}
+
+impl From<FormStateDoc> for FormState {
+    fn from(value: FormStateDoc) -> Self {
+        match value {
+            FormStateDoc::Draft => FormState::Draft,
+            FormStateDoc::Scheduled => FormState::Scheduled,
+            FormStateDoc::Published => FormState::Published,
+        }
+    }
+}
+
+impl From<FormState> for FormStateDoc {
+    fn from(value: FormState) -> Self {
+        match value {
+            FormState::Draft => FormStateDoc::Draft,
+            FormState::Scheduled => FormStateDoc::Scheduled,
+            FormState::Published => FormStateDoc::Published,
+        }
+    }
+}
+
 impl TryFrom<FormDoc> for Form {
     type Error = anyhow::Error;
     fn try_from(value: FormDoc) -> Result<Self, Self::Error> {
         Ok(Form::new(
             FormId::try_from(value._id)?,
+            FormState::from(value.state),
             FormTitle::new(value.title),
             FormDescription::new(value.description),
             DateTime::new(value.starts_at),
