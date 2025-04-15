@@ -48,8 +48,8 @@ impl TryFrom<NewFormItemDto> for FormItem {
 
 #[derive(Debug)]
 pub struct FormDto {
-    pub state: FormStateDto,
     pub id: String,
+    pub state: FormStateDto,
     pub title: String,
     pub description: String,
     pub starts_at: chrono::DateTime<chrono::Utc>,
@@ -117,6 +117,7 @@ impl From<(Form, Option<FormAnswer>)> for FormDto {
 #[derive(Debug)]
 pub struct FormSummaryDto {
     pub id: String,
+    pub state: FormStateDto,
     pub title: String,
     pub description: String,
     pub starts_at: chrono::DateTime<chrono::Utc>,
@@ -140,6 +141,7 @@ impl From<(Form, Option<FormAnswer>)> for FormSummaryDto {
 
         Self {
             id: form.id.value().to_string(),
+            state: FormStateDto::from(form.state),
             title: form.title.value(),
             description: form.description.value(),
             starts_at: form.starts_at.value(),
