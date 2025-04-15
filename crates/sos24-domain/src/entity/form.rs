@@ -36,6 +36,8 @@ pub struct Form {
     #[getset(get = "pub")]
     description: FormDescription,
     #[getset(get = "pub")]
+    is_draft: FormIsDraft,
+    #[getset(get = "pub")]
     starts_at: DateTime,
     #[getset(get = "pub")]
     ends_at: DateTime,
@@ -60,6 +62,7 @@ impl Form {
     pub fn create(
         title: FormTitle,
         description: FormDescription,
+        is_draft: FormIsDraft,
         starts_at: DateTime,
         ends_at: DateTime,
         categories: ProjectCategories,
@@ -76,6 +79,7 @@ impl Form {
             id: FormId::new(uuid::Uuid::new_v4()),
             title,
             description,
+            is_draft,
             starts_at,
             ends_at,
             categories,
@@ -93,6 +97,7 @@ impl Form {
         id: FormId,
         title: FormTitle,
         description: FormDescription,
+        is_draft: FormIsDraft,
         starts_at: DateTime,
         ends_at: DateTime,
         categories: ProjectCategories,
@@ -107,6 +112,7 @@ impl Form {
             id,
             title,
             description,
+            is_draft,
             starts_at,
             ends_at,
             categories,
@@ -124,6 +130,7 @@ impl Form {
             id: self.id,
             title: self.title,
             description: self.description,
+            is_draft: self.is_draft,
             starts_at: self.starts_at,
             ends_at: self.ends_at,
             categories: self.categories,
@@ -142,6 +149,7 @@ pub struct DestructedForm {
     pub id: FormId,
     pub title: FormTitle,
     pub description: FormDescription,
+    pub is_draft: FormIsDraft,
     pub starts_at: DateTime,
     pub ends_at: DateTime,
     pub categories: ProjectCategories,
@@ -281,6 +289,7 @@ impl TryFrom<String> for FormId {
     }
 }
 
+impl_value_object!(FormIsDraft(bool));
 impl_value_object!(FormTitle(String));
 impl_value_object!(FormDescription(String));
 impl_value_object!(FormIsNotified(bool));
@@ -600,6 +609,7 @@ mod tests {
         let form = Form::create(
             fixture::form::title1(),
             fixture::form::description1(),
+            fixture::form::is_draft1(),
             fixture::form::starts_at1_opened(),
             fixture::form::ends_at1_opened(),
             fixture::form::categories1(),
@@ -615,6 +625,7 @@ mod tests {
         let form = Form::create(
             fixture::form::title1(),
             fixture::form::description1(),
+            fixture::form::is_draft1(),
             fixture::form::ends_at1_opened(),
             fixture::form::starts_at1_opened(),
             fixture::form::categories1(),
