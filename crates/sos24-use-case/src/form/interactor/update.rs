@@ -60,13 +60,15 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             return Err(FormUseCaseError::HasAnswers);
         }
 
-        let mut new_form = form;
+        let mut new_form = form.clone();
         new_form.set_title(&actor, FormTitle::new(form_data.title))?;
         new_form.set_description(&actor, FormDescription::new(form_data.description))?;
         new_form.set_starts_at(&actor, DateTime::try_from(form_data.starts_at)?)?;
         new_form.set_ends_at(&actor, DateTime::try_from(form_data.ends_at)?)?;
         new_form.set_categories(&actor, ProjectCategories::from(form_data.categories))?;
         new_form.set_attributes(&actor, ProjectAttributes::from(form_data.attributes))?;
+        ensure!(form.is_updatable_by_and_to(&actor, &new_form, ctx.requested_at()));
+
         {
             let new_attachments = form_data
                 .attachments

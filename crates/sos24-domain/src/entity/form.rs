@@ -166,6 +166,48 @@ impl Form {
         actor.has_permission(Permissions::UPDATE_FORM_ALL)
     }
 
+    pub fn is_updatable_by_and_to(
+        &self,
+        actor: &Actor,
+        new_form: &Self,
+        now: &chrono::DateTime<chrono::Utc>,
+    ) -> bool {
+        if self.is_draft.clone().value() {
+            if new_form.is_draft.clone().value() {
+                actor.has_permission(Permissions::UPDATE_DRAFT_FORM_ALL) // draft -> draft
+            } else {
+                if new_form.is_started(now) {
+                    actor.has_permission(Permissions::CREATE_FORM) // draft -> started
+                } else {
+                    actor.has_permission(Permissions::CREATE_SCHEDULED_FORM) // draft -> scheduled
+                }
+            }
+        } else {
+            if self.is_started(now) {
+                if new_form.is_draft.clone().value() {
+                    actor.has_permission(Permissions::UPDATE_FORM_ALL) // started -> draft
+                } else {
+                    actor.has_permission(Permissions::UPDATE_FORM_ALL) // started -> started |
+                                                                       // started -> scheduled
+                }
+            } else {
+                if new_form.is_draft.clone().value() {
+                    actor.has_permission(Permissions::UPDATE_SCHEDULED_FORM_ALL)
+                    // scheduled -> draft
+                } else {
+                    if new_form.is_started(now) {
+                        actor.has_permission(Permissions::CREATE_FORM)
+                            && actor.has_permission(Permissions::UPDATE_SCHEDULED_FORM_ALL)
+                        // scheduled -> started
+                    } else {
+                        actor.has_permission(Permissions::UPDATE_SCHEDULED_FORM_ALL)
+                        // scheduled -> scheduled
+                    }
+                }
+            }
+        }
+    }
+
     pub fn is_visible_to(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
         if self.is_draft().clone().value() {
             actor.has_permission(Permissions::READ_DRAFT_FORM_ALL)
