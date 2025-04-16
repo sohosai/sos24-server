@@ -220,6 +220,18 @@ impl Form {
         }
     }
 
+    pub fn is_deletable_by(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        if self.is_draft().clone().value() {
+            actor.has_permission(Permissions::DELETE_DRAFT_FORM_ALL)
+        } else {
+            if self.is_started(now) {
+                actor.has_permission(Permissions::DELETE_FORM_ALL)
+            } else {
+                actor.has_permission(Permissions::DELETE_SCHEDULED_FORM_ALL)
+            }
+        }
+    }
+
     pub fn set_title(
         &mut self,
         actor: &Actor,
