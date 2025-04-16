@@ -28,6 +28,22 @@ pub fn is_draft1() -> FormIsDraft {
     FormIsDraft::new(false)
 }
 
+pub fn starts_at1_scheduled() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_add_days(chrono::Days::new(1))
+            .unwrap(),
+    )
+}
+
+pub fn ends_at1_scheduled() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_add_days(chrono::Days::new(2))
+            .unwrap(),
+    )
+}
+
 pub fn starts_at1_opened() -> DateTime {
     DateTime::new(
         chrono::Utc::now()
@@ -109,6 +125,42 @@ pub fn items1() -> Vec<FormItem> {
 
 pub fn attachments1() -> Vec<FileId> {
     vec![]
+}
+
+pub fn form1_draft() -> Form {
+    Form::new(
+        id1(),
+        title1(),
+        description1(),
+        is_draft2(),
+        starts_at1_opened(),
+        ends_at1_opened(),
+        categories1(),
+        attributes1(),
+        is_notified1(),
+        items1(),
+        attachments1(),
+        datetime::now(),
+        datetime::now(),
+    )
+}
+
+pub fn form1_scheduled() -> Form {
+    Form::new(
+        id1(),
+        title1(),
+        description1(),
+        is_draft1(),
+        starts_at1_scheduled(),
+        ends_at1_scheduled(),
+        categories1(),
+        attributes1(),
+        is_notified1(),
+        items1(),
+        attachments1(),
+        datetime::now(),
+        datetime::now(),
+    )
 }
 
 pub fn form1_opened() -> Form {
