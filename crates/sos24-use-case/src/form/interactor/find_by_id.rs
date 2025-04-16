@@ -1,7 +1,7 @@
 use sos24_domain::repository::form_answer::FormAnswerRepository;
 use sos24_domain::{
     ensure,
-    entity::{form::FormId, permission::Permissions},
+    entity::form::FormId,
     repository::{form::FormRepository, Repositories},
 };
 
@@ -17,7 +17,6 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         id: String,
     ) -> Result<FormDto, FormUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
         let form_id = FormId::try_from(id)?;
         let raw_form = self
@@ -26,6 +25,8 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             .find_by_id(form_id.clone())
             .await?
             .ok_or(FormUseCaseError::NotFound(form_id.clone()))?;
+
+        ensure!(raw_form.is_visible_to(&actor, ctx.requested_at()));
 
         let project_with_owners = ctx.project(&*self.repositories).await?;
         let project_id = project_with_owners.map(|it| it.project.id().clone());

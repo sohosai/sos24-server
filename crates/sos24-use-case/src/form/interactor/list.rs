@@ -1,8 +1,4 @@
-use sos24_domain::{
-    ensure,
-    entity::permission::Permissions,
-    repository::{form::FormRepository, Repositories},
-};
+use sos24_domain::repository::{form::FormRepository, Repositories};
 
 use crate::{
     form::{dto::FormSummaryDto, FormUseCase, FormUseCaseError},
@@ -16,9 +12,15 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         ctx: &impl ContextProvider,
     ) -> Result<Vec<FormSummaryDto>, FormUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::READ_FORM_ALL));
 
-        let raw_form_list = self.repositories.form_repository().list().await?;
+        let raw_form_list = self
+            .repositories
+            .form_repository()
+            .list()
+            .await?
+            .into_iter()
+            .filter(|raw_form| raw_form.is_visible_to(&actor, ctx.requested_at()));
+
         let form_list = raw_form_list
             .into_iter()
             .map(|raw_form| FormSummaryDto::from((raw_form, None)));

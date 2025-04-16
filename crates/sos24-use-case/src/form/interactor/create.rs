@@ -4,7 +4,6 @@ use sos24_domain::{
         common::datetime::DateTime,
         file_data::FileId,
         form::{Form, FormDescription, FormIsDraft, FormItem, FormTitle},
-        permission::Permissions,
         project::{ProjectAttributes, ProjectCategories},
     },
     repository::{form::FormRepository, Repositories},
