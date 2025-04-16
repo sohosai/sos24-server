@@ -42,9 +42,6 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         ctx: &impl ContextProvider,
         raw_form: CreateFormCommand,
     ) -> Result<String, FormUseCaseError> {
-        let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::CREATE_FORM));
-
         let form = Form::create(
             FormTitle::new(raw_form.title),
             FormDescription::new(raw_form.description),
@@ -65,18 +62,35 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
                 .collect::<Result<Vec<_>, _>>()?,
         )?;
 
+        let actor = ctx.actor(&*self.repositories).await?;
+        ensure!(form.can_be_created(&actor, ctx.requested_at()));
+
         let form_id = form.id().clone();
         let form_title = form.title().clone();
+        let form_is_draft = form.is_draft().clone();
+        let form_starts_at = form.starts_at().clone();
         self.repositories.form_repository().create(form).await?;
 
-        self.adapters
-            .notifier()
-            .notify(format!(
-                "申請「{}」が作成されました。\n{}",
-                form_title.value(),
-                app_url::committee_form(ctx, form_id.clone()),
-            ))
-            .await?;
+        if form_is_draft.value() {
+            self.adapters
+                .notifier()
+                .notify(format!(
+                    "申請「{}」が下書きとして作成されました。\n{}",
+                    form_title.value(),
+                    app_url::committee_form(ctx, form_id.clone()),
+                ))
+                .await?;
+        } else {
+            self.adapters
+                .notifier()
+                .notify(format!(
+                    "公開時刻{}の申請「{}」が作成されました。\n{}",
+                    form_starts_at.value().to_rfc3339(),
+                    form_title.value(),
+                    app_url::committee_form(ctx, form_id.clone()),
+                ))
+                .await?;
+        }
 
         Ok(form_id.value().to_string())
     }

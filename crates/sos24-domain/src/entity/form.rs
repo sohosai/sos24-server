@@ -272,6 +272,18 @@ impl Form {
     pub fn can_be_updated(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
         !self.is_ended(now) || actor.has_permission(Permissions::UPDATE_FORM_ANSWER_ANYTIME)
     }
+
+    pub fn can_be_created(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        if self.is_draft.clone().value() {
+            actor.has_permission(Permissions::CREATE_DRAFT_FORM)
+        } else {
+            if self.is_started(now) {
+                actor.has_permission(Permissions::CREATE_FORM)
+            } else {
+                actor.has_permission(Permissions::CREATE_SCHEDULED_FORM)
+            }
+        }
+    }
 }
 
 impl_value_object!(FormId(uuid::Uuid));
