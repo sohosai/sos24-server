@@ -36,6 +36,8 @@ pub struct Form {
     #[getset(get = "pub")]
     description: FormDescription,
     #[getset(get = "pub")]
+    is_draft: FormIsDraft,
+    #[getset(get = "pub")]
     starts_at: DateTime,
     #[getset(get = "pub")]
     ends_at: DateTime,
@@ -60,6 +62,7 @@ impl Form {
     pub fn create(
         title: FormTitle,
         description: FormDescription,
+        is_draft: FormIsDraft,
         starts_at: DateTime,
         ends_at: DateTime,
         categories: ProjectCategories,
@@ -76,6 +79,7 @@ impl Form {
             id: FormId::new(uuid::Uuid::new_v4()),
             title,
             description,
+            is_draft,
             starts_at,
             ends_at,
             categories,
@@ -93,6 +97,7 @@ impl Form {
         id: FormId,
         title: FormTitle,
         description: FormDescription,
+        is_draft: FormIsDraft,
         starts_at: DateTime,
         ends_at: DateTime,
         categories: ProjectCategories,
@@ -107,6 +112,7 @@ impl Form {
             id,
             title,
             description,
+            is_draft,
             starts_at,
             ends_at,
             categories,
@@ -124,6 +130,7 @@ impl Form {
             id: self.id,
             title: self.title,
             description: self.description,
+            is_draft: self.is_draft,
             starts_at: self.starts_at,
             ends_at: self.ends_at,
             categories: self.categories,
@@ -142,6 +149,7 @@ pub struct DestructedForm {
     pub id: FormId,
     pub title: FormTitle,
     pub description: FormDescription,
+    pub is_draft: FormIsDraft,
     pub starts_at: DateTime,
     pub ends_at: DateTime,
     pub categories: ProjectCategories,
@@ -156,6 +164,72 @@ pub struct DestructedForm {
 impl Form {
     pub fn is_updatable_by(&self, actor: &Actor) -> bool {
         actor.has_permission(Permissions::UPDATE_FORM_ALL)
+    }
+
+    pub fn is_updatable_by_and_to(
+        &self,
+        actor: &Actor,
+        new_form: &Self,
+        now: &chrono::DateTime<chrono::Utc>,
+    ) -> bool {
+        if self.is_draft.clone().value() {
+            if new_form.is_draft.clone().value() {
+                actor.has_permission(Permissions::UPDATE_DRAFT_FORM_ALL) // draft -> draft
+            } else {
+                if new_form.is_started(now) {
+                    actor.has_permission(Permissions::CREATE_FORM) // draft -> started
+                } else {
+                    actor.has_permission(Permissions::CREATE_SCHEDULED_FORM) // draft -> scheduled
+                }
+            }
+        } else {
+            if self.is_started(now) {
+                if new_form.is_draft.clone().value() {
+                    actor.has_permission(Permissions::UPDATE_FORM_ALL) // started -> draft
+                } else {
+                    actor.has_permission(Permissions::UPDATE_FORM_ALL) // started -> started |
+                                                                       // started -> scheduled
+                }
+            } else {
+                if new_form.is_draft.clone().value() {
+                    actor.has_permission(Permissions::UPDATE_SCHEDULED_FORM_ALL)
+                    // scheduled -> draft
+                } else {
+                    if new_form.is_started(now) {
+                        actor.has_permission(Permissions::CREATE_FORM)
+                            && actor.has_permission(Permissions::UPDATE_SCHEDULED_FORM_ALL)
+                        // scheduled -> started
+                    } else {
+                        actor.has_permission(Permissions::UPDATE_SCHEDULED_FORM_ALL)
+                        // scheduled -> scheduled
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn is_visible_to(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        if self.is_draft().clone().value() {
+            actor.has_permission(Permissions::READ_DRAFT_FORM_ALL)
+        } else {
+            if self.is_started(now) {
+                actor.has_permission(Permissions::READ_FORM_ALL)
+            } else {
+                actor.has_permission(Permissions::READ_SCHEDULED_FORM_ALL)
+            }
+        }
+    }
+
+    pub fn is_deletable_by(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        if self.is_draft().clone().value() {
+            actor.has_permission(Permissions::DELETE_DRAFT_FORM_ALL)
+        } else {
+            if self.is_started(now) {
+                actor.has_permission(Permissions::DELETE_FORM_ALL)
+            } else {
+                actor.has_permission(Permissions::DELETE_SCHEDULED_FORM_ALL)
+            }
+        }
     }
 
     pub fn set_title(
@@ -264,6 +338,18 @@ impl Form {
     pub fn can_be_updated(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
         !self.is_ended(now) || actor.has_permission(Permissions::UPDATE_FORM_ANSWER_ANYTIME)
     }
+
+    pub fn can_be_created(&self, actor: &Actor, now: &chrono::DateTime<chrono::Utc>) -> bool {
+        if self.is_draft.clone().value() {
+            actor.has_permission(Permissions::CREATE_DRAFT_FORM)
+        } else {
+            if self.is_started(now) {
+                actor.has_permission(Permissions::CREATE_FORM)
+            } else {
+                actor.has_permission(Permissions::CREATE_SCHEDULED_FORM)
+            }
+        }
+    }
 }
 
 impl_value_object!(FormId(uuid::Uuid));
@@ -281,6 +367,7 @@ impl TryFrom<String> for FormId {
     }
 }
 
+impl_value_object!(FormIsDraft(bool));
 impl_value_object!(FormTitle(String));
 impl_value_object!(FormDescription(String));
 impl_value_object!(FormIsNotified(bool));
@@ -600,6 +687,7 @@ mod tests {
         let form = Form::create(
             fixture::form::title1(),
             fixture::form::description1(),
+            fixture::form::is_draft1(),
             fixture::form::starts_at1_opened(),
             fixture::form::ends_at1_opened(),
             fixture::form::categories1(),
@@ -615,6 +703,7 @@ mod tests {
         let form = Form::create(
             fixture::form::title1(),
             fixture::form::description1(),
+            fixture::form::is_draft1(),
             fixture::form::ends_at1_opened(),
             fixture::form::starts_at1_opened(),
             fixture::form::categories1(),

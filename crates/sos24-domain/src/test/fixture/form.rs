@@ -1,5 +1,5 @@
 use crate::entity::file_data::FileId;
-use crate::entity::form::FormIsNotified;
+use crate::entity::form::{FormIsDraft, FormIsNotified};
 use crate::entity::{
     common::datetime::DateTime,
     form::{
@@ -22,6 +22,26 @@ pub fn title1() -> FormTitle {
 
 pub fn description1() -> FormDescription {
     FormDescription::new("そぽたん申請です".to_string())
+}
+
+pub fn is_draft1() -> FormIsDraft {
+    FormIsDraft::new(false)
+}
+
+pub fn starts_at1_scheduled() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_add_days(chrono::Days::new(1))
+            .unwrap(),
+    )
+}
+
+pub fn ends_at1_scheduled() -> DateTime {
+    DateTime::new(
+        chrono::Utc::now()
+            .checked_add_days(chrono::Days::new(2))
+            .unwrap(),
+    )
 }
 
 pub fn starts_at1_opened() -> DateTime {
@@ -107,11 +127,48 @@ pub fn attachments1() -> Vec<FileId> {
     vec![]
 }
 
+pub fn form1_draft() -> Form {
+    Form::new(
+        id1(),
+        title1(),
+        description1(),
+        is_draft2(),
+        starts_at1_opened(),
+        ends_at1_opened(),
+        categories1(),
+        attributes1(),
+        is_notified1(),
+        items1(),
+        attachments1(),
+        datetime::now(),
+        datetime::now(),
+    )
+}
+
+pub fn form1_scheduled() -> Form {
+    Form::new(
+        id1(),
+        title1(),
+        description1(),
+        is_draft1(),
+        starts_at1_scheduled(),
+        ends_at1_scheduled(),
+        categories1(),
+        attributes1(),
+        is_notified1(),
+        items1(),
+        attachments1(),
+        datetime::now(),
+        datetime::now(),
+    )
+}
+
 pub fn form1_opened() -> Form {
     Form::new(
         id1(),
         title1(),
         description1(),
+        is_draft1(),
         starts_at1_opened(),
         ends_at1_opened(),
         categories1(),
@@ -129,6 +186,7 @@ pub fn form1_closed() -> Form {
         id1(),
         title1(),
         description1(),
+        is_draft1(),
         starts_at1_closed(),
         ends_at1_closed(),
         categories1(),
@@ -151,6 +209,10 @@ pub fn title2() -> FormTitle {
 
 pub fn description2() -> FormDescription {
     FormDescription::new("んぽたそ申請です".to_string())
+}
+
+pub fn is_draft2() -> FormIsDraft {
+    FormIsDraft::new(true)
 }
 
 pub fn starts_at2() -> DateTime {
@@ -212,6 +274,7 @@ pub fn form2() -> Form {
         id2(),
         title2(),
         description2(),
+        is_draft2(),
         starts_at2(),
         ends_at2(),
         categories2(),

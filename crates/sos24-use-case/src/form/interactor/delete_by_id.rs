@@ -1,6 +1,6 @@
 use sos24_domain::{
     ensure,
-    entity::{form::FormId, permission::Permissions},
+    entity::form::FormId,
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
@@ -17,14 +17,16 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         id: String,
     ) -> Result<(), FormUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::DELETE_FORM_ALL));
 
         let id = FormId::try_from(id)?;
-        self.repositories
+        let form = self
+            .repositories
             .form_repository()
             .find_by_id(id.clone())
             .await?
             .ok_or(FormUseCaseError::NotFound(id.clone()))?;
+
+        ensure!(form.is_deletable_by(&actor, ctx.requested_at()));
 
         let answers = self
             .repositories
@@ -56,12 +58,16 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn 実委人は申請を削除できない() {
-        let repositories = MockRepositories::default();
+    async fn 実委人編集者は受付中の申請を削除できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .form_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeEditor));
         let res = use_case
             .delete_by_id(&ctx, fixture::form::id1().value().to_string())
             .await;

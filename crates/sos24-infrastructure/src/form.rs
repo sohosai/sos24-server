@@ -6,7 +6,7 @@ use mongodb::{
 };
 use serde::{Deserialize, Serialize};
 
-use sos24_domain::entity::form::{FormItemExtension, FormItemId};
+use sos24_domain::entity::form::{FormIsDraft, FormItemExtension, FormItemId};
 use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::entity::{file_data::FileId, form::FormIsNotified};
 use sos24_domain::{
@@ -29,6 +29,7 @@ pub struct FormDoc {
     _id: String,
     title: String,
     description: String,
+    is_draft: bool,
     starts_at: chrono::DateTime<chrono::Utc>,
     ends_at: chrono::DateTime<chrono::Utc>,
     categories: i32,
@@ -47,6 +48,7 @@ impl From<Form> for FormDoc {
             _id: form.id.value().to_string(),
             title: form.title.value(),
             description: form.description.value(),
+            is_draft: form.is_draft.value(),
             starts_at: form.starts_at.value(),
             ends_at: form.ends_at.value(),
             categories: form.categories.bits() as i32,
@@ -71,6 +73,7 @@ impl TryFrom<FormDoc> for Form {
             FormId::try_from(value._id)?,
             FormTitle::new(value.title),
             FormDescription::new(value.description),
+            FormIsDraft::new(value.is_draft),
             DateTime::new(value.starts_at),
             DateTime::new(value.ends_at),
             ProjectCategories::from_bits(value.categories as u32)

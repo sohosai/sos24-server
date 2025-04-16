@@ -32,7 +32,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let filtered_forms = forms
             .into_iter()
             .filter(|form| form.is_sent_to(&project_with_owners.project))
-            .filter(|form| form.is_started(ctx.requested_at()));
+            .filter(|form| form.is_visible_to(&actor, ctx.requested_at()));
 
         // FIXME : N+1
         let mut form_list = vec![];
