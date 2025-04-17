@@ -1,3 +1,0 @@
-ALTER TABLE news_attachments RENAME TO files;
-ALTER TABLE files DROP COLUMN news_id;
-ALTER TABLE files ADD COLUMN name TEXT NOT NULL;
