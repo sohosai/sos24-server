@@ -1,0 +1,122 @@
+services:
+  app:
+    image: ghcr.io/sohosai/sos24-server:prd
+    restart: unless-stopped
+    depends_on:
+      - sos25-traefik
+    environment:
+      - HOST=0.0.0.0
+      - PORT=${PORT}
+      - POSTGRES_DB_URL=${POSTGRES_DB_URL}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_SERVICE_ACCOUNT_KEY=${FIREBASE_SERVICE_ACCOUNT_KEY}
+      - PROJECT_APPLICATION_START_AT=${PROJECT_APPLICATION_START_AT}
+      - PROJECT_APPLICATION_END_AT=${PROJECT_APPLICATION_END_AT}
+      - REQUIRE_EMAIL_VERIFICATION=${REQUIRE_EMAIL_VERIFICATION}
+      - MONGO_DB_URL=${MONGO_DB_URL}
+      - MONGO_DB=${MONGO_DB}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_REGION=${S3_REGION}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - SEND_GRID_API_KEY=${SEND_GRID_API_KEY}
+      - EMAIL_SENDER_ADDRESS=${EMAIL_SENDER_ADDRESS}
+      - EMAIL_REPLY_TO_ADDRESS=${EMAIL_REPLY_TO_ADDRESS}
+      - APP_URL=${APP_URL}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - DEFAULT_ADMIN_EMAIL=${DEFAULT_ADMIN_EMAIL}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=sos25-traefik
+      - traefik.http.services.sos25-server.loadbalancer.server.port=${PORT}
+      - traefik.http.routers.sos25-server.rule=Host(`sos25api.sohosai.com`)
+      - traefik.http.routers.sos25-server.entrypoints=websecure
+      - traefik.http.routers.sos25-server.tls.certresolver=leresolver
+    networks:
+      - sos25-traefik
+      - sos25-server-prd
+
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - sos25-server-prd
+
+  sos25-traefik:
+    image: traefik:latest
+    restart: unless-stopped
+    command:
+      - --providers.docker
+      - --configFile=/traefik.yml
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - traefik-letsencrypt:/letsencrypt
+    configs:
+      - source: sos25-traefik
+        target: /traefik.yml
+    networks:
+      - sos25-traefik
+
+volumes:
+  mongodb-data:
+  traefik-letsencrypt:
+
+networks:
+  sos25-traefik:
+    name: sos25-traefik
+    attachable: true
+    external: true
+  sos25-server-prd:
+    name: sos25-server-prd
+    internal: true
+configs:
+  sos25-traefik:
+    content: |
+      traefik: 
+        entryPoints:
+          web:
+            address: ":80"
+          websecure:
+            address: ":443"
+          traefik:
+            address: ":8080"
+        http:
+          routers:
+            http-catchall:
+              rule: "HostRegexp(`{host:.+}`)"
+              entryPoints:
+                - web
+              middlewares:
+                - redirect-to-https
+            dashboard:
+              entryPoints:
+                - traefik
+              service: api@internal
+              rule: "Host(`sos25-prd.server.sohosai.internal`)"
+          middlewares:
+            redirect-to-https:
+              redirectScheme:
+                scheme: "https"
+        providers:
+          docker:
+            exposedByDefault: false
+        api:
+          dashboard: true
+          insecure: true
+        certificatesResolvers:
+          leresolver:
+            acme:
+              email: ${LETSENCRYPT_EMAIL}
+              storage: /letsencrypt/acme.json
+              tlsChallenge: {}
