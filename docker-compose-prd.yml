@@ -27,6 +27,8 @@ services:
       - EMAIL_REPLY_TO_ADDRESS=${EMAIL_REPLY_TO_ADDRESS}
       - APP_URL=${APP_URL}
       - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - DEFAULT_ADMIN_EMAIL=${DEFAULT_ADMIN_EMAIL}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD}
     labels:
       - traefik.enable=true
       - traefik.docker.network=sos24-traefik

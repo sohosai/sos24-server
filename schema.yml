@@ -1766,6 +1766,7 @@ components:
       required:
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -1787,6 +1788,8 @@ components:
         ends_at:
           type: string
           format: date-time
+        is_draft:
+          type: boolean
         items:
           type: array
           items:
@@ -2017,6 +2020,7 @@ components:
       - id
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -2056,6 +2060,8 @@ components:
         id:
           type: string
           format: uuid
+        is_draft:
+          type: boolean
         items:
           type: array
           items:
@@ -2343,6 +2349,7 @@ components:
       - id
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -2371,6 +2378,8 @@ components:
         id:
           type: string
           format: uuid
+        is_draft:
+          type: boolean
         starts_at:
           type: string
           format: date-time
@@ -2666,6 +2675,7 @@ components:
       required:
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -2687,6 +2697,8 @@ components:
         ends_at:
           type: string
           format: date-time
+        is_draft:
+          type: boolean
         items:
           type: array
           items:
