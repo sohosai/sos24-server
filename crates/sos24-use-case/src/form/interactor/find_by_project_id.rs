@@ -32,7 +32,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let filtered_forms = forms
             .into_iter()
             .filter(|form| form.is_sent_to(&project_with_owners.project))
-            .filter(|form| form.is_started(ctx.requested_at()));
+            .filter(|form| form.is_visible_to(&actor, ctx.requested_at()));
 
         // FIXME : N+1
         let mut form_list = vec![];
@@ -121,7 +121,7 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::project::project_with_owners1(
-                    fixture::user::user1(UserRole::Committee),
+                    fixture::user::user1(UserRole::CommitteeViewer),
                 )))
             });
         repositories
@@ -131,7 +131,7 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;

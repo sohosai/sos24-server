@@ -37,11 +37,11 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn 実委人はユーザー一覧を取得できない() {
+    async fn 実委人閲覧者はユーザー一覧を取得できない() {
         let repositories = MockRepositories::default();
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case.list(&ctx).await;
         assert!(matches!(
             res,
@@ -49,6 +49,35 @@ mod tests {
                 PermissionDeniedError
             ))
         ));
+    }
+
+    #[tokio::test]
+    async fn 実委人起草者はユーザー一覧を取得できない() {
+        let repositories = MockRepositories::default();
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeDrafter));
+        let res = use_case.list(&ctx).await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人編集者はユーザー一覧を取得できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeEditor));
+        let res = use_case.list(&ctx).await;
+        assert!(matches!(res, Ok(list) if list.is_empty()));
     }
 
     #[tokio::test]

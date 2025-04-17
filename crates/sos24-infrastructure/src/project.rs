@@ -7,7 +7,8 @@ use sos24_domain::{
         common::datetime::DateTime,
         project::{
             Project, ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectIndex,
-            ProjectKanaGroupName, ProjectKanaTitle, ProjectRemarks, ProjectTitle,
+            ProjectKanaGroupName, ProjectKanaTitle, ProjectLocationId, ProjectRemarks,
+            ProjectTitle,
         },
         user::{User, UserEmail, UserId, UserKanaName, UserName, UserPhoneNumber},
     },
@@ -32,6 +33,7 @@ pub struct ProjectWithOwnersRow {
     project_owner_id: String,
     project_sub_owner_id: Option<String>,
     project_remarks: Option<String>,
+    project_location_id: Option<String>,
     project_created_at: chrono::DateTime<chrono::Utc>,
     project_updated_at: chrono::DateTime<chrono::Utc>,
 
@@ -72,6 +74,7 @@ impl TryFrom<ProjectWithOwnersRow> for ProjectWithOwners {
             UserId::new(value.project_owner_id),
             value.project_sub_owner_id.map(UserId::new),
             value.project_remarks.map(ProjectRemarks::new),
+            value.project_location_id.map(ProjectLocationId::new),
             DateTime::new(value.project_created_at),
             DateTime::new(value.project_updated_at),
         );
@@ -185,8 +188,8 @@ impl ProjectRepository for PgProjectRepository {
 
         let project = project.destruct();
         sqlx::query!(
-        r#"INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
+        r#"INSERT INTO projects (id, title, kana_title, group_name, kana_group_name, category, attributes, owner_id, remarks, location_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"#,
         project.id.value(),
         project.title.value(),
         project.kana_title.value(),
@@ -196,6 +199,7 @@ impl ProjectRepository for PgProjectRepository {
         project.attributes.bits() as i32,
         project.owner_id.value(),
         project.remarks.map(|it| it.value()),
+        project.location_id.map(|it| it.value())
         )
             .execute(&*self.db)
             .await
@@ -211,7 +215,7 @@ impl ProjectRepository for PgProjectRepository {
         let project = project.destruct();
         sqlx::query!(
             r#"UPDATE projects
-            SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10
+            SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10, location_id = $11
             WHERE id = $1 AND deleted_at IS NULL"#,
             project.id.value(),
             project.title.value(),
@@ -223,6 +227,7 @@ impl ProjectRepository for PgProjectRepository {
             project.owner_id.value(),
             project.sub_owner_id.map(|it| it.value()),
             project.remarks.map(|it| it.value()),
+            project.location_id.map(|it| it.value())
         )
             .execute(&*self.db)
             .await
@@ -268,6 +273,7 @@ impl ProjectRepository for PgProjectRepository {
             projects.owner_id AS "project_owner_id",
             projects.sub_owner_id AS "project_sub_owner_id",
             projects.remarks AS "project_remarks",
+            projects.location_id AS "project_location_id",
             projects.created_at AS "project_created_at",
             projects.updated_at AS "project_updated_at",
             owners.id AS "owner_id",
@@ -322,6 +328,7 @@ impl ProjectRepository for PgProjectRepository {
             projects.owner_id AS "project_owner_id",
             projects.sub_owner_id AS "project_sub_owner_id",
             projects.remarks AS "project_remarks",
+            projects.location_id AS "project_location_id",
             projects.created_at AS "project_created_at",
             projects.updated_at AS "project_updated_at",
             owners.id AS "owner_id",
@@ -374,6 +381,7 @@ impl ProjectRepository for PgProjectRepository {
             projects.owner_id AS "project_owner_id",
             projects.sub_owner_id AS "project_sub_owner_id",
             projects.remarks AS "project_remarks",
+            projects.location_id AS "project_location_id",
             projects.created_at AS "project_created_at",
             projects.updated_at AS "project_updated_at",
             owners.id AS "owner_id",
@@ -426,6 +434,7 @@ impl ProjectRepository for PgProjectRepository {
             projects.owner_id AS "project_owner_id",
             projects.sub_owner_id AS "project_sub_owner_id",
             projects.remarks AS "project_remarks",
+            projects.location_id AS "project_location_id",
             projects.created_at AS "project_created_at",
             projects.updated_at AS "project_updated_at",
             owners.id AS "owner_id",

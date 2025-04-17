@@ -93,7 +93,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case.list(&ctx).await;
         assert!(matches!(res, Ok(list) if list.is_empty()));
     }

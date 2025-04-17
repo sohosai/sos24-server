@@ -176,7 +176,7 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::project::project_with_owners1(
-                    fixture::user::user2(UserRole::Committee),
+                    fixture::user::user2(UserRole::CommitteeViewer),
                 )))
             });
         repositories
@@ -185,7 +185,7 @@ mod tests {
             .returning(|_, _, _| Ok(fixture::file_object::signed_url()));
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_id(
                 &ctx,

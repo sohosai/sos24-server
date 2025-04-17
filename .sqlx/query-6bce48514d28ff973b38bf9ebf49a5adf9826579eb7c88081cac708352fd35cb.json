@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE users\n            SET name = $2, kana_name = $3, email = $4, phone_number = $5, role = $6\n            WHERE id = $1 AND deleted_at IS NULL",
+  "query": "\n        INSERT INTO users (id, name, kana_name, email, phone_number, role)\n        VALUES ($1, $2, $3, $4, $5, $6)",
   "describe": {
     "columns": [],
     "parameters": {
@@ -29,5 +29,5 @@
     },
     "nullable": []
   },
-  "hash": "4626a4ae2ef3c04847f9f67a9a04b9a32195425f59af5e11e32fc1f94be86077"
+  "hash": "6bce48514d28ff973b38bf9ebf49a5adf9826579eb7c88081cac708352fd35cb"
 }

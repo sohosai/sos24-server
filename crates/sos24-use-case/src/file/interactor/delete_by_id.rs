@@ -47,7 +47,7 @@ mod tests {
         let repositories = MockRepositories::default();
         let use_case = FileUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .delete_by_id(&ctx, fixture::file_data::id().value().to_string())
             .await;

@@ -1766,6 +1766,7 @@ components:
       required:
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -1787,6 +1788,8 @@ components:
         ends_at:
           type: string
           format: date-time
+        is_draft:
+          type: boolean
         items:
           type: array
           items:
@@ -1823,6 +1826,7 @@ components:
     CreateNews:
       type: object
       required:
+      - state
       - title
       - body
       - attachments
@@ -1840,6 +1844,13 @@ components:
           type: string
         categories:
           $ref: '#/components/schemas/ProjectCategories'
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
     CreateProject:
@@ -2009,6 +2020,7 @@ components:
       - id
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -2048,6 +2060,8 @@ components:
         id:
           type: string
           format: uuid
+        is_draft:
+          type: boolean
         items:
           type: array
           items:
@@ -2335,6 +2349,7 @@ components:
       - id
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -2363,6 +2378,8 @@ components:
         id:
           type: string
           format: uuid
+        is_draft:
+          type: boolean
         starts_at:
           type: string
           format: date-time
@@ -2432,6 +2449,7 @@ components:
       type: object
       required:
       - id
+      - state
       - title
       - body
       - attachments
@@ -2457,15 +2475,29 @@ components:
         id:
           type: string
           format: uuid
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
         updated_at:
           type: string
           format: date-time
+    NewsState:
+      type: string
+      enum:
+      - draft
+      - scheduled
+      - published
     NewsSummary:
       type: object
       required:
       - id
+      - state
       - title
       - categories
       - attributes
@@ -2478,6 +2510,13 @@ components:
         id:
           type: string
           format: uuid
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
         updated_at:
@@ -2519,6 +2558,10 @@ components:
           type: string
         kana_title:
           type: string
+        location_id:
+          type:
+          - string
+          - 'null'
         owner_email:
           type: string
         owner_id:
@@ -2615,6 +2658,10 @@ components:
           type: string
         kana_title:
           type: string
+        location_id:
+          type:
+          - string
+          - 'null'
         owner_email:
           type: string
         owner_id:
@@ -2628,6 +2675,7 @@ components:
       required:
       - title
       - description
+      - is_draft
       - starts_at
       - ends_at
       - categories
@@ -2649,6 +2697,8 @@ components:
         ends_at:
           type: string
           format: date-time
+        is_draft:
+          type: boolean
         items:
           type: array
           items:
@@ -2670,6 +2720,7 @@ components:
     UpdateNews:
       type: object
       required:
+      - state
       - title
       - body
       - attachments
@@ -2687,6 +2738,13 @@ components:
           type: string
         categories:
           $ref: '#/components/schemas/ProjectCategories'
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        state:
+          $ref: '#/components/schemas/NewsState'
         title:
           type: string
     UpdateProject:
@@ -2709,6 +2767,10 @@ components:
           type: string
         kana_title:
           type: string
+        location_id:
+          type:
+          - string
+          - 'null'
         remarks:
           type:
           - string
@@ -2778,7 +2840,9 @@ components:
       enum:
       - administrator
       - committee_operator
-      - committee
+      - committee_editor
+      - committee_drafter
+      - committee_viewer
       - general
     UserSummary:
       type: object

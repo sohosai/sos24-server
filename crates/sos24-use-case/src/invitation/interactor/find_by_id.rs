@@ -156,7 +156,7 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::project::project_with_owners1(
-                    fixture::user::user1(UserRole::Committee),
+                    fixture::user::user1(UserRole::CommitteeViewer),
                 )))
             });
         let use_case = InvitationUseCase::new(
@@ -164,7 +164,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;

@@ -91,7 +91,7 @@ mod tests {
     use crate::user::{UserUseCase, UserUseCaseError};
 
     #[tokio::test]
-    async fn 実委人は自分のユーザーを更新できる() {
+    async fn 実委人閲覧者は自分のユーザーを更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -107,7 +107,7 @@ mod tests {
             .returning(|_, _| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,
@@ -125,7 +125,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 実委人は自分のロールを更新できない() {
+    async fn 実委人閲覧者は自分のロールを更新できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -137,7 +137,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,
@@ -160,7 +160,42 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 実委人は他人のユーザーを更新できない() {
+    async fn 実委人起草者は自分のロールを更新できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::user::user1(UserRole::General))));
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeDrafter));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateUserCommand {
+                    id: fixture::user::id1().value(),
+                    name: fixture::user::name1().value(),
+                    kana_name: fixture::user::kana_name1().value(),
+                    email: fixture::user::email1().value(),
+                    phone_number: fixture::user::phone_number1().value(),
+                    role: UserRoleDto::from(UserRole::CommitteeViewer),
+                },
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人閲覧者は他人のユーザーを更新できない() {
         let mut repositories = MockRepositories::default();
         repositories
             .user_repository_mut()
@@ -172,7 +207,7 @@ mod tests {
             .returning(|_| Ok(()));
         let use_case = UserUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,
@@ -192,6 +227,71 @@ mod tests {
                 PermissionDeniedError
             ))
         ));
+    }
+
+    #[tokio::test]
+    async fn 実委人起草者は他人のユーザーを更新できない() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeDrafter));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateUserCommand {
+                    id: fixture::user::id2().value(),
+                    name: fixture::user::name2().value(),
+                    kana_name: fixture::user::kana_name2().value(),
+                    email: fixture::user::email2().value(),
+                    phone_number: fixture::user::phone_number2().value(),
+                    role: UserRoleDto::from(UserRole::General),
+                },
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(UserUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            ))
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人編集者は他人のユーザーを更新できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .user_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::user::user2(UserRole::General))));
+        repositories
+            .user_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let use_case = UserUseCase::new(Arc::new(repositories));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeEditor));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateUserCommand {
+                    id: fixture::user::id2().value(),
+                    name: fixture::user::name2().value(),
+                    kana_name: fixture::user::kana_name2().value(),
+                    email: fixture::user::email2().value(),
+                    phone_number: fixture::user::phone_number2().value(),
+                    role: UserRoleDto::from(UserRole::CommitteeDrafter),
+                },
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
     }
 
     #[tokio::test]

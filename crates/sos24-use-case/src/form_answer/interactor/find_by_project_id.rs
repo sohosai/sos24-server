@@ -136,7 +136,7 @@ mod tests {
             .returning(|_| Ok(vec![]));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .find_by_project_id(&ctx, fixture::project::id1().value().to_string())
             .await;

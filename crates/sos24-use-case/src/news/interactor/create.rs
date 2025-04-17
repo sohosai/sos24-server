@@ -1,8 +1,10 @@
+use anyhow::anyhow;
 use sos24_domain::{
     ensure,
     entity::{
+        common::datetime::DateTime,
         file_data::FileId,
-        news::{News, NewsBody, NewsTitle},
+        news::{News, NewsBody, NewsState, NewsTitle},
         permission::Permissions,
         project::{ProjectAttributes, ProjectCategories},
     },
@@ -13,7 +15,7 @@ use sos24_domain::{
 };
 
 use crate::{
-    news::{NewsUseCase, NewsUseCaseError},
+    news::{dto::NewsStateDto, NewsUseCase, NewsUseCaseError},
     project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
     shared::{
         adapter::{
@@ -28,11 +30,28 @@ use crate::{
 
 #[derive(Debug)]
 pub struct CreateNewsCommand {
+    pub state: NewsStateDto,
     pub title: String,
     pub body: String,
     pub attachments: Vec<String>,
     pub categories: ProjectCategoriesDto,
     pub attributes: ProjectAttributesDto,
+    pub scheduled_at: Option<String>,
+}
+
+impl CreateNewsCommand {
+    pub fn get_news_state(&self) -> Result<NewsState, NewsUseCaseError> {
+        match &self.state {
+            NewsStateDto::Draft => Ok(NewsState::Draft),
+            NewsStateDto::Scheduled => match &self.scheduled_at {
+                Some(date) => Ok(NewsState::Scheduled(DateTime::try_from(date.clone())?)),
+                None => Err(NewsUseCaseError::InternalError(anyhow!(
+                    "Invalid newsstate format"
+                ))),
+            },
+            NewsStateDto::Published => Ok(NewsState::Published),
+        }
+    }
 }
 
 impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
@@ -42,9 +61,16 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
         raw_news: CreateNewsCommand,
     ) -> Result<String, NewsUseCaseError> {
         let actor = ctx.actor(&*self.repositories).await?;
-        ensure!(actor.has_permission(Permissions::CREATE_NEWS));
+        match raw_news.state {
+            NewsStateDto::Draft => ensure!(actor.has_permission(Permissions::CREATE_DRAFT_NEWS)),
+            NewsStateDto::Scheduled => {
+                ensure!(actor.has_permission(Permissions::CREATE_SCHEDULED_NEWS))
+            }
+            NewsStateDto::Published => ensure!(actor.has_permission(Permissions::CREATE_NEWS)),
+        }
 
         let news = News::create(
+            raw_news.get_news_state()?,
             NewsTitle::new(raw_news.title),
             NewsBody::new(raw_news.body),
             raw_news
@@ -71,37 +97,38 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
             .create(news.clone())
             .await?;
 
-        let project_list = self.repositories.project_repository().list().await?;
-        let target_project_list = project_list
-            .into_iter()
-            .filter(|project_with_owners| news.is_sent_to(&project_with_owners.project));
+        if let NewsState::Published = news.state() {
+            let project_list = self.repositories.project_repository().list().await?;
+            let target_project_list = project_list
+                .into_iter()
+                .filter(|project_with_owners| news.is_sent_to(&project_with_owners.project));
 
-        let emails = target_project_list
-            .flat_map(|project_with_owners| {
-                [
-                    Some(project_with_owners.owner.email().clone().value()),
-                    project_with_owners
-                        .sub_owner
-                        .as_ref()
-                        .map(|it| it.email().clone().value()),
-                ]
-            })
-            .flatten()
-            .collect::<Vec<_>>();
+            let emails = target_project_list
+                .flat_map(|project_with_owners| {
+                    [
+                        Some(project_with_owners.owner.email().clone().value()),
+                        project_with_owners
+                            .sub_owner
+                            .as_ref()
+                            .map(|it| it.email().clone().value()),
+                    ]
+                })
+                .flatten()
+                .collect::<Vec<_>>();
 
-        let command = SendEmailCommand {
-            from: Email {
-                address: ctx.config().email_sender_address.clone(),
-                name: String::from("雙峰祭オンラインシステム"),
-            },
-            to: emails,
-            reply_to: Some(ctx.config().email_reply_to_address.clone()),
-            subject: format!(
-                "お知らせ「{title}」が公開されました",
-                title = news.title().clone().value()
-            ),
-            body: format!(
-                r#"雙峰祭オンラインシステムでお知らせが公開されました。
+            let command = SendEmailCommand {
+                from: Email {
+                    address: ctx.config().email_sender_address.clone(),
+                    name: String::from("雙峰祭オンラインシステム"),
+                },
+                to: emails,
+                reply_to: Some(ctx.config().email_reply_to_address.clone()),
+                subject: format!(
+                    "お知らせ「{title}」が公開されました",
+                    title = news.title().clone().value()
+                ),
+                body: format!(
+                    r#"雙峰祭オンラインシステムでお知らせが公開されました。
 
 タイトル: {title}
 本文:
@@ -115,21 +142,35 @@ impl<R: Repositories, A: Adapters> NewsUseCase<R, A> {
 筑波大学学園祭実行委員会
 Email : {email}
 電話 : 029-853-2899"#,
-                title = news.title().clone().value(),
-                body = news.body().clone().value(),
-                url = app_url::news(ctx, news.id().clone()),
-                email = ctx.config().email_reply_to_address.clone(),
-            ),
-        };
-        self.adapters.email_sender().send_email(command).await?;
+                    title = news.title().clone().value(),
+                    body = news.body().clone().value(),
+                    url = app_url::news(ctx, news.id().clone()),
+                    email = ctx.config().email_reply_to_address.clone(),
+                ),
+            };
+            self.adapters.email_sender().send_email(command).await?;
+        }
 
         self.adapters
             .notifier()
-            .notify(format!(
-                "お知らせ「{}」が公開されました。\n{}",
-                news.title().clone().value(),
-                app_url::committee_news(ctx, news_id.clone()),
-            ))
+            .notify(match news.state() {
+                NewsState::Draft => format!(
+                    "お知らせ「{}」が下書きとして保存されました。\n{}",
+                    news.title().clone().value(),
+                    app_url::committee_news(ctx, news_id.clone())
+                ),
+                NewsState::Scheduled(date) => format!(
+                    "お知らせ「{}」が{}に予約されました。\n{}",
+                    news.title().clone().value(),
+                    date.clone().value().to_rfc3339(),
+                    app_url::committee_news(ctx, news_id.clone())
+                ),
+                NewsState::Published => format!(
+                    "お知らせ「{}」が公開されました。\n{}",
+                    news.title().clone().value(),
+                    app_url::committee_news(ctx, news_id.clone())
+                ),
+            })
             .await?;
 
         Ok(news_id.value().to_string())
@@ -146,7 +187,9 @@ mod tests {
     };
 
     use crate::{
-        news::{interactor::create::CreateNewsCommand, NewsUseCase, NewsUseCaseError},
+        news::{
+            dto::NewsStateDto, interactor::create::CreateNewsCommand, NewsUseCase, NewsUseCaseError,
+        },
         project::dto::{ProjectAttributesDto, ProjectCategoriesDto},
         shared::{adapter::MockAdapters, context::TestContext},
     };
@@ -161,11 +204,13 @@ mod tests {
         let adapters = MockAdapters::default();
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
+        let (state, scheduled_at) = NewsStateDto::from_news_state(fixture::news::state1());
         let res = use_case
             .create(
                 &ctx,
                 CreateNewsCommand {
+                    state,
                     title: fixture::news::title1().value(),
                     body: fixture::news::body1().value(),
                     attachments: fixture::news::attachments1()
@@ -174,6 +219,7 @@ mod tests {
                         .collect(),
                     categories: ProjectCategoriesDto::from(fixture::news::categories1()),
                     attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
+                    scheduled_at,
                 },
             )
             .await;
@@ -183,6 +229,50 @@ mod tests {
                 PermissionDeniedError
             ))
         ));
+    }
+
+    #[tokio::test]
+    async fn 実委人編集者は予約投稿のお知らせを作成できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .news_repository_mut()
+            .expect_create()
+            .returning(|_| Ok(()));
+        repositories
+            .project_repository_mut()
+            .expect_list()
+            .returning(|| Ok(vec![]));
+        let mut adapters = MockAdapters::default();
+        adapters
+            .email_sender_mut()
+            .expect_send_email()
+            .returning(|_| Ok(()));
+        adapters
+            .notifier_mut()
+            .expect_notify()
+            .returning(|_| Ok(()));
+        let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeEditor));
+        let (state, scheduled_at) = NewsStateDto::from_news_state(fixture::news::state2());
+        let res = use_case
+            .create(
+                &ctx,
+                CreateNewsCommand {
+                    state,
+                    title: fixture::news::title1().value(),
+                    body: fixture::news::body1().value(),
+                    attachments: fixture::news::attachments1()
+                        .into_iter()
+                        .map(|id| id.value().to_string())
+                        .collect(),
+                    categories: ProjectCategoriesDto::from(fixture::news::categories1()),
+                    attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
+                    scheduled_at,
+                },
+            )
+            .await;
+        assert!(res.is_ok());
     }
 
     #[tokio::test]
@@ -208,10 +298,12 @@ mod tests {
         let use_case = NewsUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
         let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
+        let (state, scheduled_at) = NewsStateDto::from_news_state(fixture::news::state1());
         let res = use_case
             .create(
                 &ctx,
                 CreateNewsCommand {
+                    state,
                     title: fixture::news::title1().value(),
                     body: fixture::news::body1().value(),
                     attachments: fixture::news::attachments1()
@@ -220,6 +312,7 @@ mod tests {
                         .collect(),
                     categories: ProjectCategoriesDto::from(fixture::news::categories1()),
                     attributes: ProjectAttributesDto::from(fixture::news::attributes1()),
+                    scheduled_at,
                 },
             )
             .await;

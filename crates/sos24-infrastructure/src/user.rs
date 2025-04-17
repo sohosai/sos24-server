@@ -48,7 +48,9 @@ impl TryFrom<UserRow> for User {
 pub enum UserRoleRow {
     Administrator,
     CommitteeOperator,
-    Committee,
+    CommitteeEditor,
+    CommitteeDrafter,
+    CommitteeViewer,
     General,
 }
 
@@ -57,7 +59,9 @@ impl From<UserRoleRow> for UserRole {
         match value {
             UserRoleRow::Administrator => UserRole::Administrator,
             UserRoleRow::CommitteeOperator => UserRole::CommitteeOperator,
-            UserRoleRow::Committee => UserRole::Committee,
+            UserRoleRow::CommitteeEditor => UserRole::CommitteeEditor,
+            UserRoleRow::CommitteeDrafter => UserRole::CommitteeDrafter,
+            UserRoleRow::CommitteeViewer => UserRole::CommitteeViewer,
             UserRoleRow::General => UserRole::General,
         }
     }
@@ -68,7 +72,9 @@ impl From<UserRole> for UserRoleRow {
         match value {
             UserRole::Administrator => UserRoleRow::Administrator,
             UserRole::CommitteeOperator => UserRoleRow::CommitteeOperator,
-            UserRole::Committee => UserRoleRow::Committee,
+            UserRole::CommitteeEditor => UserRoleRow::CommitteeEditor,
+            UserRole::CommitteeDrafter => UserRoleRow::CommitteeDrafter,
+            UserRole::CommitteeViewer => UserRoleRow::CommitteeViewer,
             UserRole::General => UserRoleRow::General,
         }
     }
@@ -109,13 +115,14 @@ impl UserRepository for PgUserRepository {
         let user = user.destruct();
         let res = sqlx::query!(
             r#"
-        INSERT INTO users (id, name, kana_name, email, phone_number)
-        VALUES ($1, $2, $3, $4, $5)"#,
+        INSERT INTO users (id, name, kana_name, email, phone_number, role)
+        VALUES ($1, $2, $3, $4, $5, $6)"#,
             user.id.value(),
             user.name.value(),
             user.kana_name.value(),
             user.email.clone().value(),
             user.phone_number.clone().value(),
+            UserRoleRow::from(user.role) as UserRoleRow,
         )
         .execute(&*self.db)
         .await;

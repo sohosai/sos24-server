@@ -57,7 +57,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor2(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor2(UserRole::CommitteeViewer));
         let res = use_case
             .delete_by_id(&ctx, fixture::invitation::id().value().to_string())
             .await;

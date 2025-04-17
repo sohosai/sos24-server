@@ -17,6 +17,8 @@ pub struct News {
     #[getset(get = "pub")]
     id: NewsId,
     #[getset(get = "pub")]
+    state: NewsState,
+    #[getset(get = "pub")]
     title: NewsTitle,
     #[getset(get = "pub")]
     body: NewsBody,
@@ -36,6 +38,7 @@ impl News {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: NewsId,
+        state: NewsState,
         title: NewsTitle,
         body: NewsBody,
         attachments: Vec<FileId>,
@@ -46,6 +49,7 @@ impl News {
     ) -> Self {
         Self {
             id,
+            state,
             title,
             body,
             attachments,
@@ -57,6 +61,7 @@ impl News {
     }
 
     pub fn create(
+        state: NewsState,
         title: NewsTitle,
         body: NewsBody,
         attachments: Vec<FileId>,
@@ -66,6 +71,7 @@ impl News {
         let now = DateTime::now();
         Self {
             id: NewsId::new(uuid::Uuid::new_v4()),
+            state,
             title,
             body,
             attachments,
@@ -79,6 +85,7 @@ impl News {
     pub fn destruct(self) -> DestructedNews {
         DestructedNews {
             id: self.id,
+            state: self.state,
             title: self.title,
             body: self.body,
             attachments: self.attachments,
@@ -93,6 +100,7 @@ impl News {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DestructedNews {
     pub id: NewsId,
+    pub state: NewsState,
     pub title: NewsTitle,
     pub body: NewsBody,
     pub attachments: Vec<FileId>,
@@ -104,11 +112,59 @@ pub struct DestructedNews {
 
 impl News {
     pub fn is_visible_to(&self, actor: &Actor) -> bool {
-        actor.has_permission(Permissions::READ_NEWS_ALL)
+        match self.state {
+            NewsState::Draft => actor.has_permission(Permissions::READ_DRAFT_NEWS_ALL),
+            NewsState::Scheduled(_) => actor.has_permission(Permissions::READ_SCHEDULED_NEWS_ALL),
+            NewsState::Published => actor.has_permission(Permissions::READ_NEWS_ALL),
+        }
     }
 
-    pub fn is_updatable_by(&self, actor: &Actor) -> bool {
-        actor.has_permission(Permissions::UPDATE_NEWS_ALL)
+    fn is_updatable_by_without_changing_state(&self, actor: &Actor) -> bool {
+        match self.state {
+            NewsState::Draft => actor.has_permission(Permissions::UPDATE_DRAFT_NEWS_ALL),
+            NewsState::Scheduled(_) => actor.has_permission(Permissions::UPDATE_SCHEDULED_NEWS_ALL),
+            NewsState::Published => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+        }
+    }
+
+    pub fn is_updatable_by(&self, actor: &Actor, new_state: &NewsState) -> bool {
+        match self.state {
+            NewsState::Draft => match new_state {
+                NewsState::Draft => actor.has_permission(Permissions::UPDATE_DRAFT_NEWS_ALL),
+                NewsState::Scheduled(_) => actor.has_permission(Permissions::CREATE_SCHEDULED_NEWS),
+                NewsState::Published => actor.has_permission(Permissions::CREATE_NEWS),
+            },
+            NewsState::Scheduled(_) => match new_state {
+                NewsState::Draft => actor.has_permission(Permissions::UPDATE_SCHEDULED_NEWS_ALL),
+                NewsState::Scheduled(_) => {
+                    actor.has_permission(Permissions::UPDATE_SCHEDULED_NEWS_ALL)
+                }
+                NewsState::Published => actor.has_permission(Permissions::CREATE_NEWS),
+            },
+            NewsState::Published => match new_state {
+                NewsState::Draft => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+                NewsState::Scheduled(_) => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+                NewsState::Published => actor.has_permission(Permissions::UPDATE_NEWS_ALL),
+            },
+        }
+    }
+
+    pub fn is_deletable_by(&self, actor: &Actor) -> bool {
+        match self.state {
+            NewsState::Draft => actor.has_permission(Permissions::DELETE_DRAFT_NEWS_ALL),
+            NewsState::Scheduled(_) => actor.has_permission(Permissions::DELETE_SCHEDULED_NEWS_ALL),
+            NewsState::Published => actor.has_permission(Permissions::DELETE_NEWS_ALL),
+        }
+    }
+
+    pub fn set_state(
+        &mut self,
+        actor: &Actor,
+        state: NewsState,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(self.is_updatable_by(actor, &state));
+        self.state = state;
+        Ok(())
     }
 
     pub fn set_title(
@@ -116,13 +172,13 @@ impl News {
         actor: &Actor,
         title: NewsTitle,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.title = title;
         Ok(())
     }
 
     pub fn set_body(&mut self, actor: &Actor, body: NewsBody) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.body = body;
         Ok(())
     }
@@ -132,7 +188,7 @@ impl News {
         actor: &Actor,
         attachments: Vec<FileId>,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.attachments = attachments;
         Ok(())
     }
@@ -142,7 +198,7 @@ impl News {
         actor: &Actor,
         categories: ProjectCategories,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.categories = categories;
         Ok(())
     }
@@ -152,7 +208,7 @@ impl News {
         actor: &Actor,
         attributes: ProjectAttributes,
     ) -> Result<(), PermissionDeniedError> {
-        ensure!(self.is_updatable_by(actor));
+        ensure!(self.is_updatable_by_without_changing_state(actor));
         self.attributes = attributes;
         Ok(())
     }
@@ -181,3 +237,10 @@ impl TryFrom<String> for NewsId {
 
 impl_value_object!(NewsTitle(String));
 impl_value_object!(NewsBody(String));
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NewsState {
+    Draft,
+    Scheduled(DateTime),
+    Published,
+}

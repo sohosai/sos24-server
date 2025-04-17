@@ -39,6 +39,8 @@ pub struct Project {
     #[getset(get = "pub")]
     remarks: Option<ProjectRemarks>,
     #[getset(get = "pub")]
+    location_id: Option<ProjectLocationId>,
+    #[getset(get = "pub")]
     created_at: DateTime,
     #[getset(get = "pub")]
     updated_at: DateTime,
@@ -58,6 +60,7 @@ impl Project {
         owner_id: UserId,
         sub_owner_id: Option<UserId>,
         remarks: Option<ProjectRemarks>,
+        location_id: Option<ProjectLocationId>,
         created_at: DateTime,
         updated_at: DateTime,
     ) -> Self {
@@ -73,6 +76,7 @@ impl Project {
             owner_id,
             sub_owner_id,
             remarks,
+            location_id,
             created_at,
             updated_at,
         }
@@ -100,6 +104,7 @@ impl Project {
             owner_id,
             sub_owner_id: None,
             remarks: None,
+            location_id: None,
             created_at: now.clone(),
             updated_at: now,
         }
@@ -118,6 +123,7 @@ impl Project {
             owner_id: self.owner_id,
             sub_owner_id: self.sub_owner_id,
             remarks: self.remarks,
+            location_id: self.location_id,
             created_at: self.created_at,
             updated_at: self.updated_at,
         }
@@ -137,6 +143,7 @@ pub struct DestructedProject {
     pub owner_id: UserId,
     pub sub_owner_id: Option<UserId>,
     pub remarks: Option<ProjectRemarks>,
+    pub location_id: Option<ProjectLocationId>,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }
@@ -261,6 +268,16 @@ impl Project {
         }
 
         self.sub_owner_id.replace(id);
+        Ok(())
+    }
+
+    pub fn set_location_id(
+        &mut self,
+        actor: &Actor,
+        location_id: ProjectLocationId,
+    ) -> Result<(), PermissionDeniedError> {
+        ensure!(actor.has_permission(Permissions::UPDATE_PROJECT_ALL));
+        self.location_id.replace(location_id);
         Ok(())
     }
 }
@@ -418,6 +435,12 @@ impl ProjectAttributes {
 }
 
 impl_value_object!(ProjectRemarks(String));
+
+// 場所IDはIDといっても人間(主に総合計画局)が定めるもので、
+// - 屋外では"[A-Z][0-9]"の2桁 ex) "A1"
+// - 屋内では"[0-9][A-Z][0-9]{3}"の5桁(教室番号に一致) ex) "3C213"
+// という規則があるが、変更の可能性や柔軟性を鑑みて、Stringで格納することとする
+impl_value_object!(ProjectLocationId(String));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ProjectCategories(u32);

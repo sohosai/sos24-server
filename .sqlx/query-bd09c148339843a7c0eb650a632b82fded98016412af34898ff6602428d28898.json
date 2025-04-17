@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE projects\n            SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10\n            WHERE id = $1 AND deleted_at IS NULL",
+  "query": "UPDATE projects\n            SET title = $2, kana_title = $3, group_name = $4, kana_group_name = $5, category = $6, attributes = $7, owner_id = $8, sub_owner_id = $9, remarks = $10, location_id = $11\n            WHERE id = $1 AND deleted_at IS NULL",
   "describe": {
     "columns": [],
     "parameters": {
@@ -29,10 +29,11 @@
         "Int4",
         "Text",
         "Text",
+        "Text",
         "Text"
       ]
     },
     "nullable": []
   },
-  "hash": "3c0fcc8e72128b3d4094b1a01caf3403e0894ba35e6cff00c5e0ee3701dc662e"
+  "hash": "bd09c148339843a7c0eb650a632b82fded98016412af34898ff6602428d28898"
 }

@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use sos24_use_case::user::interactor::create::CreateUserCommand;
 use tokio::net::TcpListener;
 
 use sos24_presentation::{config::Config, context::Context, env, module, route::create_app};
@@ -27,8 +28,23 @@ async fn main() {
         email_sender_address: env::email_sender_address(),
         email_reply_to_address: env::email_reply_to_address(),
         app_url: env::app_url(),
+
+        default_admin_email: env::default_admin_email(),
+        default_admin_password: env::default_admin_password(),
     };
+
     let modules = Arc::new(module::new(config.clone()).await.unwrap());
+    let _ = modules
+        .user_use_case()
+        .create_admin(CreateUserCommand {
+            name: "admin".to_string(),
+            kana_name: "あどみん".to_string(),
+            email: config.clone().default_admin_email,
+            password: config.clone().default_admin_password,
+            phone_number: "00000000000".to_string(),
+        })
+        .await;
+
     let app = create_app(Arc::clone(&modules));
 
     let sched = JobScheduler::new()
@@ -45,6 +61,11 @@ async fn main() {
                 .check_form_and_send_notify(&ctx)
                 .await
                 .expect("Failed to check form and send notify");
+            modules
+                .news_use_case()
+                .check_news_and_send_notify(&ctx)
+                .await
+                .expect("Failed to check news and send notify");
             tracing::info!("cronjobを実行しました");
         })
     })

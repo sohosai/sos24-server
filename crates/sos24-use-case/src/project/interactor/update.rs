@@ -2,7 +2,7 @@ use sos24_domain::ensure;
 use sos24_domain::entity::permission::Permissions;
 use sos24_domain::entity::project::{
     ProjectAttributes, ProjectCategory, ProjectGroupName, ProjectId, ProjectKanaGroupName,
-    ProjectKanaTitle, ProjectRemarks, ProjectTitle,
+    ProjectKanaTitle, ProjectLocationId, ProjectRemarks, ProjectTitle,
 };
 use sos24_domain::repository::project::ProjectRepository;
 use sos24_domain::repository::Repositories;
@@ -22,6 +22,7 @@ pub struct UpdateProjectCommand {
     pub category: ProjectCategoryDto,
     pub attributes: ProjectAttributesDto,
     pub remarks: Option<String>,
+    pub location_id: Option<String>,
 }
 
 impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
@@ -72,6 +73,9 @@ impl<R: Repositories, A: Adapters> ProjectUseCase<R, A> {
         if let Some(remarks) = project_data.remarks {
             new_project.set_remarks(&actor, ProjectRemarks::new(remarks))?;
         }
+        if let Some(location_id) = project_data.location_id {
+            new_project.set_location_id(&actor, ProjectLocationId::new(location_id))?;
+        }
 
         self.repositories
             .project_repository()
@@ -104,7 +108,7 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::project::project_with_owners1(
-                    fixture::user::user1(UserRole::Committee),
+                    fixture::user::user1(UserRole::CommitteeViewer),
                 )))
             });
         repositories
@@ -118,7 +122,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,
@@ -131,6 +135,7 @@ mod tests {
                     category: ProjectCategoryDto::from(fixture::project::category2()),
                     attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
+                    location_id: None,
                 },
             )
             .await;
@@ -145,7 +150,7 @@ mod tests {
             .expect_find_by_id()
             .returning(|_| {
                 Ok(Some(fixture::project::project_with_owners1(
-                    fixture::user::user1(UserRole::Committee),
+                    fixture::user::user1(UserRole::CommitteeViewer),
                 )))
             });
         repositories
@@ -159,7 +164,7 @@ mod tests {
             fixture::project_application_period::not_applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,
@@ -172,6 +177,7 @@ mod tests {
                     category: ProjectCategoryDto::from(fixture::project::category2()),
                     attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
+                    location_id: Some("B2".to_string()),
                 },
             )
             .await;
@@ -203,7 +209,7 @@ mod tests {
             fixture::project_application_period::applicable_period(),
         );
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,
@@ -216,6 +222,7 @@ mod tests {
                     category: ProjectCategoryDto::from(fixture::project::category2()),
                     attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
+                    location_id: Some("5C302".to_string()),
                 },
             )
             .await;
@@ -262,6 +269,7 @@ mod tests {
                     category: ProjectCategoryDto::from(fixture::project::category2()),
                     attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
+                    location_id: Some("1A201".to_string()),
                 },
             )
             .await;
@@ -303,6 +311,7 @@ mod tests {
                     category: ProjectCategoryDto::from(fixture::project::category2()),
                     attributes: ProjectAttributesDto::from(fixture::project::attributes2()),
                     remarks: None,
+                    location_id: Some("C6".to_string()),
                 },
             )
             .await;

@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO news (id, state, title, body, attachments, categories, attributes, scheduled_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "news_state",
+            "kind": {
+              "Enum": [
+                "draft",
+                "scheduled",
+                "published"
+              ]
+            }
+          }
+        },
+        "Text",
+        "Text",
+        "UuidArray",
+        "Int4",
+        "Int4",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cf9f0e3b274322ea28a9e783b735f313ab12b7eef8f86effd56d7edc0fa2de6b"
+}

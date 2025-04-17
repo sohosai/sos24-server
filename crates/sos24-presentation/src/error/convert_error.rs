@@ -296,6 +296,7 @@ impl From<NewsUseCaseError> for AppError {
             NewsUseCaseError::FileDataRepositoryError(e) => e.into(),
             NewsUseCaseError::ProjectRepositoryError(e) => e.into(),
             NewsUseCaseError::UserRepositoryError(e) => e.into(),
+            NewsUseCaseError::DateTimeError(e) => e.into(),
         }
     }
 }
@@ -378,6 +379,11 @@ impl From<UserUseCaseError> for AppError {
             UserUseCaseError::NotFound(_) => AppError::new(
                 StatusCode::NOT_FOUND,
                 "user/not-found".to_string(),
+                error.to_string(),
+            ),
+            UserUseCaseError::UsersAlreadyExist => AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "user/arleady-exist".to_string(),
                 error.to_string(),
             ),
             UserUseCaseError::ContextError(e) => e.into(),

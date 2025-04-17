@@ -45,7 +45,9 @@ impl From<(User, Option<Project>)> for UserDto {
 pub enum UserRoleDto {
     Administrator,
     CommitteeOperator,
-    Committee,
+    CommitteeEditor,
+    CommitteeDrafter,
+    CommitteeViewer,
     General,
 }
 
@@ -54,7 +56,9 @@ impl From<UserRoleDto> for UserRole {
         match value {
             UserRoleDto::Administrator => UserRole::Administrator,
             UserRoleDto::CommitteeOperator => UserRole::CommitteeOperator,
-            UserRoleDto::Committee => UserRole::Committee,
+            UserRoleDto::CommitteeEditor => UserRole::CommitteeEditor,
+            UserRoleDto::CommitteeDrafter => UserRole::CommitteeDrafter,
+            UserRoleDto::CommitteeViewer => UserRole::CommitteeViewer,
             UserRoleDto::General => UserRole::General,
         }
     }
@@ -65,7 +69,9 @@ impl From<UserRole> for UserRoleDto {
         match entity {
             UserRole::Administrator => UserRoleDto::Administrator,
             UserRole::CommitteeOperator => UserRoleDto::CommitteeOperator,
-            UserRole::Committee => UserRoleDto::Committee,
+            UserRole::CommitteeEditor => UserRoleDto::CommitteeEditor,
+            UserRole::CommitteeDrafter => UserRoleDto::CommitteeDrafter,
+            UserRole::CommitteeViewer => UserRoleDto::CommitteeViewer,
             UserRole::General => UserRoleDto::General,
         }
     }
@@ -76,7 +82,9 @@ impl std::fmt::Display for UserRoleDto {
         match self {
             UserRoleDto::Administrator => write!(f, "管理者"),
             UserRoleDto::CommitteeOperator => write!(f, "実委人(管理者)"),
-            UserRoleDto::Committee => write!(f, "実委人"),
+            UserRoleDto::CommitteeEditor => write!(f, "実委人(編集者)"),
+            UserRoleDto::CommitteeDrafter => write!(f, "実委人(起草者)"),
+            UserRoleDto::CommitteeViewer => write!(f, "実委人(閲覧者)"),
             UserRoleDto::General => write!(f, "一般"),
         }
     }

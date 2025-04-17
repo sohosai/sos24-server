@@ -87,7 +87,7 @@ mod tests {
             .returning(|| Ok(vec![]));
         let use_case = FormAnswerUseCase::new(Arc::new(repositories));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case.list(&ctx).await;
         assert!(res.is_ok());
     }

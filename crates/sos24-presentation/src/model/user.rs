@@ -152,7 +152,9 @@ impl From<UserDto> for UserTobeExported {
 pub enum UserRole {
     Administrator,
     CommitteeOperator,
-    Committee,
+    CommitteeEditor,
+    CommitteeDrafter,
+    CommitteeViewer,
     General,
 }
 
@@ -161,7 +163,9 @@ impl From<UserRole> for UserRoleDto {
         match value {
             UserRole::Administrator => UserRoleDto::Administrator,
             UserRole::CommitteeOperator => UserRoleDto::CommitteeOperator,
-            UserRole::Committee => UserRoleDto::Committee,
+            UserRole::CommitteeEditor => UserRoleDto::CommitteeEditor,
+            UserRole::CommitteeDrafter => UserRoleDto::CommitteeDrafter,
+            UserRole::CommitteeViewer => UserRoleDto::CommitteeViewer,
             UserRole::General => UserRoleDto::General,
         }
     }
@@ -172,7 +176,9 @@ impl From<UserRoleDto> for UserRole {
         match value {
             UserRoleDto::Administrator => UserRole::Administrator,
             UserRoleDto::CommitteeOperator => UserRole::CommitteeOperator,
-            UserRoleDto::Committee => UserRole::Committee,
+            UserRoleDto::CommitteeEditor => UserRole::CommitteeEditor,
+            UserRoleDto::CommitteeDrafter => UserRole::CommitteeDrafter,
+            UserRoleDto::CommitteeViewer => UserRole::CommitteeViewer,
             UserRoleDto::General => UserRole::General,
         }
     }

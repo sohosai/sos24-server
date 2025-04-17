@@ -11,7 +11,7 @@ use sos24_domain::{
     repository::{form::FormRepository, form_answer::FormAnswerRepository, Repositories},
 };
 
-use crate::form::dto::NewFormItemDto;
+use crate::form::dto::{FormIsDraftDto, NewFormItemDto};
 use crate::form::{FormUseCase, FormUseCaseError};
 use crate::project::dto::{ProjectAttributesDto, ProjectCategoriesDto};
 use crate::shared::adapter::Adapters;
@@ -22,6 +22,7 @@ pub struct UpdateFormCommand {
     pub id: String,
     pub title: String,
     pub description: String,
+    pub is_draft: FormIsDraftDto,
     pub starts_at: String,
     pub ends_at: String,
     pub categories: ProjectCategoriesDto,
@@ -59,13 +60,15 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
             return Err(FormUseCaseError::HasAnswers);
         }
 
-        let mut new_form = form;
+        let mut new_form = form.clone();
         new_form.set_title(&actor, FormTitle::new(form_data.title))?;
         new_form.set_description(&actor, FormDescription::new(form_data.description))?;
         new_form.set_starts_at(&actor, DateTime::try_from(form_data.starts_at)?)?;
         new_form.set_ends_at(&actor, DateTime::try_from(form_data.ends_at)?)?;
         new_form.set_categories(&actor, ProjectCategories::from(form_data.categories))?;
         new_form.set_attributes(&actor, ProjectAttributes::from(form_data.attributes))?;
+        ensure!(form.is_updatable_by_and_to(&actor, &new_form, ctx.requested_at()));
+
         {
             let new_attachments = form_data
                 .attachments
@@ -100,7 +103,7 @@ mod tests {
 
     use crate::{
         form::{
-            dto::{FormItemKindDto, NewFormItemDto},
+            dto::{FormIsDraftDto, FormItemKindDto, NewFormItemDto},
             interactor::update::UpdateFormCommand,
             FormUseCase, FormUseCaseError,
         },
@@ -109,12 +112,12 @@ mod tests {
     };
 
     #[tokio::test]
-    async fn 実委人は申請を更新できない() {
+    async fn 実委人閲覧者は受付中の申請を更新できない() {
         let repositories = MockRepositories::default();
         let adapters = MockAdapters::default();
         let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
 
-        let ctx = TestContext::new(fixture::actor::actor1(UserRole::Committee));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeViewer));
         let res = use_case
             .update(
                 &ctx,
@@ -122,6 +125,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),
@@ -148,7 +152,94 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn 実委人管理者は申請を更新できる() {
+    async fn 実委人起草者は受付中の申請を更新できない() {
+        let repositories = MockRepositories::default();
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeDrafter));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateFormCommand {
+                    id: fixture::form::id1().value().to_string(),
+                    title: fixture::form::title2().value(),
+                    description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
+                    starts_at: fixture::form::starts_at2().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at2().value().to_rfc3339(),
+                    categories: ProjectCategoriesDto::from(fixture::form::categories2()),
+                    attributes: ProjectAttributesDto::from(fixture::form::attributes2()),
+                    items: vec![NewFormItemDto::new(
+                        fixture::form::formitem_name2().value(),
+                        Some(fixture::form::description2().value()),
+                        fixture::form::formitem_required2().value(),
+                        FormItemKindDto::from(fixture::form::formitem_kind2()),
+                    )],
+                    attachments: fixture::form::attachments2()
+                        .into_iter()
+                        .map(|it| it.value().to_string())
+                        .collect(),
+                },
+            )
+            .await;
+        assert!(matches!(
+            res,
+            Err(FormUseCaseError::PermissionDeniedError(
+                PermissionDeniedError
+            )),
+        ));
+    }
+
+    #[tokio::test]
+    async fn 実委人編集者は受付中の申請を更新できる() {
+        let mut repositories = MockRepositories::default();
+        repositories
+            .form_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
+        repositories
+            .form_answer_repository_mut()
+            .expect_find_by_form_id()
+            .returning(|_| Ok(vec![]));
+        repositories
+            .form_repository_mut()
+            .expect_update()
+            .returning(|_| Ok(()));
+        let adapters = MockAdapters::default();
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
+
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeEditor));
+        let res = use_case
+            .update(
+                &ctx,
+                UpdateFormCommand {
+                    id: fixture::form::id1().value().to_string(),
+                    title: fixture::form::title2().value(),
+                    description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
+                    starts_at: fixture::form::starts_at2().value().to_rfc3339(),
+                    ends_at: fixture::form::ends_at2().value().to_rfc3339(),
+                    categories: ProjectCategoriesDto::from(fixture::form::categories2()),
+                    attributes: ProjectAttributesDto::from(fixture::form::attributes2()),
+                    items: vec![NewFormItemDto::new(
+                        fixture::form::formitem_name2().value(),
+                        Some(fixture::form::description2().value()),
+                        fixture::form::formitem_required2().value(),
+                        FormItemKindDto::from(fixture::form::formitem_kind2()),
+                    )],
+                    attachments: fixture::form::attachments2()
+                        .into_iter()
+                        .map(|it| it.value().to_string())
+                        .collect(),
+                },
+            )
+            .await;
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    async fn 実委人管理者は受付中の申請を更新できる() {
         let mut repositories = MockRepositories::default();
         repositories
             .form_repository_mut()
@@ -173,6 +264,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),
@@ -219,6 +311,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),
@@ -270,6 +363,7 @@ mod tests {
                     id: fixture::form::id1().value().to_string(),
                     title: fixture::form::title2().value(),
                     description: fixture::form::description2().value(),
+                    is_draft: FormIsDraftDto::from(fixture::form::is_draft1()),
                     starts_at: fixture::form::starts_at2().value().to_rfc3339(),
                     ends_at: fixture::form::ends_at2().value().to_rfc3339(),
                     categories: ProjectCategoriesDto::from(fixture::form::categories2()),
