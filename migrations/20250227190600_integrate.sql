@@ -1,4 +1,4 @@
-CREATE TYPE user_role AS ENUM ('administrator', 'committee_operator', 'committee', 'general');
+CREATE TYPE user_role AS ENUM ('administrator', 'committee_operator', 'committee_editor', 'committee_drafter', 'committee_viewer', 'general');
 -- CREATE TYPE user_category AS ENUM ('undergraduate_student', 'graduate_student', 'academic_staff');
 
 CREATE TABLE users (
@@ -37,20 +37,25 @@ CREATE TABLE projects (
   sub_owner_id TEXT DEFAULT NULL REFERENCES users(id),
 
   remarks TEXT DEFAULT NULL, -- 削除理由など
+  location_id TEXT DEFAULT NULL,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
+CREATE TYPE news_state AS ENUM ('draft', 'scheduled', 'published');
+
 CREATE TABLE news (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
+  state news_state NOT NULL DEFAULT 'draft',
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   categories INTEGER NOT NULL,
   attributes INTEGER NOT NULL,
   attachments UUID[] NOT NULL DEFAULT '{}',
+  scheduled_at TIMESTAMPTZ DEFAULT NULL,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
