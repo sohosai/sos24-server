@@ -31,9 +31,10 @@ services:
       - traefik.enable=true
       - traefik.docker.network=sos25-traefik
       - traefik.http.services.sos25-server.loadbalancer.server.port=${PORT}
+      - traefik.http.services.sos25-server.loadbalancer.server.scheme=http
       - traefik.http.routers.sos25-server.rule=Host(`sos25api.sohosai.com`)
       - traefik.http.routers.sos25-server.entrypoints=websecure
-      - traefik.http.routers.sos25-server.tls.certresolver=leresolver
+      - traefik.http.routers.sos25-server.tls=true
     networks:
       - sos25-traefik
       - sos25-server-prd
@@ -54,39 +55,67 @@ services:
     restart: unless-stopped
     command:
       - --providers.docker
-      - --configFile=/traefik.yml
+      - --configFile=/var/traefik/config/traefik.yml
     ports:
       - "8080:8080"
-      - "80:80"
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - traefik-letsencrypt:/letsencrypt
+      - ./traefik-access.log:/traefik-access.log
+      - ./authenticated_origin_pull_ca.pem:/authenticated_origin_pull_ca.pem
+      - ./traefik.log:/traefik.log
+      - ./sos25api.sohosai.com-origin.crt:/sos25api.sohosai.com-origin.crt
+      - ./sos25api.sohosai.com-origin.key:/sos25api.sohosai.com-origin.key
     configs:
       - source: sos25-traefik
-        target: /traefik.yml
+        target: /var/traefik/config/traefik.yml
+      - source: sos25-traefik-tls
+        target: /var/traefik/dynamic-config/tls.yml
     networks:
       - sos25-traefik
 
 volumes:
   mongodb-data:
-  traefik-letsencrypt:
 
 networks:
   sos25-traefik:
     name: sos25-traefik
     attachable: true
-    external: true
   sos25-server-prd:
     name: sos25-server-prd
     internal: true
+
 configs:
+  sos25-traefik-tls:
+    content: |
+        tls:
+          stores:
+            default:
+              defaultCertificate:
+                certFile: /sos25api.sohosai.com-origin.crt
+                keyFile: /sos25api.sohosai.com-origin.key
+          certificates:
+            - certFile: /sos25api.sohosai.com-origin.crt
+              keyFile: /sos25api.sohosai.com-origin.key
+              stores:
+                - default
+          options:
+            default:
+              sniStrict: true
+              clientAuth:
+                caFiles:
+                  - /authenticated_origin_pull_ca.pem
+                clientAuthType: RequireAndVerifyClientCert
+
   sos25-traefik:
     content: |
-      traefik: 
+        log:
+          filePath: "/traefik.log"
+          level: DEBUG
+        accessLog:
+          filePath: "/traefik-access.log"
+          bufferingSize: 100
         entryPoints:
-          web:
-            address: ":80"
           websecure:
             address: ":443"
           traefik:
@@ -111,12 +140,9 @@ configs:
         providers:
           docker:
             exposedByDefault: false
+          file:
+            directory: /var/traefik/dynamic-config
+            watch: true
         api:
           dashboard: true
           insecure: true
-        certificatesResolvers:
-          leresolver:
-            acme:
-              email: ${LETSENCRYPT_EMAIL}
-              storage: /letsencrypt/acme.json
-              tlsChallenge: {}
