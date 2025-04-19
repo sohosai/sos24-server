@@ -84,8 +84,7 @@ jobs:
           ref: main
       - name: install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y rsync
+          sudo apt install -y -U rsync
         env:
           DEBIAN_FRONTEND: noninteractive
       - name: Setup SSH
