@@ -320,7 +320,7 @@ impl Form {
     // この申請が引数に与えられた企画を対象にしたものであるかを返す
     pub fn is_sent_to(&self, project: &Project) -> bool {
         self.categories.matches(*project.category())
-            && self.attributes.matches(*project.attributes())
+            && (self.attributes.matches(*project.attributes()) || project.attributes().is_empty())
     }
 
     pub fn find_item(&self, item_id: &FormItemId) -> Option<&FormItem> {

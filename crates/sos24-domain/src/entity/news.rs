@@ -216,7 +216,8 @@ impl News {
     // このお知らせが引数に与えられた企画を対象にしたものであるかを返す
     pub fn is_sent_to(&self, project: &Project) -> bool {
         self.categories.matches(*project.category())
-            && self.attributes.matches(*project.attributes())
+            && (self.attributes.matches(*project.attributes()) || project.attributes().is_empty())
+        // 企画属性が1つもない場合、企画区分が一致していれば対象であるとする
     }
 }
 
