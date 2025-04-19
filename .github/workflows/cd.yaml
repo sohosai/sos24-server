@@ -98,7 +98,7 @@ jobs:
       - name: old container down
         run: |
           # down server container
-          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "cd /home/ubuntu/sos24-server
+          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "cd /opt/sos24-server
           if [ -f compose-25prd.yml ]; then \
             docker compose -f compose-25prd.yml down; \
           fi"
@@ -107,11 +107,11 @@ jobs:
           echo "${{ secrets.PRD_VARIABLE }}" > .env
       - name: copy files
         run: |
-          rsync -vrm .env compose-25prd.yml ubuntu@${{ secrets.DEPLOYSERVER_IP }}:/home/ubuntu/sos24-server/
+          rsync -vrm .env compose-25prd.yml ubuntu@${{ secrets.DEPLOYSERVER_IP }}:/opt/sos24-server/
       - name: Deploy server
         run: |
           ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} && \
-          cd /home/ubuntu/sos24-server && \
+          cd /opt/sos24-server && \
           docker compose --env-file .env -f compose-25prd.yml pull && \
           docker compose --env-file .env -f compose-25prd.yml up -d && \
           docker logout ghcr.io && \
