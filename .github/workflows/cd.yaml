@@ -97,35 +97,23 @@ jobs:
           ssh-keyscan -H ${{ secrets.DEPLOYSERVER_IP }} >> ~/.ssh/known_hosts
       - name: old container down
         run: |
-          # down database container
-          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "if [ -f /home/ubuntu/docker-compose-db.yml ]; then \
-          if ! docker context ls | grep -q remote; then \
-            docker context create remote --docker 'host=ssh://ubuntu@10.0.0.2' && \
-            ssh-keyscan -H 10.0.0.2 >> ~/.ssh/known_hosts; \
-          fi; \
-          docker --context remote compose -f docker-compose-db.yml down; \
-          fi"
           # down server container
-          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "if [ -f /home/ubuntu/docker-compose-prd.yml ]; then \
-            docker compose -f docker-compose-prd.yml down; \
+          ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "cd /home/ubuntu/sos24-server
+          if [ -f compose-25prd.yml ]; then \
+            docker compose -f compose-25prd.yml down; \
           fi"
       - name: create .env
         run: |
           echo "${{ secrets.PRD_VARIABLE }}" > .env
       - name: copy files
         run: |
-          rsync -vrm .env docker-compose-db.yml docker-compose-prd.yml ubuntu@${{ secrets.DEPLOYSERVER_IP }}:/home/ubuntu/
+          rsync -vrm .env compose-25prd.yml ubuntu@${{ secrets.DEPLOYSERVER_IP }}:/home/ubuntu/sos24-server/
       - name: Deploy server
         run: |
           ssh ubuntu@${{ secrets.DEPLOYSERVER_IP }} "docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} && \
-          if ! docker context ls | grep -q remote; then \
-            docker context create remote --docker 'host=ssh://ubuntu@10.0.0.2' && \
-            ssh-keyscan -H 10.0.0.2 >> ~/.ssh/known_hosts; \
-          fi; \
-          docker --context remote compose --env-file .env -f docker-compose-db.yml pull && \
-          docker --context remote compose --env-file .env -f docker-compose-db.yml up -d && \
-          docker compose --env-file .env -f docker-compose-prd.yml pull && \
-          docker compose --env-file .env -f docker-compose-prd.yml up -d && \
+          cd /home/ubuntu/sos24-server && \
+          docker compose --env-file .env -f compose-25prd.yml pull && \
+          docker compose --env-file .env -f compose-25prd.yml up -d && \
           docker logout ghcr.io && \
           rm .env"
 
