@@ -76,7 +76,6 @@ services:
 
 volumes:
   mongodb-data:
-  traefik-letsencrypt:
 
 networks:
   sos25-traefik:
