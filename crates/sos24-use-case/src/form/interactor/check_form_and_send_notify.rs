@@ -21,6 +21,7 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         let form_list = self.repositories.form_repository().list().await?;
         let form_list_to_notify = form_list
             .into_iter()
+            .filter(|form| !form.is_draft().clone().value())
             .filter(|form| !form.is_notified().clone().value())
             .filter(|form| form.is_started(ctx.requested_at()));
 
