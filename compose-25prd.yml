@@ -8,6 +8,7 @@ services:
       - HOST=0.0.0.0
       - PORT=${PORT}
       - POSTGRES_DB_URL=${POSTGRES_DB_URL}
+      - DATABASE_URL=${DATABASE_URL}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - FIREBASE_SERVICE_ACCOUNT_KEY=${FIREBASE_SERVICE_ACCOUNT_KEY}
       - PROJECT_APPLICATION_START_AT=${PROJECT_APPLICATION_START_AT}
@@ -61,9 +62,8 @@ services:
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - ./traefik-access.log:/traefik-access.log
-      - ./authenticated_origin_pull_ca.pem:/authenticated_origin_pull_ca.pem
       - ./traefik.log:/traefik.log
+      - ./authenticated_origin_pull_ca.pem:/authenticated_origin_pull_ca.pem
       - ./sos25api.sohosai.com-origin.crt:/sos25api.sohosai.com-origin.crt
       - ./sos25api.sohosai.com-origin.key:/sos25api.sohosai.com-origin.key
     configs:
@@ -111,10 +111,9 @@ configs:
     content: |
         log:
           filePath: "/traefik.log"
-          level: DEBUG
-        accessLog:
-          filePath: "/traefik-access.log"
-          bufferingSize: 100
+          level: INFO
+          maxAge: 30
+          maxSize: 100
         entryPoints:
           websecure:
             address: ":443"
