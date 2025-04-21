@@ -1,7 +1,10 @@
 use std::{ops::Deref, time::Duration};
 
 use aws_sdk_s3::{
-    config::{timeout::TimeoutConfig, Builder, Credentials, Region, StalledStreamProtectionConfig},
+    config::{
+        timeout::TimeoutConfig, Builder, Credentials, Region, RequestChecksumCalculation,
+        StalledStreamProtectionConfig,
+    },
     Client,
 };
 
@@ -41,6 +44,7 @@ impl S3 {
                     .upload_enabled(false)
                     .build(),
             )
+            .request_checksum_calculation(RequestChecksumCalculation::WhenRequired)
             .build();
 
         tracing::info!("S3 client initialized");
