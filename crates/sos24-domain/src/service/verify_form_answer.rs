@@ -48,7 +48,7 @@ pub fn verify(form: &Form, answer: &FormAnswer) -> Result<(), VerifyFormAnswerEr
             .find(|answer_item| answer_item.item_id() == form_item.id());
 
         let is_required = form_item.required().clone().value();
-        if is_required && answer_item.is_none() {
+        if is_required && verify_is_required(answer_item) {
             return Err(VerifyFormAnswerError::MissingAnswerItem(
                 form_item.id().clone(),
             ));
@@ -61,6 +61,16 @@ pub fn verify(form: &Form, answer: &FormAnswer) -> Result<(), VerifyFormAnswerEr
     }
 
     Ok(())
+}
+
+fn verify_is_required(answer_item: Option<&FormAnswerItem>) -> bool {
+    match answer_item {
+        Some(item) => match item.kind().clone() {
+            FormAnswerItemKind::File(f) => f.value().is_empty(),
+            _ => true,
+        },
+        None => false,
+    }
 }
 
 fn verify_item(
@@ -205,10 +215,6 @@ fn verify_item_file(
     answer_file: FormAnswerItemFile,
 ) -> Result<(), VerifyFormAnswerError> {
     let files = answer_file.clone().value();
-
-    if files.len() == 0 {
-        return Err(VerifyFormAnswerError::MissingAnswerItem(item_id));
-    }
 
     // extensionsはフロントエンドでチェックするためここでは何もしない
 
