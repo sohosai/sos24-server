@@ -206,6 +206,10 @@ fn verify_item_file(
 ) -> Result<(), VerifyFormAnswerError> {
     let files = answer_file.clone().value();
 
+    if files.len() == 0 {
+        return Err(VerifyFormAnswerError::MissingAnswerItem(item_id));
+    }
+
     // extensionsはフロントエンドでチェックするためここでは何もしない
 
     if let Some(limit) = form_file.limit() {
