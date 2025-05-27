@@ -8,8 +8,6 @@ services:
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
-    ports:
-      - 8080:8000
 
   postgres:
     image: postgres:14.13
