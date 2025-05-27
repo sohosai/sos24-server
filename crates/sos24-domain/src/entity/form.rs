@@ -252,6 +252,19 @@ impl Form {
         Ok(())
     }
 
+    pub fn set_is_draft(
+        &mut self,
+        actor: &Actor,
+        is_draft: FormIsDraft,
+        now: &chrono::DateTime<chrono::Utc>,
+    ) -> Result<(), PermissionDeniedError> {
+        let mut new_form = self.clone();
+        new_form.is_draft = is_draft.clone();
+        ensure!(self.is_updatable_by_and_to(actor, &new_form, now));
+        self.is_draft = is_draft;
+        Ok(())
+    }
+
     pub fn set_starts_at(
         &mut self,
         actor: &Actor,

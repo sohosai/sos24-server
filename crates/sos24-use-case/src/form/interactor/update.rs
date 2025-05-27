@@ -1,5 +1,5 @@
 use sos24_domain::entity::file_data::FileId;
-use sos24_domain::entity::form::FormItem;
+use sos24_domain::entity::form::{FormIsDraft, FormItem};
 use sos24_domain::entity::project::{ProjectAttributes, ProjectCategories};
 use sos24_domain::{
     ensure,
@@ -67,7 +67,12 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
         new_form.set_ends_at(&actor, DateTime::try_from(form_data.ends_at)?)?;
         new_form.set_categories(&actor, ProjectCategories::from(form_data.categories))?;
         new_form.set_attributes(&actor, ProjectAttributes::from(form_data.attributes))?;
-        ensure!(form.is_updatable_by_and_to(&actor, &new_form, ctx.requested_at()));
+        new_form.set_is_draft(
+            &actor,
+            FormIsDraft::from(form_data.is_draft),
+            ctx.requested_at(),
+        )?;
+        // 下書き <-> 公開 の遷移の権限はset_is_draft内部で確認される
 
         {
             let new_attachments = form_data
