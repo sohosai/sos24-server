@@ -311,6 +311,7 @@ impl FormRepository for MongoFormRepository {
                     doc! {
                         "title": bson::to_bson(&form_doc.title).unwrap(),
                         "description": bson::to_bson(&form_doc.description).unwrap(),
+                        "is_draft": bson::to_bson(&form_doc.is_draft).unwrap(),
                         "starts_at": bson::to_bson(&form_doc.starts_at).unwrap(),
                         "ends_at":bson::to_bson(&form_doc.ends_at).unwrap(),
                         "categories": bson::to_bson(&form_doc.categories).unwrap(),
