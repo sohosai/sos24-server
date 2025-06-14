@@ -35,17 +35,21 @@ impl<R: Repositories> FormAnswerUseCase<R> {
         let mut form_answer_list = Vec::new();
         for raw_form_answer in raw_form_answer_list {
             let form_id = raw_form_answer.form_id();
-            let raw_form = self
+            if let Some(raw_form) = self
                 .repositories
                 .form_repository()
                 .find_by_id(form_id.clone())
                 .await?
-                .ok_or(FormAnswerUseCaseError::FormNotFound(form_id.clone()))?;
-            form_answer_list.push(FormAnswerDto::from((
-                raw_form_answer,
-                project_with_owners.project.clone(),
-                raw_form,
-            )));
+            {
+                form_answer_list.push(FormAnswerDto::from((
+                    raw_form_answer,
+                    project_with_owners.project.clone(),
+                    raw_form,
+                )));
+            } else {
+                tracing::warn!("Skipping FormAnswer because its Form is not found: form_id={:?}", form_id);
+                continue;
+            }
         }
 
         Ok(form_answer_list)
