@@ -107,7 +107,6 @@ impl UserRole {
                     | Permissions::UPDATE_FORM_ALL
                     | Permissions::CREATE_SCHEDULED_FORM
                     | Permissions::UPDATE_SCHEDULED_FORM_ALL
-                    | Permissions::UPDATE_DRAFT_FORM_ALL
                     | Permissions::UPDATE_FORM_ANSWER_ALL
                     | Permissions::UPDATE_FORM_ANSWER_ANYTIME
                     | Permissions::CREATE_INVITATION_ANYTIME
@@ -122,6 +121,7 @@ impl UserRole {
                     | Permissions::READ_SCHEDULED_FORM_ALL
                     | Permissions::CREATE_DRAFT_FORM
                     | Permissions::READ_DRAFT_FORM_ALL
+                    | Permissions::UPDATE_DRAFT_FORM_ALL
             }
 
             UserRole::CommitteeViewer => {
