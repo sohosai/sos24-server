@@ -726,11 +726,21 @@ paths:
     get:
       tags:
       - meta
-      summary: サーバーの状態を確認する
+      summary: サーバーとデータベースの状態を確認する
       operationId: getHealth
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
       security:
       - {}
   /invitations:
@@ -1952,6 +1962,17 @@ components:
       properties:
         id:
           type: string
+    DatabaseStatus:
+      type: object
+      required:
+      - status
+      properties:
+        error:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
     ErrorResponse:
       type: object
       required:
@@ -2388,6 +2409,19 @@ components:
         updated_at:
           type: string
           format: date-time
+    HealthResponse:
+      type: object
+      required:
+      - status
+      - postgresql
+      - mongodb
+      properties:
+        mongodb:
+          $ref: '#/components/schemas/DatabaseStatus'
+        postgresql:
+          $ref: '#/components/schemas/DatabaseStatus'
+        status:
+          type: string
     Invitation:
       type: object
       required:

@@ -8,6 +8,14 @@ pub mod news;
 pub mod project;
 pub mod user;
 
+/// Health check trait for checking database connectivity
+#[mockall::automock]
+#[allow(async_fn_in_trait)]
+pub trait HealthChecker: Send + Sync {
+    async fn check_postgresql(&self) -> anyhow::Result<()>;
+    async fn check_mongodb(&self) -> anyhow::Result<()>;
+}
+
 pub trait Repositories: Send + Sync + 'static {
     type FirebaseUserRepositoryImpl: firebase_user::FirebaseUserRepository;
     type FormRepositoryImpl: form::FormRepository;
@@ -18,6 +26,7 @@ pub trait Repositories: Send + Sync + 'static {
     type FileDataRepositoryImpl: file_data::FileDataRepository;
     type FileObjectRepositoryImpl: file_object::FileObjectRepository;
     type UserRepositoryImpl: user::UserRepository;
+    type HealthCheckerImpl: HealthChecker;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl;
     fn form_repository(&self) -> &Self::FormRepositoryImpl;
@@ -28,4 +37,5 @@ pub trait Repositories: Send + Sync + 'static {
     fn file_data_repository(&self) -> &Self::FileDataRepositoryImpl;
     fn file_object_repository(&self) -> &Self::FileObjectRepositoryImpl;
     fn user_repository(&self) -> &Self::UserRepositoryImpl;
+    fn health_checker(&self) -> &Self::HealthCheckerImpl;
 }

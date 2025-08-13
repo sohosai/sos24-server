@@ -4,6 +4,7 @@ use file_object::S3FileObjectRepository;
 use firebase_user::FirebaseUserRepositoryImpl;
 use form::MongoFormRepository;
 use form_answer::MongoFormAnswerRepository;
+use health::DatabaseHealthChecker;
 use invitation::PgInvitationRepository;
 use news::PgNewsRepository;
 use notification::SlackNotifier;
@@ -21,6 +22,7 @@ pub mod file_object;
 pub mod firebase_user;
 pub mod form;
 pub mod form_answer;
+pub mod health;
 pub mod invitation;
 pub mod news;
 pub mod notification;
@@ -38,6 +40,7 @@ pub struct DefaultRepositories {
     file_data_repository: PgFileDataRepository,
     user_repository: PgUserRepository,
     file_object_repository: S3FileObjectRepository,
+    health_checker: DatabaseHealthChecker,
 }
 
 impl DefaultRepositories {
@@ -52,6 +55,7 @@ impl DefaultRepositories {
             file_data_repository: PgFileDataRepository::new(postgresql.clone()),
             user_repository: PgUserRepository::new(postgresql.clone()),
             file_object_repository: S3FileObjectRepository::new(s3.clone()),
+            health_checker: DatabaseHealthChecker::new(postgresql, mongodb),
         }
     }
 }
@@ -66,6 +70,7 @@ impl Repositories for DefaultRepositories {
     type FileDataRepositoryImpl = PgFileDataRepository;
     type FileObjectRepositoryImpl = S3FileObjectRepository;
     type UserRepositoryImpl = PgUserRepository;
+    type HealthCheckerImpl = DatabaseHealthChecker;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -101,6 +106,10 @@ impl Repositories for DefaultRepositories {
 
     fn user_repository(&self) -> &Self::UserRepositoryImpl {
         &self.user_repository
+    }
+
+    fn health_checker(&self) -> &Self::HealthCheckerImpl {
+        &self.health_checker
     }
 }
 

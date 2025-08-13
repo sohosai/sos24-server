@@ -3,7 +3,7 @@ use crate::repository::{
     firebase_user::MockFirebaseUserRepository, form::MockFormRepository,
     form_answer::MockFormAnswerRepository, invitation::MockInvitationRepository,
     news::MockNewsRepository, project::MockProjectRepository, user::MockUserRepository,
-    Repositories,
+    MockHealthChecker, Repositories,
 };
 
 #[derive(Default)]
@@ -17,6 +17,7 @@ pub struct MockRepositories {
     file_object_repository: MockFileObjectRepository,
     project_repository: MockProjectRepository,
     user_repository: MockUserRepository,
+    health_checker: MockHealthChecker,
 }
 
 impl MockRepositories {
@@ -55,6 +56,10 @@ impl MockRepositories {
     pub fn user_repository_mut(&mut self) -> &mut MockUserRepository {
         &mut self.user_repository
     }
+
+    pub fn health_checker_mut(&mut self) -> &mut MockHealthChecker {
+        &mut self.health_checker
+    }
 }
 
 impl Repositories for MockRepositories {
@@ -67,6 +72,7 @@ impl Repositories for MockRepositories {
     type FileDataRepositoryImpl = MockFileDataRepository;
     type FileObjectRepositoryImpl = MockFileObjectRepository;
     type UserRepositoryImpl = MockUserRepository;
+    type HealthCheckerImpl = MockHealthChecker;
 
     fn firebase_user_repository(&self) -> &Self::FirebaseUserRepositoryImpl {
         &self.firebase_user_repository
@@ -102,5 +108,9 @@ impl Repositories for MockRepositories {
 
     fn user_repository(&self) -> &Self::UserRepositoryImpl {
         &self.user_repository
+    }
+
+    fn health_checker(&self) -> &Self::HealthCheckerImpl {
+        &self.health_checker
     }
 }
