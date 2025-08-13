@@ -722,6 +722,64 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
       security:
       - jwt_token: []
+  /forms/{form_id}/send-reminder-email:
+    post:
+      tags:
+      - forms
+      summary: 特定のIDの申請についてリマインドメールを送信
+      operationId: postFormReminderEmail
+      parameters:
+      - name: form_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendReminderEmailRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendReminderEmailResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - jwt_token: []
   /health:
     get:
       tags:
@@ -2670,6 +2728,30 @@ components:
           type: string
         title:
           type: string
+    SendReminderEmailRequest:
+      type: object
+      required:
+      - subject
+      - body
+      properties:
+        body:
+          type: string
+        subject:
+          type: string
+    SendReminderEmailResponse:
+      type: object
+      required:
+      - sent_count
+      - emails
+      properties:
+        emails:
+          type: array
+          items:
+            type: string
+        sent_count:
+          type: integer
+          format: int32
+          minimum: 0
     UpdateForm:
       type: object
       required:

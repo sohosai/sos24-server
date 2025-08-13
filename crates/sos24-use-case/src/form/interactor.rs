@@ -4,4 +4,5 @@ pub mod delete_by_id;
 pub mod find_by_id;
 pub mod find_by_project_id;
 pub mod list;
+pub mod send_reminder_email;
 pub mod update;

@@ -306,3 +306,15 @@ impl From<FormItemKindDto> for FormItemKind {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct SendReminderEmailRequest {
+    pub subject: String,
+    pub body: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct SendReminderEmailResponse {
+    pub sent_count: u32,
+    pub emails: Vec<String>,
+}

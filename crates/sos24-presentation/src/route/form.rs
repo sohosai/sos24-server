@@ -11,12 +11,13 @@ use sos24_use_case::form::interactor::create::CreateFormCommand;
 
 use crate::context::Context;
 use crate::error::ErrorResponse;
-use crate::model::form::{CreatedForm, Form, FormQuery, FormSummary};
+use crate::model::form::{CreatedForm, Form, FormQuery, FormSummary, SendReminderEmailRequest, SendReminderEmailResponse};
 use crate::{
     error::AppError,
     model::form::{ConvertToUpdateFormDto, UpdateForm},
 };
 use crate::{model::form::CreateForm, module::Modules};
+use sos24_use_case::form::interactor::send_reminder_email::SendReminderEmailCommand;
 
 /// 申請一覧の取得
 #[utoipa::path(
@@ -180,4 +181,50 @@ pub async fn handle_put_id(
         tracing::error!("Failed to update form: {err:?}");
         err.into()
     })
+}
+
+/// 特定のIDの申請についてリマインドメールを送信
+#[utoipa::path(
+    post,
+    path = "/forms/{form_id}/send-reminder-email",
+    operation_id = "postFormReminderEmail",
+    tag = "forms",
+    params(("form_id" = String, Path, format="uuid")),
+    request_body(content = SendReminderEmailRequest),
+    responses(
+        (status = 200, description = "OK", body = SendReminderEmailResponse),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not Found", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
+    ),
+    security(("jwt_token" = [])),
+)]
+pub async fn handle_send_reminder_email(
+    Path(form_id): Path<String>,
+    State(modules): State<Arc<Modules>>,
+    Extension(ctx): Extension<Context>,
+    Json(request): Json<SendReminderEmailRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let command = SendReminderEmailCommand {
+        form_id,
+        subject: request.subject,
+        body: request.body,
+    };
+    
+    let result = modules.form_use_case().send_reminder_email(&ctx, command).await;
+    
+    result
+        .map(|result| {
+            let response = SendReminderEmailResponse {
+                sent_count: result.sent_count,
+                emails: result.emails,
+            };
+            (StatusCode::OK, Json(response))
+        })
+        .map_err(|err| {
+            tracing::error!("Failed to send reminder email: {err:?}");
+            err.into()
+        })
 }
