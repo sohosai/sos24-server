@@ -21,6 +21,14 @@ impl Postgresql {
         tracing::info!("Connected to PostgreSQL");
         Ok(Self(pool))
     }
+
+    /// Check if the PostgreSQL connection is healthy
+    pub async fn health_check(&self) -> anyhow::Result<()> {
+        sqlx::query("SELECT 1")
+            .execute(&self.0)
+            .await?;
+        Ok(())
+    }
 }
 
 impl Deref for Postgresql {

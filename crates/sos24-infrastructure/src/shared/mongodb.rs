@@ -16,6 +16,12 @@ impl MongoDb {
         tracing::info!("Connected to MongoDB");
         Ok(Self(db))
     }
+
+    /// Check if the MongoDB connection is healthy
+    pub async fn health_check(&self) -> anyhow::Result<()> {
+        self.0.run_command(mongodb::bson::doc! { "ping": 1 }).await?;
+        Ok(())
+    }
 }
 
 impl Deref for MongoDb {
