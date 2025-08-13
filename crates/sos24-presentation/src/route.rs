@@ -69,7 +69,8 @@ pub fn create_app(modules: Arc<Modules>) -> Router {
         .route("/", post(form::handle_post))
         .route("/{form_id}", get(form::handle_get_id))
         .route("/{form_id}", delete(form::handle_delete_id))
-        .route("/{form_id}", put(form::handle_put_id));
+        .route("/{form_id}", put(form::handle_put_id))
+        .route("/{form_id}/send-reminder-email", post(form::handle_send_reminder_email));
 
     let form_answers = Router::new()
         .route("/", get(form_answer::handle_get))
@@ -144,6 +145,7 @@ use crate::route;
         route::form::handle_get_id,
         route::form::handle_put_id,
         route::form::handle_delete_id,
+        route::form::handle_send_reminder_email,
         route::form_answer::handle_get,
         route::form_answer::handle_post,
         route::form_answer::handle_export,
