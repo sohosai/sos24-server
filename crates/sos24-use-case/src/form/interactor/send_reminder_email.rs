@@ -110,4 +110,101 @@ impl<R: Repositories, A: Adapters> FormUseCase<R, A> {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::sync::Arc;
+
+    use sos24_domain::{
+        entity::user::UserRole,
+        test::{fixture, repository::MockRepositories},
+    };
+
+    use crate::{
+        form::{FormUseCase, FormUseCaseError},
+        shared::{adapter::MockAdapters, context::TestContext},
+    };
+
+    use super::SendReminderEmailCommand;
+
+    #[tokio::test]
+    async fn リマインドメールが正常に送信される() {
+        let mut repositories = MockRepositories::default();
+        let mut adapters = MockAdapters::default();
+
+        // フォーム取得をモック
+        repositories
+            .form_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(Some(fixture::form::form1_opened())));
+
+        // プロジェクト一覧取得をモック  
+        repositories
+            .project_repository_mut()
+            .expect_list()
+            .returning(|| {
+                // フォームの条件に合うプロジェクトを作成
+                // form1_openedは GENERAL カテゴリ + ACADEMIC 属性
+                let mut project = fixture::project::project1(fixture::user::user1(UserRole::General).id().clone());
+                let actor = fixture::actor::actor1(UserRole::CommitteeOperator);
+                project.set_category(&actor, sos24_domain::entity::project::ProjectCategory::General).unwrap();
+                project.set_attributes(&actor, sos24_domain::entity::project::ProjectAttributes::ACADEMIC).unwrap();
+                
+                Ok(vec![sos24_domain::repository::project::ProjectWithOwners {
+                    project,
+                    owner: fixture::user::user1(UserRole::General),
+                    sub_owner: None,
+                }])
+            });
+
+        // 回答済みプロジェクト取得をモック（空を返す = 未回答）
+        repositories
+            .form_answer_repository_mut()
+            .expect_find_by_form_id()
+            .returning(|_| Ok(vec![]));
+
+        // メール送信をモック
+        adapters
+            .email_sender_mut()
+            .expect_send_email()
+            .returning(|_| Ok(()));
+
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
+
+        let command = SendReminderEmailCommand {
+            form_id: fixture::form::id1().value().to_string(),
+            subject: "リマインドメール".to_string(),
+            body: "申請の提出をお忘れではありませんか？".to_string(),
+        };
+
+        let result = use_case.send_reminder_email(&ctx, command).await;
+        assert!(result.is_ok());
+        
+        let result = result.unwrap();
+        assert_eq!(result.sent_count, 1); // オーナーの1人分
+        assert_eq!(result.emails.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn 存在しないフォームIDでエラーが返される() {
+        let mut repositories = MockRepositories::default();
+        let adapters = MockAdapters::default();
+
+        // フォーム取得でNoneを返す
+        repositories
+            .form_repository_mut()
+            .expect_find_by_id()
+            .returning(|_| Ok(None));
+
+        let use_case = FormUseCase::new(Arc::new(repositories), Arc::new(adapters));
+        let ctx = TestContext::new(fixture::actor::actor1(UserRole::CommitteeOperator));
+
+        let command = SendReminderEmailCommand {
+            form_id: fixture::form::id1().value().to_string(),
+            subject: "リマインドメール".to_string(),
+            body: "申請の提出をお忘れではありませんか？".to_string(),
+        };
+
+        let result = use_case.send_reminder_email(&ctx, command).await;
+        assert!(matches!(result, Err(FormUseCaseError::NotFound(_))));
+    }
+}
