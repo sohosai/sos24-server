@@ -128,4 +128,39 @@ mod test {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn test_get_health_with_database_errors() -> anyhow::Result<()> {
+        let mut repositories = MockRepositories::default();
+        
+        // Setup mock expectations for health checks to return errors
+        repositories.health_checker_mut()
+            .expect_check_postgresql()
+            .returning(|| Err(anyhow::anyhow!("PostgreSQL connection failed")));
+        repositories.health_checker_mut()
+            .expect_check_mongodb()
+            .returning(|| Err(anyhow::anyhow!("MongoDB connection failed")));
+            
+        let adapters = MockAdapters::default();
+        let modules = module::new_test(repositories, adapters).await.unwrap();
+        let app = create_app(Arc::new(modules));
+
+        let resp = app
+            .oneshot(Request::builder().uri("/health").body(Body::empty())?)
+            .await?;
+
+        assert_eq!(resp.status(), StatusCode::SERVICE_UNAVAILABLE);
+        
+        // Check that response is JSON with expected error structure
+        let body_bytes = axum::body::to_bytes(resp.into_body(), usize::MAX).await?;
+        let response: serde_json::Value = serde_json::from_slice(&body_bytes)?;
+        
+        assert_eq!(response["status"], "unhealthy");
+        assert_eq!(response["postgresql"]["status"], "unhealthy");
+        assert_eq!(response["postgresql"]["error"], "PostgreSQL connection failed");
+        assert_eq!(response["mongodb"]["status"], "unhealthy");
+        assert_eq!(response["mongodb"]["error"], "MongoDB connection failed");
+
+        Ok(())
+    }
 }
